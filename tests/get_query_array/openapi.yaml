@@ -1,0 +1,13 @@
+paths:
+  /pets:
+    get:
+      parameters:
+        - name: tag
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200': {}
+        default: {}

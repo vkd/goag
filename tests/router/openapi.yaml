@@ -1,0 +1,8 @@
+paths:
+  /: {get: {responses: {default: {}}}}
+  /shops: {get: {responses: {default: {}}}}
+  /shops/: {get: {responses: {default: {}}}}
+  /shops/{shop}: {get: {params: [{in: path, name: shop}], responses: {default: {}}}}
+  /shops/{shop}/: {get: {params: [{in: path, name: shop}], responses: {default: {}}}}
+  /shops/{shop}/pets: {get: {params: [{in: path, name: shop}], responses: {default: {}}}}
+  /shops/activate: {get: {responses: {default: {}}}}

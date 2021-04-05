@@ -1,0 +1,113 @@
+{{/* {{ template "do_not_edit" }} */}}
+
+package {{.PackageName}}
+
+import (
+	"net/http"
+	"strings"
+)
+
+type API struct {
+	{{range $_, $h := .Handlers}}
+	{{$h.Name}}Handler {{$h.Name}}Handlerer
+	{{- end}}
+
+	// not found
+	NotFoundHandler http.Handler
+}
+
+func (a API) Router() http.Handler {
+	r := router{
+		{{- range $_, $h := .Handlers}}
+		{{$h.Name}}Handler: {{$h.Name}}Handler(a.{{$h.Name}}Handler),
+		{{- end}}
+
+		NotFoundHandler: a.NotFoundHandler,
+	}
+	if r.NotFoundHandler == nil {
+		r.NotFoundHandler = http.NotFoundHandler()
+	}
+	return &r
+}
+
+type router struct {
+	{{range $_, $h := .Handlers}}
+	{{$h.Name}}Handler http.Handler
+	{{- end}}
+
+	// not found
+	NotFoundHandler http.Handler
+}
+
+func (rt *router) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+
+	h := rt.route(path, r.Method)
+	if h == nil {
+		h = rt.NotFoundHandler
+	}
+	h.ServeHTTP(rw, r)
+}
+
+{{ range $_, $r := .Routes }}
+func (rt *router) route{{$r.Name}}(path, method string) http.Handler {
+	{{if or .Handlers .Routes}}prefix, path :{{else}}_, path {{end -}}= splitPath(path)
+
+	{{if or .Handlers .WildcardHandler -}}
+	if path == "" {
+		{{if .Handlers -}}
+		switch prefix {
+		{{range $_, $h := .Handlers -}}
+		case "{{.Prefix}}":
+			switch method {
+			{{- range $_, $m := .Methods}}
+			case http.Method{{.Method}}:
+				return rt.{{.HandlerName}}Handler
+			{{- end}}
+			}
+		{{end -}}
+		}
+		{{- end}}
+		{{- if .WildcardHandler}}
+		switch method {
+		{{- range $_, $m := .WildcardHandler.Methods}}
+		case http.Method{{.Method}}:
+			return rt.{{.HandlerName}}Handler
+		{{- end}}
+		}
+		{{- end}}
+	}
+	{{- end}}
+
+	{{if or .Routes .WildcardRouteName -}}
+	if path != "" {
+		{{if .Routes -}}
+		switch prefix {
+		{{range $_, $r := .Routes -}}
+		case "{{.Prefix}}":
+			return rt.route{{.RouteName}}(path, method)
+		{{end -}}
+		}
+		{{- end}}
+
+		{{- if .WildcardRouteName}}
+
+		return rt.route{{.WildcardRouteName}}(path, method)
+		{{- end}}
+	}
+	{{- end}}
+
+	return nil
+}
+{{ end }}
+
+func splitPath(s string) (string, string) {
+	if !strings.HasPrefix(s, "/") {
+		return s, ""
+	}
+	idx := strings.Index(s[1:], "/")
+	if idx == -1 {
+		return s, ""
+	}
+	return s[:idx+1], s[idx+1:]
+}
