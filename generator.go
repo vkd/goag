@@ -125,6 +125,12 @@ func RenderToFile(filepath string, f generator.Render) error {
 }
 
 func WriteToFile(bs []byte, filepath string) error {
+	dirpath := path.Dir(filepath)
+	err := os.MkdirAll(dirpath, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("mkdir all: %w", err)
+	}
+
 	f, err := os.OpenFile(filepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("error on open file: %w", err)
