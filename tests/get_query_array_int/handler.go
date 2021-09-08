@@ -13,46 +13,27 @@ import (
 // GetPets -
 // ---------------------------------------------
 
-func GetPetsHandler(h GetPetsHandlerer) http.Handler {
-	return GetPetsHandlerFunc(h.Handle, h.InvalidResponce)
+type GetPetsHandlerFunc func(GetPetsParamsParser) GetPetsResponser
+
+func (f GetPetsHandlerFunc) Handle(p GetPetsParamsParser) GetPetsResponser {
+	return f(p)
 }
 
-func GetPetsHandlerFunc(fn FuncGetPets, invalidFn FuncGetPetsInvalidResponse) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		params, err := newGetPetsParams(r)
-		if err != nil {
-			invalidFn(err).writeGetPetsResponse(w)
-			return
-		}
-
-		fn(params).writeGetPetsResponse(w)
-	}
+func (f GetPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f.Handle(requestGetPetsParams{Request: r}).writeGetPetsResponse(w)
 }
 
-type GetPetsHandlerer interface {
-	Handle(GetPetsParams) GetPetsResponser
-	InvalidResponce(error) GetPetsResponser
+type GetPetsParamsParser interface {
+	Parse() (GetPetsParams, error)
 }
 
-func NewGetPetsHandlerer(fn FuncGetPets, invalidFn FuncGetPetsInvalidResponse) GetPetsHandlerer {
-	return privateGetPetsHandlerer{
-		FuncGetPets:                fn,
-		FuncGetPetsInvalidResponse: invalidFn,
-	}
+type requestGetPetsParams struct {
+	Request *http.Request
 }
 
-type privateGetPetsHandlerer struct {
-	FuncGetPets
-	FuncGetPetsInvalidResponse
+func (p requestGetPetsParams) Parse() (GetPetsParams, error) {
+	return newGetPetsParams(p.Request)
 }
-
-type FuncGetPets func(GetPetsParams) GetPetsResponser
-
-func (f FuncGetPets) Handle(params GetPetsParams) GetPetsResponser { return f(params) }
-
-type FuncGetPetsInvalidResponse func(error) GetPetsResponser
-
-func (f FuncGetPetsInvalidResponse) InvalidResponce(err error) GetPetsResponser { return f(err) }
 
 type GetPetsParams struct {
 	Request *http.Request

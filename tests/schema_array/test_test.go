@@ -10,7 +10,7 @@ import (
 )
 
 func TestSchemaArray(t *testing.T) {
-	h := GetPetsHandlerFunc(func(gpp GetPetsParams) GetPetsResponser {
+	h := GetPetsHandlerFunc(func(_ GetPetsParamsParser) GetPetsResponser {
 		return GetPetsResponse200JSON([]Pet{{ID: 1, Name: "mike"}})
 	})
 
@@ -27,7 +27,7 @@ func TestSchemaArray(t *testing.T) {
 }
 
 func TestSchemaArray_Names(t *testing.T) {
-	h := GetPetsNamesHandlerFunc(func(gpp GetPetsNamesParams) GetPetsNamesResponser {
+	h := GetPetsNamesHandlerFunc(func(_ GetPetsNamesParamsParser) GetPetsNamesResponser {
 		return GetPetsNamesResponse200JSON([]string{"mike"})
 	})
 

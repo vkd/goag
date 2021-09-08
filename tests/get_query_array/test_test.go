@@ -9,12 +9,16 @@ import (
 
 func TestGetQueryArray(t *testing.T) {
 	handler := GetPetsHandlerFunc(
-		func(ps GetPetsParams) GetPetsResponser {
+		func(p GetPetsParamsParser) GetPetsResponser {
+			ps, err := p.Parse()
+			if err != nil {
+				return GetPetsResponseDefault(400)
+			}
 			assert.Len(t, ps.Tag, 2)
 			assert.Equal(t, []string{"cat", "dog"}, ps.Tag)
 			return GetPetsResponse200()
 		},
-		func(_ error) GetPetsResponser { return GetPetsResponseDefault(400) })
+	)
 
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, httptest.NewRequest("GET", "/pets?tag=cat&tag=dog", nil))

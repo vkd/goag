@@ -8,11 +8,13 @@ import (
 )
 
 func TestGetPathParam(t *testing.T) {
-	handler := GetPetsPetIDHandlerFunc(func(ps GetPetsPetIDParams) GetPetsPetIDResponser {
+	handler := GetPetsPetIDHandlerFunc(func(p GetPetsPetIDParamsParser) GetPetsPetIDResponser {
+		ps, err := p.Parse()
+		if err != nil {
+			return GetPetsPetIDResponseDefault(400)
+		}
 		assert.Equal(t, 1, ps.PetID)
 		return GetPetsPetIDResponse200()
-	}, func(_ error) GetPetsPetIDResponser {
-		return GetPetsPetIDResponseDefault(400)
 	})
 
 	w := httptest.NewRecorder()
@@ -22,15 +24,13 @@ func TestGetPathParam(t *testing.T) {
 }
 
 func TestGetPathParam_Invalid(t *testing.T) {
-	handler := GetPetsPetIDHandlerFunc(func(ps GetPetsPetIDParams) GetPetsPetIDResponser {
+	handler := GetPetsPetIDHandlerFunc(func(p GetPetsPetIDParamsParser) GetPetsPetIDResponser {
+		_, err := p.Parse()
+		if err != nil {
+			return GetPetsPetIDResponseDefault(400)
+		}
 		assert.Fail(t, "petId is not a number")
 		return GetPetsPetIDResponse200()
-	}, func(err error) GetPetsPetIDResponser {
-		// log.Printf("process 400: %q %q %v", in, param, err)
-		// assert.Equal(t, "path", in)
-		// assert.Equal(t, "petId", param)
-		// assert.Error(t, err)
-		return GetPetsPetIDResponseDefault(400)
 	})
 
 	w := httptest.NewRecorder()

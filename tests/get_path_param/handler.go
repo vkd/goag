@@ -14,47 +14,26 @@ import (
 // GetPetsPetID -
 // ---------------------------------------------
 
-func GetPetsPetIDHandler(h GetPetsPetIDHandlerer) http.Handler {
-	return GetPetsPetIDHandlerFunc(h.Handle, h.InvalidResponce)
+type GetPetsPetIDHandlerFunc func(GetPetsPetIDParamsParser) GetPetsPetIDResponser
+
+func (f GetPetsPetIDHandlerFunc) Handle(p GetPetsPetIDParamsParser) GetPetsPetIDResponser {
+	return f(p)
 }
 
-func GetPetsPetIDHandlerFunc(fn FuncGetPetsPetID, invalidFn FuncGetPetsPetIDInvalidResponse) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		params, err := newGetPetsPetIDParams(r)
-		if err != nil {
-			invalidFn(err).writeGetPetsPetIDResponse(w)
-			return
-		}
-
-		fn(params).writeGetPetsPetIDResponse(w)
-	}
+func (f GetPetsPetIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f.Handle(requestGetPetsPetIDParams{Request: r}).writeGetPetsPetIDResponse(w)
 }
 
-type GetPetsPetIDHandlerer interface {
-	Handle(GetPetsPetIDParams) GetPetsPetIDResponser
-	InvalidResponce(error) GetPetsPetIDResponser
+type GetPetsPetIDParamsParser interface {
+	Parse() (GetPetsPetIDParams, error)
 }
 
-func NewGetPetsPetIDHandlerer(fn FuncGetPetsPetID, invalidFn FuncGetPetsPetIDInvalidResponse) GetPetsPetIDHandlerer {
-	return privateGetPetsPetIDHandlerer{
-		FuncGetPetsPetID:                fn,
-		FuncGetPetsPetIDInvalidResponse: invalidFn,
-	}
+type requestGetPetsPetIDParams struct {
+	Request *http.Request
 }
 
-type privateGetPetsPetIDHandlerer struct {
-	FuncGetPetsPetID
-	FuncGetPetsPetIDInvalidResponse
-}
-
-type FuncGetPetsPetID func(GetPetsPetIDParams) GetPetsPetIDResponser
-
-func (f FuncGetPetsPetID) Handle(params GetPetsPetIDParams) GetPetsPetIDResponser { return f(params) }
-
-type FuncGetPetsPetIDInvalidResponse func(error) GetPetsPetIDResponser
-
-func (f FuncGetPetsPetIDInvalidResponse) InvalidResponce(err error) GetPetsPetIDResponser {
-	return f(err)
+func (p requestGetPetsPetIDParams) Parse() (GetPetsPetIDParams, error) {
+	return newGetPetsPetIDParams(p.Request)
 }
 
 type GetPetsPetIDParams struct {

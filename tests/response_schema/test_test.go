@@ -8,7 +8,7 @@ import (
 )
 
 func TestResponseSchema(t *testing.T) {
-	handler := GetPetHandlerFunc(func(ps GetPetParams) GetPetResponser {
+	handler := GetPetHandlerFunc(func(_ GetPetParamsParser) GetPetResponser {
 		return GetPetResponse200JSON(Pet{ID: 1, Name: "mike"})
 	})
 

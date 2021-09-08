@@ -9,26 +9,26 @@ import (
 
 func TestRouter(t *testing.T) {
 	api := API{
-		GetRTHandler: NewGetRTHandlerer(func(gr GetRTParams) GetRTResponser { return GetRTResponseDefault(201) }),
+		GetRTHandler: GetRTHandlerFunc(func(gr GetRTParamsParser) GetRTResponser { return GetRTResponseDefault(201) }),
 
-		GetShopsHandler: NewGetShopsHandlerer(func(gr GetShopsParams) GetShopsResponser { return GetShopsResponseDefault(202) }),
+		GetShopsHandler: GetShopsHandlerFunc(func(gr GetShopsParamsParser) GetShopsResponser { return GetShopsResponseDefault(202) }),
 
-		GetShopsRTHandler: NewGetShopsRTHandlerer(func(gr GetShopsRTParams) GetShopsRTResponser { return GetShopsRTResponseDefault(203) }),
+		GetShopsRTHandler: GetShopsRTHandlerFunc(func(gr GetShopsRTParamsParser) GetShopsRTResponser { return GetShopsRTResponseDefault(203) }),
 
-		GetShopsShopHandler: NewGetShopsShopHandlerer(func(gssp GetShopsShopParams) GetShopsShopResponser { return GetShopsShopResponseDefault(204) }),
+		GetShopsShopHandler: GetShopsShopHandlerFunc(func(gssp GetShopsShopParamsParser) GetShopsShopResponser { return GetShopsShopResponseDefault(204) }),
 
-		GetShopsShopRTHandler: NewGetShopsShopRTHandlerer(func(gssr GetShopsShopRTParams) GetShopsShopRTResponser { return GetShopsShopRTResponseDefault(205) }),
+		GetShopsShopRTHandler: GetShopsShopRTHandlerFunc(func(gssr GetShopsShopRTParamsParser) GetShopsShopRTResponser {
+			return GetShopsShopRTResponseDefault(205)
+		}),
 
-		GetShopsShopPetsHandler: NewGetShopsShopPetsHandlerer(func(gsspp GetShopsShopPetsParams) GetShopsShopPetsResponser {
+		GetShopsShopPetsHandler: GetShopsShopPetsHandlerFunc(func(gsspp GetShopsShopPetsParamsParser) GetShopsShopPetsResponser {
 			return GetShopsShopPetsResponseDefault(206)
 		}),
 
-		GetShopsActivateHandler: NewGetShopsActivateHandlerer(func(gsap GetShopsActivateParams) GetShopsActivateResponser {
+		GetShopsActivateHandler: GetShopsActivateHandlerFunc(func(gsap GetShopsActivateParamsParser) GetShopsActivateResponser {
 			return GetShopsActivateResponseDefault(207)
 		}),
 	}
-
-	router := api.Router()
 
 	for _, tt := range []struct {
 		path string
@@ -51,7 +51,7 @@ func TestRouter(t *testing.T) {
 		tt := tt
 		t.Run(tt.path, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			router.ServeHTTP(w, httptest.NewRequest("GET", tt.path, nil))
+			api.ServeHTTP(w, httptest.NewRequest("GET", tt.path, nil))
 			assert.Equal(t, tt.code, w.Code)
 		})
 	}

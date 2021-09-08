@@ -9,29 +9,37 @@ import (
 )
 
 func TestGetQueryRequest(t *testing.T) {
-	handler := GetPetsHandlerFunc(
-		func(ps GetPetsParams) GetPetsResponser {
-			assert.Equal(t, int32(1), ps.Limit)
+	api := API{
+		GetPetsHandler: func(p GetPetsParamsParser) GetPetsResponser {
+			params, err := p.Parse()
+			if err != nil {
+				return GetPetsResponseDefault(400)
+			}
+			assert.Equal(t, int32(1), params.Limit)
 			return GetPetsResponse200()
 		},
-		func(_ error) GetPetsResponser { return GetPetsResponseDefault(400) })
+	}
 
 	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, httptest.NewRequest("GET", "/pets?limit=1", nil))
+	api.ServeHTTP(w, httptest.NewRequest("GET", "/pets?limit=1", nil))
 
 	assert.Equal(t, 200, w.Code)
 }
 
 func TestGetQueryRequest_BadRequest(t *testing.T) {
-	handler := GetPetsHandlerFunc(
-		func(ps GetPetsParams) GetPetsResponser {
-			assert.Equal(t, int32(1), ps.Limit)
+	api := API{
+		GetPetsHandler: func(ps GetPetsParamsParser) GetPetsResponser {
+			params, err := ps.Parse()
+			if err != nil {
+				return GetPetsResponseDefault(http.StatusBadRequest)
+			}
+			assert.Equal(t, int32(1), params.Limit)
 			return GetPetsResponse200()
 		},
-		func(_ error) GetPetsResponser { return GetPetsResponseDefault(http.StatusBadRequest) })
+	}
 
 	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, httptest.NewRequest("GET", "/pets?limit=a", nil))
+	api.ServeHTTP(w, httptest.NewRequest("GET", "/pets?limit=a", nil))
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

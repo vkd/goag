@@ -12,29 +12,27 @@ import (
 // PostPets -
 // ---------------------------------------------
 
-func PostPetsHandler(h PostPetsHandlerer) http.Handler {
-	return PostPetsHandlerFunc(h.Handle)
+type PostPetsHandlerFunc func(PostPetsParamsParser) PostPetsResponser
+
+func (f PostPetsHandlerFunc) Handle(p PostPetsParamsParser) PostPetsResponser {
+	return f(p)
 }
 
-func PostPetsHandlerFunc(fn FuncPostPets) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		params := newPostPetsParams(r)
-
-		fn(params).writePostPetsResponse(w)
-	}
+func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f.Handle(requestPostPetsParams{Request: r}).writePostPetsResponse(w)
 }
 
-type PostPetsHandlerer interface {
-	Handle(PostPetsParams) PostPetsResponser
+type PostPetsParamsParser interface {
+	Parse() PostPetsParams
 }
 
-func NewPostPetsHandlerer(fn FuncPostPets) PostPetsHandlerer {
-	return fn
+type requestPostPetsParams struct {
+	Request *http.Request
 }
 
-type FuncPostPets func(PostPetsParams) PostPetsResponser
-
-func (f FuncPostPets) Handle(params PostPetsParams) PostPetsResponser { return f(params) }
+func (p requestPostPetsParams) Parse() PostPetsParams {
+	return newPostPetsParams(p.Request)
+}
 
 type PostPetsParams struct {
 	Request *http.Request

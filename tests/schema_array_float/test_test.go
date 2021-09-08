@@ -10,7 +10,7 @@ import (
 )
 
 func TestSchemaArrayFloat(t *testing.T) {
-	h := GetPetsIDsHandlerFunc(func(gpp GetPetsIDsParams) GetPetsIDsResponser {
+	h := GetPetsIDsHandlerFunc(func(_ GetPetsIDsParamsParser) GetPetsIDsResponser {
 		return GetPetsIDsResponse200JSON([]float64{0.8})
 	})
 

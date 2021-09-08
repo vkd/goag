@@ -12,46 +12,27 @@ import (
 // PostPets -
 // ---------------------------------------------
 
-func PostPetsHandler(h PostPetsHandlerer) http.Handler {
-	return PostPetsHandlerFunc(h.Handle, h.InvalidResponce)
+type PostPetsHandlerFunc func(PostPetsParamsParser) PostPetsResponser
+
+func (f PostPetsHandlerFunc) Handle(p PostPetsParamsParser) PostPetsResponser {
+	return f(p)
 }
 
-func PostPetsHandlerFunc(fn FuncPostPets, invalidFn FuncPostPetsInvalidResponse) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		params, err := newPostPetsParams(r)
-		if err != nil {
-			invalidFn(err).writePostPetsResponse(w)
-			return
-		}
-
-		fn(params).writePostPetsResponse(w)
-	}
+func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f.Handle(requestPostPetsParams{Request: r}).writePostPetsResponse(w)
 }
 
-type PostPetsHandlerer interface {
-	Handle(PostPetsParams) PostPetsResponser
-	InvalidResponce(error) PostPetsResponser
+type PostPetsParamsParser interface {
+	Parse() (PostPetsParams, error)
 }
 
-func NewPostPetsHandlerer(fn FuncPostPets, invalidFn FuncPostPetsInvalidResponse) PostPetsHandlerer {
-	return privatePostPetsHandlerer{
-		FuncPostPets:                fn,
-		FuncPostPetsInvalidResponse: invalidFn,
-	}
+type requestPostPetsParams struct {
+	Request *http.Request
 }
 
-type privatePostPetsHandlerer struct {
-	FuncPostPets
-	FuncPostPetsInvalidResponse
+func (p requestPostPetsParams) Parse() (PostPetsParams, error) {
+	return newPostPetsParams(p.Request)
 }
-
-type FuncPostPets func(PostPetsParams) PostPetsResponser
-
-func (f FuncPostPets) Handle(params PostPetsParams) PostPetsResponser { return f(params) }
-
-type FuncPostPetsInvalidResponse func(error) PostPetsResponser
-
-func (f FuncPostPetsInvalidResponse) InvalidResponce(err error) PostPetsResponser { return f(err) }
 
 type PostPetsParams struct {
 	Request *http.Request

@@ -9,12 +9,14 @@ import (
 
 func TestQueryRequired(t *testing.T) {
 	handler := GetPetsHandlerFunc(
-		func(ps GetPetsParams) GetPetsResponser {
+		func(p GetPetsParamsParser) GetPetsResponser {
+			_, err := p.Parse()
+			if err != nil {
+				return GetPetsResponseDefault(400)
+			}
 			return GetPetsResponse200()
 		},
-		func(err error) GetPetsResponser {
-			return GetPetsResponseDefault(400)
-		})
+	)
 
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, httptest.NewRequest("GET", "/pets", nil))

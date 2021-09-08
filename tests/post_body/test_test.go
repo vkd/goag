@@ -9,14 +9,16 @@ import (
 )
 
 func TestPostBody(t *testing.T) {
-	handler := PostPetsHandlerFunc(func(p PostPetsParams) PostPetsResponser {
+	handler := PostPetsHandlerFunc(func(ps PostPetsParamsParser) PostPetsResponser {
+		p, err := ps.Parse()
+		if err != nil {
+			assert.NoError(t, err)
+			assert.Fail(t, "Should not call invalid function")
+			return PostPetsResponseDefault(400)
+		}
 		assert.Equal(t, "mike", p.Body.Name)
 		assert.Equal(t, "cat", p.Body.Tag)
 		return PostPetsResponse201()
-	}, func(err error) PostPetsResponser {
-		assert.NoError(t, err)
-		assert.Fail(t, "Should not call invalid function")
-		return PostPetsResponseDefault(400)
 	})
 
 	w := httptest.NewRecorder()

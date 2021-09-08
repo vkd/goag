@@ -6,42 +6,26 @@ import (
 )
 
 type API struct {
-	GetShopsShopPetsPetIDHandler GetShopsShopPetsPetIDHandlerer
+	GetShopsShopPetsPetIDHandler GetShopsShopPetsPetIDHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
 }
 
-func (a API) Router() http.Handler {
-	r := router{
-		GetShopsShopPetsPetIDHandler: GetShopsShopPetsPetIDHandler(a.GetShopsShopPetsPetIDHandler),
-
-		NotFoundHandler: a.NotFoundHandler,
-	}
-	if r.NotFoundHandler == nil {
-		r.NotFoundHandler = http.NotFoundHandler()
-	}
-	return &r
-}
-
-type router struct {
-	GetShopsShopPetsPetIDHandler http.Handler
-
-	// not found
-	NotFoundHandler http.Handler
-}
-
-func (rt *router) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
 	h := rt.route(path, r.Method)
 	if h == nil {
 		h = rt.NotFoundHandler
+		if h == nil {
+			h = http.NotFoundHandler()
+		}
 	}
 	h.ServeHTTP(rw, r)
 }
 
-func (rt *router) route(path, method string) http.Handler {
+func (rt *API) route(path, method string) http.Handler {
 	prefix, path := splitPath(path)
 
 	if path != "" {
@@ -54,7 +38,7 @@ func (rt *router) route(path, method string) http.Handler {
 	return nil
 }
 
-func (rt *router) routeShops(path, method string) http.Handler {
+func (rt *API) routeShops(path, method string) http.Handler {
 	_, path = splitPath(path)
 
 	if path != "" {
@@ -65,7 +49,7 @@ func (rt *router) routeShops(path, method string) http.Handler {
 	return nil
 }
 
-func (rt *router) routeShopsShop(path, method string) http.Handler {
+func (rt *API) routeShopsShop(path, method string) http.Handler {
 	prefix, path := splitPath(path)
 
 	if path != "" {
@@ -78,7 +62,7 @@ func (rt *router) routeShopsShop(path, method string) http.Handler {
 	return nil
 }
 
-func (rt *router) routeShopsShopPets(path, method string) http.Handler {
+func (rt *API) routeShopsShopPets(path, method string) http.Handler {
 	_, path = splitPath(path)
 
 	if path == "" {

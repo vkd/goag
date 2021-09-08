@@ -13,74 +13,41 @@ import (
 )
 {{ range $_, $h := .Handlers }}
 {{- $name := $h.Name}}
-{{- $handlerName := print $name `Handler` }}
-{{- $handlerInterface := print $name `Handlerer` }}
+{{- $handlerFuncName := print $name `HandlerFunc` }}
 {{- $paramsName := print $name `Params` }}
-{{- $originIfaceName := print $name `Interface` }}
+{{- $paramsParserName := print $name `ParamsParser` }}
 {{- $responserName := print $name `Responser` }}
 {{- $writeResponseFuncName := print `write` $name `Response` }}
-{{- $originVariableName := `origin` }}
+{{- $requestParamsName := print `request` $name `Params` }}
+{{- $newParamsName := print `new` $name `Params` }}
 {{- $needInvalidFn := or .Parameters.Queries .Parameters.Path .RequestBody}}
 {{- /* --------------------------------- */}}
 // ---------------------------------------------
 // {{$name}} - {{$h.Summary}}
 // ---------------------------------------------
 
-{{if $h.Description}}// {{$handlerName}} - {{$h.Description}}{{end}}
-func {{$handlerName}}(h {{$handlerInterface}}) http.Handler {
-	return {{$handlerName}}Func(h.Handle{{if $needInvalidFn}}, h.InvalidResponce{{end}})
+{{if $h.Description}}// {{$handlerFuncName}} - {{$h.Description}}{{end}}
+type {{$handlerFuncName}} func({{$paramsParserName}}) {{$responserName}}
+
+func (f {{$handlerFuncName}}) Handle(p {{$paramsParserName}}) {{$responserName}} {
+	return f(p)
 }
 
-func {{$handlerName}}Func(fn Func{{$name}}{{if $needInvalidFn}}, invalidFn Func{{$name}}InvalidResponse{{end}}) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		params{{if $needInvalidFn}}, err{{end}} := new{{$paramsName}}(r)
-		{{- if $needInvalidFn}}
-		if err != nil {
-			invalidFn(err).{{$writeResponseFuncName}}(w)
-			return
-		}
-		{{- end}}
-
-		fn(params).{{$writeResponseFuncName}}(w)
-	}
+func (f {{$handlerFuncName}}) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f.Handle({{$requestParamsName}}{Request: r}).{{$writeResponseFuncName}}(w)
 }
 
-type {{$handlerInterface}} interface {
-	Handle({{$paramsName}}) {{$responserName}}
-	{{if $needInvalidFn}}InvalidResponce(error) {{$responserName}}{{end}}
+type {{$paramsParserName}} interface {
+	Parse() ({{$paramsName}}{{if $needInvalidFn}}, error{{end}})
 }
 
-func New{{$handlerInterface}}(fn Func{{$name}}{{if $needInvalidFn}}, invalidFn Func{{$name}}InvalidResponse{{end}}) {{$handlerInterface}} {
-	{{- if $needInvalidFn}}
-	return private{{$handlerInterface}}{
-		Func{{$name}}: fn,
-		{{- if $needInvalidFn}}
-		Func{{$name}}InvalidResponse: invalidFn,
-		{{- end}}
-	}
-	{{- else}}
-	return fn
-	{{- end}}
+type {{$requestParamsName}} struct {
+	Request *http.Request
 }
 
-{{- if $needInvalidFn}}
-
-type private{{$handlerInterface}} struct {
-	Func{{$name}}
-	{{- if $needInvalidFn}}
-	Func{{$name}}InvalidResponse{{end}}
+func (p {{$requestParamsName}}) Parse() ({{$paramsName}}{{if $needInvalidFn}}, error{{end}}) {
+	return {{$newParamsName}}(p.Request)
 }
-{{- end}}
-
-type Func{{$name}} func({{$paramsName}}) {{$responserName}}
-
-func (f Func{{$name}}) Handle(params {{$paramsName}}) {{$responserName}} { return f(params) }
-
-{{if $needInvalidFn -}}
-type Func{{$name}}InvalidResponse func(error) {{$responserName}}
-
-func (f Func{{$name}}InvalidResponse) InvalidResponce(err error) {{$responserName}} { return f(err) }
-{{end}}
 
 type {{$paramsName}} struct {
 	Request *http.Request
@@ -96,7 +63,7 @@ type {{$paramsName}} struct {
 	{{- end}}
 }
 
-func new{{$paramsName}}(r *http.Request) (zero {{$paramsName}}{{if $needInvalidFn}}, _ error{{end}}) {
+func {{$newParamsName}}(r *http.Request) (zero {{$paramsName}}{{if $needInvalidFn}}, _ error{{end}}) {
 	var params {{$paramsName}}
 	params.Request = r
 

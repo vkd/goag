@@ -6,42 +6,26 @@ import (
 )
 
 type API struct {
-	GetPetsIDsHandler GetPetsIDsHandlerer
+	GetPetsIDsHandler GetPetsIDsHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
 }
 
-func (a API) Router() http.Handler {
-	r := router{
-		GetPetsIDsHandler: GetPetsIDsHandler(a.GetPetsIDsHandler),
-
-		NotFoundHandler: a.NotFoundHandler,
-	}
-	if r.NotFoundHandler == nil {
-		r.NotFoundHandler = http.NotFoundHandler()
-	}
-	return &r
-}
-
-type router struct {
-	GetPetsIDsHandler http.Handler
-
-	// not found
-	NotFoundHandler http.Handler
-}
-
-func (rt *router) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
 	h := rt.route(path, r.Method)
 	if h == nil {
 		h = rt.NotFoundHandler
+		if h == nil {
+			h = http.NotFoundHandler()
+		}
 	}
 	h.ServeHTTP(rw, r)
 }
 
-func (rt *router) route(path, method string) http.Handler {
+func (rt *API) route(path, method string) http.Handler {
 	prefix, path := splitPath(path)
 
 	if path != "" {
@@ -54,7 +38,7 @@ func (rt *router) route(path, method string) http.Handler {
 	return nil
 }
 
-func (rt *router) routePets(path, method string) http.Handler {
+func (rt *API) routePets(path, method string) http.Handler {
 	prefix, path := splitPath(path)
 
 	if path == "" {

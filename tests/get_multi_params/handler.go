@@ -14,49 +14,26 @@ import (
 // GetShopsShopPetsPetID -
 // ---------------------------------------------
 
-func GetShopsShopPetsPetIDHandler(h GetShopsShopPetsPetIDHandlerer) http.Handler {
-	return GetShopsShopPetsPetIDHandlerFunc(h.Handle, h.InvalidResponce)
+type GetShopsShopPetsPetIDHandlerFunc func(GetShopsShopPetsPetIDParamsParser) GetShopsShopPetsPetIDResponser
+
+func (f GetShopsShopPetsPetIDHandlerFunc) Handle(p GetShopsShopPetsPetIDParamsParser) GetShopsShopPetsPetIDResponser {
+	return f(p)
 }
 
-func GetShopsShopPetsPetIDHandlerFunc(fn FuncGetShopsShopPetsPetID, invalidFn FuncGetShopsShopPetsPetIDInvalidResponse) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		params, err := newGetShopsShopPetsPetIDParams(r)
-		if err != nil {
-			invalidFn(err).writeGetShopsShopPetsPetIDResponse(w)
-			return
-		}
-
-		fn(params).writeGetShopsShopPetsPetIDResponse(w)
-	}
+func (f GetShopsShopPetsPetIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f.Handle(requestGetShopsShopPetsPetIDParams{Request: r}).writeGetShopsShopPetsPetIDResponse(w)
 }
 
-type GetShopsShopPetsPetIDHandlerer interface {
-	Handle(GetShopsShopPetsPetIDParams) GetShopsShopPetsPetIDResponser
-	InvalidResponce(error) GetShopsShopPetsPetIDResponser
+type GetShopsShopPetsPetIDParamsParser interface {
+	Parse() (GetShopsShopPetsPetIDParams, error)
 }
 
-func NewGetShopsShopPetsPetIDHandlerer(fn FuncGetShopsShopPetsPetID, invalidFn FuncGetShopsShopPetsPetIDInvalidResponse) GetShopsShopPetsPetIDHandlerer {
-	return privateGetShopsShopPetsPetIDHandlerer{
-		FuncGetShopsShopPetsPetID:                fn,
-		FuncGetShopsShopPetsPetIDInvalidResponse: invalidFn,
-	}
+type requestGetShopsShopPetsPetIDParams struct {
+	Request *http.Request
 }
 
-type privateGetShopsShopPetsPetIDHandlerer struct {
-	FuncGetShopsShopPetsPetID
-	FuncGetShopsShopPetsPetIDInvalidResponse
-}
-
-type FuncGetShopsShopPetsPetID func(GetShopsShopPetsPetIDParams) GetShopsShopPetsPetIDResponser
-
-func (f FuncGetShopsShopPetsPetID) Handle(params GetShopsShopPetsPetIDParams) GetShopsShopPetsPetIDResponser {
-	return f(params)
-}
-
-type FuncGetShopsShopPetsPetIDInvalidResponse func(error) GetShopsShopPetsPetIDResponser
-
-func (f FuncGetShopsShopPetsPetIDInvalidResponse) InvalidResponce(err error) GetShopsShopPetsPetIDResponser {
-	return f(err)
+func (p requestGetShopsShopPetsPetIDParams) Parse() (GetShopsShopPetsPetIDParams, error) {
+	return newGetShopsShopPetsPetIDParams(p.Request)
 }
 
 type GetShopsShopPetsPetIDParams struct {

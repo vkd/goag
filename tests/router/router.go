@@ -6,60 +6,32 @@ import (
 )
 
 type API struct {
-	GetRTHandler            GetRTHandlerer
-	GetShopsHandler         GetShopsHandlerer
-	GetShopsRTHandler       GetShopsRTHandlerer
-	GetShopsActivateHandler GetShopsActivateHandlerer
-	GetShopsShopHandler     GetShopsShopHandlerer
-	GetShopsShopRTHandler   GetShopsShopRTHandlerer
-	GetShopsShopPetsHandler GetShopsShopPetsHandlerer
+	GetRTHandler            GetRTHandlerFunc
+	GetShopsHandler         GetShopsHandlerFunc
+	GetShopsRTHandler       GetShopsRTHandlerFunc
+	GetShopsActivateHandler GetShopsActivateHandlerFunc
+	GetShopsShopHandler     GetShopsShopHandlerFunc
+	GetShopsShopRTHandler   GetShopsShopRTHandlerFunc
+	GetShopsShopPetsHandler GetShopsShopPetsHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
 }
 
-func (a API) Router() http.Handler {
-	r := router{
-		GetRTHandler:            GetRTHandler(a.GetRTHandler),
-		GetShopsHandler:         GetShopsHandler(a.GetShopsHandler),
-		GetShopsRTHandler:       GetShopsRTHandler(a.GetShopsRTHandler),
-		GetShopsActivateHandler: GetShopsActivateHandler(a.GetShopsActivateHandler),
-		GetShopsShopHandler:     GetShopsShopHandler(a.GetShopsShopHandler),
-		GetShopsShopRTHandler:   GetShopsShopRTHandler(a.GetShopsShopRTHandler),
-		GetShopsShopPetsHandler: GetShopsShopPetsHandler(a.GetShopsShopPetsHandler),
-
-		NotFoundHandler: a.NotFoundHandler,
-	}
-	if r.NotFoundHandler == nil {
-		r.NotFoundHandler = http.NotFoundHandler()
-	}
-	return &r
-}
-
-type router struct {
-	GetRTHandler            http.Handler
-	GetShopsHandler         http.Handler
-	GetShopsRTHandler       http.Handler
-	GetShopsActivateHandler http.Handler
-	GetShopsShopHandler     http.Handler
-	GetShopsShopRTHandler   http.Handler
-	GetShopsShopPetsHandler http.Handler
-
-	// not found
-	NotFoundHandler http.Handler
-}
-
-func (rt *router) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
 	h := rt.route(path, r.Method)
 	if h == nil {
 		h = rt.NotFoundHandler
+		if h == nil {
+			h = http.NotFoundHandler()
+		}
 	}
 	h.ServeHTTP(rw, r)
 }
 
-func (rt *router) route(path, method string) http.Handler {
+func (rt *API) route(path, method string) http.Handler {
 	prefix, path := splitPath(path)
 
 	if path == "" {
@@ -87,7 +59,7 @@ func (rt *router) route(path, method string) http.Handler {
 	return nil
 }
 
-func (rt *router) routeShops(path, method string) http.Handler {
+func (rt *API) routeShops(path, method string) http.Handler {
 	prefix, path := splitPath(path)
 
 	if path == "" {
@@ -117,7 +89,7 @@ func (rt *router) routeShops(path, method string) http.Handler {
 	return nil
 }
 
-func (rt *router) routeShopsShop(path, method string) http.Handler {
+func (rt *API) routeShopsShop(path, method string) http.Handler {
 	prefix, path := splitPath(path)
 
 	if path == "" {
