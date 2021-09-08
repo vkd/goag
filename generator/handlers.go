@@ -67,7 +67,7 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 	out.Name = HandlerName(path, method)
 	out.Path = path
 	out.Method = method
-	out.Description = p.Description
+	out.Description = strings.ReplaceAll(strings.TrimSpace(p.Description), "\n", "\n// ")
 	out.Summary = p.Summary
 	if len(out.Description) > 0 && !strings.HasSuffix(out.Description, ".") {
 		out.Description += "."
