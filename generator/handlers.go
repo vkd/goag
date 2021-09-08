@@ -243,12 +243,12 @@ type QueryParser struct {
 }
 
 var tmQueryParser = template.Must(template.New("QueryParser").Parse(`
-{{- .QueryVarName}}, {{if .Required}}ok{{else}}_{{end}} := query["{{.ParameterName}}"]
+{{- .QueryVarName}}, ok := query["{{.ParameterName}}"]
 {{if .Required}}if !ok {
 	return zero, fmt.Errorf("query parameter '{{.ParameterName}}': is required")
 }
 {{end -}}
-if len(q) > 0 {
+if ok && len(q) > 0 {
 	{{.Convert.String}}
 }`))
 

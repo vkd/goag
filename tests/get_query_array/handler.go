@@ -66,8 +66,8 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 	{
 		query := r.URL.Query()
 		{
-			q, _ := query["tag"]
-			if len(q) > 0 {
+			q, ok := query["tag"]
+			if ok && len(q) > 0 {
 				params.Tag = q
 			}
 		}

@@ -75,14 +75,14 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 	{
 		query := r.URL.Query()
 		{
-			q, _ := query["color"]
-			if len(q) > 0 {
+			q, ok := query["color"]
+			if ok && len(q) > 0 {
 				params.Color = q[0]
 			}
 		}
 		{
-			q, _ := query["page"]
-			if len(q) > 0 {
+			q, ok := query["page"]
+			if ok && len(q) > 0 {
 				vInt, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseQueryParam{Name: "page", Err: fmt.Errorf("parse int32: %w", err)}

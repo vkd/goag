@@ -67,8 +67,8 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 	{
 		query := r.URL.Query()
 		{
-			q, _ := query["limit"]
-			if len(q) > 0 {
+			q, ok := query["limit"]
+			if ok && len(q) > 0 {
 				vInt, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseQueryParam{Name: "limit", Err: fmt.Errorf("parse int32: %w", err)}

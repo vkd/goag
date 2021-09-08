@@ -67,8 +67,8 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 	{
 		query := r.URL.Query()
 		{
-			q, _ := query["tag"]
-			if len(q) > 0 {
+			q, ok := query["tag"]
+			if ok && len(q) > 0 {
 				params.Tag = make([]int64, len(q))
 				for i := range q {
 					vInt, err := strconv.ParseInt(q[i], 10, 64)
