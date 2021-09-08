@@ -15,7 +15,7 @@ import (
 // ---------------------------------------------
 
 func GetPetsPetIDHandler(h GetPetsPetIDHandlerer) http.Handler {
-	return GetPetsPetIDHandlerFunc(h.Handler, h.InvalidResponce)
+	return GetPetsPetIDHandlerFunc(h.Handle, h.InvalidResponce)
 }
 
 func GetPetsPetIDHandlerFunc(fn FuncGetPetsPetID, invalidFn FuncGetPetsPetIDInvalidResponse) http.HandlerFunc {
@@ -31,7 +31,7 @@ func GetPetsPetIDHandlerFunc(fn FuncGetPetsPetID, invalidFn FuncGetPetsPetIDInva
 }
 
 type GetPetsPetIDHandlerer interface {
-	Handler(GetPetsPetIDParams) GetPetsPetIDResponser
+	Handle(GetPetsPetIDParams) GetPetsPetIDResponser
 	InvalidResponce(error) GetPetsPetIDResponser
 }
 
@@ -49,7 +49,7 @@ type privateGetPetsPetIDHandlerer struct {
 
 type FuncGetPetsPetID func(GetPetsPetIDParams) GetPetsPetIDResponser
 
-func (f FuncGetPetsPetID) Handler(params GetPetsPetIDParams) GetPetsPetIDResponser { return f(params) }
+func (f FuncGetPetsPetID) Handle(params GetPetsPetIDParams) GetPetsPetIDResponser { return f(params) }
 
 type FuncGetPetsPetIDInvalidResponse func(error) GetPetsPetIDResponser
 

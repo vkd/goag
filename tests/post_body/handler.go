@@ -13,7 +13,7 @@ import (
 // ---------------------------------------------
 
 func PostPetsHandler(h PostPetsHandlerer) http.Handler {
-	return PostPetsHandlerFunc(h.Handler, h.InvalidResponce)
+	return PostPetsHandlerFunc(h.Handle, h.InvalidResponce)
 }
 
 func PostPetsHandlerFunc(fn FuncPostPets, invalidFn FuncPostPetsInvalidResponse) http.HandlerFunc {
@@ -29,7 +29,7 @@ func PostPetsHandlerFunc(fn FuncPostPets, invalidFn FuncPostPetsInvalidResponse)
 }
 
 type PostPetsHandlerer interface {
-	Handler(PostPetsParams) PostPetsResponser
+	Handle(PostPetsParams) PostPetsResponser
 	InvalidResponce(error) PostPetsResponser
 }
 
@@ -47,7 +47,7 @@ type privatePostPetsHandlerer struct {
 
 type FuncPostPets func(PostPetsParams) PostPetsResponser
 
-func (f FuncPostPets) Handler(params PostPetsParams) PostPetsResponser { return f(params) }
+func (f FuncPostPets) Handle(params PostPetsParams) PostPetsResponser { return f(params) }
 
 type FuncPostPetsInvalidResponse func(error) PostPetsResponser
 

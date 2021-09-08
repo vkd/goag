@@ -13,7 +13,7 @@ import (
 // ---------------------------------------------
 
 func GetPetsHandler(h GetPetsHandlerer) http.Handler {
-	return GetPetsHandlerFunc(h.Handler)
+	return GetPetsHandlerFunc(h.Handle)
 }
 
 func GetPetsHandlerFunc(fn FuncGetPets) http.HandlerFunc {
@@ -25,7 +25,7 @@ func GetPetsHandlerFunc(fn FuncGetPets) http.HandlerFunc {
 }
 
 type GetPetsHandlerer interface {
-	Handler(GetPetsParams) GetPetsResponser
+	Handle(GetPetsParams) GetPetsResponser
 }
 
 func NewGetPetsHandlerer(fn FuncGetPets) GetPetsHandlerer {
@@ -34,7 +34,7 @@ func NewGetPetsHandlerer(fn FuncGetPets) GetPetsHandlerer {
 
 type FuncGetPets func(GetPetsParams) GetPetsResponser
 
-func (f FuncGetPets) Handler(params GetPetsParams) GetPetsResponser { return f(params) }
+func (f FuncGetPets) Handle(params GetPetsParams) GetPetsResponser { return f(params) }
 
 type GetPetsParams struct {
 	Request *http.Request

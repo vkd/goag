@@ -28,7 +28,7 @@ import (
 
 {{if $h.Description}}// {{$handlerName}} - {{$h.Description}}{{end}}
 func {{$handlerName}}(h {{$handlerInterface}}) http.Handler {
-	return {{$handlerName}}Func(h.Handler{{if $needInvalidFn}}, h.InvalidResponce{{end}})
+	return {{$handlerName}}Func(h.Handle{{if $needInvalidFn}}, h.InvalidResponce{{end}})
 }
 
 func {{$handlerName}}Func(fn Func{{$name}}{{if $needInvalidFn}}, invalidFn Func{{$name}}InvalidResponse{{end}}) http.HandlerFunc {
@@ -46,7 +46,7 @@ func {{$handlerName}}Func(fn Func{{$name}}{{if $needInvalidFn}}, invalidFn Func{
 }
 
 type {{$handlerInterface}} interface {
-	Handler({{$paramsName}}) {{$responserName}}
+	Handle({{$paramsName}}) {{$responserName}}
 	{{if $needInvalidFn}}InvalidResponce(error) {{$responserName}}{{end}}
 }
 
@@ -74,7 +74,7 @@ type private{{$handlerInterface}} struct {
 
 type Func{{$name}} func({{$paramsName}}) {{$responserName}}
 
-func (f Func{{$name}}) Handler(params {{$paramsName}}) {{$responserName}} { return f(params) }
+func (f Func{{$name}}) Handle(params {{$paramsName}}) {{$responserName}} { return f(params) }
 
 {{if $needInvalidFn -}}
 type Func{{$name}}InvalidResponse func(error) {{$responserName}}

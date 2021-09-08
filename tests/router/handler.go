@@ -13,7 +13,7 @@ import (
 // ---------------------------------------------
 
 func GetRTHandler(h GetRTHandlerer) http.Handler {
-	return GetRTHandlerFunc(h.Handler)
+	return GetRTHandlerFunc(h.Handle)
 }
 
 func GetRTHandlerFunc(fn FuncGetRT) http.HandlerFunc {
@@ -25,7 +25,7 @@ func GetRTHandlerFunc(fn FuncGetRT) http.HandlerFunc {
 }
 
 type GetRTHandlerer interface {
-	Handler(GetRTParams) GetRTResponser
+	Handle(GetRTParams) GetRTResponser
 }
 
 func NewGetRTHandlerer(fn FuncGetRT) GetRTHandlerer {
@@ -34,7 +34,7 @@ func NewGetRTHandlerer(fn FuncGetRT) GetRTHandlerer {
 
 type FuncGetRT func(GetRTParams) GetRTResponser
 
-func (f FuncGetRT) Handler(params GetRTParams) GetRTResponser { return f(params) }
+func (f FuncGetRT) Handle(params GetRTParams) GetRTResponser { return f(params) }
 
 type GetRTParams struct {
 	Request *http.Request
@@ -70,7 +70,7 @@ func (r getRTResponseDefault) writeGetRTResponse(w http.ResponseWriter) {
 // ---------------------------------------------
 
 func GetShopsHandler(h GetShopsHandlerer) http.Handler {
-	return GetShopsHandlerFunc(h.Handler)
+	return GetShopsHandlerFunc(h.Handle)
 }
 
 func GetShopsHandlerFunc(fn FuncGetShops) http.HandlerFunc {
@@ -82,7 +82,7 @@ func GetShopsHandlerFunc(fn FuncGetShops) http.HandlerFunc {
 }
 
 type GetShopsHandlerer interface {
-	Handler(GetShopsParams) GetShopsResponser
+	Handle(GetShopsParams) GetShopsResponser
 }
 
 func NewGetShopsHandlerer(fn FuncGetShops) GetShopsHandlerer {
@@ -91,7 +91,7 @@ func NewGetShopsHandlerer(fn FuncGetShops) GetShopsHandlerer {
 
 type FuncGetShops func(GetShopsParams) GetShopsResponser
 
-func (f FuncGetShops) Handler(params GetShopsParams) GetShopsResponser { return f(params) }
+func (f FuncGetShops) Handle(params GetShopsParams) GetShopsResponser { return f(params) }
 
 type GetShopsParams struct {
 	Request *http.Request
@@ -127,7 +127,7 @@ func (r getShopsResponseDefault) writeGetShopsResponse(w http.ResponseWriter) {
 // ---------------------------------------------
 
 func GetShopsRTHandler(h GetShopsRTHandlerer) http.Handler {
-	return GetShopsRTHandlerFunc(h.Handler)
+	return GetShopsRTHandlerFunc(h.Handle)
 }
 
 func GetShopsRTHandlerFunc(fn FuncGetShopsRT) http.HandlerFunc {
@@ -139,7 +139,7 @@ func GetShopsRTHandlerFunc(fn FuncGetShopsRT) http.HandlerFunc {
 }
 
 type GetShopsRTHandlerer interface {
-	Handler(GetShopsRTParams) GetShopsRTResponser
+	Handle(GetShopsRTParams) GetShopsRTResponser
 }
 
 func NewGetShopsRTHandlerer(fn FuncGetShopsRT) GetShopsRTHandlerer {
@@ -148,7 +148,7 @@ func NewGetShopsRTHandlerer(fn FuncGetShopsRT) GetShopsRTHandlerer {
 
 type FuncGetShopsRT func(GetShopsRTParams) GetShopsRTResponser
 
-func (f FuncGetShopsRT) Handler(params GetShopsRTParams) GetShopsRTResponser { return f(params) }
+func (f FuncGetShopsRT) Handle(params GetShopsRTParams) GetShopsRTResponser { return f(params) }
 
 type GetShopsRTParams struct {
 	Request *http.Request
@@ -184,7 +184,7 @@ func (r getShopsRTResponseDefault) writeGetShopsRTResponse(w http.ResponseWriter
 // ---------------------------------------------
 
 func GetShopsActivateHandler(h GetShopsActivateHandlerer) http.Handler {
-	return GetShopsActivateHandlerFunc(h.Handler)
+	return GetShopsActivateHandlerFunc(h.Handle)
 }
 
 func GetShopsActivateHandlerFunc(fn FuncGetShopsActivate) http.HandlerFunc {
@@ -196,7 +196,7 @@ func GetShopsActivateHandlerFunc(fn FuncGetShopsActivate) http.HandlerFunc {
 }
 
 type GetShopsActivateHandlerer interface {
-	Handler(GetShopsActivateParams) GetShopsActivateResponser
+	Handle(GetShopsActivateParams) GetShopsActivateResponser
 }
 
 func NewGetShopsActivateHandlerer(fn FuncGetShopsActivate) GetShopsActivateHandlerer {
@@ -205,7 +205,7 @@ func NewGetShopsActivateHandlerer(fn FuncGetShopsActivate) GetShopsActivateHandl
 
 type FuncGetShopsActivate func(GetShopsActivateParams) GetShopsActivateResponser
 
-func (f FuncGetShopsActivate) Handler(params GetShopsActivateParams) GetShopsActivateResponser {
+func (f FuncGetShopsActivate) Handle(params GetShopsActivateParams) GetShopsActivateResponser {
 	return f(params)
 }
 
@@ -243,7 +243,7 @@ func (r getShopsActivateResponseDefault) writeGetShopsActivateResponse(w http.Re
 // ---------------------------------------------
 
 func GetShopsShopHandler(h GetShopsShopHandlerer) http.Handler {
-	return GetShopsShopHandlerFunc(h.Handler)
+	return GetShopsShopHandlerFunc(h.Handle)
 }
 
 func GetShopsShopHandlerFunc(fn FuncGetShopsShop) http.HandlerFunc {
@@ -255,7 +255,7 @@ func GetShopsShopHandlerFunc(fn FuncGetShopsShop) http.HandlerFunc {
 }
 
 type GetShopsShopHandlerer interface {
-	Handler(GetShopsShopParams) GetShopsShopResponser
+	Handle(GetShopsShopParams) GetShopsShopResponser
 }
 
 func NewGetShopsShopHandlerer(fn FuncGetShopsShop) GetShopsShopHandlerer {
@@ -264,7 +264,7 @@ func NewGetShopsShopHandlerer(fn FuncGetShopsShop) GetShopsShopHandlerer {
 
 type FuncGetShopsShop func(GetShopsShopParams) GetShopsShopResponser
 
-func (f FuncGetShopsShop) Handler(params GetShopsShopParams) GetShopsShopResponser { return f(params) }
+func (f FuncGetShopsShop) Handle(params GetShopsShopParams) GetShopsShopResponser { return f(params) }
 
 type GetShopsShopParams struct {
 	Request *http.Request
@@ -300,7 +300,7 @@ func (r getShopsShopResponseDefault) writeGetShopsShopResponse(w http.ResponseWr
 // ---------------------------------------------
 
 func GetShopsShopRTHandler(h GetShopsShopRTHandlerer) http.Handler {
-	return GetShopsShopRTHandlerFunc(h.Handler)
+	return GetShopsShopRTHandlerFunc(h.Handle)
 }
 
 func GetShopsShopRTHandlerFunc(fn FuncGetShopsShopRT) http.HandlerFunc {
@@ -312,7 +312,7 @@ func GetShopsShopRTHandlerFunc(fn FuncGetShopsShopRT) http.HandlerFunc {
 }
 
 type GetShopsShopRTHandlerer interface {
-	Handler(GetShopsShopRTParams) GetShopsShopRTResponser
+	Handle(GetShopsShopRTParams) GetShopsShopRTResponser
 }
 
 func NewGetShopsShopRTHandlerer(fn FuncGetShopsShopRT) GetShopsShopRTHandlerer {
@@ -321,7 +321,7 @@ func NewGetShopsShopRTHandlerer(fn FuncGetShopsShopRT) GetShopsShopRTHandlerer {
 
 type FuncGetShopsShopRT func(GetShopsShopRTParams) GetShopsShopRTResponser
 
-func (f FuncGetShopsShopRT) Handler(params GetShopsShopRTParams) GetShopsShopRTResponser {
+func (f FuncGetShopsShopRT) Handle(params GetShopsShopRTParams) GetShopsShopRTResponser {
 	return f(params)
 }
 
@@ -359,7 +359,7 @@ func (r getShopsShopRTResponseDefault) writeGetShopsShopRTResponse(w http.Respon
 // ---------------------------------------------
 
 func GetShopsShopPetsHandler(h GetShopsShopPetsHandlerer) http.Handler {
-	return GetShopsShopPetsHandlerFunc(h.Handler)
+	return GetShopsShopPetsHandlerFunc(h.Handle)
 }
 
 func GetShopsShopPetsHandlerFunc(fn FuncGetShopsShopPets) http.HandlerFunc {
@@ -371,7 +371,7 @@ func GetShopsShopPetsHandlerFunc(fn FuncGetShopsShopPets) http.HandlerFunc {
 }
 
 type GetShopsShopPetsHandlerer interface {
-	Handler(GetShopsShopPetsParams) GetShopsShopPetsResponser
+	Handle(GetShopsShopPetsParams) GetShopsShopPetsResponser
 }
 
 func NewGetShopsShopPetsHandlerer(fn FuncGetShopsShopPets) GetShopsShopPetsHandlerer {
@@ -380,7 +380,7 @@ func NewGetShopsShopPetsHandlerer(fn FuncGetShopsShopPets) GetShopsShopPetsHandl
 
 type FuncGetShopsShopPets func(GetShopsShopPetsParams) GetShopsShopPetsResponser
 
-func (f FuncGetShopsShopPets) Handler(params GetShopsShopPetsParams) GetShopsShopPetsResponser {
+func (f FuncGetShopsShopPets) Handle(params GetShopsShopPetsParams) GetShopsShopPetsResponser {
 	return f(params)
 }
 

@@ -13,7 +13,7 @@ import (
 // ---------------------------------------------
 
 func GetPetsHandler(h GetPetsHandlerer) http.Handler {
-	return GetPetsHandlerFunc(h.Handler)
+	return GetPetsHandlerFunc(h.Handle)
 }
 
 func GetPetsHandlerFunc(fn FuncGetPets) http.HandlerFunc {
@@ -25,7 +25,7 @@ func GetPetsHandlerFunc(fn FuncGetPets) http.HandlerFunc {
 }
 
 type GetPetsHandlerer interface {
-	Handler(GetPetsParams) GetPetsResponser
+	Handle(GetPetsParams) GetPetsResponser
 }
 
 func NewGetPetsHandlerer(fn FuncGetPets) GetPetsHandlerer {
@@ -34,7 +34,7 @@ func NewGetPetsHandlerer(fn FuncGetPets) GetPetsHandlerer {
 
 type FuncGetPets func(GetPetsParams) GetPetsResponser
 
-func (f FuncGetPets) Handler(params GetPetsParams) GetPetsResponser { return f(params) }
+func (f FuncGetPets) Handle(params GetPetsParams) GetPetsResponser { return f(params) }
 
 type GetPetsParams struct {
 	Request *http.Request
@@ -71,7 +71,7 @@ func (r getPetsResponse200JSON) writeGetPetsResponse(w http.ResponseWriter) {
 // ---------------------------------------------
 
 func GetPetsNamesHandler(h GetPetsNamesHandlerer) http.Handler {
-	return GetPetsNamesHandlerFunc(h.Handler)
+	return GetPetsNamesHandlerFunc(h.Handle)
 }
 
 func GetPetsNamesHandlerFunc(fn FuncGetPetsNames) http.HandlerFunc {
@@ -83,7 +83,7 @@ func GetPetsNamesHandlerFunc(fn FuncGetPetsNames) http.HandlerFunc {
 }
 
 type GetPetsNamesHandlerer interface {
-	Handler(GetPetsNamesParams) GetPetsNamesResponser
+	Handle(GetPetsNamesParams) GetPetsNamesResponser
 }
 
 func NewGetPetsNamesHandlerer(fn FuncGetPetsNames) GetPetsNamesHandlerer {
@@ -92,7 +92,7 @@ func NewGetPetsNamesHandlerer(fn FuncGetPetsNames) GetPetsNamesHandlerer {
 
 type FuncGetPetsNames func(GetPetsNamesParams) GetPetsNamesResponser
 
-func (f FuncGetPetsNames) Handler(params GetPetsNamesParams) GetPetsNamesResponser { return f(params) }
+func (f FuncGetPetsNames) Handle(params GetPetsNamesParams) GetPetsNamesResponser { return f(params) }
 
 type GetPetsNamesParams struct {
 	Request *http.Request
