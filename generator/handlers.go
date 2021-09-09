@@ -182,7 +182,7 @@ func NewParam(p *openapi3.Parameter) (zero Param, _ error) {
 		return zero, fmt.Errorf("new schema ref: %w", err)
 	}
 	f := GoStructField{
-		Name:    strings.Title(p.Name),
+		Name:    PublicFieldName(p.Name),
 		Type:    sr,
 		Comment: p.Description,
 	}
