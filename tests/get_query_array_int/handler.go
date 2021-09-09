@@ -56,7 +56,8 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 					if err != nil {
 						return zero, ErrParseQueryParam{Name: "tag", Err: fmt.Errorf("parse int64: %w", err)}
 					}
-					params.Tag[i] = vInt
+					v1 := vInt
+					params.Tag[i] = v1
 				}
 			}
 		}

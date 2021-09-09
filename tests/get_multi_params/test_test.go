@@ -16,8 +16,8 @@ func TestGetMultiParams(t *testing.T) {
 			}
 			assert.Equal(t, "paw", ps.Shop)
 			assert.Equal(t, int64(1), ps.PetID)
-			assert.Equal(t, "white", ps.Color)
-			assert.Equal(t, int32(1), ps.Page)
+			assert.Equal(t, stringP("white"), ps.Color)
+			assert.Equal(t, int32P(1), ps.Page)
 			return GetShopsShopPetsPetIDResponse200()
 		},
 	}
@@ -27,3 +27,6 @@ func TestGetMultiParams(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 }
+
+func int32P(i int32) *int32    { return &i }
+func stringP(s string) *string { return &s }

@@ -15,7 +15,7 @@ func TestGetQueryRequest(t *testing.T) {
 			if err != nil {
 				return GetPetsResponseDefault(400)
 			}
-			assert.Equal(t, int32(1), params.Limit)
+			assert.Equal(t, pInt32(1), params.Limit)
 			return GetPetsResponse200()
 		},
 	}
@@ -33,7 +33,7 @@ func TestGetQueryRequest_BadRequest(t *testing.T) {
 			if err != nil {
 				return GetPetsResponseDefault(http.StatusBadRequest)
 			}
-			assert.Equal(t, int32(1), params.Limit)
+			assert.Equal(t, pInt32(1), params.Limit)
 			return GetPetsResponse200()
 		},
 	}
@@ -43,3 +43,5 @@ func TestGetQueryRequest_BadRequest(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
+
+func pInt32(i int32) *int32 { return &i }

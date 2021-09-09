@@ -180,7 +180,7 @@ const (
 func (g GoType) Parser(from, to string, mkErr FuncNewError) (Render, error) {
 	switch g {
 	case StringType:
-		return Assign{from, to}, nil
+		return AssignNew{from, to}, nil
 	case Int:
 		return ConvertToInt{from, to, mkErr}, nil
 	case Int32:
@@ -214,6 +214,8 @@ func (s GoSlice) Parser(from, to string, mkErr FuncNewError) (Render, error) {
 	panic("not implemented")
 }
 
+func (GoSlice) Optionable() {}
+
 func (s GoSlice) StringsParser(from, to string, mkErr FuncNewError) (Render, error) {
 	switch t := s.Items.(type) {
 	case GoType:
@@ -237,11 +239,13 @@ for i := range {{.From}} {
 	{{.ItemRender (print .From "[i]") (print .To "[i]")}}
 }`))
 
-func (c ConvertStrings) ItemRender(from, to string) (string, error) {
+func (c ConvertStrings) ItemRender(from, toOrig string) (string, error) {
+	to := "v1"
 	r, err := c.ItemType.Parser(from, to, c.MkErr)
 	if err != nil {
 		return "", fmt.Errorf("item parser: %w", err)
 	}
+	r = Combine{r, Assign{to, toOrig}}
 	return r.String()
 }
 

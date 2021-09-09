@@ -67,13 +67,16 @@ func NewPathParamsParsers(path string, params []PathParameter) ([]Render, error)
 		// 	"params."+param.FieldName,
 		// 	NewPathErrorFunc(param.Name),
 		// )
-		conv, err := param.Type.Parser("v", "params."+param.FieldName, NewPathErrorFunc(param.Name))
+
+		to := "params." + param.FieldName
+
+		conv, err := param.Type.Parser("vPath", "v", NewPathErrorFunc(param.Name))
 		if err != nil {
 			return nil, fmt.Errorf("new convert from string: %w", err)
 		}
 		out = append(out, PathParameterParser{
-			"v",
-			conv,
+			"vPath",
+			Combine{conv, Assign{"v", to}},
 		})
 
 		p = p[r+1:]

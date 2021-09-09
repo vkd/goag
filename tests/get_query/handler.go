@@ -38,7 +38,7 @@ func (p requestGetPetsParams) Parse() (GetPetsParams, error) {
 type GetPetsParams struct {
 	Request *http.Request
 
-	Limit int32
+	Limit *int32
 }
 
 func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
@@ -54,7 +54,8 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 				if err != nil {
 					return zero, ErrParseQueryParam{Name: "limit", Err: fmt.Errorf("parse int32: %w", err)}
 				}
-				params.Limit = int32(vInt)
+				v := int32(vInt)
+				params.Limit = &v
 			}
 		}
 	}

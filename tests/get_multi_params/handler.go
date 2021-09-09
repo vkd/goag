@@ -39,8 +39,8 @@ func (p requestGetShopsShopPetsPetIDParams) Parse() (GetShopsShopPetsPetIDParams
 type GetShopsShopPetsPetIDParams struct {
 	Request *http.Request
 
-	Color string
-	Page  int32
+	Color *string
+	Page  *int32
 	Shop  string
 	PetID int64
 }
@@ -54,7 +54,8 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 		{
 			q, ok := query["color"]
 			if ok && len(q) > 0 {
-				params.Color = q[0]
+				v := q[0]
+				params.Color = &v
 			}
 		}
 		{
@@ -64,7 +65,8 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 				if err != nil {
 					return zero, ErrParseQueryParam{Name: "page", Err: fmt.Errorf("parse int32: %w", err)}
 				}
-				params.Page = int32(vInt)
+				v := int32(vInt)
+				params.Page = &v
 			}
 		}
 	}
@@ -82,9 +84,10 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 			if idx == -1 {
 				idx = len(p)
 			}
-			v := p[:idx]
+			vPath := p[:idx]
 			p = p[idx:]
 
+			v := vPath
 			params.Shop = v
 		}
 
@@ -98,14 +101,15 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 			if idx == -1 {
 				idx = len(p)
 			}
-			v := p[:idx]
+			vPath := p[:idx]
 			p = p[idx:]
 
-			vInt, err := strconv.ParseInt(v, 10, 64)
+			vInt, err := strconv.ParseInt(vPath, 10, 64)
 			if err != nil {
 				return zero, ErrParsePathParam{Name: "petId", Err: fmt.Errorf("parse int64: %w", err)}
 			}
-			params.PetID = vInt
+			v := vInt
+			params.PetID = v
 		}
 	}
 

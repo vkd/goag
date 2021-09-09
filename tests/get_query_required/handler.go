@@ -52,7 +52,8 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'limit': is required")
 			}
 			if ok && len(q) > 0 {
-				params.Limit = q[0]
+				v := q[0]
+				params.Limit = v
 			}
 		}
 	}

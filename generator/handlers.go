@@ -181,6 +181,9 @@ func NewParam(p *openapi3.Parameter) (zero Param, _ error) {
 	if err != nil {
 		return zero, fmt.Errorf("new schema ref: %w", err)
 	}
+	if !p.Required {
+		sr = NewOptionalParam(sr)
+	}
 	f := GoStructField{
 		Name:    PublicFieldName(p.Name),
 		Type:    sr,
@@ -197,6 +200,25 @@ func NewParam(p *openapi3.Parameter) (zero Param, _ error) {
 	return out, nil
 }
 
+type OptionalParam struct {
+	SchemaRender
+}
+
+func NewOptionalParam(sr SchemaRender) SchemaRender {
+	if _, ok := sr.(interface{ Optionable() }); ok {
+		return sr
+	}
+	return OptionalParam{SchemaRender: sr}
+}
+
+func (r OptionalParam) String() (string, error) {
+	str, err := r.SchemaRender.String()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("*%s", str), nil
+}
+
 type StringsParser interface {
 	StringsParser(from, to string, _ FuncNewError) (Render, error)
 }
@@ -208,7 +230,8 @@ func NewQueryParser(p *openapi3.Parameter, field GoStructField) (Render, error) 
 	}
 
 	from := "q"
-	to := "params." + field.Name
+	toOrig := "params." + field.Name
+	to := toOrig
 	mkErr := NewQueryErrorFunc(p.Name)
 
 	var conv Render
@@ -218,10 +241,18 @@ func NewQueryParser(p *openapi3.Parameter, field GoStructField) (Render, error) 
 			return nil, fmt.Errorf("new strings parser: %w", err)
 		}
 	} else {
+		to := "v"
 		conv, err = s.Parser(from+"[0]", to, mkErr)
 		if err != nil {
 			return nil, fmt.Errorf("new parser: %w", err)
 		}
+
+		_, optionable := s.(interface{ Optionable() })
+
+		if !p.Required && !optionable {
+			to = "&" + to
+		}
+		conv = Combine{conv, Assign{to, toOrig}}
 	}
 
 	return QueryParser{

@@ -4,6 +4,16 @@ import (
 	"text/template"
 )
 
+type Combine []Render
+
+var tmCombine = template.Must(template.New("Combine").Parse(`
+{{- range $i, $c := . }}{{ if ne $i 0}}
+{{ end }}
+{{- $c.String }}
+{{- end }}`))
+
+func (c Combine) String() (string, error) { return String(tmCombine, c) }
+
 type Assign struct {
 	From, To string
 }
@@ -12,6 +22,15 @@ var tmAssign = template.Must(template.New("Assign").Parse(`
 {{- .To}} = {{.From}}`))
 
 func (c Assign) String() (string, error) { return String(tmAssign, c) }
+
+type AssignNew struct {
+	From, To string
+}
+
+var tmAssignNew = template.Must(template.New("AssignNew").Parse(`
+{{- .To}} := {{.From}}`))
+
+func (c AssignNew) String() (string, error) { return String(tmAssignNew, c) }
 
 type FuncNewError func(s string) string
 
@@ -24,7 +43,7 @@ var tmConvertToInt = template.Must(template.New("ConvertToInt").Parse(`vInt, err
 if err != nil {
 	return zero, {{call .NewError "parse int"}}
 }
-{{.Field}} = vInt`))
+{{.Field}} := vInt`))
 
 func (c ConvertToInt) String() (string, error) { return String(tmConvertToInt, c) }
 
@@ -37,7 +56,7 @@ var tmConvertToInt32 = template.Must(template.New("ConvertToInt32").Parse(`vInt,
 if err != nil {
 	return zero, {{call .NewError "parse int32"}}
 }
-{{.Field}} = int32(vInt)`))
+{{.Field}} := int32(vInt)`))
 
 func (c ConvertToInt32) String() (string, error) { return String(tmConvertToInt32, c) }
 
@@ -50,7 +69,7 @@ var tmConvertToInt64 = template.Must(template.New("ConvertToInt64").Parse(`vInt,
 if err != nil {
 	return zero, {{call .NewError "parse int64"}}
 }
-{{.Field}} = vInt`))
+{{.Field}} := vInt`))
 
 func (c ConvertToInt64) String() (string, error) { return String(tmConvertToInt64, c) }
 
@@ -63,7 +82,7 @@ var tmConvertToFloat32 = template.Must(template.New("ConvertToFloat32").Parse(`v
 if err != nil {
 	return zero, {{call .NewError "parse float32"}}
 }
-{{.Field}} = float32(vf)`))
+{{.Field}} := float32(vf)`))
 
 func (c ConvertToFloat32) String() (string, error) { return String(tmConvertToFloat32, c) }
 
@@ -76,7 +95,7 @@ var tmConvertToFloat64 = template.Must(template.New("ConvertToFloat64").Parse(`v
 if err != nil {
 	return zero, {{call .NewError "parse float64"}}
 }
-{{.Field}} = vf`))
+{{.Field}} := vf`))
 
 func (c ConvertToFloat64) String() (string, error) { return String(tmConvertToFloat64, c) }
 
