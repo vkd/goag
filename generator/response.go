@@ -107,12 +107,17 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 		fieldType := sr
 
 		if s.Ref == "" {
-			switch sr.(type) {
-			case Ref, GoSlice, GoMap:
-			default:
+			switch sr := sr.(type) {
+			case GoStruct:
 				bodyType := GoTypeDef{
 					Name: out.Name + "Body",
 					Type: sr,
+				}
+				if s.Value.AdditionalProperties != nil {
+					bodyType.Methods = append(bodyType.Methods,
+						GoVarDef{Name: "_", Type: GoType("json.Marshaler"), Value: GoValue("(*" + bodyType.Name + ")(nil)")},
+						MarshalJSONFunc(bodyType.GoTypeRef(), sr),
+					)
 				}
 				out.Body = bodyType
 				fieldType = GoType(bodyType.Name)

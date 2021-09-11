@@ -73,7 +73,11 @@ func Generate(spec *openapi3.Swagger, outDir string, packageName string) error {
 		return fmt.Errorf("generate components: %w", err)
 	}
 	if len(components.Schemas) > 0 {
-		err := RenderToFile(path.Join(outDir, "components.go"), generator.GoFile{PackageName: packageName, Body: components})
+		goFile := generator.GoFile{
+			PackageName: packageName,
+			Renders:     []generator.Render{components},
+		}
+		err := RenderToFile(path.Join(outDir, "components.go"), goFile)
 		if err != nil {
 			return fmt.Errorf("generate components: %w", err)
 		}

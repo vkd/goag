@@ -2,7 +2,7 @@ package generator
 
 import (
 	"fmt"
-	"io"
+	"strings"
 	"text/template"
 )
 
@@ -12,7 +12,7 @@ type GoFile struct {
 
 	Imports []GoFileImport
 
-	Body Render
+	Renders []Render
 }
 
 //nolint:gci
@@ -30,24 +30,35 @@ import (
 )
 {{- end}}
 
-{{- if .Body}}
+{{- range $_, $body := .Renders}}
 
-{{.Body.String}}
+{{$body.String}}
 {{- end}}
 `))
 
-func (g GoFile) String() (string, error)  { return String(tmGoFile, g) }
-func (g GoFile) Render(w io.Writer) error { return tmGoFile.Execute(w, g) }
+func (g GoFile) String() (string, error) { return String(tmGoFile, g) }
 
 type GoFileImport struct {
 	Alias   string
 	Package string
 }
 
+type GoVarDef struct {
+	Name  string
+	Type  Render
+	Value Render
+}
+
+var tmGoVarDef = template.Must(template.New("GoVarDef").Parse(`var {{.Name}} {{.Type.String}} = {{.Value.String}}`))
+
+func (g GoVarDef) String() (string, error) { return String(tmGoVarDef, g) }
+
 type GoTypeDef struct {
 	Comment string
 	Name    string
 	Type    Render
+
+	Methods []Render
 }
 
 func NewGoTypeDef(i SchemasItem) (zero GoTypeDef, _ error) {
@@ -64,10 +75,10 @@ func NewGoTypeDef(i SchemasItem) (zero GoTypeDef, _ error) {
 
 func NewGoTypeDefs(si SchemasItems) ([]GoTypeDef, error) {
 	out := make([]GoTypeDef, 0, len(si))
-	for _, i := range si {
+	for idx, i := range si {
 		td, err := NewGoTypeDef(i)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("create new type definition (idx: %d, name: %q): %w", idx, i.Name, err)
 		}
 		out = append(out, td)
 	}
@@ -78,9 +89,16 @@ var tmGoTypeDef = template.Must(template.New("GoTypeDef").Parse(`
 {{- if .Comment}}// {{.Name}} - {{.Comment}}
 {{end -}}
 type {{.Name}} {{.Type.String -}}
+
+{{- range $_, $m := .Methods}}
+
+{{$m.String}}
+{{- end}}
 `))
 
 func (g GoTypeDef) String() (string, error) { return String(tmGoTypeDef, g) }
+
+func (g GoTypeDef) GoTypeRef() GoType { return GoType(g.Name) }
 
 type GoStruct struct {
 	Fields []GoStructField
@@ -151,6 +169,15 @@ var tmGoStructField = template.Must(template.New("GoStructField").Parse(`
 
 func (g GoStructField) String() (string, error) { return String(tmGoStructField, g) }
 
+func (g GoStructField) GetTag(key string) (GoFieldTag, bool) {
+	for _, t := range g.Tags {
+		if t.Key == key {
+			return t, true
+		}
+	}
+	return GoFieldTag{}, false
+}
+
 type GoFieldTag struct {
 	Key   string
 	Value string
@@ -194,6 +221,10 @@ func (g GoType) Parser(from, to string, mkErr FuncNewError) (Render, error) {
 	}
 	return nil, fmt.Errorf("unsupported GoType: %q", g)
 }
+
+type GoValue string
+
+func (g GoValue) String() (string, error) { return string(g), nil }
 
 type GoSlice struct {
 	Items SchemaRender
@@ -264,3 +295,64 @@ func (c ConvertStrings) ItemRender(from, toOrig string) (string, error) {
 }
 
 func (c ConvertStrings) String() (string, error) { return String(tmConvertStrings, c) }
+
+type GoFunction struct {
+	Receiver GoFunctionArg
+	Name     string
+	Args     []GoFunctionArg
+	Returns  []GoFunctionArg
+	Body     Render
+}
+
+var tmGoFunction = template.Must(template.New("GoFunction").Parse(`func{{if .Receiver}} ({{.Receiver.String}}){{end}}{{if .Name}} {{.Name}}{{end}}({{range $i, $a := .Args}}{{if $i}}, {{end}}{{$a.Var}} {{$a.Type.String}}{{end}}) ({{range $i, $r := .Returns}}{{if $i}}, {{end}}{{$r.Var}} {{$r.Type.String}}{{end}}) {
+	{{.Body.String}}
+}`))
+
+func (g GoFunction) String() (string, error) {
+	return String(tmGoFunction, g)
+}
+
+type GoFunctionArg struct {
+	Var  string
+	Type Render
+}
+
+func (g GoFunctionArg) String() (string, error) {
+	tp, err := g.Type.String()
+	if err != nil {
+		return "", fmt.Errorf("render type: %w", err)
+	}
+
+	if g.Var == "" && len(tp) > 0 {
+		g.Var = strings.ToLower(tp[:1])
+	}
+
+	out := g.Var
+	if len(out) > 0 {
+		out += " "
+	}
+	out += tp
+
+	return out, nil
+}
+
+func MarshalJSONFunc(orig GoType, body GoStruct) GoFunction {
+	bodyFunc := `m := make(map[string]interface{})
+for k, v := range b.AdditionalProperties {
+	m[k] = v
+}
+`
+	for _, f := range body.Fields {
+		if t, ok := f.GetTag("json"); ok && t.Value != "-" {
+			bodyFunc += `m["` + t.Value + `"] = b.` + f.Name + "\n"
+		}
+	}
+	bodyFunc += `return json.Marshal(m)` + "\n"
+
+	return GoFunction{
+		Receiver: GoFunctionArg{Var: "b", Type: orig},
+		Name:     "MarshalJSON",
+		Returns:  []GoFunctionArg{{Type: GoType("[]byte")}, {Type: GoType("error")}},
+		Body:     GoValue(bodyFunc),
+	}
+}
