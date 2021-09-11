@@ -18,6 +18,7 @@ type Response struct {
 
 	ResponserInterfaceName string
 
+	IsBody  bool
 	Body    Render
 	Headers []ResponseHeader
 
@@ -35,13 +36,18 @@ func {{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.Typ
 	return out
 }
 
+{{- if .Body }}
+
+{{ .Body.String }}
+{{- end }}
+
 {{.Struct.String}}
 
 func (r {{.PrivateName}}) {{.ResponserInterfaceName}}(w http.ResponseWriter) {
 	{{if .IsDefault}}w.WriteHeader(r.Code){{else}}w.WriteHeader({{.Status}}){{end}}
 	{{range $_, $h := .Headers}}w.Header().Set("{{$h.Name}}", r.Headers.{{$h.FieldName}})
 	{{end -}}
-	{{if .Body}}writeJSON(w, r.Body, "{{.Name}}")
+	{{if .IsBody}}writeJSON(w, r.Body, "{{.Name}}")
 	{{end -}}
 }`
 
@@ -91,19 +97,36 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 	out.ResponserInterfaceName = responserName
 
 	if s != nil {
+		out.IsBody = true
+
 		sr, err := NewSchemaRef(s)
 		if err != nil {
 			return zero, fmt.Errorf("new schema ref: %w", err)
 		}
-		out.Body = sr
+
+		fieldType := sr
+
+		if s.Ref == "" {
+			switch sr.(type) {
+			case Ref, GoSlice, GoMap:
+			default:
+				bodyType := GoTypeDef{
+					Name: out.Name + "Body",
+					Type: sr,
+				}
+				out.Body = bodyType
+				fieldType = GoType(bodyType.Name)
+			}
+		}
+
 		fields = append(fields, GoStructField{
 			Name: "Body",
-			Type: out.Body,
+			Type: fieldType,
 		})
 		out.Args = append(out.Args, ResponseArg{
 			FieldName: "Body",
 			ArgName:   "body",
-			Type:      out.Body,
+			Type:      fieldType,
 		})
 	}
 

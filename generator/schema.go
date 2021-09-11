@@ -46,6 +46,16 @@ func NewSchema(spec *openapi3.Schema) (SchemaRender, error) {
 		if err != nil {
 			return nil, fmt.Errorf("new schemas of 'object' type: %w", err)
 		}
+		if spec.AdditionalProperties != nil {
+			if len(sfs) > 0 {
+				panic("not implemented")
+			}
+			addSchema, err := NewSchemaRef(spec.AdditionalProperties)
+			if err != nil {
+				return nil, fmt.Errorf("new schema ref for value type of additional properties: %w", err)
+			}
+			return GoMap{Key: StringType, Value: addSchema}, nil
+		}
 		return GoStruct{Fields: sfs}, nil
 	case "array":
 		sr, err := NewSchemaRef(spec.Items)

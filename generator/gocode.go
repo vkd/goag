@@ -227,6 +227,20 @@ func (s GoSlice) StringsParser(from, to string, mkErr FuncNewError) (Render, err
 	return ConvertStrings{s.Items, from, to, mkErr}, nil
 }
 
+type GoMap struct {
+	Key, Value SchemaRender
+}
+
+var tmGoMap = template.Must(template.New("GoMap").Parse(`map[{{ .Key.String }}]{{ .Value.String }}`))
+
+func (s GoMap) String() (string, error) { return String(tmGoMap, s) }
+
+func (s GoMap) Parser(from, to string, mkErr FuncNewError) (Render, error) {
+	panic("not implemented")
+}
+
+func (GoMap) Optionable() {}
+
 type ConvertStrings struct {
 	ItemType SchemaRender
 	From, To string
