@@ -41,7 +41,7 @@ type ConvertToInt struct {
 
 var tmConvertToInt = template.Must(template.New("ConvertToInt").Parse(`vInt, err := strconv.Atoi({{.Variable}})
 if err != nil {
-	return zero, {{call .NewError "parse int"}}
+	return zero, {{call .NewError "fmt.Errorf(\"parse int: %w\", err)"}}
 }
 {{.Field}} := vInt`))
 
@@ -54,7 +54,7 @@ type ConvertToInt32 struct {
 
 var tmConvertToInt32 = template.Must(template.New("ConvertToInt32").Parse(`vInt, err := strconv.ParseInt({{.Variable}}, 10, 32)
 if err != nil {
-	return zero, {{call .NewError "parse int32"}}
+	return zero, {{call .NewError "fmt.Errorf(\"parse int32: %w\", err)"}}
 }
 {{.Field}} := int32(vInt)`))
 
@@ -67,7 +67,7 @@ type ConvertToInt64 struct {
 
 var tmConvertToInt64 = template.Must(template.New("ConvertToInt64").Parse(`vInt, err := strconv.ParseInt({{.Variable}}, 10, 64)
 if err != nil {
-	return zero, {{call .NewError "parse int64"}}
+	return zero, {{call .NewError "fmt.Errorf(\"parse int64: %w\", err)"}}
 }
 {{.Field}} := vInt`))
 
@@ -80,7 +80,7 @@ type ConvertToFloat32 struct {
 
 var tmConvertToFloat32 = template.Must(template.New("ConvertToFloat32").Parse(`vf, err := strconv.ParseFloat({{.Variable}}, 32)
 if err != nil {
-	return zero, {{call .NewError "parse float32"}}
+	return zero, {{call .NewError "fmt.Errorf(\"parse float32: %w\", err)"}}
 }
 {{.Field}} := float32(vf)`))
 
@@ -93,7 +93,7 @@ type ConvertToFloat64 struct {
 
 var tmConvertToFloat64 = template.Must(template.New("ConvertToFloat64").Parse(`vf, err := strconv.ParseFloat({{.Variable}}, 64)
 if err != nil {
-	return zero, {{call .NewError "parse float64"}}
+	return zero, {{call .NewError "fmt.Errorf(\"parse float64: %w\", err)"}}
 }
 {{.Field}} := vf`))
 
@@ -101,12 +101,12 @@ func (c ConvertToFloat64) String() (string, error) { return String(tmConvertToFl
 
 type StructParser struct {
 	From, To string
-	MkErr    FuncNewError
+	NewError FuncNewError
 }
 
 var tmStructParser = template.Must(template.New("StructParser").Parse(`err := {{.To}}.UnmarshalText({{.From}})
 if err != nil {
-	return zero, {{call .MkErr "parse struct"}}
+	return zero, {{call .NewError "fmt.Errorf(\"parse struct: %w\", err)"}}
 }`))
 
 func (s StructParser) String() (string, error) { return String(tmStructParser, s) }

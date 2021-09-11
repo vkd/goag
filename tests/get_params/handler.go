@@ -87,6 +87,10 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 			vPath := p[:idx]
 			p = p[idx:]
 
+			if len(vPath) == 0 {
+				return zero, ErrParsePathParam{Name: "shop", Err: fmt.Errorf("is required")}
+			}
+
 			v := vPath
 			params.Shop = v
 		}
@@ -103,6 +107,10 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 			}
 			vPath := p[:idx]
 			p = p[idx:]
+
+			if len(vPath) == 0 {
+				return zero, ErrParsePathParam{Name: "petId", Err: fmt.Errorf("is required")}
+			}
 
 			vInt, err := strconv.ParseInt(vPath, 10, 64)
 			if err != nil {

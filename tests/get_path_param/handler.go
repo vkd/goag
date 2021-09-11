@@ -62,6 +62,10 @@ func newGetPetsPetIDParams(r *http.Request) (zero GetPetsPetIDRequest, _ error) 
 			vPath := p[:idx]
 			p = p[idx:]
 
+			if len(vPath) == 0 {
+				return zero, ErrParsePathParam{Name: "petId", Err: fmt.Errorf("is required")}
+			}
+
 			vInt, err := strconv.Atoi(vPath)
 			if err != nil {
 				return zero, ErrParsePathParam{Name: "petId", Err: fmt.Errorf("parse int: %w", err)}

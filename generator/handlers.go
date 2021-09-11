@@ -250,7 +250,7 @@ func (i QueryParser) String() (string, error) {
 
 func NewQueryErrorFunc(name string) FuncNewError {
 	return func(s string) string {
-		return `ErrParseQueryParam{Name: "` + name + `", Err: fmt.Errorf("` + s + `: %w", err)}`
+		return `ErrParseQueryParam{Name: "` + name + `", Err: ` + s + `}`
 	}
 }
 

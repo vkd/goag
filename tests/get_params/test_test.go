@@ -34,3 +34,27 @@ func TestGetMultiParams(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 }
+
+func TestGetMultiParams_BadRequest(t *testing.T) {
+	api := API{
+		GetShopsShopPetsPetIDHandler: func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponser {
+			_, err := r.Parse()
+			if err != nil {
+				return GetShopsShopPetsPetIDResponseDefault(400)
+			}
+			return GetShopsShopPetsPetIDResponse200()
+		},
+	}
+
+	for _, target := range []string{
+		"/shops/paw/pets/a?color=white&page=2",
+		"/shops/paw/pets/1?color=white&page=b",
+		"/shops//pets/1?color=white&page=2",
+		"/shops/paw/pets/?color=white&page=2",
+	} {
+		w := httptest.NewRecorder()
+		api.ServeHTTP(w, httptest.NewRequest("GET", target, nil))
+
+		assert.Equal(t, 400, w.Code, "suppose to be a bad request: %s", target)
+	}
+}
