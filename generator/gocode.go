@@ -88,7 +88,7 @@ type GoStruct struct {
 
 var tmGoStruct = template.Must(template.New("GoStruct").Parse(`
 {{- if .Fields -}}
-struct{
+struct {
 	{{- range $_, $f := .Fields}}
 	{{$f.String -}}
 	{{end}}

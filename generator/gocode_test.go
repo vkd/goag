@@ -16,13 +16,13 @@ func TestGoStruct_String(t *testing.T) {
 		{"empty", fields{}, `struct{}`},
 		{"one field", fields{Fields: []GoStructField{
 			{Name: "ID", Type: Int},
-		}}, `struct{
+		}}, `struct {
 	ID int
 }`},
 		{"two fields", fields{Fields: []GoStructField{
 			{Name: "ID", Type: Int},
 			{Name: "Age", Type: Int32},
-		}}, `struct{
+		}}, `struct {
 	ID int
 	Age int32
 }`},
