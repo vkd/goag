@@ -77,7 +77,7 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 		if !strings.HasPrefix(p, "/shops/") {
 			return zero, fmt.Errorf("wrong path: expected '/shops/{shop}/pets/{petId}'")
 		}
-		p = p[7:]
+		p = p[7:] // "/shops/"
 
 		{
 			idx := strings.Index(p, "/")
@@ -94,7 +94,7 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 		if !strings.HasPrefix(p, "/pets/") {
 			return zero, fmt.Errorf("wrong path: expected '/shops/{shop}/pets/{petId}'")
 		}
-		p = p[6:]
+		p = p[6:] // "/pets/"
 
 		{
 			idx := strings.Index(p, "/")

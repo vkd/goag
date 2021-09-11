@@ -52,7 +52,7 @@ func newGetPetsPetIDParams(r *http.Request) (zero GetPetsPetIDParams, _ error) {
 		if !strings.HasPrefix(p, "/pets/") {
 			return zero, fmt.Errorf("wrong path: expected '/pets/{petId}'")
 		}
-		p = p[6:]
+		p = p[6:] // "/pets/"
 
 		{
 			idx := strings.Index(p, "/")

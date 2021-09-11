@@ -99,7 +99,7 @@ type PathConstantParser struct {
 var tmPathConstantParser = template.Must(template.New("PathConstantParser").Parse(`if !strings.HasPrefix(p, "{{.Prefix}}") {
 	return zero, fmt.Errorf("wrong path: expected '{{.FullPath}}'")
 }
-p = p[{{len .Prefix}}:]`))
+p = p[{{len .Prefix}}:] // "{{.Prefix}}"`))
 
 func (p PathConstantParser) String() (string, error) {
 	return String(tmPathConstantParser, p)
