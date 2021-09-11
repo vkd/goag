@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // ---------------------------------------------
@@ -37,7 +38,8 @@ func (r requestGetPetsParams) Parse() (GetPetsRequest, error) {
 type GetPetsRequest struct {
 	HTTPRequest *http.Request
 
-	Tag []string
+	Tag  []string
+	Page []int64
 }
 
 func newGetPetsParams(r *http.Request) (zero GetPetsRequest, _ error) {
@@ -50,6 +52,20 @@ func newGetPetsParams(r *http.Request) (zero GetPetsRequest, _ error) {
 			q, ok := query["tag"]
 			if ok && len(q) > 0 {
 				params.Tag = q
+			}
+		}
+		{
+			q, ok := query["page"]
+			if ok && len(q) > 0 {
+				params.Page = make([]int64, len(q))
+				for i := range q {
+					vInt, err := strconv.ParseInt(q[i], 10, 64)
+					if err != nil {
+						return zero, ErrParseQueryParam{Name: "page", Err: fmt.Errorf("parse int64: %w", err)}
+					}
+					v1 := vInt
+					params.Page[i] = v1
+				}
 			}
 		}
 	}

@@ -39,7 +39,7 @@ func (r requestGetShopsShopPetsPetIDParams) Parse() (GetShopsShopPetsPetIDReques
 type GetShopsShopPetsPetIDRequest struct {
 	HTTPRequest *http.Request
 
-	Color *string
+	Color string
 	Page  *int32
 	Shop  string
 	PetID int64
@@ -53,9 +53,12 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 		query := r.URL.Query()
 		{
 			q, ok := query["color"]
+			if !ok {
+				return zero, fmt.Errorf("query parameter 'color': is required")
+			}
 			if ok && len(q) > 0 {
 				v := q[0]
-				params.Color = &v
+				params.Color = v
 			}
 		}
 		{

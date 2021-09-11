@@ -15,6 +15,7 @@ paths:
             format: int64
         - name: color
           in: query
+          required: true
           schema:
             type: string
         - name: page
