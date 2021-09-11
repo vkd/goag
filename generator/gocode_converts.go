@@ -7,7 +7,7 @@ import (
 type Combine []Render
 
 var tmCombine = template.Must(template.New("Combine").Parse(`
-{{- range $i, $c := . }}{{ if ne $i 0}}
+{{- range $i, $c := . }}{{ if $i }}
 {{ end }}
 {{- $c.String }}
 {{- end }}`))
