@@ -61,28 +61,22 @@ type GoTypeDef struct {
 	Methods []Render
 }
 
-func NewGoTypeDef(i SchemasItem) (zero GoTypeDef, _ error) {
-	sr, err := NewSchemaRef(i.Schema)
-	if err != nil {
-		return zero, fmt.Errorf("new schema ref: %w", err)
-	}
+func NewGoTypeDef(i SchemasItem) GoTypeDef {
+	sr := NewSchemaRef(i.Schema)
 	return GoTypeDef{
 		Name:    i.Name,
 		Comment: i.Schema.Value.Description,
 		Type:    sr,
-	}, nil
+	}
 }
 
-func NewGoTypeDefs(si SchemasItems) ([]GoTypeDef, error) {
+func NewGoTypeDefs(si SchemasItems) []GoTypeDef {
 	out := make([]GoTypeDef, 0, len(si))
-	for idx, i := range si {
-		td, err := NewGoTypeDef(i)
-		if err != nil {
-			return nil, fmt.Errorf("create new type definition (idx: %d, name: %q): %w", idx, i.Name, err)
-		}
+	for _, i := range si {
+		td := NewGoTypeDef(i)
 		out = append(out, td)
 	}
-	return out, nil
+	return out
 }
 
 var tmGoTypeDef = template.Must(template.New("GoTypeDef").Parse(`
@@ -117,8 +111,8 @@ struct{}
 
 func (g GoStruct) String() (string, error) { return String(tmGoStruct, g) }
 
-func (g GoStruct) Parser(from, to string, mkErr FuncNewError) (Render, error) {
-	return StructParser{from, to, mkErr}, nil
+func (g GoStruct) Parser(from, to string, mkErr FuncNewError) Render {
+	return StructParser{from, to, mkErr}
 }
 
 type GoStructField struct {
@@ -128,11 +122,8 @@ type GoStructField struct {
 	Tags    []GoFieldTag
 }
 
-func NewGoStructField(i SchemasItem) (zero GoStructField, _ error) {
-	sr, err := NewSchemaRef(i.Schema)
-	if err != nil {
-		return zero, fmt.Errorf("new schema ref: %w", err)
-	}
+func NewGoStructField(i SchemasItem) (zero GoStructField) {
+	sr := NewSchemaRef(i.Schema)
 	sf := GoStructField{
 		Name: PublicFieldName(i.Name),
 		Type: sr,
@@ -140,19 +131,16 @@ func NewGoStructField(i SchemasItem) (zero GoStructField, _ error) {
 	if sf.Name != i.Name {
 		sf.Tags = append(sf.Tags, GoFieldTag{"json", i.Name})
 	}
-	return sf, nil
+	return sf
 }
 
-func NewGoStructFields(si SchemasItems) ([]GoStructField, error) {
+func NewGoStructFields(si SchemasItems) []GoStructField {
 	out := make([]GoStructField, 0, len(si))
 	for _, i := range si {
-		sf, err := NewGoStructField(i)
-		if err != nil {
-			return nil, err
-		}
+		sf := NewGoStructField(i)
 		out = append(out, sf)
 	}
-	return out, nil
+	return out
 }
 
 var tmGoStructField = template.Must(template.New("GoStructField").Parse(`
@@ -204,22 +192,22 @@ const (
 	Float64 GoType = "float64"
 )
 
-func (g GoType) Parser(from, to string, mkErr FuncNewError) (Render, error) {
+func (g GoType) Parser(from, to string, mkErr FuncNewError) Render {
 	switch g {
 	case StringType:
-		return AssignNew{from, to}, nil
+		return AssignNew{from, to}
 	case Int:
-		return ConvertToInt{from, to, mkErr}, nil
+		return ConvertToInt{from, to, mkErr}
 	case Int32:
-		return ConvertToInt32{from, to, mkErr}, nil
+		return ConvertToInt32{from, to, mkErr}
 	case Int64:
-		return ConvertToInt64{from, to, mkErr}, nil
+		return ConvertToInt64{from, to, mkErr}
 	case Float32:
-		return ConvertToFloat32{from, to, mkErr}, nil
+		return ConvertToFloat32{from, to, mkErr}
 	case Float64:
-		return ConvertToFloat64{from, to, mkErr}, nil
+		return ConvertToFloat64{from, to, mkErr}
 	}
-	return nil, fmt.Errorf("unsupported GoType: %q", g)
+	panic(fmt.Errorf("unsupported GoType: %q", g))
 }
 
 type GoValue string
@@ -234,12 +222,12 @@ var tmGoSlice = template.Must(template.New("GoSlice").Parse(`[]{{ .Items.String 
 
 func (s GoSlice) String() (string, error) { return String(tmGoSlice, s) }
 
-func (s GoSlice) Parser(from, to string, mkErr FuncNewError) (Render, error) {
+func (s GoSlice) Parser(from, to string, mkErr FuncNewError) Render {
 	switch t := s.Items.(type) {
 	case GoType:
 		switch t {
 		case StringType:
-			return Assign{from + "[0]", to}, nil
+			return Assign{from + "[0]", to}
 		}
 	}
 	panic("not implemented")
@@ -247,15 +235,15 @@ func (s GoSlice) Parser(from, to string, mkErr FuncNewError) (Render, error) {
 
 func (GoSlice) Optionable() {}
 
-func (s GoSlice) StringsParser(from, to string, mkErr FuncNewError) (Render, error) {
+func (s GoSlice) StringsParser(from, to string, mkErr FuncNewError) Render {
 	switch t := s.Items.(type) {
 	case GoType:
 		switch t {
 		case StringType:
-			return Assign{from, to}, nil
+			return Assign{from, to}
 		}
 	}
-	return ConvertStrings{s.Items, from, to, mkErr}, nil
+	return ConvertStrings{s.Items, from, to, mkErr}
 }
 
 type GoMap struct {
@@ -266,7 +254,7 @@ var tmGoMap = template.Must(template.New("GoMap").Parse(`map[{{ .Key.String }}]{
 
 func (s GoMap) String() (string, error) { return String(tmGoMap, s) }
 
-func (s GoMap) Parser(from, to string, mkErr FuncNewError) (Render, error) {
+func (s GoMap) Parser(from, to string, mkErr FuncNewError) Render {
 	panic("not implemented")
 }
 
@@ -286,10 +274,7 @@ for i := range {{.From}} {
 
 func (c ConvertStrings) ItemRender(from, toOrig string) (string, error) {
 	to := "v1"
-	r, err := c.ItemType.Parser(from, to, c.MkErr)
-	if err != nil {
-		return "", fmt.Errorf("item parser: %w", err)
-	}
+	r := c.ItemType.Parser(from, to, c.MkErr)
 	r = Combine{r, Assign{to, toOrig}}
 	return r.String()
 }

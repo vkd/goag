@@ -74,16 +74,10 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 		p := pr.Value
 		switch p.In {
 		case openapi3.ParameterInQuery:
-			par, err := NewParam(p)
-			if err != nil {
-				return zero, fmt.Errorf("new param: %w", err)
-			}
+			par := NewParam(p)
 			out.Parameters.Queries = append(out.Parameters.Queries, par)
 		case openapi3.ParameterInPath:
-			pp, err := NewPathParameter(p)
-			if err != nil {
-				return zero, fmt.Errorf("new path parameter: %w", err)
-			}
+			pp := NewPathParameter(p)
 			out.Parameters.Path = append(out.Parameters.Path, pp)
 		}
 	}
@@ -91,16 +85,10 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 		p := pr.Value
 		switch p.In {
 		case openapi3.ParameterInQuery:
-			par, err := NewParam(p)
-			if err != nil {
-				return zero, fmt.Errorf("new param: %w", err)
-			}
+			par := NewParam(p)
 			out.Parameters.Queries = append(out.Parameters.Queries, par)
 		case openapi3.ParameterInPath:
-			pp, err := NewPathParameter(p)
-			if err != nil {
-				return zero, fmt.Errorf("new path parameter: %w", err)
-			}
+			pp := NewPathParameter(p)
 			out.Parameters.Path = append(out.Parameters.Path, pp)
 		}
 	}
@@ -114,10 +102,7 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 	}
 
 	if p.RequestBody != nil {
-		br, err := NewBodyRef(p.RequestBody)
-		if err != nil {
-			return zero, fmt.Errorf("new body ref: %w", err)
-		}
+		br := NewBodyRef(p.RequestBody)
 		out.RequestBody = br
 	}
 
@@ -125,17 +110,11 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 
 	for _, r := range PathResponses(p.Responses) {
 		if len(r.Response.Value.Content) == 0 {
-			resp, err := NewResponse(nil, out.Name, out.ResponserInterfaceName, r.Code, "", r.Response.Value, "|", r.Code, r.Response)
-			if err != nil {
-				return zero, fmt.Errorf("new response (no content): %w", err)
-			}
+			resp := NewResponse(nil, out.Name, out.ResponserInterfaceName, r.Code, "", r.Response.Value, "|", r.Code, r.Response)
 			out.Responses = append(out.Responses, resp)
 		} else {
 			for mtype, ct := range r.Response.Value.Content {
-				resp, err := NewResponse(ct.Schema, out.Name, out.ResponserInterfaceName, r.Code, mtype, r.Response.Value, "|", r.Code, r.Response)
-				if err != nil {
-					return zero, fmt.Errorf("new response (with content): %w", err)
-				}
+				resp := NewResponse(ct.Schema, out.Name, out.ResponserInterfaceName, r.Code, mtype, r.Response.Value, "|", r.Code, r.Response)
 				out.Responses = append(out.Responses, resp)
 			}
 		}
@@ -176,11 +155,8 @@ type Param struct {
 	Parser Render
 }
 
-func NewParam(p *openapi3.Parameter) (zero Param, _ error) {
-	sr, err := NewSchemaRef(p.Schema)
-	if err != nil {
-		return zero, fmt.Errorf("new schema ref: %w", err)
-	}
+func NewParam(p *openapi3.Parameter) Param {
+	sr := NewSchemaRef(p.Schema)
 	if !p.Required {
 		sr = NewOptionalParam(sr)
 	}
@@ -189,15 +165,12 @@ func NewParam(p *openapi3.Parameter) (zero Param, _ error) {
 		Type:    sr,
 		Comment: p.Description,
 	}
-	prs, err := NewQueryParser(p, f)
-	if err != nil {
-		return Param{}, fmt.Errorf("new query parser: %w", err)
-	}
+	prs := NewQueryParser(p, f)
 	out := Param{
 		Field:  f,
 		Parser: prs,
 	}
-	return out, nil
+	return out
 }
 
 type OptionalParam struct {
@@ -220,14 +193,11 @@ func (r OptionalParam) String() (string, error) {
 }
 
 type StringsParser interface {
-	StringsParser(from, to string, _ FuncNewError) (Render, error)
+	StringsParser(from, to string, _ FuncNewError) Render
 }
 
-func NewQueryParser(p *openapi3.Parameter, field GoStructField) (Render, error) {
-	s, err := NewSchemaRef(p.Schema)
-	if err != nil {
-		return nil, fmt.Errorf("new schema: %w", err)
-	}
+func NewQueryParser(p *openapi3.Parameter, field GoStructField) Render {
+	s := NewSchemaRef(p.Schema)
 
 	from := "q"
 	toOrig := "params." + field.Name
@@ -236,16 +206,10 @@ func NewQueryParser(p *openapi3.Parameter, field GoStructField) (Render, error) 
 
 	var conv Render
 	if sp, ok := s.(StringsParser); ok {
-		conv, err = sp.StringsParser(from, to, mkErr)
-		if err != nil {
-			return nil, fmt.Errorf("new strings parser: %w", err)
-		}
+		conv = sp.StringsParser(from, to, mkErr)
 	} else {
 		to := "v"
-		conv, err = s.Parser(from+"[0]", to, mkErr)
-		if err != nil {
-			return nil, fmt.Errorf("new parser: %w", err)
-		}
+		conv = s.Parser(from+"[0]", to, mkErr)
 
 		_, optionable := s.(interface{ Optionable() })
 
@@ -260,7 +224,7 @@ func NewQueryParser(p *openapi3.Parameter, field GoStructField) (Render, error) 
 		ParameterName: p.Name,
 		Convert:       conv,
 		Required:      p.Required,
-	}, nil
+	}
 }
 
 type QueryParser struct {
@@ -290,9 +254,9 @@ func NewQueryErrorFunc(name string) FuncNewError {
 	}
 }
 
-func NewBodyRef(spec *openapi3.RequestBodyRef) (Render, error) {
+func NewBodyRef(spec *openapi3.RequestBodyRef) Render {
 	if spec.Ref != "" {
-		return NewRef(spec.Ref), nil
+		return NewRef(spec.Ref)
 	}
 	return NewSchemaRef(spec.Value.Content.Get("application/json").Schema)
 }

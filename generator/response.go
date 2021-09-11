@@ -61,7 +61,7 @@ func (r Response) String() (string, error) {
 	return out, nil
 }
 
-func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string, status, contentType string, resp *openapi3.Response, gap string, code string, response *openapi3.ResponseRef) (zero Response, _ error) {
+func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string, status, contentType string, resp *openapi3.Response, gap string, code string, response *openapi3.ResponseRef) Response {
 	var out Response
 	out.HandlerName = handlerName
 	out.Name = handlerName + "Response" + strings.Title(status)
@@ -99,10 +99,7 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 	if s != nil {
 		out.IsBody = true
 
-		sr, err := NewSchemaRef(s)
-		if err != nil {
-			return zero, fmt.Errorf("new schema ref: %w", err)
-		}
+		sr := NewSchemaRef(s)
 
 		fieldType := sr
 
@@ -138,10 +135,7 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 	pathHeaders := PathHeaders(resp.Headers)
 	fieldHeaders := make([]GoStructField, 0, len(pathHeaders))
 	for _, h := range pathHeaders {
-		sr, err := NewSchemaRef(h.Header.Value.Schema)
-		if err != nil {
-			return zero, fmt.Errorf("new schema ref: %w", err)
-		}
+		sr := NewSchemaRef(h.Header.Value.Schema)
 
 		header := ResponseHeader{
 			Name:      h.Name,
@@ -179,7 +173,7 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 		},
 	}
 
-	return out, nil
+	return out
 }
 
 func (r Response) IsDefault() bool { return strings.EqualFold(r.Status, "default") }

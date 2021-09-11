@@ -15,17 +15,14 @@ type PathParameter struct {
 	Type SchemaRender
 }
 
-func NewPathParameter(p *openapi3.Parameter) (zero PathParameter, _ error) {
+func NewPathParameter(p *openapi3.Parameter) PathParameter {
 	var out PathParameter
 	out.Name = p.Name
 	out.FieldName = PublicFieldName(p.Name)
 	// out.GoType = NewGoType(p.Schema)
-	sr, err := NewSchema(p.Schema.Value)
-	if err != nil {
-		return zero, fmt.Errorf("new schema ref: %w", err)
-	}
+	sr := NewSchema(p.Schema.Value)
 	out.Type = sr
-	return out, nil
+	return out
 }
 
 func NewPathParamsParsers(path string, params []PathParameter) ([]Render, error) {
@@ -70,10 +67,7 @@ func NewPathParamsParsers(path string, params []PathParameter) ([]Render, error)
 
 		to := "params." + param.FieldName
 
-		conv, err := param.Type.Parser("vPath", "v", NewPathErrorFunc(param.Name))
-		if err != nil {
-			return nil, fmt.Errorf("new convert from string: %w", err)
-		}
+		conv := param.Type.Parser("vPath", "v", NewPathErrorFunc(param.Name))
 		out = append(out, PathParameterParser{
 			"vPath",
 			Combine{conv, Assign{"v", to}},

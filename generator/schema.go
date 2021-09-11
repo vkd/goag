@@ -10,17 +10,17 @@ import (
 
 type SchemaRender interface {
 	Render
-	Parser(from, to string, _ FuncNewError) (Render, error)
+	Parser(from, to string, _ FuncNewError) Render
 }
 
-func NewSchemaRef(spec *openapi3.SchemaRef) (SchemaRender, error) {
+func NewSchemaRef(spec *openapi3.SchemaRef) SchemaRender {
 	if spec.Ref != "" {
-		return NewRef(spec.Ref), nil
+		return NewRef(spec.Ref)
 	}
 	return NewSchema(spec.Value)
 }
 
-func NewSchema(spec *openapi3.Schema) (SchemaRender, error) {
+func NewSchema(spec *openapi3.Schema) SchemaRender {
 	if spec.AllOf != nil {
 		var fields []GoStructField
 		for _, s := range spec.AllOf {
@@ -28,33 +28,21 @@ func NewSchema(spec *openapi3.Schema) (SchemaRender, error) {
 				fields = append(fields, GoStructField{Type: NewRef(s.Ref)})
 				continue
 			}
-			if s.Value.Type != "object" {
-				return nil, fmt.Errorf("allOf works only for objects: unknown type %q", s.Value.Type)
-			}
-			sfs, err := NewGoStructFields(NewSchemas(s.Value.Properties))
-			if err != nil {
-				return nil, fmt.Errorf("new schemas of allOf: %w", err)
-			}
+			sfs := NewGoStructFields(NewSchemas(s.Value.Properties))
 			fields = append(fields, sfs...)
 		}
-		return GoStruct{Fields: fields}, nil
+		return GoStruct{Fields: fields}
 	}
 
 	switch spec.Type {
 	case "object":
-		sfs, err := NewGoStructFields(NewSchemas(spec.Properties))
-		if err != nil {
-			return nil, fmt.Errorf("new schemas of 'object' type: %w", err)
-		}
+		sfs := NewGoStructFields(NewSchemas(spec.Properties))
 		goStruct := GoStruct{Fields: sfs}
 
 		if spec.AdditionalProperties != nil {
-			addSchema, err := NewSchemaRef(spec.AdditionalProperties)
-			if err != nil {
-				return nil, fmt.Errorf("new schema ref for value type of additional properties: %w", err)
-			}
+			addSchema := NewSchemaRef(spec.AdditionalProperties)
 			if len(sfs) == 0 {
-				return GoMap{Key: StringType, Value: addSchema}, nil
+				return GoMap{Key: StringType, Value: addSchema}
 			}
 			goStruct.Fields = append(goStruct.Fields, GoStructField{
 				Name: "AdditionalProperties",
@@ -62,34 +50,32 @@ func NewSchema(spec *openapi3.Schema) (SchemaRender, error) {
 				Tags: []GoFieldTag{{Key: "json", Value: "-"}},
 			})
 		}
-		return goStruct, nil
+		return goStruct
 	case "array":
-		sr, err := NewSchemaRef(spec.Items)
-		if err != nil {
-			return nil, fmt.Errorf("new schema ref: %w", err)
-		}
-		return GoSlice{Items: sr}, nil
+		sr := NewSchemaRef(spec.Items)
+		return GoSlice{Items: sr}
 	case "string":
-		return StringType, nil
+		return StringType
 	case "integer":
 		switch spec.Format {
 		case "int32":
-			return Int32, nil
+			return Int32
 		case "int64":
-			return Int64, nil
+			return Int64
 		default:
-			return Int, nil
+			return Int
 		}
 	case "number":
 		switch spec.Format {
 		case "float":
-			return Float32, nil
+			return Float32
 		case "double":
-			return Float64, nil
+			return Float64
 		}
-		return Float64, nil
+		return Float64
 	}
-	return nil, fmt.Errorf("unknown schema type: %q", spec.Type)
+
+	panic(fmt.Errorf("unknown schema type: %q", spec.Type))
 }
 
 type Ref string
@@ -106,7 +92,7 @@ func (r Ref) String() (string, error) {
 	return string(r), nil
 }
 
-func (r Ref) Parser(from, to string, mkErr FuncNewError) (Render, error) {
+func (r Ref) Parser(from, to string, mkErr FuncNewError) Render {
 	panic("not implemented")
 }
 
