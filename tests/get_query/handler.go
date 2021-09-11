@@ -36,14 +36,14 @@ func (p requestGetPetsParams) Parse() (GetPetsParams, error) {
 }
 
 type GetPetsParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 
 	Limit *int32
 }
 
 func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 	var params GetPetsParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	{
 		query := r.URL.Query()

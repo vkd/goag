@@ -35,12 +35,12 @@ func (p requestGetPetsParams) Parse() GetPetsParams {
 }
 
 type GetPetsParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 }
 
 func newGetPetsParams(r *http.Request) (zero GetPetsParams) {
 	var params GetPetsParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	return params
 }

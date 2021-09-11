@@ -35,12 +35,12 @@ func (p requestGetRTParams) Parse() GetRTParams {
 }
 
 type GetRTParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 }
 
 func newGetRTParams(r *http.Request) (zero GetRTParams) {
 	var params GetRTParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	return params
 }
@@ -90,12 +90,12 @@ func (p requestGetShopsParams) Parse() GetShopsParams {
 }
 
 type GetShopsParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 }
 
 func newGetShopsParams(r *http.Request) (zero GetShopsParams) {
 	var params GetShopsParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	return params
 }
@@ -145,12 +145,12 @@ func (p requestGetShopsRTParams) Parse() GetShopsRTParams {
 }
 
 type GetShopsRTParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 }
 
 func newGetShopsRTParams(r *http.Request) (zero GetShopsRTParams) {
 	var params GetShopsRTParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	return params
 }
@@ -200,12 +200,12 @@ func (p requestGetShopsActivateParams) Parse() GetShopsActivateParams {
 }
 
 type GetShopsActivateParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 }
 
 func newGetShopsActivateParams(r *http.Request) (zero GetShopsActivateParams) {
 	var params GetShopsActivateParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	return params
 }
@@ -255,12 +255,12 @@ func (p requestGetShopsShopParams) Parse() GetShopsShopParams {
 }
 
 type GetShopsShopParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams) {
 	var params GetShopsShopParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	return params
 }
@@ -310,12 +310,12 @@ func (p requestGetShopsShopRTParams) Parse() GetShopsShopRTParams {
 }
 
 type GetShopsShopRTParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 }
 
 func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTParams) {
 	var params GetShopsShopRTParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	return params
 }
@@ -365,12 +365,12 @@ func (p requestGetShopsShopPetsParams) Parse() GetShopsShopPetsParams {
 }
 
 type GetShopsShopPetsParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 }
 
 func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams) {
 	var params GetShopsShopPetsParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	return params
 }

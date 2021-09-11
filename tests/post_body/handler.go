@@ -35,14 +35,14 @@ func (p requestPostPetsParams) Parse() (PostPetsParams, error) {
 }
 
 type PostPetsParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 
 	Body NewPet
 }
 
 func newPostPetsParams(r *http.Request) (zero PostPetsParams, _ error) {
 	var params PostPetsParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	defer r.Body.Close()
 	err := json.NewDecoder(r.Body).Decode(&params.Body)

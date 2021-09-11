@@ -37,14 +37,14 @@ func (p requestGetPetsPetIDParams) Parse() (GetPetsPetIDParams, error) {
 }
 
 type GetPetsPetIDParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 
 	PetID int
 }
 
 func newGetPetsPetIDParams(r *http.Request) (zero GetPetsPetIDParams, _ error) {
 	var params GetPetsPetIDParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	{
 		p := r.URL.Path

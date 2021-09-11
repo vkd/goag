@@ -50,7 +50,7 @@ func (p {{$requestParamsName}}) Parse() ({{$paramsName}}{{if $needInvalidFn}}, e
 }
 
 type {{$paramsName}} struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 	{{range $_, $q := .Parameters.Queries}}
 	{{$q.Field.String}}
 	{{- end}}
@@ -65,7 +65,7 @@ type {{$paramsName}} struct {
 
 func {{$newParamsName}}(r *http.Request) (zero {{$paramsName}}{{if $needInvalidFn}}, _ error{{end}}) {
 	var params {{$paramsName}}
-	params.Request = r
+	params.HTTPRequest = r
 
 	{{if .Parameters.Queries}}
 	{

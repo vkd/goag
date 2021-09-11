@@ -37,7 +37,7 @@ func (p requestGetShopsShopPetsPetIDParams) Parse() (GetShopsShopPetsPetIDParams
 }
 
 type GetShopsShopPetsPetIDParams struct {
-	Request *http.Request
+	HTTPRequest *http.Request
 
 	Color *string
 	Page  *int32
@@ -47,7 +47,7 @@ type GetShopsShopPetsPetIDParams struct {
 
 func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetIDParams, _ error) {
 	var params GetShopsShopPetsPetIDParams
-	params.Request = r
+	params.HTTPRequest = r
 
 	{
 		query := r.URL.Query()
