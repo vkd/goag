@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,31 +10,34 @@ import (
 )
 
 func TestGetQueryRequest(t *testing.T) {
+	testPetID := int32(1)
+
 	api := API{
-		GetPetsHandler: func(p GetPetsParamsParser) GetPetsResponser {
-			params, err := p.Parse()
+		GetPetsHandler: func(r GetPetsRequester) GetPetsResponser {
+			params, err := r.Parse()
 			if err != nil {
 				return GetPetsResponseDefault(400)
 			}
-			assert.Equal(t, pInt32(1), params.Limit)
+			assert.Equal(t, testPetID, *params.Limit)
 			return GetPetsResponse200()
 		},
 	}
 
+	target := fmt.Sprintf("/pets?limit=%d", testPetID)
 	w := httptest.NewRecorder()
-	api.ServeHTTP(w, httptest.NewRequest("GET", "/pets?limit=1", nil))
+	api.ServeHTTP(w, httptest.NewRequest("GET", target, nil))
 
 	assert.Equal(t, 200, w.Code)
 }
 
 func TestGetQueryRequest_BadRequest(t *testing.T) {
 	api := API{
-		GetPetsHandler: func(ps GetPetsParamsParser) GetPetsResponser {
-			params, err := ps.Parse()
+		GetPetsHandler: func(r GetPetsRequester) GetPetsResponser {
+			_, err := r.Parse()
 			if err != nil {
 				return GetPetsResponseDefault(http.StatusBadRequest)
 			}
-			assert.Equal(t, pInt32(1), params.Limit)
+			assert.Fail(t, "petId is not a number")
 			return GetPetsResponse200()
 		},
 	}
@@ -43,5 +47,3 @@ func TestGetQueryRequest_BadRequest(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
-
-func pInt32(i int32) *int32 { return &i }

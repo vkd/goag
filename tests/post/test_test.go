@@ -8,7 +8,7 @@ import (
 )
 
 func TestPostRequest(t *testing.T) {
-	handler := PostPetsHandlerFunc(func(_ PostPetsParamsParser) PostPetsResponser {
+	handler := PostPetsHandlerFunc(func(_ PostPetsRequester) PostPetsResponser {
 		return PostPetsResponse200()
 	})
 

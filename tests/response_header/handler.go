@@ -12,34 +12,34 @@ import (
 // GetPets -
 // ---------------------------------------------
 
-type GetPetsHandlerFunc func(GetPetsParamsParser) GetPetsResponser
+type GetPetsHandlerFunc func(r GetPetsRequester) GetPetsResponser
 
-func (f GetPetsHandlerFunc) Handle(p GetPetsParamsParser) GetPetsResponser {
-	return f(p)
+func (f GetPetsHandlerFunc) Handle(r GetPetsRequester) GetPetsResponser {
+	return f(r)
 }
 
 func (f GetPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestGetPetsParams{Request: r}).writeGetPetsResponse(w)
 }
 
-type GetPetsParamsParser interface {
-	Parse() GetPetsParams
+type GetPetsRequester interface {
+	Parse() GetPetsRequest
 }
 
 type requestGetPetsParams struct {
 	Request *http.Request
 }
 
-func (p requestGetPetsParams) Parse() GetPetsParams {
-	return newGetPetsParams(p.Request)
+func (r requestGetPetsParams) Parse() GetPetsRequest {
+	return newGetPetsParams(r.Request)
 }
 
-type GetPetsParams struct {
+type GetPetsRequest struct {
 	HTTPRequest *http.Request
 }
 
-func newGetPetsParams(r *http.Request) (zero GetPetsParams) {
-	var params GetPetsParams
+func newGetPetsParams(r *http.Request) (zero GetPetsRequest) {
+	var params GetPetsRequest
 	params.HTTPRequest = r
 
 	return params

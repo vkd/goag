@@ -14,9 +14,9 @@ func TestGetRequest(t *testing.T) {
 	testValue := "test_value"
 
 	api := API{
-		GetPetsHandler: GetPetsHandlerFunc(func(p GetPetsParamsParser) GetPetsResponser {
-			params := p.Parse()
-			assert.Equal(t, testValue, params.HTTPRequest.Context().Value(testKey{}).(string))
+		GetPetsHandler: GetPetsHandlerFunc(func(r GetPetsRequester) GetPetsResponser {
+			req := r.Parse()
+			assert.Equal(t, testValue, req.HTTPRequest.Context().Value(testKey{}).(string))
 			return GetPetsResponse200()
 		}),
 	}

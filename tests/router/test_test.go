@@ -9,23 +9,23 @@ import (
 
 func TestRouter(t *testing.T) {
 	api := API{
-		GetRTHandler: GetRTHandlerFunc(func(gr GetRTParamsParser) GetRTResponser { return GetRTResponseDefault(201) }),
+		GetRTHandler: GetRTHandlerFunc(func(_ GetRTRequester) GetRTResponser { return GetRTResponseDefault(201) }),
 
-		GetShopsHandler: GetShopsHandlerFunc(func(gr GetShopsParamsParser) GetShopsResponser { return GetShopsResponseDefault(202) }),
+		GetShopsHandler: GetShopsHandlerFunc(func(_ GetShopsRequester) GetShopsResponser { return GetShopsResponseDefault(202) }),
 
-		GetShopsRTHandler: GetShopsRTHandlerFunc(func(gr GetShopsRTParamsParser) GetShopsRTResponser { return GetShopsRTResponseDefault(203) }),
+		GetShopsRTHandler: GetShopsRTHandlerFunc(func(_ GetShopsRTRequester) GetShopsRTResponser { return GetShopsRTResponseDefault(203) }),
 
-		GetShopsShopHandler: GetShopsShopHandlerFunc(func(gssp GetShopsShopParamsParser) GetShopsShopResponser { return GetShopsShopResponseDefault(204) }),
+		GetShopsShopHandler: GetShopsShopHandlerFunc(func(_ GetShopsShopRequester) GetShopsShopResponser { return GetShopsShopResponseDefault(204) }),
 
-		GetShopsShopRTHandler: GetShopsShopRTHandlerFunc(func(gssr GetShopsShopRTParamsParser) GetShopsShopRTResponser {
+		GetShopsShopRTHandler: GetShopsShopRTHandlerFunc(func(_ GetShopsShopRTRequester) GetShopsShopRTResponser {
 			return GetShopsShopRTResponseDefault(205)
 		}),
 
-		GetShopsShopPetsHandler: GetShopsShopPetsHandlerFunc(func(gsspp GetShopsShopPetsParamsParser) GetShopsShopPetsResponser {
+		GetShopsShopPetsHandler: GetShopsShopPetsHandlerFunc(func(_ GetShopsShopPetsRequester) GetShopsShopPetsResponser {
 			return GetShopsShopPetsResponseDefault(206)
 		}),
 
-		GetShopsActivateHandler: GetShopsActivateHandlerFunc(func(gsap GetShopsActivateParamsParser) GetShopsActivateResponser {
+		GetShopsActivateHandler: GetShopsActivateHandlerFunc(func(_ GetShopsActivateRequester) GetShopsActivateResponser {
 			return GetShopsActivateResponseDefault(207)
 		}),
 	}

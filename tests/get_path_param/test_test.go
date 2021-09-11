@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"net/http/httptest"
 	"testing"
 
@@ -8,24 +9,27 @@ import (
 )
 
 func TestGetPathParam(t *testing.T) {
-	handler := GetPetsPetIDHandlerFunc(func(p GetPetsPetIDParamsParser) GetPetsPetIDResponser {
-		ps, err := p.Parse()
+	testPetID := int(1)
+
+	handler := GetPetsPetIDHandlerFunc(func(r GetPetsPetIDRequester) GetPetsPetIDResponser {
+		ps, err := r.Parse()
 		if err != nil {
 			return GetPetsPetIDResponseDefault(400)
 		}
-		assert.Equal(t, 1, ps.PetID)
+		assert.Equal(t, testPetID, ps.PetID)
 		return GetPetsPetIDResponse200()
 	})
 
+	target := fmt.Sprintf("/pets/%d", testPetID)
 	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, httptest.NewRequest("GET", "/pets/1", nil))
+	handler.ServeHTTP(w, httptest.NewRequest("GET", target, nil))
 
 	assert.Equal(t, 200, w.Code)
 }
 
 func TestGetPathParam_Invalid(t *testing.T) {
-	handler := GetPetsPetIDHandlerFunc(func(p GetPetsPetIDParamsParser) GetPetsPetIDResponser {
-		_, err := p.Parse()
+	handler := GetPetsPetIDHandlerFunc(func(r GetPetsPetIDRequester) GetPetsPetIDResponser {
+		_, err := r.Parse()
 		if err != nil {
 			return GetPetsPetIDResponseDefault(400)
 		}

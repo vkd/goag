@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"net/http/httptest"
 	"testing"
 
@@ -8,25 +9,28 @@ import (
 )
 
 func TestGetMultiParams(t *testing.T) {
+	testShop := "paw"
+	testPetID := int64(1)
+	testColor := "white"
+	testPage := int32(2)
+
 	api := API{
-		GetShopsShopPetsPetIDHandler: func(p GetShopsShopPetsPetIDParamsParser) GetShopsShopPetsPetIDResponser {
-			ps, err := p.Parse()
+		GetShopsShopPetsPetIDHandler: func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponser {
+			req, err := r.Parse()
 			if err != nil {
 				return GetShopsShopPetsPetIDResponseDefault(400)
 			}
-			assert.Equal(t, "paw", ps.Shop)
-			assert.Equal(t, int64(1), ps.PetID)
-			assert.Equal(t, stringP("white"), ps.Color)
-			assert.Equal(t, int32P(1), ps.Page)
+			assert.Equal(t, testShop, req.Shop)
+			assert.Equal(t, testPetID, req.PetID)
+			assert.Equal(t, testColor, *req.Color)
+			assert.Equal(t, testPage, *req.Page)
 			return GetShopsShopPetsPetIDResponse200()
 		},
 	}
 
+	target := fmt.Sprintf("/shops/%s/pets/%d?color=%s&page=%d", testShop, testPetID, testColor, testPage)
 	w := httptest.NewRecorder()
-	api.ServeHTTP(w, httptest.NewRequest("GET", "/shops/paw/pets/1?color=white&page=1", nil))
+	api.ServeHTTP(w, httptest.NewRequest("GET", target, nil))
 
 	assert.Equal(t, 200, w.Code)
 }
-
-func int32P(i int32) *int32    { return &i }
-func stringP(s string) *string { return &s }

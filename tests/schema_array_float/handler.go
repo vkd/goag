@@ -12,34 +12,34 @@ import (
 // GetPetsIDs -
 // ---------------------------------------------
 
-type GetPetsIDsHandlerFunc func(GetPetsIDsParamsParser) GetPetsIDsResponser
+type GetPetsIDsHandlerFunc func(r GetPetsIDsRequester) GetPetsIDsResponser
 
-func (f GetPetsIDsHandlerFunc) Handle(p GetPetsIDsParamsParser) GetPetsIDsResponser {
-	return f(p)
+func (f GetPetsIDsHandlerFunc) Handle(r GetPetsIDsRequester) GetPetsIDsResponser {
+	return f(r)
 }
 
 func (f GetPetsIDsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestGetPetsIDsParams{Request: r}).writeGetPetsIDsResponse(w)
 }
 
-type GetPetsIDsParamsParser interface {
-	Parse() GetPetsIDsParams
+type GetPetsIDsRequester interface {
+	Parse() GetPetsIDsRequest
 }
 
 type requestGetPetsIDsParams struct {
 	Request *http.Request
 }
 
-func (p requestGetPetsIDsParams) Parse() GetPetsIDsParams {
-	return newGetPetsIDsParams(p.Request)
+func (r requestGetPetsIDsParams) Parse() GetPetsIDsRequest {
+	return newGetPetsIDsParams(r.Request)
 }
 
-type GetPetsIDsParams struct {
+type GetPetsIDsRequest struct {
 	HTTPRequest *http.Request
 }
 
-func newGetPetsIDsParams(r *http.Request) (zero GetPetsIDsParams) {
-	var params GetPetsIDsParams
+func newGetPetsIDsParams(r *http.Request) (zero GetPetsIDsRequest) {
+	var params GetPetsIDsRequest
 	params.HTTPRequest = r
 
 	return params

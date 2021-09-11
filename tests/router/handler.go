@@ -12,34 +12,34 @@ import (
 // GetRT -
 // ---------------------------------------------
 
-type GetRTHandlerFunc func(GetRTParamsParser) GetRTResponser
+type GetRTHandlerFunc func(r GetRTRequester) GetRTResponser
 
-func (f GetRTHandlerFunc) Handle(p GetRTParamsParser) GetRTResponser {
-	return f(p)
+func (f GetRTHandlerFunc) Handle(r GetRTRequester) GetRTResponser {
+	return f(r)
 }
 
 func (f GetRTHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestGetRTParams{Request: r}).writeGetRTResponse(w)
 }
 
-type GetRTParamsParser interface {
-	Parse() GetRTParams
+type GetRTRequester interface {
+	Parse() GetRTRequest
 }
 
 type requestGetRTParams struct {
 	Request *http.Request
 }
 
-func (p requestGetRTParams) Parse() GetRTParams {
-	return newGetRTParams(p.Request)
+func (r requestGetRTParams) Parse() GetRTRequest {
+	return newGetRTParams(r.Request)
 }
 
-type GetRTParams struct {
+type GetRTRequest struct {
 	HTTPRequest *http.Request
 }
 
-func newGetRTParams(r *http.Request) (zero GetRTParams) {
-	var params GetRTParams
+func newGetRTParams(r *http.Request) (zero GetRTRequest) {
+	var params GetRTRequest
 	params.HTTPRequest = r
 
 	return params
@@ -67,34 +67,34 @@ func (r getRTResponseDefault) writeGetRTResponse(w http.ResponseWriter) {
 // GetShops -
 // ---------------------------------------------
 
-type GetShopsHandlerFunc func(GetShopsParamsParser) GetShopsResponser
+type GetShopsHandlerFunc func(r GetShopsRequester) GetShopsResponser
 
-func (f GetShopsHandlerFunc) Handle(p GetShopsParamsParser) GetShopsResponser {
-	return f(p)
+func (f GetShopsHandlerFunc) Handle(r GetShopsRequester) GetShopsResponser {
+	return f(r)
 }
 
 func (f GetShopsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestGetShopsParams{Request: r}).writeGetShopsResponse(w)
 }
 
-type GetShopsParamsParser interface {
-	Parse() GetShopsParams
+type GetShopsRequester interface {
+	Parse() GetShopsRequest
 }
 
 type requestGetShopsParams struct {
 	Request *http.Request
 }
 
-func (p requestGetShopsParams) Parse() GetShopsParams {
-	return newGetShopsParams(p.Request)
+func (r requestGetShopsParams) Parse() GetShopsRequest {
+	return newGetShopsParams(r.Request)
 }
 
-type GetShopsParams struct {
+type GetShopsRequest struct {
 	HTTPRequest *http.Request
 }
 
-func newGetShopsParams(r *http.Request) (zero GetShopsParams) {
-	var params GetShopsParams
+func newGetShopsParams(r *http.Request) (zero GetShopsRequest) {
+	var params GetShopsRequest
 	params.HTTPRequest = r
 
 	return params
@@ -122,34 +122,34 @@ func (r getShopsResponseDefault) writeGetShopsResponse(w http.ResponseWriter) {
 // GetShopsRT -
 // ---------------------------------------------
 
-type GetShopsRTHandlerFunc func(GetShopsRTParamsParser) GetShopsRTResponser
+type GetShopsRTHandlerFunc func(r GetShopsRTRequester) GetShopsRTResponser
 
-func (f GetShopsRTHandlerFunc) Handle(p GetShopsRTParamsParser) GetShopsRTResponser {
-	return f(p)
+func (f GetShopsRTHandlerFunc) Handle(r GetShopsRTRequester) GetShopsRTResponser {
+	return f(r)
 }
 
 func (f GetShopsRTHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestGetShopsRTParams{Request: r}).writeGetShopsRTResponse(w)
 }
 
-type GetShopsRTParamsParser interface {
-	Parse() GetShopsRTParams
+type GetShopsRTRequester interface {
+	Parse() GetShopsRTRequest
 }
 
 type requestGetShopsRTParams struct {
 	Request *http.Request
 }
 
-func (p requestGetShopsRTParams) Parse() GetShopsRTParams {
-	return newGetShopsRTParams(p.Request)
+func (r requestGetShopsRTParams) Parse() GetShopsRTRequest {
+	return newGetShopsRTParams(r.Request)
 }
 
-type GetShopsRTParams struct {
+type GetShopsRTRequest struct {
 	HTTPRequest *http.Request
 }
 
-func newGetShopsRTParams(r *http.Request) (zero GetShopsRTParams) {
-	var params GetShopsRTParams
+func newGetShopsRTParams(r *http.Request) (zero GetShopsRTRequest) {
+	var params GetShopsRTRequest
 	params.HTTPRequest = r
 
 	return params
@@ -177,34 +177,34 @@ func (r getShopsRTResponseDefault) writeGetShopsRTResponse(w http.ResponseWriter
 // GetShopsActivate -
 // ---------------------------------------------
 
-type GetShopsActivateHandlerFunc func(GetShopsActivateParamsParser) GetShopsActivateResponser
+type GetShopsActivateHandlerFunc func(r GetShopsActivateRequester) GetShopsActivateResponser
 
-func (f GetShopsActivateHandlerFunc) Handle(p GetShopsActivateParamsParser) GetShopsActivateResponser {
-	return f(p)
+func (f GetShopsActivateHandlerFunc) Handle(r GetShopsActivateRequester) GetShopsActivateResponser {
+	return f(r)
 }
 
 func (f GetShopsActivateHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestGetShopsActivateParams{Request: r}).writeGetShopsActivateResponse(w)
 }
 
-type GetShopsActivateParamsParser interface {
-	Parse() GetShopsActivateParams
+type GetShopsActivateRequester interface {
+	Parse() GetShopsActivateRequest
 }
 
 type requestGetShopsActivateParams struct {
 	Request *http.Request
 }
 
-func (p requestGetShopsActivateParams) Parse() GetShopsActivateParams {
-	return newGetShopsActivateParams(p.Request)
+func (r requestGetShopsActivateParams) Parse() GetShopsActivateRequest {
+	return newGetShopsActivateParams(r.Request)
 }
 
-type GetShopsActivateParams struct {
+type GetShopsActivateRequest struct {
 	HTTPRequest *http.Request
 }
 
-func newGetShopsActivateParams(r *http.Request) (zero GetShopsActivateParams) {
-	var params GetShopsActivateParams
+func newGetShopsActivateParams(r *http.Request) (zero GetShopsActivateRequest) {
+	var params GetShopsActivateRequest
 	params.HTTPRequest = r
 
 	return params
@@ -232,34 +232,34 @@ func (r getShopsActivateResponseDefault) writeGetShopsActivateResponse(w http.Re
 // GetShopsShop -
 // ---------------------------------------------
 
-type GetShopsShopHandlerFunc func(GetShopsShopParamsParser) GetShopsShopResponser
+type GetShopsShopHandlerFunc func(r GetShopsShopRequester) GetShopsShopResponser
 
-func (f GetShopsShopHandlerFunc) Handle(p GetShopsShopParamsParser) GetShopsShopResponser {
-	return f(p)
+func (f GetShopsShopHandlerFunc) Handle(r GetShopsShopRequester) GetShopsShopResponser {
+	return f(r)
 }
 
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestGetShopsShopParams{Request: r}).writeGetShopsShopResponse(w)
 }
 
-type GetShopsShopParamsParser interface {
-	Parse() GetShopsShopParams
+type GetShopsShopRequester interface {
+	Parse() GetShopsShopRequest
 }
 
 type requestGetShopsShopParams struct {
 	Request *http.Request
 }
 
-func (p requestGetShopsShopParams) Parse() GetShopsShopParams {
-	return newGetShopsShopParams(p.Request)
+func (r requestGetShopsShopParams) Parse() GetShopsShopRequest {
+	return newGetShopsShopParams(r.Request)
 }
 
-type GetShopsShopParams struct {
+type GetShopsShopRequest struct {
 	HTTPRequest *http.Request
 }
 
-func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams) {
-	var params GetShopsShopParams
+func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest) {
+	var params GetShopsShopRequest
 	params.HTTPRequest = r
 
 	return params
@@ -287,34 +287,34 @@ func (r getShopsShopResponseDefault) writeGetShopsShopResponse(w http.ResponseWr
 // GetShopsShopRT -
 // ---------------------------------------------
 
-type GetShopsShopRTHandlerFunc func(GetShopsShopRTParamsParser) GetShopsShopRTResponser
+type GetShopsShopRTHandlerFunc func(r GetShopsShopRTRequester) GetShopsShopRTResponser
 
-func (f GetShopsShopRTHandlerFunc) Handle(p GetShopsShopRTParamsParser) GetShopsShopRTResponser {
-	return f(p)
+func (f GetShopsShopRTHandlerFunc) Handle(r GetShopsShopRTRequester) GetShopsShopRTResponser {
+	return f(r)
 }
 
 func (f GetShopsShopRTHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestGetShopsShopRTParams{Request: r}).writeGetShopsShopRTResponse(w)
 }
 
-type GetShopsShopRTParamsParser interface {
-	Parse() GetShopsShopRTParams
+type GetShopsShopRTRequester interface {
+	Parse() GetShopsShopRTRequest
 }
 
 type requestGetShopsShopRTParams struct {
 	Request *http.Request
 }
 
-func (p requestGetShopsShopRTParams) Parse() GetShopsShopRTParams {
-	return newGetShopsShopRTParams(p.Request)
+func (r requestGetShopsShopRTParams) Parse() GetShopsShopRTRequest {
+	return newGetShopsShopRTParams(r.Request)
 }
 
-type GetShopsShopRTParams struct {
+type GetShopsShopRTRequest struct {
 	HTTPRequest *http.Request
 }
 
-func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTParams) {
-	var params GetShopsShopRTParams
+func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTRequest) {
+	var params GetShopsShopRTRequest
 	params.HTTPRequest = r
 
 	return params
@@ -342,34 +342,34 @@ func (r getShopsShopRTResponseDefault) writeGetShopsShopRTResponse(w http.Respon
 // GetShopsShopPets -
 // ---------------------------------------------
 
-type GetShopsShopPetsHandlerFunc func(GetShopsShopPetsParamsParser) GetShopsShopPetsResponser
+type GetShopsShopPetsHandlerFunc func(r GetShopsShopPetsRequester) GetShopsShopPetsResponser
 
-func (f GetShopsShopPetsHandlerFunc) Handle(p GetShopsShopPetsParamsParser) GetShopsShopPetsResponser {
-	return f(p)
+func (f GetShopsShopPetsHandlerFunc) Handle(r GetShopsShopPetsRequester) GetShopsShopPetsResponser {
+	return f(r)
 }
 
 func (f GetShopsShopPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestGetShopsShopPetsParams{Request: r}).writeGetShopsShopPetsResponse(w)
 }
 
-type GetShopsShopPetsParamsParser interface {
-	Parse() GetShopsShopPetsParams
+type GetShopsShopPetsRequester interface {
+	Parse() GetShopsShopPetsRequest
 }
 
 type requestGetShopsShopPetsParams struct {
 	Request *http.Request
 }
 
-func (p requestGetShopsShopPetsParams) Parse() GetShopsShopPetsParams {
-	return newGetShopsShopPetsParams(p.Request)
+func (r requestGetShopsShopPetsParams) Parse() GetShopsShopPetsRequest {
+	return newGetShopsShopPetsParams(r.Request)
 }
 
-type GetShopsShopPetsParams struct {
+type GetShopsShopPetsRequest struct {
 	HTTPRequest *http.Request
 }
 
-func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams) {
-	var params GetShopsShopPetsParams
+func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsRequest) {
+	var params GetShopsShopPetsRequest
 	params.HTTPRequest = r
 
 	return params

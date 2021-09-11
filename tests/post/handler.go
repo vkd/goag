@@ -12,34 +12,34 @@ import (
 // PostPets -
 // ---------------------------------------------
 
-type PostPetsHandlerFunc func(PostPetsParamsParser) PostPetsResponser
+type PostPetsHandlerFunc func(r PostPetsRequester) PostPetsResponser
 
-func (f PostPetsHandlerFunc) Handle(p PostPetsParamsParser) PostPetsResponser {
-	return f(p)
+func (f PostPetsHandlerFunc) Handle(r PostPetsRequester) PostPetsResponser {
+	return f(r)
 }
 
 func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestPostPetsParams{Request: r}).writePostPetsResponse(w)
 }
 
-type PostPetsParamsParser interface {
-	Parse() PostPetsParams
+type PostPetsRequester interface {
+	Parse() PostPetsRequest
 }
 
 type requestPostPetsParams struct {
 	Request *http.Request
 }
 
-func (p requestPostPetsParams) Parse() PostPetsParams {
-	return newPostPetsParams(p.Request)
+func (r requestPostPetsParams) Parse() PostPetsRequest {
+	return newPostPetsParams(r.Request)
 }
 
-type PostPetsParams struct {
+type PostPetsRequest struct {
 	HTTPRequest *http.Request
 }
 
-func newPostPetsParams(r *http.Request) (zero PostPetsParams) {
-	var params PostPetsParams
+func newPostPetsParams(r *http.Request) (zero PostPetsRequest) {
+	var params PostPetsRequest
 	params.HTTPRequest = r
 
 	return params

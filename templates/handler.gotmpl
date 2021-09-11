@@ -14,8 +14,8 @@ import (
 {{ range $_, $h := .Handlers }}
 {{- $name := $h.Name}}
 {{- $handlerFuncName := print $name `HandlerFunc` }}
-{{- $paramsName := print $name `Params` }}
-{{- $paramsParserName := print $name `ParamsParser` }}
+{{- $requestName := print $name `Request` }}
+{{- $requesterName := print $name `Requester` }}
 {{- $responserName := print $name `Responser` }}
 {{- $writeResponseFuncName := print `write` $name `Response` }}
 {{- $requestParamsName := print `request` $name `Params` }}
@@ -27,29 +27,29 @@ import (
 // ---------------------------------------------
 
 {{if $h.Description}}// {{$handlerFuncName}} - {{$h.Description}}{{end}}
-type {{$handlerFuncName}} func({{$paramsParserName}}) {{$responserName}}
+type {{$handlerFuncName}} func(r {{$requesterName}}) {{$responserName}}
 
-func (f {{$handlerFuncName}}) Handle(p {{$paramsParserName}}) {{$responserName}} {
-	return f(p)
+func (f {{$handlerFuncName}}) Handle(r {{$requesterName}}) {{$responserName}} {
+	return f(r)
 }
 
 func (f {{$handlerFuncName}}) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle({{$requestParamsName}}{Request: r}).{{$writeResponseFuncName}}(w)
 }
 
-type {{$paramsParserName}} interface {
-	Parse() ({{$paramsName}}{{if $needInvalidFn}}, error{{end}})
+type {{$requesterName}} interface {
+	Parse() ({{$requestName}}{{if $needInvalidFn}}, error{{end}})
 }
 
 type {{$requestParamsName}} struct {
 	Request *http.Request
 }
 
-func (p {{$requestParamsName}}) Parse() ({{$paramsName}}{{if $needInvalidFn}}, error{{end}}) {
-	return {{$newParamsName}}(p.Request)
+func (r {{$requestParamsName}}) Parse() ({{$requestName}}{{if $needInvalidFn}}, error{{end}}) {
+	return {{$newParamsName}}(r.Request)
 }
 
-type {{$paramsName}} struct {
+type {{$requestName}} struct {
 	HTTPRequest *http.Request
 	{{range $_, $q := .Parameters.Queries}}
 	{{$q.Field.String}}
@@ -63,8 +63,8 @@ type {{$paramsName}} struct {
 	{{- end}}
 }
 
-func {{$newParamsName}}(r *http.Request) (zero {{$paramsName}}{{if $needInvalidFn}}, _ error{{end}}) {
-	var params {{$paramsName}}
+func {{$newParamsName}}(r *http.Request) (zero {{$requestName}}{{if $needInvalidFn}}, _ error{{end}}) {
+	var params {{$requestName}}
 	params.HTTPRequest = r
 
 	{{if .Parameters.Queries}}

@@ -9,9 +9,7 @@ import (
 
 func TestGetRequest(t *testing.T) {
 	api := API{
-		GetPetsHandler: GetPetsHandlerFunc(func(_ GetPetsParamsParser) GetPetsResponser {
-			return GetPetsResponse200()
-		}),
+		GetPetsHandler: func(_ GetPetsRequester) GetPetsResponser { return GetPetsResponse200() },
 	}
 
 	w := httptest.NewRecorder()
@@ -22,7 +20,7 @@ func TestGetRequest(t *testing.T) {
 
 func TestGetRequest_NotFound(t *testing.T) {
 	api := API{
-		GetPetsHandler: func(_ GetPetsParamsParser) GetPetsResponser { return GetPetsResponse200() },
+		GetPetsHandler: func(_ GetPetsRequester) GetPetsResponser { return GetPetsResponse200() },
 	}
 
 	w := httptest.NewRecorder()

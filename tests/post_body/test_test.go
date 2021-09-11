@@ -9,15 +9,15 @@ import (
 )
 
 func TestPostBody(t *testing.T) {
-	handler := PostPetsHandlerFunc(func(ps PostPetsParamsParser) PostPetsResponser {
-		p, err := ps.Parse()
+	handler := PostPetsHandlerFunc(func(r PostPetsRequester) PostPetsResponser {
+		req, err := r.Parse()
 		if err != nil {
 			assert.NoError(t, err)
 			assert.Fail(t, "Should not call invalid function")
 			return PostPetsResponseDefault(400)
 		}
-		assert.Equal(t, "mike", p.Body.Name)
-		assert.Equal(t, "cat", p.Body.Tag)
+		assert.Equal(t, "mike", req.Body.Name)
+		assert.Equal(t, "cat", req.Body.Tag)
 		return PostPetsResponse201()
 	})
 

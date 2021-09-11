@@ -9,7 +9,7 @@ import (
 )
 
 func TestSchemaAllOf(t *testing.T) {
-	handler := GetPetHandlerFunc(func(_ GetPetParamsParser) GetPetResponser {
+	handler := GetPetHandlerFunc(func(_ GetPetRequester) GetPetResponser {
 		return GetPetResponse200JSON(Pet{ID: 1, NewPet: NewPet{Name: "mike", Tag: "cat"}})
 	})
 

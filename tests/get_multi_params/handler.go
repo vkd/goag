@@ -14,29 +14,29 @@ import (
 // GetShopsShopPetsPetID -
 // ---------------------------------------------
 
-type GetShopsShopPetsPetIDHandlerFunc func(GetShopsShopPetsPetIDParamsParser) GetShopsShopPetsPetIDResponser
+type GetShopsShopPetsPetIDHandlerFunc func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponser
 
-func (f GetShopsShopPetsPetIDHandlerFunc) Handle(p GetShopsShopPetsPetIDParamsParser) GetShopsShopPetsPetIDResponser {
-	return f(p)
+func (f GetShopsShopPetsPetIDHandlerFunc) Handle(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponser {
+	return f(r)
 }
 
 func (f GetShopsShopPetsPetIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.Handle(requestGetShopsShopPetsPetIDParams{Request: r}).writeGetShopsShopPetsPetIDResponse(w)
 }
 
-type GetShopsShopPetsPetIDParamsParser interface {
-	Parse() (GetShopsShopPetsPetIDParams, error)
+type GetShopsShopPetsPetIDRequester interface {
+	Parse() (GetShopsShopPetsPetIDRequest, error)
 }
 
 type requestGetShopsShopPetsPetIDParams struct {
 	Request *http.Request
 }
 
-func (p requestGetShopsShopPetsPetIDParams) Parse() (GetShopsShopPetsPetIDParams, error) {
-	return newGetShopsShopPetsPetIDParams(p.Request)
+func (r requestGetShopsShopPetsPetIDParams) Parse() (GetShopsShopPetsPetIDRequest, error) {
+	return newGetShopsShopPetsPetIDParams(r.Request)
 }
 
-type GetShopsShopPetsPetIDParams struct {
+type GetShopsShopPetsPetIDRequest struct {
 	HTTPRequest *http.Request
 
 	Color *string
@@ -45,8 +45,8 @@ type GetShopsShopPetsPetIDParams struct {
 	PetID int64
 }
 
-func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetIDParams, _ error) {
-	var params GetShopsShopPetsPetIDParams
+func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetIDRequest, _ error) {
+	var params GetShopsShopPetsPetIDRequest
 	params.HTTPRequest = r
 
 	{

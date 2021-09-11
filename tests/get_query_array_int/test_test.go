@@ -9,13 +9,12 @@ import (
 
 func TestGetQueryArrayInt(t *testing.T) {
 	handler := GetPetsHandlerFunc(
-		func(p GetPetsParamsParser) GetPetsResponser {
-			ps, err := p.Parse()
+		func(r GetPetsRequester) GetPetsResponser {
+			req, err := r.Parse()
 			if err != nil {
 				return GetPetsResponseDefault(400)
 			}
-			assert.Len(t, ps.Tag, 2)
-			assert.Equal(t, []int64{2, 4}, ps.Tag)
+			assert.Equal(t, []int64{2, 4}, req.Tag)
 			return GetPetsResponse200()
 		},
 	)

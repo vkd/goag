@@ -9,8 +9,8 @@ import (
 
 func TestQueryRequired(t *testing.T) {
 	handler := GetPetsHandlerFunc(
-		func(p GetPetsParamsParser) GetPetsResponser {
-			_, err := p.Parse()
+		func(r GetPetsRequester) GetPetsResponser {
+			_, err := r.Parse()
 			if err != nil {
 				return GetPetsResponseDefault(400)
 			}
