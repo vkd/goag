@@ -9,23 +9,23 @@ import (
 
 func TestRouter(t *testing.T) {
 	api := API{
-		GetRTHandler: GetRTHandlerFunc(func(_ GetRTRequester) GetRTResponser { return GetRTResponseDefault(201) }),
+		GetRTHandler: GetRTHandlerFunc(func(_ GetRTRequester) GetRTResponder { return GetRTResponseDefault(201) }),
 
-		GetShopsHandler: GetShopsHandlerFunc(func(_ GetShopsRequester) GetShopsResponser { return GetShopsResponseDefault(202) }),
+		GetShopsHandler: GetShopsHandlerFunc(func(_ GetShopsRequester) GetShopsResponder { return GetShopsResponseDefault(202) }),
 
-		GetShopsRTHandler: GetShopsRTHandlerFunc(func(_ GetShopsRTRequester) GetShopsRTResponser { return GetShopsRTResponseDefault(203) }),
+		GetShopsRTHandler: GetShopsRTHandlerFunc(func(_ GetShopsRTRequester) GetShopsRTResponder { return GetShopsRTResponseDefault(203) }),
 
-		GetShopsShopHandler: GetShopsShopHandlerFunc(func(_ GetShopsShopRequester) GetShopsShopResponser { return GetShopsShopResponseDefault(204) }),
+		GetShopsShopHandler: GetShopsShopHandlerFunc(func(_ GetShopsShopRequester) GetShopsShopResponder { return GetShopsShopResponseDefault(204) }),
 
-		GetShopsShopRTHandler: GetShopsShopRTHandlerFunc(func(_ GetShopsShopRTRequester) GetShopsShopRTResponser {
+		GetShopsShopRTHandler: GetShopsShopRTHandlerFunc(func(_ GetShopsShopRTRequester) GetShopsShopRTResponder {
 			return GetShopsShopRTResponseDefault(205)
 		}),
 
-		GetShopsShopPetsHandler: GetShopsShopPetsHandlerFunc(func(_ GetShopsShopPetsRequester) GetShopsShopPetsResponser {
+		GetShopsShopPetsHandler: GetShopsShopPetsHandlerFunc(func(_ GetShopsShopPetsRequester) GetShopsShopPetsResponder {
 			return GetShopsShopPetsResponseDefault(206)
 		}),
 
-		GetShopsActivateHandler: GetShopsActivateHandlerFunc(func(_ GetShopsActivateRequester) GetShopsActivateResponser {
+		GetShopsActivateHandler: GetShopsActivateHandlerFunc(func(_ GetShopsActivateRequester) GetShopsActivateResponder {
 			return GetShopsActivateResponseDefault(207)
 		}),
 	}

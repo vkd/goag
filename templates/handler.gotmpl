@@ -16,7 +16,7 @@ import (
 {{- $handlerFuncName := print $name `HandlerFunc` }}
 {{- $requestName := print $name `Request` }}
 {{- $requesterName := print $name `Requester` }}
-{{- $responserName := print $name `Responser` }}
+{{- $responderName := print $name `Responder` }}
 {{- $writeResponseFuncName := print `write` $name `Response` }}
 {{- $requestParamsName := print `request` $name `Params` }}
 {{- $newParamsName := print `new` $name `Params` }}
@@ -27,9 +27,9 @@ import (
 // ---------------------------------------------
 
 {{if $h.Description}}// {{$handlerFuncName}} - {{$h.Description}}{{end}}
-type {{$handlerFuncName}} func(r {{$requesterName}}) {{$responserName}}
+type {{$handlerFuncName}} func(r {{$requesterName}}) {{$responderName}}
 
-func (f {{$handlerFuncName}}) Handle(r {{$requesterName}}) {{$responserName}} {
+func (f {{$handlerFuncName}}) Handle(r {{$requesterName}}) {{$responderName}} {
 	return f(r)
 }
 
@@ -100,7 +100,7 @@ func {{$newParamsName}}(r *http.Request) (zero {{$requestName}}{{if $needInvalid
 	return params{{if $needInvalidFn}}, nil{{end}}
 }
 
-type {{$responserName}} interface {
+type {{$responderName}} interface {
 	{{$writeResponseFuncName}}(w http.ResponseWriter)
 }
 

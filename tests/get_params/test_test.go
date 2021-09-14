@@ -15,7 +15,7 @@ func TestGetMultiParams(t *testing.T) {
 	testPage := int32(2)
 
 	api := API{
-		GetShopsShopPetsPetIDHandler: func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponser {
+		GetShopsShopPetsPetIDHandler: func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponder {
 			req, err := r.Parse()
 			if err != nil {
 				return GetShopsShopPetsPetIDResponseDefault(400)
@@ -37,7 +37,7 @@ func TestGetMultiParams(t *testing.T) {
 
 func TestGetMultiParams_Optional(t *testing.T) {
 	api := API{
-		GetShopsShopPetsPetIDHandler: func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponser {
+		GetShopsShopPetsPetIDHandler: func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponder {
 			req, err := r.Parse()
 			if err != nil {
 				return GetShopsShopPetsPetIDResponseDefault(400)
@@ -55,7 +55,7 @@ func TestGetMultiParams_Optional(t *testing.T) {
 
 func TestGetMultiParams_BadRequest(t *testing.T) {
 	api := API{
-		GetShopsShopPetsPetIDHandler: func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponser {
+		GetShopsShopPetsPetIDHandler: func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponder {
 			_, err := r.Parse()
 			if err != nil {
 				return GetShopsShopPetsPetIDResponseDefault(400)

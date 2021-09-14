@@ -13,9 +13,9 @@ import (
 // GetPets -
 // ---------------------------------------------
 
-type GetPetsHandlerFunc func(r GetPetsRequester) GetPetsResponser
+type GetPetsHandlerFunc func(r GetPetsRequester) GetPetsResponder
 
-func (f GetPetsHandlerFunc) Handle(r GetPetsRequester) GetPetsResponser {
+func (f GetPetsHandlerFunc) Handle(r GetPetsRequester) GetPetsResponder {
 	return f(r)
 }
 
@@ -73,11 +73,11 @@ func newGetPetsParams(r *http.Request) (zero GetPetsRequest, _ error) {
 	return params, nil
 }
 
-type GetPetsResponser interface {
+type GetPetsResponder interface {
 	writeGetPetsResponse(w http.ResponseWriter)
 }
 
-func GetPetsResponse200() GetPetsResponser {
+func GetPetsResponse200() GetPetsResponder {
 	var out getPetsResponse200
 	return out
 }
@@ -88,7 +88,7 @@ func (r getPetsResponse200) writeGetPetsResponse(w http.ResponseWriter) {
 	w.WriteHeader(200)
 }
 
-func GetPetsResponseDefault(code int) GetPetsResponser {
+func GetPetsResponseDefault(code int) GetPetsResponder {
 	var out getPetsResponseDefault
 	out.Code = code
 	return out

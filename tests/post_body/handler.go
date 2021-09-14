@@ -12,9 +12,9 @@ import (
 // PostPets -
 // ---------------------------------------------
 
-type PostPetsHandlerFunc func(r PostPetsRequester) PostPetsResponser
+type PostPetsHandlerFunc func(r PostPetsRequester) PostPetsResponder
 
-func (f PostPetsHandlerFunc) Handle(r PostPetsRequester) PostPetsResponser {
+func (f PostPetsHandlerFunc) Handle(r PostPetsRequester) PostPetsResponder {
 	return f(r)
 }
 
@@ -53,11 +53,11 @@ func newPostPetsParams(r *http.Request) (zero PostPetsRequest, _ error) {
 	return params, nil
 }
 
-type PostPetsResponser interface {
+type PostPetsResponder interface {
 	writePostPetsResponse(w http.ResponseWriter)
 }
 
-func PostPetsResponse201() PostPetsResponser {
+func PostPetsResponse201() PostPetsResponder {
 	var out postPetsResponse201
 	return out
 }
@@ -68,7 +68,7 @@ func (r postPetsResponse201) writePostPetsResponse(w http.ResponseWriter) {
 	w.WriteHeader(201)
 }
 
-func PostPetsResponseDefault(code int) PostPetsResponser {
+func PostPetsResponseDefault(code int) PostPetsResponder {
 	var out postPetsResponseDefault
 	out.Code = code
 	return out

@@ -28,7 +28,7 @@ type Response struct {
 }
 
 const txtResponse = `{{$response := . -}}
-func {{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.Type.String}}{{end}}) {{.HandlerName}}Responser {
+func {{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.Type.String}}{{end}}) {{.HandlerName}}Responder {
 	var out {{.PrivateName}}
 	{{- range $_, $a := .Args}}
 	out.{{if .IsHeader}}Headers.{{end}}{{.FieldName}} = {{.ArgName}}

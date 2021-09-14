@@ -12,9 +12,9 @@ import (
 // GetRT -
 // ---------------------------------------------
 
-type GetRTHandlerFunc func(r GetRTRequester) GetRTResponser
+type GetRTHandlerFunc func(r GetRTRequester) GetRTResponder
 
-func (f GetRTHandlerFunc) Handle(r GetRTRequester) GetRTResponser {
+func (f GetRTHandlerFunc) Handle(r GetRTRequester) GetRTResponder {
 	return f(r)
 }
 
@@ -45,11 +45,11 @@ func newGetRTParams(r *http.Request) (zero GetRTRequest) {
 	return params
 }
 
-type GetRTResponser interface {
+type GetRTResponder interface {
 	writeGetRTResponse(w http.ResponseWriter)
 }
 
-func GetRTResponseDefault(code int) GetRTResponser {
+func GetRTResponseDefault(code int) GetRTResponder {
 	var out getRTResponseDefault
 	out.Code = code
 	return out
@@ -67,9 +67,9 @@ func (r getRTResponseDefault) writeGetRTResponse(w http.ResponseWriter) {
 // GetShops -
 // ---------------------------------------------
 
-type GetShopsHandlerFunc func(r GetShopsRequester) GetShopsResponser
+type GetShopsHandlerFunc func(r GetShopsRequester) GetShopsResponder
 
-func (f GetShopsHandlerFunc) Handle(r GetShopsRequester) GetShopsResponser {
+func (f GetShopsHandlerFunc) Handle(r GetShopsRequester) GetShopsResponder {
 	return f(r)
 }
 
@@ -100,11 +100,11 @@ func newGetShopsParams(r *http.Request) (zero GetShopsRequest) {
 	return params
 }
 
-type GetShopsResponser interface {
+type GetShopsResponder interface {
 	writeGetShopsResponse(w http.ResponseWriter)
 }
 
-func GetShopsResponseDefault(code int) GetShopsResponser {
+func GetShopsResponseDefault(code int) GetShopsResponder {
 	var out getShopsResponseDefault
 	out.Code = code
 	return out
@@ -122,9 +122,9 @@ func (r getShopsResponseDefault) writeGetShopsResponse(w http.ResponseWriter) {
 // GetShopsRT -
 // ---------------------------------------------
 
-type GetShopsRTHandlerFunc func(r GetShopsRTRequester) GetShopsRTResponser
+type GetShopsRTHandlerFunc func(r GetShopsRTRequester) GetShopsRTResponder
 
-func (f GetShopsRTHandlerFunc) Handle(r GetShopsRTRequester) GetShopsRTResponser {
+func (f GetShopsRTHandlerFunc) Handle(r GetShopsRTRequester) GetShopsRTResponder {
 	return f(r)
 }
 
@@ -155,11 +155,11 @@ func newGetShopsRTParams(r *http.Request) (zero GetShopsRTRequest) {
 	return params
 }
 
-type GetShopsRTResponser interface {
+type GetShopsRTResponder interface {
 	writeGetShopsRTResponse(w http.ResponseWriter)
 }
 
-func GetShopsRTResponseDefault(code int) GetShopsRTResponser {
+func GetShopsRTResponseDefault(code int) GetShopsRTResponder {
 	var out getShopsRTResponseDefault
 	out.Code = code
 	return out
@@ -177,9 +177,9 @@ func (r getShopsRTResponseDefault) writeGetShopsRTResponse(w http.ResponseWriter
 // GetShopsActivate -
 // ---------------------------------------------
 
-type GetShopsActivateHandlerFunc func(r GetShopsActivateRequester) GetShopsActivateResponser
+type GetShopsActivateHandlerFunc func(r GetShopsActivateRequester) GetShopsActivateResponder
 
-func (f GetShopsActivateHandlerFunc) Handle(r GetShopsActivateRequester) GetShopsActivateResponser {
+func (f GetShopsActivateHandlerFunc) Handle(r GetShopsActivateRequester) GetShopsActivateResponder {
 	return f(r)
 }
 
@@ -210,11 +210,11 @@ func newGetShopsActivateParams(r *http.Request) (zero GetShopsActivateRequest) {
 	return params
 }
 
-type GetShopsActivateResponser interface {
+type GetShopsActivateResponder interface {
 	writeGetShopsActivateResponse(w http.ResponseWriter)
 }
 
-func GetShopsActivateResponseDefault(code int) GetShopsActivateResponser {
+func GetShopsActivateResponseDefault(code int) GetShopsActivateResponder {
 	var out getShopsActivateResponseDefault
 	out.Code = code
 	return out
@@ -232,9 +232,9 @@ func (r getShopsActivateResponseDefault) writeGetShopsActivateResponse(w http.Re
 // GetShopsShop -
 // ---------------------------------------------
 
-type GetShopsShopHandlerFunc func(r GetShopsShopRequester) GetShopsShopResponser
+type GetShopsShopHandlerFunc func(r GetShopsShopRequester) GetShopsShopResponder
 
-func (f GetShopsShopHandlerFunc) Handle(r GetShopsShopRequester) GetShopsShopResponser {
+func (f GetShopsShopHandlerFunc) Handle(r GetShopsShopRequester) GetShopsShopResponder {
 	return f(r)
 }
 
@@ -265,11 +265,11 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest) {
 	return params
 }
 
-type GetShopsShopResponser interface {
+type GetShopsShopResponder interface {
 	writeGetShopsShopResponse(w http.ResponseWriter)
 }
 
-func GetShopsShopResponseDefault(code int) GetShopsShopResponser {
+func GetShopsShopResponseDefault(code int) GetShopsShopResponder {
 	var out getShopsShopResponseDefault
 	out.Code = code
 	return out
@@ -287,9 +287,9 @@ func (r getShopsShopResponseDefault) writeGetShopsShopResponse(w http.ResponseWr
 // GetShopsShopRT -
 // ---------------------------------------------
 
-type GetShopsShopRTHandlerFunc func(r GetShopsShopRTRequester) GetShopsShopRTResponser
+type GetShopsShopRTHandlerFunc func(r GetShopsShopRTRequester) GetShopsShopRTResponder
 
-func (f GetShopsShopRTHandlerFunc) Handle(r GetShopsShopRTRequester) GetShopsShopRTResponser {
+func (f GetShopsShopRTHandlerFunc) Handle(r GetShopsShopRTRequester) GetShopsShopRTResponder {
 	return f(r)
 }
 
@@ -320,11 +320,11 @@ func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTRequest) {
 	return params
 }
 
-type GetShopsShopRTResponser interface {
+type GetShopsShopRTResponder interface {
 	writeGetShopsShopRTResponse(w http.ResponseWriter)
 }
 
-func GetShopsShopRTResponseDefault(code int) GetShopsShopRTResponser {
+func GetShopsShopRTResponseDefault(code int) GetShopsShopRTResponder {
 	var out getShopsShopRTResponseDefault
 	out.Code = code
 	return out
@@ -342,9 +342,9 @@ func (r getShopsShopRTResponseDefault) writeGetShopsShopRTResponse(w http.Respon
 // GetShopsShopPets -
 // ---------------------------------------------
 
-type GetShopsShopPetsHandlerFunc func(r GetShopsShopPetsRequester) GetShopsShopPetsResponser
+type GetShopsShopPetsHandlerFunc func(r GetShopsShopPetsRequester) GetShopsShopPetsResponder
 
-func (f GetShopsShopPetsHandlerFunc) Handle(r GetShopsShopPetsRequester) GetShopsShopPetsResponser {
+func (f GetShopsShopPetsHandlerFunc) Handle(r GetShopsShopPetsRequester) GetShopsShopPetsResponder {
 	return f(r)
 }
 
@@ -375,11 +375,11 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsRequest) {
 	return params
 }
 
-type GetShopsShopPetsResponser interface {
+type GetShopsShopPetsResponder interface {
 	writeGetShopsShopPetsResponse(w http.ResponseWriter)
 }
 
-func GetShopsShopPetsResponseDefault(code int) GetShopsShopPetsResponser {
+func GetShopsShopPetsResponseDefault(code int) GetShopsShopPetsResponder {
 	var out getShopsShopPetsResponseDefault
 	out.Code = code
 	return out

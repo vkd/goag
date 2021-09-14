@@ -8,7 +8,7 @@ import (
 )
 
 func TestResponseDefault(t *testing.T) {
-	handler := GetPetsHandlerFunc(func(_ GetPetsRequester) GetPetsResponser {
+	handler := GetPetsHandlerFunc(func(_ GetPetsRequester) GetPetsResponder {
 		return GetPetsResponseDefaultJSON(400, Error{Message: "test default response"})
 	})
 

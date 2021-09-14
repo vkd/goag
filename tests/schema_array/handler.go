@@ -12,9 +12,9 @@ import (
 // GetPets -
 // ---------------------------------------------
 
-type GetPetsHandlerFunc func(r GetPetsRequester) GetPetsResponser
+type GetPetsHandlerFunc func(r GetPetsRequester) GetPetsResponder
 
-func (f GetPetsHandlerFunc) Handle(r GetPetsRequester) GetPetsResponser {
+func (f GetPetsHandlerFunc) Handle(r GetPetsRequester) GetPetsResponder {
 	return f(r)
 }
 
@@ -45,11 +45,11 @@ func newGetPetsParams(r *http.Request) (zero GetPetsRequest) {
 	return params
 }
 
-type GetPetsResponser interface {
+type GetPetsResponder interface {
 	writeGetPetsResponse(w http.ResponseWriter)
 }
 
-func GetPetsResponse200JSON(body []Pet) GetPetsResponser {
+func GetPetsResponse200JSON(body []Pet) GetPetsResponder {
 	var out getPetsResponse200JSON
 	out.Body = body
 	return out
@@ -68,9 +68,9 @@ func (r getPetsResponse200JSON) writeGetPetsResponse(w http.ResponseWriter) {
 // GetPetsNames -
 // ---------------------------------------------
 
-type GetPetsNamesHandlerFunc func(r GetPetsNamesRequester) GetPetsNamesResponser
+type GetPetsNamesHandlerFunc func(r GetPetsNamesRequester) GetPetsNamesResponder
 
-func (f GetPetsNamesHandlerFunc) Handle(r GetPetsNamesRequester) GetPetsNamesResponser {
+func (f GetPetsNamesHandlerFunc) Handle(r GetPetsNamesRequester) GetPetsNamesResponder {
 	return f(r)
 }
 
@@ -101,11 +101,11 @@ func newGetPetsNamesParams(r *http.Request) (zero GetPetsNamesRequest) {
 	return params
 }
 
-type GetPetsNamesResponser interface {
+type GetPetsNamesResponder interface {
 	writeGetPetsNamesResponse(w http.ResponseWriter)
 }
 
-func GetPetsNamesResponse200JSON(body []string) GetPetsNamesResponser {
+func GetPetsNamesResponse200JSON(body []string) GetPetsNamesResponder {
 	var out getPetsNamesResponse200JSON
 	out.Body = body
 	return out

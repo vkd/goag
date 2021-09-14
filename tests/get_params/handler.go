@@ -14,9 +14,9 @@ import (
 // GetShopsShopPetsPetID -
 // ---------------------------------------------
 
-type GetShopsShopPetsPetIDHandlerFunc func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponser
+type GetShopsShopPetsPetIDHandlerFunc func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponder
 
-func (f GetShopsShopPetsPetIDHandlerFunc) Handle(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponser {
+func (f GetShopsShopPetsPetIDHandlerFunc) Handle(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponder {
 	return f(r)
 }
 
@@ -127,11 +127,11 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 	return params, nil
 }
 
-type GetShopsShopPetsPetIDResponser interface {
+type GetShopsShopPetsPetIDResponder interface {
 	writeGetShopsShopPetsPetIDResponse(w http.ResponseWriter)
 }
 
-func GetShopsShopPetsPetIDResponse200() GetShopsShopPetsPetIDResponser {
+func GetShopsShopPetsPetIDResponse200() GetShopsShopPetsPetIDResponder {
 	var out getShopsShopPetsPetIDResponse200
 	return out
 }
@@ -142,7 +142,7 @@ func (r getShopsShopPetsPetIDResponse200) writeGetShopsShopPetsPetIDResponse(w h
 	w.WriteHeader(200)
 }
 
-func GetShopsShopPetsPetIDResponseDefault(code int) GetShopsShopPetsPetIDResponser {
+func GetShopsShopPetsPetIDResponseDefault(code int) GetShopsShopPetsPetIDResponder {
 	var out getShopsShopPetsPetIDResponseDefault
 	out.Code = code
 	return out

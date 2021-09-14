@@ -9,7 +9,7 @@ import (
 )
 
 func TestPostBody(t *testing.T) {
-	handler := PostPetsHandlerFunc(func(r PostPetsRequester) PostPetsResponser {
+	handler := PostPetsHandlerFunc(func(r PostPetsRequester) PostPetsResponder {
 		req, err := r.Parse()
 		if err != nil {
 			assert.NoError(t, err)
