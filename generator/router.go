@@ -59,12 +59,20 @@ func NewRoutes(routePrefix string, handlers []Handler) ([]Route, error) {
 					route.WildcardHandler = &RouteHandler{Prefix: p.prefix}
 				}
 				for _, h := range hs {
-					route.WildcardHandler.Methods = append(route.WildcardHandler.Methods, RouteMethod{Method: strings.Title(strings.ToLower(h.Method)), HandlerName: h.Name})
+					route.WildcardHandler.Methods = append(route.WildcardHandler.Methods, RouteMethod{
+						Method:      strings.Title(strings.ToLower(h.Method)),
+						HandlerName: h.Name,
+						Path:        h.Path,
+					})
 				}
 			} else {
 				rh := RouteHandler{Prefix: p.prefix}
 				for _, h := range hs {
-					rh.Methods = append(rh.Methods, RouteMethod{Method: strings.Title(strings.ToLower(h.Method)), HandlerName: h.Name})
+					rh.Methods = append(rh.Methods, RouteMethod{
+						Method:      strings.Title(strings.ToLower(h.Method)),
+						HandlerName: h.Name,
+						Path:        h.Path,
+					})
 				}
 				route.Handlers = append(route.Handlers, rh)
 			}
@@ -125,6 +133,7 @@ type ReRoute struct {
 type RouteMethod struct {
 	Method      string
 	HandlerName string
+	Path        string
 }
 
 func splitPath(s string) (string, string) {

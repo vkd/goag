@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"net/http"
 	"strings"
 )
@@ -10,22 +11,31 @@ type API struct {
 
 	// not found
 	NotFoundHandler http.Handler
+
+	Middlewares []func(h http.Handler) http.Handler
 }
 
 func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
-	h := rt.route(path, r.Method)
+	h, path := rt.route(path, r.Method)
 	if h == nil {
 		h = rt.NotFoundHandler
 		if h == nil {
 			h = http.NotFoundHandler()
 		}
+		h.ServeHTTP(rw, r)
+		return
 	}
+
+	for _, m := range rt.Middlewares {
+		h = m(h)
+	}
+	r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
 	h.ServeHTTP(rw, r)
 }
 
-func (rt *API) route(path, method string) http.Handler {
+func (rt *API) route(path, method string) (http.Handler, string) {
 	prefix, path := splitPath(path)
 
 	if path != "" {
@@ -35,10 +45,10 @@ func (rt *API) route(path, method string) http.Handler {
 		}
 	}
 
-	return nil
+	return nil, ""
 }
 
-func (rt *API) routeShops(path, method string) http.Handler {
+func (rt *API) routeShops(path, method string) (http.Handler, string) {
 	_, path = splitPath(path)
 
 	if path != "" {
@@ -46,10 +56,10 @@ func (rt *API) routeShops(path, method string) http.Handler {
 		return rt.routeShopsShop(path, method)
 	}
 
-	return nil
+	return nil, ""
 }
 
-func (rt *API) routeShopsShop(path, method string) http.Handler {
+func (rt *API) routeShopsShop(path, method string) (http.Handler, string) {
 	prefix, path := splitPath(path)
 
 	if path != "" {
@@ -59,21 +69,30 @@ func (rt *API) routeShopsShop(path, method string) http.Handler {
 		}
 	}
 
-	return nil
+	return nil, ""
 }
 
-func (rt *API) routeShopsShopPets(path, method string) http.Handler {
+func (rt *API) routeShopsShopPets(path, method string) (http.Handler, string) {
 	_, path = splitPath(path)
 
 	if path == "" {
 
 		switch method {
 		case http.MethodGet:
-			return rt.GetShopsShopPetsPetIDHandler
+			return rt.GetShopsShopPetsPetIDHandler, "/shops/{shop}/pets/{petId}"
 		}
 	}
 
-	return nil
+	return nil, ""
+}
+
+type pathKey struct{}
+
+func SchemaPath(r *http.Request) string {
+	if s, ok := r.Context().Value(pathKey{}).(string); ok {
+		return s
+	}
+	return r.URL.Path
 }
 
 func splitPath(s string) (string, string) {

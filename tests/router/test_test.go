@@ -1,6 +1,7 @@
 package test
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -31,25 +32,33 @@ func TestRouter(t *testing.T) {
 	}
 
 	for _, tt := range []struct {
-		path string
-		code int
+		path       string
+		code       int
+		schemaPath string
 	}{
-		{"/", 201},
-		{"/shops", 202},
-		{"/shops/", 203},
-		{"/shops/my_shop", 204},
+		{"/", 201, "/"},
+		{"/shops", 202, "/shops"},
+		{"/shops/", 203, "/shops/"},
+		{"/shops/my_shop", 204, "/shops/{shop}"},
 
-		{"/shops/my_shop/", 205},
-		{"/shops//", 205},
+		{"/shops/my_shop/", 205, "/shops/{shop}/"},
+		{"/shops//", 205, "/shops/{shop}/"},
 
-		{"/shops/my_shop/pets", 206},
+		{"/shops/my_shop/pets", 206, "/shops/{shop}/pets"},
 
-		{"/shops/activate", 207},
+		{"/shops/activate", 207, "/shops/activate"},
 
-		{"/not_found", 404},
+		{"/not_found", 404, "/this_is_not_gonna_be_checked"},
 	} {
 		tt := tt
 		t.Run(tt.path, func(t *testing.T) {
+			api := api
+			api.Middlewares = append(api.Middlewares, func(h http.Handler) http.Handler {
+				return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+					assert.Equal(t, tt.schemaPath, SchemaPath(r))
+					h.ServeHTTP(rw, r)
+				})
+			})
 			w := httptest.NewRecorder()
 			api.ServeHTTP(w, httptest.NewRequest("GET", tt.path, nil))
 			assert.Equal(t, tt.code, w.Code)
