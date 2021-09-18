@@ -1,0 +1,7 @@
+security:
+- api_key: []
+paths:
+  /pets:
+    get:
+      responses:
+        '200': {}
