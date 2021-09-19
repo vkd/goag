@@ -265,7 +265,7 @@ type ConvertStrings struct {
 }
 
 var tmConvertStrings = template.Must(template.New("ConvertStrings").Parse(`
-{{- .To}} = make([]{{.ItemType}}, len({{.From}}))
+{{- .To}} = make([]{{.ItemType.String}}, len({{.From}}))
 for i := range {{.From}} {
 	{{.ItemRender (print .From "[i]") (print .To "[i]")}}
 }`))
