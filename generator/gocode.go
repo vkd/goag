@@ -171,9 +171,7 @@ type GoFieldTag struct {
 	Value string
 }
 
-var tmGoFieldTag = template.Must(template.New("GoFieldTag").Parse(`{{.Key}}:"{{.Value}}"`))
-
-func (g GoFieldTag) String() (string, error) { return String(tmGoFieldTag, g) }
+func (g GoFieldTag) String() (string, error) { return fmt.Sprintf("%s:%q", g.Key, g.Value), nil }
 
 type GoType string
 

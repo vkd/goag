@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"text/template"
 )
 
@@ -18,19 +19,13 @@ type Assign struct {
 	From, To string
 }
 
-var tmAssign = template.Must(template.New("Assign").Parse(`
-{{- .To}} = {{.From}}`))
-
-func (c Assign) String() (string, error) { return String(tmAssign, c) }
+func (c Assign) String() (string, error) { return fmt.Sprintf(`%s = %s`, c.To, c.From), nil }
 
 type AssignNew struct {
 	From, To string
 }
 
-var tmAssignNew = template.Must(template.New("AssignNew").Parse(`
-{{- .To}} := {{.From}}`))
-
-func (c AssignNew) String() (string, error) { return String(tmAssignNew, c) }
+func (c AssignNew) String() (string, error) { return fmt.Sprintf(`%s := %s`, c.To, c.From), nil }
 
 type FuncNewError func(s string) string
 
