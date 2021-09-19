@@ -7,6 +7,8 @@ Golang OpenAPI Generator
 ---
 
 Core principes:
+* it is not possible to return wrong type of response
+* the most simple and straight generated code
 
 ---
 
