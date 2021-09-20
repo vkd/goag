@@ -3,19 +3,25 @@ package generator
 import (
 	"fmt"
 	"strings"
+
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 type Router struct {
 	PackageName string
+	BasePath    string
 
 	Handlers []Handler
 
 	Routes []Route
 }
 
-func NewRouter(packageName string, handlers []Handler) (Router, error) {
+func NewRouter(packageName string, handlers []Handler, spec *openapi3.Swagger) (Router, error) {
 	var out Router
 	out.PackageName = packageName
+	if len(spec.Servers) > 0 {
+		out.BasePath = spec.Servers[0].URL
+	}
 	out.Handlers = handlers
 	rts, err := NewRoutes("", handlers)
 	if err != nil {

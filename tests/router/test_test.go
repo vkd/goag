@@ -60,8 +60,9 @@ func TestRouter(t *testing.T) {
 				})
 			})
 			w := httptest.NewRecorder()
-			api.ServeHTTP(w, httptest.NewRequest("GET", tt.path, nil))
-			assert.Equal(t, tt.code, w.Code)
+			path := "/api/v1" + tt.path
+			api.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
+			assert.Equal(t, tt.code, w.Code, "path: %s", path)
 		})
 	}
 }

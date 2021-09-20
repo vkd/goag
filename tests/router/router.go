@@ -42,6 +42,15 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (rt *API) route(path, method string) (http.Handler, string) {
+	if !strings.HasPrefix(path, "/api/v1") {
+		return nil, ""
+	}
+	path = path[7:] // "/api/v1"
+
+	if !strings.HasPrefix(path, "/") {
+		return nil, ""
+	}
+
 	prefix, path := splitPath(path)
 
 	if path == "" {

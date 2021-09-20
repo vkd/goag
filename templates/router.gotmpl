@@ -1,4 +1,5 @@
 {{/* {{ template "do_not_edit" }} */}}
+{{- $router := .}}
 
 package {{.PackageName}}
 
@@ -40,6 +41,19 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 {{ range $_, $r := .Routes }}
 func (rt *API) route{{$r.Name}}(path, method string) (http.Handler, string) {
+	{{- $basePath := $router.BasePath }}
+	{{- if and $basePath (not $r.Name) }}
+	if !strings.HasPrefix(path, "{{$basePath}}") {
+		return nil, ""
+	}
+	path = path[{{len $basePath }}:] // "{{$basePath}}"
+
+	if !strings.HasPrefix(path, "/") {
+		return nil, ""
+	}
+
+	{{ end -}}
+
 	{{if or .Handlers .Routes}}prefix, path :{{else}}_, path {{end -}}= splitPath(path)
 
 	{{if or .Handlers .WildcardHandler -}}

@@ -90,7 +90,7 @@ func Generate(spec *openapi3.Swagger, outDir string, packageName string) error {
 		return fmt.Errorf("generate handler: %w", err)
 	}
 
-	r, err := generator.NewRouter(packageName, hs.Handlers)
+	r, err := generator.NewRouter(packageName, hs.Handlers, spec)
 	if err != nil {
 		return fmt.Errorf("generate router: %w", err)
 	}
