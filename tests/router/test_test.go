@@ -16,13 +16,27 @@ func TestRouter(t *testing.T) {
 
 		GetShopsRTHandler: GetShopsRTHandlerFunc(func(_ GetShopsRTRequester) GetShopsRTResponder { return GetShopsRTResponseDefault(203) }),
 
-		GetShopsShopHandler: GetShopsShopHandlerFunc(func(_ GetShopsShopRequester) GetShopsShopResponder { return GetShopsShopResponseDefault(204) }),
+		GetShopsShopHandler: GetShopsShopHandlerFunc(func(r GetShopsShopRequester) GetShopsShopResponder {
+			_, err := r.Parse()
+			if err != nil {
+				return GetShopsShopResponseDefault(400)
+			}
+			return GetShopsShopResponseDefault(204)
+		}),
 
-		GetShopsShopRTHandler: GetShopsShopRTHandlerFunc(func(_ GetShopsShopRTRequester) GetShopsShopRTResponder {
+		GetShopsShopRTHandler: GetShopsShopRTHandlerFunc(func(r GetShopsShopRTRequester) GetShopsShopRTResponder {
+			_, err := r.Parse()
+			if err != nil {
+				return GetShopsShopRTResponseDefault(400)
+			}
 			return GetShopsShopRTResponseDefault(205)
 		}),
 
-		GetShopsShopPetsHandler: GetShopsShopPetsHandlerFunc(func(_ GetShopsShopPetsRequester) GetShopsShopPetsResponder {
+		GetShopsShopPetsHandler: GetShopsShopPetsHandlerFunc(func(r GetShopsShopPetsRequester) GetShopsShopPetsResponder {
+			_, err := r.Parse()
+			if err != nil {
+				return GetShopsShopPetsResponseDefault(400)
+			}
 			return GetShopsShopPetsResponseDefault(206)
 		}),
 
@@ -42,7 +56,7 @@ func TestRouter(t *testing.T) {
 		{"/shops/my_shop", 204, "/shops/{shop}"},
 
 		{"/shops/my_shop/", 205, "/shops/{shop}/"},
-		{"/shops//", 205, "/shops/{shop}/"},
+		{"/shops/1/", 205, "/shops/{shop}/"},
 
 		{"/shops/my_shop/pets", 206, "/shops/{shop}/pets"},
 
@@ -63,7 +77,7 @@ func TestRouter(t *testing.T) {
 			w := httptest.NewRecorder()
 			path := "/api/v1" + tt.path
 			api.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
-			assert.Equal(t, tt.code, w.Code, "path: %s", path)
+			assert.Equal(t, tt.code, w.Code, "path: %s", tt.path)
 		})
 	}
 }

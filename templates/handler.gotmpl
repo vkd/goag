@@ -1,6 +1,7 @@
 {{/* {{ template "do_not_edit" }} */}}
 
 package {{.PackageName}}
+{{- $basePath := $.BasePath }}
 
 import (
 	"encoding/json"
@@ -81,6 +82,17 @@ func {{$newParamsName}}(r *http.Request) (zero {{$requestName}}{{if $needInvalid
 	{{if .Parameters.Path}}
 	{
 		p := r.URL.Path
+		{{- if $basePath }}
+		if !strings.HasPrefix(p, "{{$basePath}}") {
+			return zero, fmt.Errorf("wrong path: expected '{{$basePath}}...'")
+		}
+		p = p[{{len $basePath }}:] // "{{$basePath}}"
+
+		if !strings.HasPrefix(p, "/") {
+			return zero, fmt.Errorf("wrong path: expected '{{$basePath}}/...'")
+		}
+
+		{{ end -}}
 		{{- range $_, $p := .Parameters.PathParsers}}
 
 		{{$p.String}}

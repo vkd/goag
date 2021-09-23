@@ -12,6 +12,7 @@ import (
 
 type Handlers struct {
 	PackageName string
+	BasePath    string
 
 	Handlers []Handler
 }
@@ -19,6 +20,9 @@ type Handlers struct {
 func NewHandlers(pname string, s *openapi3.Swagger) (zero Handlers, _ error) {
 	var out Handlers
 	out.PackageName = pname
+	if len(s.Servers) > 0 {
+		out.BasePath = s.Servers[0].URL
+	}
 
 	out.Handlers = make([]Handler, 0, len(s.Paths))
 	for _, p := range Paths(s.Paths) {
