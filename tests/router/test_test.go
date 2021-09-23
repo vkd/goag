@@ -55,7 +55,8 @@ func TestRouter(t *testing.T) {
 			api := api
 			api.Middlewares = append(api.Middlewares, func(h http.Handler) http.Handler {
 				return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-					assert.Equal(t, tt.schemaPath, SchemaPath(r))
+					path, _ := SchemaPath(r)
+					assert.Equal(t, tt.schemaPath, path)
 					h.ServeHTTP(rw, r)
 				})
 			})

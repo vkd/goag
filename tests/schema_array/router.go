@@ -77,11 +77,11 @@ func (rt *API) routePets(path, method string) (http.Handler, string) {
 
 type pathKey struct{}
 
-func SchemaPath(r *http.Request) string {
+func SchemaPath(r *http.Request) (string, bool) {
 	if s, ok := r.Context().Value(pathKey{}).(string); ok {
-		return s
+		return s, true
 	}
-	return r.URL.Path
+	return r.URL.Path, false
 }
 
 func splitPath(s string) (string, string) {
