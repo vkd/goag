@@ -126,12 +126,15 @@ var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
 }
 
+{{ if .IsWriteJSONFunc -}}
 func writeJSON(w io.Writer, v interface{}, name string) {
 	err := json.NewEncoder(w).Encode(v)
 	if err != nil {
 		LogError(fmt.Errorf("write json response %q: %w", name, err))
 	}
 }
+
+{{ end -}}
 
 type ErrParseQueryParam struct {
 	Name string

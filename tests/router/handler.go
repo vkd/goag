@@ -1,9 +1,7 @@
 package test
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -511,13 +509,6 @@ func (r getShopsShopPetsResponseDefault) writeGetShopsShopPetsResponse(w http.Re
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
-}
-
-func writeJSON(w io.Writer, v interface{}, name string) {
-	err := json.NewEncoder(w).Encode(v)
-	if err != nil {
-		LogError(fmt.Errorf("write json response %q: %w", name, err))
-	}
 }
 
 type ErrParseQueryParam struct {

@@ -15,6 +15,8 @@ type Handlers struct {
 	BasePath    string
 
 	Handlers []Handler
+
+	IsWriteJSONFunc bool
 }
 
 func NewHandlers(pname string, s *openapi3.Swagger) (zero Handlers, _ error) {
@@ -32,6 +34,9 @@ func NewHandlers(pname string, s *openapi3.Swagger) (zero Handlers, _ error) {
 				return zero, fmt.Errorf("new handler for [%s]%q: %w", o.Method, p.Path, err)
 			}
 			out.Handlers = append(out.Handlers, h)
+			if h.IsWriteJSONFunc {
+				out.IsWriteJSONFunc = true
+			}
 		}
 	}
 
@@ -60,6 +65,8 @@ type Handler struct {
 
 	// response type which implement handler's responser interface
 	Responses []Render
+
+	IsWriteJSONFunc bool
 }
 
 // const txtHandler = ``
@@ -116,10 +123,16 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 		if len(r.Response.Value.Content) == 0 {
 			resp := NewResponse(nil, out.Name, out.ResponserInterfaceName, r.Code, "", r.Response.Value, "|", r.Code, r.Response)
 			out.Responses = append(out.Responses, resp)
+			if resp.IsBody {
+				out.IsWriteJSONFunc = true
+			}
 		} else {
 			for mtype, ct := range r.Response.Value.Content {
 				resp := NewResponse(ct.Schema, out.Name, out.ResponserInterfaceName, r.Code, mtype, r.Response.Value, "|", r.Code, r.Response)
 				out.Responses = append(out.Responses, resp)
+				if resp.IsBody {
+					out.IsWriteJSONFunc = true
+				}
 			}
 		}
 	}
