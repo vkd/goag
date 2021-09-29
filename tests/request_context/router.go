@@ -38,8 +38,8 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, m := range rt.Middlewares {
-		h = m(h)
+	for i := len(rt.Middlewares) - 1; i >= 0; i-- {
+		h = rt.Middlewares[i](h)
 	}
 	r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
 	h.ServeHTTP(rw, r)
