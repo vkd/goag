@@ -3,6 +3,7 @@ package goag
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -34,12 +35,7 @@ func GenerateDir(dir, packageName, specFilename string) error {
 
 		specFile := filepath.Join(testpath, specFilename)
 
-		spec, err := openapi3.NewSwaggerLoader().LoadSwaggerFromFile(specFile)
-		if err != nil {
-			return fmt.Errorf("load spec: %w", err)
-		}
-
-		err = Generate(spec, testpath, packageName)
+		err = generateFile(testpath, packageName, specFile)
 		if err != nil {
 			return fmt.Errorf("generate: %w", err)
 		}
@@ -53,13 +49,23 @@ func GenerateFile(outDir, packageName, specFilename string) error {
 	if err != nil {
 		return fmt.Errorf("parse templates: %w", err)
 	}
+	return generateFile(outDir, packageName, specFilename)
+}
+
+func generateFile(outDir, packageName, specFilename string) error {
+	specRaw, err := ioutil.ReadFile(specFilename)
+	if err != nil {
+		return fmt.Errorf("read spec file: %w", err)
+	}
 
 	spec, err := openapi3.NewSwaggerLoader().LoadSwaggerFromFile(specFilename)
 	if err != nil {
 		return fmt.Errorf("load spec: %w", err)
 	}
 
-	err = Generate(spec, outDir, packageName)
+	specBaseFilename := filepath.Base(specFilename)
+
+	err = Generate(spec, outDir, packageName, specRaw, specBaseFilename)
 	if err != nil {
 		return fmt.Errorf("generate: %w", err)
 	}
@@ -67,7 +73,7 @@ func GenerateFile(outDir, packageName, specFilename string) error {
 	return nil
 }
 
-func Generate(spec *openapi3.Swagger, outDir string, packageName string) error {
+func Generate(spec *openapi3.Swagger, outDir string, packageName string, specRaw []byte, baseFilename string) error {
 	components := generator.NewComponents(spec.Components)
 	if len(components.Schemas) > 0 {
 		goFile := generator.GoFile{
@@ -90,7 +96,7 @@ func Generate(spec *openapi3.Swagger, outDir string, packageName string) error {
 		return fmt.Errorf("generate handler: %w", err)
 	}
 
-	r, err := generator.NewRouter(packageName, hs.Handlers, spec)
+	r, err := generator.NewRouter(packageName, hs.Handlers, spec, specRaw, baseFilename)
 	if err != nil {
 		return fmt.Errorf("generate router: %w", err)
 	}

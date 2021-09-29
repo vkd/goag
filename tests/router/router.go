@@ -2,9 +2,22 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 )
+
+const SpecFile string = `servers:
+  - url: /api/v1
+paths:
+  /: {get: {responses: {default: {}}}}
+  /shops: {get: {responses: {default: {}}}}
+  /shops/: {get: {responses: {default: {}}}}
+  /shops/{shop}: {get: {parameters: [{in: path, name: shop, required: true, schema: {type: string}}], responses: {default: {}}}}
+  /shops/{shop}/: {get: {parameters: [{in: path, name: shop, required: true, schema: {type: string}}], responses: {default: {}}}}
+  /shops/{shop}/pets: {get: {parameters: [{in: path, name: shop, required: true, schema: {type: string}}], responses: {default: {}}}}
+  /shops/activate: {get: {responses: {default: {}}}}
+`
 
 type API struct {
 	GetRTHandler            GetRTHandlerFunc
@@ -17,6 +30,8 @@ type API struct {
 
 	// not found
 	NotFoundHandler http.Handler
+	// spec file
+	SpecFileHandler http.Handler
 
 	Middlewares []func(h http.Handler) http.Handler
 }
@@ -64,6 +79,11 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 			switch method {
 			case http.MethodGet:
 				return rt.GetShopsHandler, "/shops"
+			}
+		case "/openapi.yaml":
+			switch method {
+			case http.MethodGet:
+				return rt.SpecFileHandler, "/openapi.yaml"
 			}
 		}
 	}
@@ -136,6 +156,19 @@ func SchemaPath(r *http.Request) (string, bool) {
 		return s, true
 	}
 	return r.URL.Path, false
+}
+
+var specFileBs = []byte(SpecFile)
+
+func SpecFileHandler() http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Set("Content-Type", "application/")
+		rw.WriteHeader(http.StatusOK)
+		_, err := rw.Write(specFileBs)
+		if err != nil {
+			LogError(fmt.Errorf("serve spec file: %w", err))
+		}
+	})
 }
 
 func splitPath(s string) (string, string) {

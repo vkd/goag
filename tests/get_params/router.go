@@ -2,15 +2,48 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 )
+
+const SpecFile string = `paths:
+  /shops/{shop}/pets/{petId}:
+    get:
+      parameters:
+        - name: shop
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: color
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200': {}
+        default: {}
+`
 
 type API struct {
 	GetShopsShopPetsPetIDHandler GetShopsShopPetsPetIDHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
+	// spec file
+	SpecFileHandler http.Handler
 
 	Middlewares []func(h http.Handler) http.Handler
 }
@@ -37,6 +70,16 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 func (rt *API) route(path, method string) (http.Handler, string) {
 	prefix, path := splitPath(path)
+
+	if path == "" {
+		switch prefix {
+		case "/openapi.yaml":
+			switch method {
+			case http.MethodGet:
+				return rt.SpecFileHandler, "/openapi.yaml"
+			}
+		}
+	}
 
 	if path != "" {
 		switch prefix {
@@ -93,6 +136,19 @@ func SchemaPath(r *http.Request) (string, bool) {
 		return s, true
 	}
 	return r.URL.Path, false
+}
+
+var specFileBs = []byte(SpecFile)
+
+func SpecFileHandler() http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Set("Content-Type", "application/")
+		rw.WriteHeader(http.StatusOK)
+		_, err := rw.Write(specFileBs)
+		if err != nil {
+			LogError(fmt.Errorf("serve spec file: %w", err))
+		}
+	})
 }
 
 func splitPath(s string) (string, string) {

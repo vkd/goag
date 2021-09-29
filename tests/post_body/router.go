@@ -2,15 +2,43 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 )
+
+const SpecFile string = `paths:
+  /pets:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPet'
+      responses:
+        '201': {}
+        default: {}
+components:
+  schemas:
+    NewPet:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        name:
+          type: string
+        tag:
+          type: string
+`
 
 type API struct {
 	PostPetsHandler PostPetsHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
+	// spec file
+	SpecFileHandler http.Handler
 
 	Middlewares []func(h http.Handler) http.Handler
 }
@@ -45,6 +73,11 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 			case http.MethodPost:
 				return rt.PostPetsHandler, "/pets"
 			}
+		case "/openapi.yaml":
+			switch method {
+			case http.MethodGet:
+				return rt.SpecFileHandler, "/openapi.yaml"
+			}
 		}
 	}
 
@@ -58,6 +91,19 @@ func SchemaPath(r *http.Request) (string, bool) {
 		return s, true
 	}
 	return r.URL.Path, false
+}
+
+var specFileBs = []byte(SpecFile)
+
+func SpecFileHandler() http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Set("Content-Type", "application/")
+		rw.WriteHeader(http.StatusOK)
+		_, err := rw.Write(specFileBs)
+		if err != nil {
+			LogError(fmt.Errorf("serve spec file: %w", err))
+		}
+	})
 }
 
 func splitPath(s string) (string, string) {

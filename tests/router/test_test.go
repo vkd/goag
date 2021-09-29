@@ -1,6 +1,7 @@
 package test
 
 import (
+	_ "embed"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -80,4 +81,27 @@ func TestRouter(t *testing.T) {
 			assert.Equal(t, tt.code, w.Code, "path: %s", tt.path)
 		})
 	}
+}
+
+//go:embed openapi.yaml
+var openapiSpec string
+
+func TestRounter_SpecFile(t *testing.T) {
+	assert.Equal(t, openapiSpec, SpecFile)
+}
+
+func TestRouter_SpecHandle(t *testing.T) {
+	api := API{}
+	r := httptest.NewRequest("GET", "/api/v1/openapi.yaml", nil)
+	w := httptest.NewRecorder()
+	api.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
+	api = API{
+		SpecFileHandler: SpecFileHandler(),
+	}
+	r = httptest.NewRequest("GET", "/api/v1/openapi.yaml", nil)
+	w = httptest.NewRecorder()
+	api.ServeHTTP(w, r)
+	assert.Equal(t, SpecFile, w.Body.String())
 }

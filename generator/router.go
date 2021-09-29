@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -10,23 +11,39 @@ import (
 type Router struct {
 	PackageName string
 	BasePath    string
+	SpecFile    string
+	SpecFileExt string
 
 	Handlers []Handler
 
 	Routes []Route
 }
 
-func NewRouter(packageName string, handlers []Handler, spec *openapi3.Swagger) (Router, error) {
+func NewRouter(packageName string, handlers []Handler, spec *openapi3.Swagger, specRaw []byte, baseFilename string) (Router, error) {
 	var out Router
 	out.PackageName = packageName
 	if len(spec.Servers) > 0 {
 		out.BasePath = spec.Servers[0].URL
 	}
+	out.SpecFile = string(specRaw)
+	out.SpecFileExt = filepath.Ext(out.SpecFile)
+
 	out.Handlers = handlers
 	rts, err := NewRoutes("", handlers)
 	if err != nil {
 		return Router{}, fmt.Errorf("new routes: %w", err)
 	}
+	if len(rts) == 0 {
+		rts = append(rts, Route{})
+	}
+	rts[0].Handlers = append(rts[0].Handlers, RouteHandler{
+		Prefix: "/" + baseFilename,
+		Methods: []RouteMethod{{
+			Method:      "Get",
+			HandlerName: "SpecFile",
+			Path:        "/" + baseFilename,
+		}},
+	})
 	out.Routes = rts
 	return out, nil
 }

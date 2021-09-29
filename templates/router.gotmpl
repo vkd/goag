@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const SpecFile string = `{{.SpecFile}}`
+
 type API struct {
 	{{range $_, $h := .Handlers}}
 	{{$h.Name}}Handler {{$h.Name}}HandlerFunc
@@ -15,6 +17,8 @@ type API struct {
 
 	// not found
 	NotFoundHandler http.Handler
+	// spec file
+	SpecFileHandler http.Handler
 
 	Middlewares []func(h http.Handler) http.Handler
 }
@@ -111,6 +115,19 @@ func SchemaPath(r *http.Request) (string, bool) {
 		return s, true
 	}
 	return r.URL.Path, false
+}
+
+var specFileBs = []byte(SpecFile)
+
+func SpecFileHandler() http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Set("Content-Type", "application/{{.SpecFileExt}}")
+		rw.WriteHeader(http.StatusOK)
+		_, err := rw.Write(specFileBs)
+		if err != nil {
+			LogError(fmt.Errorf("serve spec file: %w", err))
+		}
+	})
 }
 
 func splitPath(s string) (string, string) {
