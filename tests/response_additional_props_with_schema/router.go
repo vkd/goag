@@ -49,6 +49,11 @@ type API struct {
 func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
+	if rt.SpecFileHandler != nil && path == "/openapi.yaml" {
+		rt.SpecFileHandler.ServeHTTP(rw, r)
+		return
+	}
+
 	h, path := rt.route(path, r.Method)
 	if h == nil {
 		h = rt.NotFoundHandler
@@ -75,11 +80,6 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 			switch method {
 			case http.MethodGet:
 				return rt.GetPetHandler, "/pet"
-			}
-		case "/openapi.yaml":
-			switch method {
-			case http.MethodGet:
-				return rt.SpecFileHandler, "/openapi.yaml"
 			}
 		}
 	}

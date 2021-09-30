@@ -90,18 +90,37 @@ func TestRounter_SpecFile(t *testing.T) {
 	assert.Equal(t, openapiSpec, SpecFile)
 }
 
-func TestRouter_SpecHandle(t *testing.T) {
+func TestRouter_SpecHandle_NotFound(t *testing.T) {
+	// not found if SpecFileHandler is nil
 	api := API{}
 	r := httptest.NewRequest("GET", "/api/v1/openapi.yaml", nil)
 	w := httptest.NewRecorder()
 	api.ServeHTTP(w, r)
 	assert.Equal(t, http.StatusNotFound, w.Code)
+}
 
-	api = API{
+func TestRouter_SpecHandle(t *testing.T) {
+	api := API{
 		SpecFileHandler: SpecFileHandler(),
 	}
-	r = httptest.NewRequest("GET", "/api/v1/openapi.yaml", nil)
-	w = httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/api/v1/openapi.yaml", nil)
+	w := httptest.NewRecorder()
 	api.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, SpecFile, w.Body.String())
+}
+
+func TestRouter_SpecHandle_with_Middleware(t *testing.T) {
+	// serve spec despite of middlewares
+	api := API{
+		SpecFileHandler: SpecFileHandler(),
+	}
+	api.Middlewares = append(api.Middlewares, func(_ http.Handler) http.Handler {
+		return http.NotFoundHandler()
+	})
+	r := httptest.NewRequest("GET", "/api/v1/openapi.yaml", nil)
+	w := httptest.NewRecorder()
+	api.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, SpecFile, w.Body.String())
 }

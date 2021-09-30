@@ -11,8 +11,10 @@ import (
 type Router struct {
 	PackageName string
 	BasePath    string
-	SpecFile    string
-	SpecFileExt string
+
+	SpecFile         string
+	SpecFileExt      string
+	BaseSpecFilename string
 
 	Handlers []Handler
 
@@ -27,23 +29,14 @@ func NewRouter(packageName string, handlers []Handler, spec *openapi3.Swagger, s
 	}
 	out.SpecFile = string(specRaw)
 	out.SpecFileExt = filepath.Ext(out.SpecFile)
+	out.BaseSpecFilename = baseFilename
 
 	out.Handlers = handlers
 	rts, err := NewRoutes("", handlers)
 	if err != nil {
 		return Router{}, fmt.Errorf("new routes: %w", err)
 	}
-	if len(rts) == 0 {
-		rts = append(rts, Route{})
-	}
-	rts[0].Handlers = append(rts[0].Handlers, RouteHandler{
-		Prefix: "/" + baseFilename,
-		Methods: []RouteMethod{{
-			Method:      "Get",
-			HandlerName: "SpecFile",
-			Path:        "/" + baseFilename,
-		}},
-	})
+
 	out.Routes = rts
 	return out, nil
 }
