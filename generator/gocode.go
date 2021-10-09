@@ -53,6 +53,16 @@ var tmGoVarDef = template.Must(template.New("GoVarDef").Parse(`var {{.Name}} {{.
 
 func (g GoVarDef) String() (string, error) { return String(tmGoVarDef, g) }
 
+type GoConstDef struct {
+	Name  string
+	Type  Render
+	Value Render
+}
+
+var tmGoConstDef = template.Must(template.New("GoConstDef").Parse(`const {{.Name}} {{.Type.String}} = {{.Value.String}}`))
+
+func (g GoConstDef) String() (string, error) { return String(tmGoConstDef, g) }
+
 type GoTypeDef struct {
 	Comment string
 	Name    string
@@ -211,6 +221,17 @@ func (g GoType) Parser(from, to string, mkErr FuncNewError) Render {
 type GoValue string
 
 func (g GoValue) String() (string, error) { return string(g), nil }
+
+type StringValue GoValue
+
+func (s StringValue) String() (string, error) {
+	if strings.Contains(string(s), "\n") {
+		s = "`" + s + "`"
+	} else {
+		s = `"` + s + `"`
+	}
+	return GoValue(s).String()
+}
 
 type GoSlice struct {
 	Items SchemaRender

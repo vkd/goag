@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-const SpecFile string = `{{.SpecFile}}`
-
 type API struct {
 	{{range $_, $h := .Handlers}}
 	{{$h.Name}}Handler {{$h.Name}}HandlerFunc

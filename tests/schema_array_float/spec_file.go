@@ -1,0 +1,14 @@
+package test
+
+const SpecFile string = `paths:
+  /pets/ids:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: number
+`

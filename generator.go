@@ -106,6 +106,13 @@ func Generate(spec *openapi3.Swagger, outDir string, packageName string, specRaw
 		return fmt.Errorf("generate router: %w", err)
 	}
 
+	specFile := generator.SpecFile(packageName, specRaw)
+
+	err = RenderToFile(path.Join(outDir, "spec_file.go"), specFile)
+	if err != nil {
+		return fmt.Errorf("generate spec_file: %w", err)
+	}
+
 	return nil
 }
 

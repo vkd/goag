@@ -7,17 +7,6 @@ import (
 	"strings"
 )
 
-const SpecFile string = `paths:
-  /pets:
-    get:
-      responses:
-        '200':
-          headers:
-            x-next:
-              schema:
-                type: string
-`
-
 type API struct {
 	GetPetsHandler GetPetsHandlerFunc
 
