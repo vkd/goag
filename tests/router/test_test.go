@@ -68,17 +68,25 @@ func TestRouter(t *testing.T) {
 		tt := tt
 		t.Run(tt.path, func(t *testing.T) {
 			api := api
+			var mCount int
 			api.Middlewares = append(api.Middlewares, func(h http.Handler) http.Handler {
 				return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 					path, _ := SchemaPath(r)
 					assert.Equal(t, tt.schemaPath, path)
 					h.ServeHTTP(rw, r)
+					mCount++
 				})
 			})
 			w := httptest.NewRecorder()
 			path := "/api/v1" + tt.path
 			api.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
 			assert.Equal(t, tt.code, w.Code, "path: %s", tt.path)
+			switch tt.code {
+			case http.StatusNotFound:
+				assert.Equal(t, 0, mCount)
+			default:
+				assert.Equal(t, 1, mCount)
+			}
 		})
 	}
 }
