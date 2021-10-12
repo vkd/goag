@@ -3,6 +3,7 @@ package test
 const SpecFile string = `servers:
   - url: "https://development.example.com/api/v1"
 paths:
+  # some ` + "`" + `comment` + "`" + `
   /: {get: {responses: {default: {}}}}
   /shops: {get: {responses: {default: {}}}}
   /shops/: {get: {responses: {default: {}}}}

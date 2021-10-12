@@ -226,8 +226,10 @@ type StringValue GoValue
 
 func (s StringValue) String() (string, error) {
 	if strings.Contains(string(s), "\n") {
+		s = StringValue(strings.ReplaceAll(string(s), "`", "`+\"`\"+`"))
 		s = "`" + s + "`"
 	} else {
+		s = StringValue(strings.ReplaceAll(string(s), `"`, `\"`))
 		s = `"` + s + `"`
 	}
 	return GoValue(s).String()
