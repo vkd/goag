@@ -19,12 +19,10 @@ type Handlers struct {
 	IsWriteJSONFunc bool
 }
 
-func NewHandlers(pname string, s *openapi3.Swagger) (zero Handlers, _ error) {
+func NewHandlers(pname string, s *openapi3.Swagger, basePath string) (zero Handlers, _ error) {
 	var out Handlers
 	out.PackageName = pname
-	if len(s.Servers) > 0 {
-		out.BasePath = s.Servers[0].URL
-	}
+	out.BasePath = basePath
 
 	out.Handlers = make([]Handler, 0, len(s.Paths))
 	for _, p := range Paths(s.Paths) {

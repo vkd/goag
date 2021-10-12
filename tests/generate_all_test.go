@@ -9,6 +9,6 @@ import (
 )
 
 func TestGenerateTests(t *testing.T) {
-	err := goag.GenerateDir("./", "test", "openapi.yaml")
+	err := goag.GenerateDir("./", "test", "openapi.yaml", "")
 	require.NoError(t, err)
 }

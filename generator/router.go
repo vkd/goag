@@ -21,12 +21,10 @@ type Router struct {
 	Routes []Route
 }
 
-func NewRouter(packageName string, handlers []Handler, spec *openapi3.Swagger, specRaw []byte, baseFilename string) (Router, error) {
+func NewRouter(packageName string, handlers []Handler, spec *openapi3.Swagger, specRaw []byte, baseFilename, basePath string) (Router, error) {
 	var out Router
 	out.PackageName = packageName
-	if len(spec.Servers) > 0 {
-		out.BasePath = spec.Servers[0].URL
-	}
+	out.BasePath = basePath
 	out.SpecFile = string(specRaw)
 	out.SpecFileExt = filepath.Ext(out.SpecFile)
 	out.BaseSpecFilename = baseFilename

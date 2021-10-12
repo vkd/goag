@@ -13,6 +13,7 @@ var (
 	outDir       = flag.String("out", "./", "output dif")
 	packageName  = flag.String("package", "simple", "package name")
 	specFilename = flag.String("spec", "openapi.yaml", "spec filename")
+	basePath     = flag.String("basepath", "", "Base path prefix")
 )
 
 func main() {
@@ -21,9 +22,9 @@ func main() {
 
 	var err error
 	if dir != nil && *dir != "" {
-		err = goag.GenerateDir(*dir, *packageName, *specFilename)
+		err = goag.GenerateDir(*dir, *packageName, *specFilename, *basePath)
 	} else {
-		err = goag.GenerateFile(*outDir, *packageName, *specFile)
+		err = goag.GenerateFile(*outDir, *packageName, *specFile, *basePath)
 	}
 	if err != nil {
 		log.Fatalf("Error on generate: %v", err)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -15,7 +16,7 @@ import (
 	"github.com/vkd/goag/generator"
 )
 
-func GenerateDir(dir, packageName, specFilename string) error {
+func GenerateDir(dir, packageName, specFilename, basePath string) error {
 	err := ParseTemplates()
 	if err != nil {
 		return fmt.Errorf("parse templates: %w", err)
@@ -35,7 +36,7 @@ func GenerateDir(dir, packageName, specFilename string) error {
 
 		specFile := filepath.Join(testpath, specFilename)
 
-		err = generateFile(testpath, packageName, specFile)
+		err = generateFile(testpath, packageName, specFile, basePath)
 		if err != nil {
 			return fmt.Errorf("generate: %w", err)
 		}
@@ -44,15 +45,15 @@ func GenerateDir(dir, packageName, specFilename string) error {
 	return nil
 }
 
-func GenerateFile(outDir, packageName, specFilename string) error {
+func GenerateFile(outDir, packageName, specFilename, basePath string) error {
 	err := ParseTemplates()
 	if err != nil {
 		return fmt.Errorf("parse templates: %w", err)
 	}
-	return generateFile(outDir, packageName, specFilename)
+	return generateFile(outDir, packageName, specFilename, basePath)
 }
 
-func generateFile(outDir, packageName, specFilename string) error {
+func generateFile(outDir, packageName, specFilename, basePath string) error {
 	specRaw, err := ioutil.ReadFile(specFilename)
 	if err != nil {
 		return fmt.Errorf("read spec file: %w", err)
@@ -65,7 +66,7 @@ func generateFile(outDir, packageName, specFilename string) error {
 
 	specBaseFilename := filepath.Base(specFilename)
 
-	err = Generate(spec, outDir, packageName, specRaw, specBaseFilename)
+	err = Generate(spec, outDir, packageName, specRaw, specBaseFilename, basePath)
 	if err != nil {
 		return fmt.Errorf("generate: %w", err)
 	}
@@ -73,7 +74,7 @@ func generateFile(outDir, packageName, specFilename string) error {
 	return nil
 }
 
-func Generate(spec *openapi3.Swagger, outDir string, packageName string, specRaw []byte, baseFilename string) error {
+func Generate(spec *openapi3.Swagger, outDir string, packageName string, specRaw []byte, baseFilename, basePath string) error {
 	components := generator.NewComponents(spec.Components)
 	if len(components.Schemas) > 0 {
 		goFile := generator.GoFile{
@@ -86,7 +87,15 @@ func Generate(spec *openapi3.Swagger, outDir string, packageName string, specRaw
 		}
 	}
 
-	hs, err := generator.NewHandlers(packageName, spec)
+	if basePath == "" && len(spec.Servers) > 0 {
+		u, err := url.Parse(spec.Servers[0].URL)
+		if err != nil {
+			return fmt.Errorf("parse servers.0.url: %w", err)
+		}
+		basePath = u.Path
+	}
+
+	hs, err := generator.NewHandlers(packageName, spec, basePath)
 	if err != nil {
 		return fmt.Errorf("generate handlers: %w", err)
 	}
@@ -96,7 +105,7 @@ func Generate(spec *openapi3.Swagger, outDir string, packageName string, specRaw
 		return fmt.Errorf("generate handler: %w", err)
 	}
 
-	r, err := generator.NewRouter(packageName, hs.Handlers, spec, specRaw, baseFilename)
+	r, err := generator.NewRouter(packageName, hs.Handlers, spec, specRaw, baseFilename, basePath)
 	if err != nil {
 		return fmt.Errorf("generate router: %w", err)
 	}
