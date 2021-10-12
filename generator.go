@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/tools/imports"
@@ -88,7 +89,14 @@ func Generate(spec *openapi3.Swagger, outDir string, packageName string, specRaw
 	}
 
 	if basePath == "" && len(spec.Servers) > 0 {
-		u, err := url.Parse(spec.Servers[0].URL)
+		s := spec.Servers[0]
+		rawURL := s.URL
+		for k, v := range s.Variables {
+			if def, ok := v.Default.(string); ok {
+				rawURL = strings.ReplaceAll(rawURL, "{"+k+"}", def)
+			}
+		}
+		u, err := url.Parse(rawURL)
 		if err != nil {
 			return fmt.Errorf("parse servers.0.url: %w", err)
 		}

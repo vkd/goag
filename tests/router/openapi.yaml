@@ -1,5 +1,14 @@
 servers:
-  - url: "https://development.example.com/api/v1"
+# - url: "https://demo.example.com:8443/api/v1"
+- url: https://{username}.example.com:{port}/{basePath}
+  description: The production API server
+  variables:
+    username:
+      default: demo
+    port:
+      default: '8443'
+    basePath:
+      default: api/v1
 paths:
   # some `comment`
   /: {get: {responses: {default: {}}}}
