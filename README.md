@@ -28,3 +28,5 @@ Limitations:
 * no security scheme objects
 * (?) not full JSON Schema supported
 * schema.required is not applied
+* no externalDocs
+* no cookies

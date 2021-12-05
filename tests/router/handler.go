@@ -263,6 +263,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 	var params GetShopsShopRequest
 	params.HTTPRequest = r
 
+	// Path parameters
 	{
 		p := r.URL.Path
 		if !strings.HasPrefix(p, "/api/v1") {
@@ -353,6 +354,7 @@ func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTRequest, _ err
 	var params GetShopsShopRTRequest
 	params.HTTPRequest = r
 
+	// Path parameters
 	{
 		p := r.URL.Path
 		if !strings.HasPrefix(p, "/api/v1") {
@@ -448,6 +450,7 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsRequest, _
 	var params GetShopsShopPetsRequest
 	params.HTTPRequest = r
 
+	// Path parameters
 	{
 		p := r.URL.Path
 		if !strings.HasPrefix(p, "/api/v1") {

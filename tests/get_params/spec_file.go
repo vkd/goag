@@ -1,22 +1,11 @@
 package test
 
 const SpecFile string = `paths:
-  /shops/{shop}/pets/{petId}:
+  /shops/{shop}:
     get:
       parameters:
         - name: shop
           in: path
-          required: true
-          schema:
-            type: string
-        - name: petId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: color
-          in: query
           required: true
           schema:
             type: string
@@ -25,6 +14,10 @@ const SpecFile string = `paths:
           schema:
             type: integer
             format: int32
+        - name: request-id
+          in: header
+          schema:
+            type: string
       responses:
         '200': {}
         default: {}

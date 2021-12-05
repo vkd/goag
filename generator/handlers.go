@@ -17,6 +17,7 @@ type Handlers struct {
 	Handlers []Handler
 
 	IsWriteJSONFunc bool
+	HasHeaders      bool
 }
 
 func NewHandlers(pname string, s *openapi3.Swagger, basePath string) (zero Handlers, _ error) {
@@ -34,6 +35,9 @@ func NewHandlers(pname string, s *openapi3.Swagger, basePath string) (zero Handl
 			out.Handlers = append(out.Handlers, h)
 			if h.IsWriteJSONFunc {
 				out.IsWriteJSONFunc = true
+			}
+			if len(h.Parameters.Headers) > 0 {
+				out.HasHeaders = true
 			}
 		}
 	}
@@ -55,6 +59,8 @@ type Handler struct {
 
 		Path        []PathParameter
 		PathParsers []Render
+
+		Headers []Param
 	}
 
 	RequestBody Render
@@ -79,26 +85,22 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 	out.Description = strings.ReplaceAll(strings.TrimSpace(p.Description), "\n", "\n// ")
 	out.Summary = p.Summary
 
-	for _, pr := range params {
+	var allParams openapi3.Parameters
+	allParams = append(allParams, params...)
+	allParams = append(allParams, p.Parameters...)
+
+	for _, pr := range allParams {
 		p := pr.Value
 		switch p.In {
 		case openapi3.ParameterInQuery:
-			par := NewParam(p)
+			par := NewQueryParam(p)
 			out.Parameters.Queries = append(out.Parameters.Queries, par)
 		case openapi3.ParameterInPath:
 			pp := NewPathParameter(p)
 			out.Parameters.Path = append(out.Parameters.Path, pp)
-		}
-	}
-	for _, pr := range p.Parameters {
-		p := pr.Value
-		switch p.In {
-		case openapi3.ParameterInQuery:
-			par := NewParam(p)
-			out.Parameters.Queries = append(out.Parameters.Queries, par)
-		case openapi3.ParameterInPath:
-			pp := NewPathParameter(p)
-			out.Parameters.Path = append(out.Parameters.Path, pp)
+		case openapi3.ParameterInHeader:
+			pp := NewHeaderParam(p)
+			out.Parameters.Headers = append(out.Parameters.Headers, pp)
 		}
 	}
 
@@ -170,7 +172,7 @@ type Param struct {
 	Parser Render
 }
 
-func NewParam(p *openapi3.Parameter) Param {
+func NewQueryParam(p *openapi3.Parameter) Param {
 	sr := NewSchemaRef(p.Schema)
 	if !p.Required {
 		sr = NewOptionalParam(sr)
@@ -181,6 +183,24 @@ func NewParam(p *openapi3.Parameter) Param {
 		Comment: p.Description,
 	}
 	prs := NewQueryParser(p, f)
+	out := Param{
+		Field:  f,
+		Parser: prs,
+	}
+	return out
+}
+
+func NewHeaderParam(p *openapi3.Parameter) Param {
+	sr := NewSchemaRef(p.Schema)
+	if !p.Required {
+		sr = NewOptionalParam(sr)
+	}
+	f := GoStructField{
+		Name:    PublicFieldName(p.Name),
+		Type:    sr,
+		Comment: p.Description,
+	}
+	prs := NewHeaderParser(p, f)
 	out := Param{
 		Field:  f,
 		Parser: prs,
@@ -235,7 +255,7 @@ func NewQueryParser(p *openapi3.Parameter, field GoStructField) Render {
 	}
 
 	return QueryParser{
-		QueryVarName:  "q",
+		QueryVarName:  from,
 		ParameterName: p.Name,
 		Convert:       conv,
 		Required:      p.Required,
@@ -255,7 +275,7 @@ var tmQueryParser = template.Must(template.New("QueryParser").Parse(`
 	return zero, fmt.Errorf("query parameter '{{.ParameterName}}': is required")
 }
 {{end -}}
-if ok && len(q) > 0 {
+if ok && len({{.QueryVarName}}) > 0 {
 	{{.Convert.String}}
 }`))
 
@@ -266,6 +286,64 @@ func (i QueryParser) String() (string, error) {
 func NewQueryErrorFunc(name string) FuncNewError {
 	return func(s string) string {
 		return `ErrParseQueryParam{Name: "` + name + `", Err: ` + s + `}`
+	}
+}
+
+func NewHeaderParser(p *openapi3.Parameter, field GoStructField) Render {
+	s := NewSchemaRef(p.Schema)
+
+	from := "hs"
+	toOrig := "params." + field.Name
+	to := toOrig
+	mkErr := NewHeaderErrorFunc(p.Name)
+
+	var conv Render
+	if sp, ok := s.(StringsParser); ok {
+		conv = sp.StringsParser(from, to, mkErr)
+	} else {
+		to := "v"
+		conv = s.Parser(from+"[0]", to, mkErr)
+
+		_, optionable := s.(interface{ Optionable() })
+
+		if !p.Required && !optionable {
+			to = "&" + to
+		}
+		conv = Combine{conv, Assign{to, toOrig}}
+	}
+
+	return HeaderParser{
+		HeaderVarName: from,
+		ParameterName: p.Name,
+		Convert:       conv,
+		Required:      p.Required,
+	}
+}
+
+type HeaderParser struct {
+	HeaderVarName string
+	ParameterName string
+	Convert       Render
+	Required      bool
+}
+
+var tmHeaderParser = template.Must(template.New("HeaderParser").Parse(`
+{{- .HeaderVarName}} := header.Values("{{.ParameterName}}")
+{{if .Required}}if len({{.HeaderVarName}}) == 0 {
+	return zero, fmt.Errorf("header parameter '{{.ParameterName}}': is required")
+}
+{{end -}}
+if len({{.HeaderVarName}}) > 0 {
+	{{.Convert.String}}
+}`))
+
+func (i HeaderParser) String() (string, error) {
+	return String(tmHeaderParser, i)
+}
+
+func NewHeaderErrorFunc(name string) FuncNewError {
+	return func(s string) string {
+		return `ErrParseHeaderParam{Name: "` + name + `", Err: ` + s + `}`
 	}
 }
 

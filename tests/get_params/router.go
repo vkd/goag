@@ -8,7 +8,7 @@ import (
 )
 
 type API struct {
-	GetShopsShopPetsPetIDHandler GetShopsShopPetsPetIDHandlerFunc
+	GetShopsShopHandler GetShopsShopHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
@@ -59,35 +59,11 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 func (rt *API) routeShops(path, method string) (http.Handler, string) {
 	_, path = splitPath(path)
 
-	if path != "" {
-
-		return rt.routeShopsShop(path, method)
-	}
-
-	return nil, ""
-}
-
-func (rt *API) routeShopsShop(path, method string) (http.Handler, string) {
-	prefix, path := splitPath(path)
-
-	if path != "" {
-		switch prefix {
-		case "/pets":
-			return rt.routeShopsShopPets(path, method)
-		}
-	}
-
-	return nil, ""
-}
-
-func (rt *API) routeShopsShopPets(path, method string) (http.Handler, string) {
-	_, path = splitPath(path)
-
 	if path == "" {
 
 		switch method {
 		case http.MethodGet:
-			return rt.GetShopsShopPetsPetIDHandler, "/shops/{shop}/pets/{petId}"
+			return rt.GetShopsShopHandler, "/shops/{shop}"
 		}
 	}
 

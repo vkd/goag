@@ -58,6 +58,9 @@ type {{$requestName}} struct {
 	{{- range $_, $p := .Parameters.Path}}
 	{{$p.FieldName}} {{$p.Type.String}}
 	{{- end}}
+	{{- range $_, $h := .Parameters.Headers}}
+	{{$h.Field.String}}
+	{{- end}}
 	{{- if .RequestBody}}
 
 	Body {{.RequestBody.String}}
@@ -69,6 +72,7 @@ func {{$newParamsName}}(r *http.Request) (zero {{$requestName}}{{if $needInvalid
 	params.HTTPRequest = r
 
 	{{if .Parameters.Queries}}
+	// Query parameters
 	{
 		query := r.URL.Query()
 		{{- range $_, $q := .Parameters.Queries}}
@@ -79,7 +83,20 @@ func {{$newParamsName}}(r *http.Request) (zero {{$requestName}}{{if $needInvalid
 	}
 	{{end}}
 
+	{{if .Parameters.Headers}}
+	// Headers
+	{
+		header := r.Header
+		{{- range $_, $h := .Parameters.Headers}}
+		{
+			{{$h.Parser.String}}
+		}
+		{{- end}}
+	}
+	{{end}}
+
 	{{if .Parameters.Path}}
+	// Path parameters
 	{
 		p := r.URL.Path
 		{{- if $basePath }}
@@ -153,3 +170,14 @@ type ErrParsePathParam struct {
 func (e ErrParsePathParam) Error() string {
 	return fmt.Sprintf("path parameter '%s': %e", e.Name, e.Err)
 }
+
+{{if .HasHeaders}}
+type ErrParseHeaderParam struct {
+	Name string
+	Err  error
+}
+
+func (e ErrParseHeaderParam) Error() string {
+	return fmt.Sprintf("header parameter '%s': %e", e.Name, e.Err)
+}
+{{end}}

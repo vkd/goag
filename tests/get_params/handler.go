@@ -9,56 +9,46 @@ import (
 )
 
 // ---------------------------------------------
-// GetShopsShopPetsPetID -
+// GetShopsShop -
 // ---------------------------------------------
 
-type GetShopsShopPetsPetIDHandlerFunc func(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponder
+type GetShopsShopHandlerFunc func(r GetShopsShopRequester) GetShopsShopResponder
 
-func (f GetShopsShopPetsPetIDHandlerFunc) Handle(r GetShopsShopPetsPetIDRequester) GetShopsShopPetsPetIDResponder {
+func (f GetShopsShopHandlerFunc) Handle(r GetShopsShopRequester) GetShopsShopResponder {
 	return f(r)
 }
 
-func (f GetShopsShopPetsPetIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.Handle(requestGetShopsShopPetsPetIDParams{Request: r}).writeGetShopsShopPetsPetIDResponse(w)
+func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f.Handle(requestGetShopsShopParams{Request: r}).writeGetShopsShopResponse(w)
 }
 
-type GetShopsShopPetsPetIDRequester interface {
-	Parse() (GetShopsShopPetsPetIDRequest, error)
+type GetShopsShopRequester interface {
+	Parse() (GetShopsShopRequest, error)
 }
 
-type requestGetShopsShopPetsPetIDParams struct {
+type requestGetShopsShopParams struct {
 	Request *http.Request
 }
 
-func (r requestGetShopsShopPetsPetIDParams) Parse() (GetShopsShopPetsPetIDRequest, error) {
-	return newGetShopsShopPetsPetIDParams(r.Request)
+func (r requestGetShopsShopParams) Parse() (GetShopsShopRequest, error) {
+	return newGetShopsShopParams(r.Request)
 }
 
-type GetShopsShopPetsPetIDRequest struct {
+type GetShopsShopRequest struct {
 	HTTPRequest *http.Request
 
-	Color string
-	Page  *int32
-	Shop  string
-	PetID int64
+	Page      *int32
+	Shop      string
+	RequestID *string
 }
 
-func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetIDRequest, _ error) {
-	var params GetShopsShopPetsPetIDRequest
+func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) {
+	var params GetShopsShopRequest
 	params.HTTPRequest = r
 
+	// Query parameters
 	{
 		query := r.URL.Query()
-		{
-			q, ok := query["color"]
-			if !ok {
-				return zero, fmt.Errorf("query parameter 'color': is required")
-			}
-			if ok && len(q) > 0 {
-				v := q[0]
-				params.Color = v
-			}
-		}
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
@@ -72,11 +62,24 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 		}
 	}
 
+	// Headers
+	{
+		header := r.Header
+		{
+			hs := header.Values("request-id")
+			if len(hs) > 0 {
+				v := hs[0]
+				params.RequestID = &v
+			}
+		}
+	}
+
+	// Path parameters
 	{
 		p := r.URL.Path
 
 		if !strings.HasPrefix(p, "/shops/") {
-			return zero, fmt.Errorf("wrong path: expected '/shops/{shop}/pets/{petId}'")
+			return zero, fmt.Errorf("wrong path: expected '/shops/{shop}'")
 		}
 		p = p[7:] // "/shops/"
 
@@ -95,62 +98,37 @@ func newGetShopsShopPetsPetIDParams(r *http.Request) (zero GetShopsShopPetsPetID
 			v := vPath
 			params.Shop = v
 		}
-
-		if !strings.HasPrefix(p, "/pets/") {
-			return zero, fmt.Errorf("wrong path: expected '/shops/{shop}/pets/{petId}'")
-		}
-		p = p[6:] // "/pets/"
-
-		{
-			idx := strings.Index(p, "/")
-			if idx == -1 {
-				idx = len(p)
-			}
-			vPath := p[:idx]
-			p = p[idx:]
-
-			if len(vPath) == 0 {
-				return zero, ErrParsePathParam{Name: "petId", Err: fmt.Errorf("is required")}
-			}
-
-			vInt, err := strconv.ParseInt(vPath, 10, 64)
-			if err != nil {
-				return zero, ErrParsePathParam{Name: "petId", Err: fmt.Errorf("parse int64: %w", err)}
-			}
-			v := vInt
-			params.PetID = v
-		}
 	}
 
 	return params, nil
 }
 
-type GetShopsShopPetsPetIDResponder interface {
-	writeGetShopsShopPetsPetIDResponse(w http.ResponseWriter)
+type GetShopsShopResponder interface {
+	writeGetShopsShopResponse(w http.ResponseWriter)
 }
 
-func GetShopsShopPetsPetIDResponse200() GetShopsShopPetsPetIDResponder {
-	var out getShopsShopPetsPetIDResponse200
+func GetShopsShopResponse200() GetShopsShopResponder {
+	var out getShopsShopResponse200
 	return out
 }
 
-type getShopsShopPetsPetIDResponse200 struct{}
+type getShopsShopResponse200 struct{}
 
-func (r getShopsShopPetsPetIDResponse200) writeGetShopsShopPetsPetIDResponse(w http.ResponseWriter) {
+func (r getShopsShopResponse200) writeGetShopsShopResponse(w http.ResponseWriter) {
 	w.WriteHeader(200)
 }
 
-func GetShopsShopPetsPetIDResponseDefault(code int) GetShopsShopPetsPetIDResponder {
-	var out getShopsShopPetsPetIDResponseDefault
+func GetShopsShopResponseDefault(code int) GetShopsShopResponder {
+	var out getShopsShopResponseDefault
 	out.Code = code
 	return out
 }
 
-type getShopsShopPetsPetIDResponseDefault struct {
+type getShopsShopResponseDefault struct {
 	Code int
 }
 
-func (r getShopsShopPetsPetIDResponseDefault) writeGetShopsShopPetsPetIDResponse(w http.ResponseWriter) {
+func (r getShopsShopResponseDefault) writeGetShopsShopResponse(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
 }
 
@@ -174,4 +152,13 @@ type ErrParsePathParam struct {
 
 func (e ErrParsePathParam) Error() string {
 	return fmt.Sprintf("path parameter '%s': %e", e.Name, e.Err)
+}
+
+type ErrParseHeaderParam struct {
+	Name string
+	Err  error
+}
+
+func (e ErrParseHeaderParam) Error() string {
+	return fmt.Sprintf("header parameter '%s': %e", e.Name, e.Err)
 }

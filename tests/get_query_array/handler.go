@@ -44,6 +44,7 @@ func newGetPetsParams(r *http.Request) (zero GetPetsRequest, _ error) {
 	var params GetPetsRequest
 	params.HTTPRequest = r
 
+	// Query parameters
 	{
 		query := r.URL.Query()
 		{
