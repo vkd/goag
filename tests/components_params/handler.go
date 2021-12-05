@@ -14,12 +14,8 @@ import (
 
 type PostShopsNewHandlerFunc func(r PostShopsNewRequester) PostShopsNewResponder
 
-func (f PostShopsNewHandlerFunc) Handle(r PostShopsNewRequester) PostShopsNewResponder {
-	return f(r)
-}
-
 func (f PostShopsNewHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.Handle(requestPostShopsNewParams{Request: r}).writePostShopsNewResponse(w)
+	f(requestPostShopsNewParams{Request: r}).writePostShopsNewResponse(w)
 }
 
 type PostShopsNewRequester interface {
@@ -98,12 +94,8 @@ func (r postShopsNewResponseDefault) writePostShopsNewResponse(w http.ResponseWr
 
 type GetShopsShopHandlerFunc func(r GetShopsShopRequester) GetShopsShopResponder
 
-func (f GetShopsShopHandlerFunc) Handle(r GetShopsShopRequester) GetShopsShopResponder {
-	return f(r)
-}
-
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.Handle(requestGetShopsShopParams{Request: r}).writeGetShopsShopResponse(w)
+	f(requestGetShopsShopParams{Request: r}).writeGetShopsShopResponse(w)
 }
 
 type GetShopsShopRequester interface {
@@ -209,12 +201,8 @@ func (r getShopsShopResponseDefault) writeGetShopsShopResponse(w http.ResponseWr
 
 type GetShopsShopReviewsHandlerFunc func(r GetShopsShopReviewsRequester) GetShopsShopReviewsResponder
 
-func (f GetShopsShopReviewsHandlerFunc) Handle(r GetShopsShopReviewsRequester) GetShopsShopReviewsResponder {
-	return f(r)
-}
-
 func (f GetShopsShopReviewsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.Handle(requestGetShopsShopReviewsParams{Request: r}).writeGetShopsShopReviewsResponse(w)
+	f(requestGetShopsShopReviewsParams{Request: r}).writeGetShopsShopReviewsResponse(w)
 }
 
 type GetShopsShopReviewsRequester interface {

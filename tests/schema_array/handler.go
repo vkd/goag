@@ -14,12 +14,8 @@ import (
 
 type GetPetsHandlerFunc func(r GetPetsRequester) GetPetsResponder
 
-func (f GetPetsHandlerFunc) Handle(r GetPetsRequester) GetPetsResponder {
-	return f(r)
-}
-
 func (f GetPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.Handle(requestGetPetsParams{Request: r}).writeGetPetsResponse(w)
+	f(requestGetPetsParams{Request: r}).writeGetPetsResponse(w)
 }
 
 type GetPetsRequester interface {
@@ -70,12 +66,8 @@ func (r getPetsResponse200JSON) writeGetPetsResponse(w http.ResponseWriter) {
 
 type GetPetsNamesHandlerFunc func(r GetPetsNamesRequester) GetPetsNamesResponder
 
-func (f GetPetsNamesHandlerFunc) Handle(r GetPetsNamesRequester) GetPetsNamesResponder {
-	return f(r)
-}
-
 func (f GetPetsNamesHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.Handle(requestGetPetsNamesParams{Request: r}).writeGetPetsNamesResponse(w)
+	f(requestGetPetsNamesParams{Request: r}).writeGetPetsNamesResponse(w)
 }
 
 type GetPetsNamesRequester interface {

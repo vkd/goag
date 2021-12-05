@@ -13,12 +13,8 @@ import (
 
 type PostPetsHandlerFunc func(r PostPetsRequester) PostPetsResponder
 
-func (f PostPetsHandlerFunc) Handle(r PostPetsRequester) PostPetsResponder {
-	return f(r)
-}
-
 func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.Handle(requestPostPetsParams{Request: r}).writePostPetsResponse(w)
+	f(requestPostPetsParams{Request: r}).writePostPetsResponse(w)
 }
 
 type PostPetsRequester interface {

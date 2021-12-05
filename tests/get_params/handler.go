@@ -14,12 +14,8 @@ import (
 
 type GetShopsShopHandlerFunc func(r GetShopsShopRequester) GetShopsShopResponder
 
-func (f GetShopsShopHandlerFunc) Handle(r GetShopsShopRequester) GetShopsShopResponder {
-	return f(r)
-}
-
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.Handle(requestGetShopsShopParams{Request: r}).writeGetShopsShopResponse(w)
+	f(requestGetShopsShopParams{Request: r}).writeGetShopsShopResponse(w)
 }
 
 type GetShopsShopRequester interface {

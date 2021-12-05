@@ -30,12 +30,8 @@ import (
 {{if $h.Description}}// {{$handlerFuncName}} - {{$h.Description}}{{end}}
 type {{$handlerFuncName}} func(r {{$requesterName}}) {{$responderName}}
 
-func (f {{$handlerFuncName}}) Handle(r {{$requesterName}}) {{$responderName}} {
-	return f(r)
-}
-
 func (f {{$handlerFuncName}}) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.Handle({{$requestParamsName}}{Request: r}).{{$writeResponseFuncName}}(w)
+	f({{$requestParamsName}}{Request: r}).{{$writeResponseFuncName}}(w)
 }
 
 type {{$requesterName}} interface {

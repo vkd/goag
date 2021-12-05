@@ -14,12 +14,8 @@ import (
 
 type GetPetHandlerFunc func(r GetPetRequester) GetPetResponder
 
-func (f GetPetHandlerFunc) Handle(r GetPetRequester) GetPetResponder {
-	return f(r)
-}
-
 func (f GetPetHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.Handle(requestGetPetParams{Request: r}).writeGetPetResponse(w)
+	f(requestGetPetParams{Request: r}).writeGetPetResponse(w)
 }
 
 type GetPetRequester interface {
