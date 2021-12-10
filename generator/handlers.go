@@ -227,37 +227,17 @@ func (r OptionalParam) String() (string, error) {
 	return fmt.Sprintf("*%s", str), nil
 }
 
-type StringsParser interface {
-	StringsParser(from, to string, _ FuncNewError) Render
-}
-
 func NewQueryParser(p *openapi3.Parameter, field GoStructField) Render {
 	s := NewSchemaRef(p.Schema)
 
 	from := "q"
-	toOrig := "params." + field.Name
-	to := toOrig
+	to := "params." + field.Name
 	mkErr := NewQueryErrorFunc(p.Name)
-
-	var conv Render
-	if sp, ok := s.(StringsParser); ok {
-		conv = sp.StringsParser(from, to, mkErr)
-	} else {
-		to := "v"
-		conv = s.Parser(from+"[0]", to, mkErr)
-
-		_, optionable := s.(interface{ Optionable() })
-
-		if !p.Required && !optionable {
-			to = "&" + to
-		}
-		conv = Combine{conv, Assign{to, toOrig}}
-	}
 
 	return QueryParser{
 		QueryVarName:  from,
 		ParameterName: p.Name,
-		Convert:       conv,
+		Convert:       NewStringsParser(s, from, to, !p.Required, mkErr),
 		Required:      p.Required,
 	}
 }
@@ -293,29 +273,13 @@ func NewHeaderParser(p *openapi3.Parameter, field GoStructField) Render {
 	s := NewSchemaRef(p.Schema)
 
 	from := "hs"
-	toOrig := "params." + field.Name
-	to := toOrig
+	to := "params." + field.Name
 	mkErr := NewHeaderErrorFunc(p.Name)
-
-	var conv Render
-	if sp, ok := s.(StringsParser); ok {
-		conv = sp.StringsParser(from, to, mkErr)
-	} else {
-		to := "v"
-		conv = s.Parser(from+"[0]", to, mkErr)
-
-		_, optionable := s.(interface{ Optionable() })
-
-		if !p.Required && !optionable {
-			to = "&" + to
-		}
-		conv = Combine{conv, Assign{to, toOrig}}
-	}
 
 	return HeaderParser{
 		HeaderVarName: from,
 		ParameterName: p.Name,
-		Convert:       conv,
+		Convert:       NewStringsParser(s, from, to, !p.Required, mkErr),
 		Required:      p.Required,
 	}
 }
