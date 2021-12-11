@@ -54,11 +54,10 @@ func newGetPetsParams(r *http.Request) (zero GetPetsRequest, _ error) {
 			if ok && len(q) > 0 {
 				params.Page = make([]int64, len(q))
 				for i := range q {
-					vInt, err := strconv.ParseInt(q[i], 10, 64)
+					v1, err := strconv.ParseInt(q[i], 10, 64)
 					if err != nil {
 						return zero, ErrParseQueryParam{Name: "page", Err: fmt.Errorf("parse int64: %w", err)}
 					}
-					v1 := vInt
 					params.Page[i] = v1
 				}
 			}

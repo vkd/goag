@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"fmt"
 	"text/template"
 )
 
@@ -16,83 +15,24 @@ var tmCombine = template.Must(template.New("Combine").Parse(`
 func (c Combine) String() (string, error) { return String(tmCombine, c) }
 
 type Assign struct {
-	From, To string
+	From Render
+	To   string
 }
 
-func (c Assign) String() (string, error) { return fmt.Sprintf(`%s = %s`, c.To, c.From), nil }
+var tmAssign = template.Must(template.New("Assign").Parse(`{{.To}} = {{.From.String}}`))
+
+func (c Assign) String() (string, error) { return String(tmAssign, c) }
 
 type AssignNew struct {
-	From, To string
+	From Render
+	To   string
 }
 
-func (c AssignNew) String() (string, error) { return fmt.Sprintf(`%s := %s`, c.To, c.From), nil }
+var tmAssignNew = template.Must(template.New("AssignNew").Parse(`{{.To}} := {{.From.String}}`))
+
+func (c AssignNew) String() (string, error) { return String(tmAssignNew, c) }
 
 type FuncNewError func(s string) string
-
-type ConvertToInt struct {
-	Variable, Field string
-	NewError        FuncNewError
-}
-
-var tmConvertToInt = template.Must(template.New("ConvertToInt").Parse(`vInt, err := strconv.Atoi({{.Variable}})
-if err != nil {
-	return zero, {{call .NewError "fmt.Errorf(\"parse int: %w\", err)"}}
-}
-{{.Field}} := vInt`))
-
-func (c ConvertToInt) String() (string, error) { return String(tmConvertToInt, c) }
-
-type ConvertToInt32 struct {
-	Variable, Field string
-	NewError        FuncNewError
-}
-
-var tmConvertToInt32 = template.Must(template.New("ConvertToInt32").Parse(`vInt, err := strconv.ParseInt({{.Variable}}, 10, 32)
-if err != nil {
-	return zero, {{call .NewError "fmt.Errorf(\"parse int32: %w\", err)"}}
-}
-{{.Field}} := int32(vInt)`))
-
-func (c ConvertToInt32) String() (string, error) { return String(tmConvertToInt32, c) }
-
-type ConvertToInt64 struct {
-	Variable, Field string
-	NewError        FuncNewError
-}
-
-var tmConvertToInt64 = template.Must(template.New("ConvertToInt64").Parse(`vInt, err := strconv.ParseInt({{.Variable}}, 10, 64)
-if err != nil {
-	return zero, {{call .NewError "fmt.Errorf(\"parse int64: %w\", err)"}}
-}
-{{.Field}} := vInt`))
-
-func (c ConvertToInt64) String() (string, error) { return String(tmConvertToInt64, c) }
-
-type ConvertToFloat32 struct {
-	Variable, Field string
-	NewError        FuncNewError
-}
-
-var tmConvertToFloat32 = template.Must(template.New("ConvertToFloat32").Parse(`vf, err := strconv.ParseFloat({{.Variable}}, 32)
-if err != nil {
-	return zero, {{call .NewError "fmt.Errorf(\"parse float32: %w\", err)"}}
-}
-{{.Field}} := float32(vf)`))
-
-func (c ConvertToFloat32) String() (string, error) { return String(tmConvertToFloat32, c) }
-
-type ConvertToFloat64 struct {
-	Variable, Field string
-	NewError        FuncNewError
-}
-
-var tmConvertToFloat64 = template.Must(template.New("ConvertToFloat64").Parse(`vf, err := strconv.ParseFloat({{.Variable}}, 64)
-if err != nil {
-	return zero, {{call .NewError "fmt.Errorf(\"parse float64: %w\", err)"}}
-}
-{{.Field}} := vf`))
-
-func (c ConvertToFloat64) String() (string, error) { return String(tmConvertToFloat64, c) }
 
 type StructParser struct {
 	From, To string
@@ -102,6 +42,82 @@ type StructParser struct {
 var tmStructParser = template.Must(template.New("StructParser").Parse(`err := {{.To}}.UnmarshalText({{.From}})
 if err != nil {
 	return zero, {{call .NewError "fmt.Errorf(\"parse struct: %w\", err)"}}
-}`))
+}`,
+))
 
 func (s StructParser) String() (string, error) { return String(tmStructParser, s) }
+
+// ----
+
+type TypeConversion struct {
+	Type string
+	From string
+}
+
+var tmTypeConversion = template.Must(template.New("TypeConversion").Parse(
+	`{{.Type}}({{.From}})`,
+))
+
+func (c TypeConversion) String() (string, error) { return String(tmTypeConversion, c) }
+
+// int, int32, int64
+
+func ConvertToInt(from, to string, newError FuncNewError) Render {
+	return Combine{
+		ConvertToIntXX{0, from, "vInt", newError},
+		AssignNew{TypeConversion{"int", "vInt"}, to},
+	}
+}
+
+func ConvertToInt32(from, to string, newError FuncNewError) Render {
+	return Combine{
+		ConvertToIntXX{32, from, "vInt", newError},
+		AssignNew{TypeConversion{"int32", "vInt"}, to},
+	}
+}
+
+func ConvertToInt64(from, to string, newError FuncNewError) Render {
+	return ConvertToIntXX{64, from, to, newError}
+}
+
+type ConvertToIntXX struct {
+	BitSize     int
+	From, ToNew string
+	NewError    FuncNewError
+}
+
+var tmConvertToIntXX = template.Must(template.New("ConvertToIntXX").Parse(`
+{{- $bitSize := ""}}
+{{- if .BitSize}}{{$bitSize = (printf "%d" .BitSize)}}{{else}}{{$bitSize = ""}}{{end -}}
+{{.ToNew}}, err := strconv.ParseInt({{.From}}, 10, {{.BitSize}})
+if err != nil {
+	return zero, {{call .NewError (print "fmt.Errorf(\"parse int" $bitSize ": %w\", err)") }}
+}`))
+
+func (c ConvertToIntXX) String() (string, error) { return String(tmConvertToIntXX, c) }
+
+// float32, float64
+
+func ConvertToFloat32(from, to string, newError FuncNewError) Render {
+	return Combine{
+		ConvertToFloatXX{32, from, "vf", newError},
+		AssignNew{TypeConversion{"float32", "vf"}, to},
+	}
+}
+
+func ConvertToFloat64(from, to string, newError FuncNewError) Render {
+	return ConvertToFloatXX{64, from, to, newError}
+}
+
+type ConvertToFloatXX struct {
+	BitSize     int
+	From, ToNew string
+	NewError    FuncNewError
+}
+
+var tmConvertToFloatXX = template.Must(template.New("ConvertToFloatXX").Parse(`{{.ToNew}}, err := strconv.ParseFloat({{.From}}, {{.BitSize}})
+if err != nil {
+	return zero, {{call .NewError (print "fmt.Errorf(\"parse float" (printf "%d" .BitSize) ": %w\", err)")}}
+}`))
+
+func (c ConvertToFloatXX) String() (string, error) { return String(tmConvertToFloatXX, c) }

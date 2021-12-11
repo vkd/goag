@@ -49,7 +49,7 @@ type GoVarDef struct {
 	Value Render
 }
 
-var tmGoVarDef = template.Must(template.New("GoVarDef").Parse(`var {{.Name}} {{.Type.String}} = {{.Value.String}}`))
+var tmGoVarDef = template.Must(template.New("GoVarDef").Parse(`var {{.Name}} {{.Type.String}}{{if .Value}} = {{.Value.String}}{{end}}`))
 
 func (g GoVarDef) String() (string, error) { return String(tmGoVarDef, g) }
 
@@ -203,17 +203,17 @@ const (
 func (g GoType) Parser(from, to string, mkErr FuncNewError) Render {
 	switch g {
 	case StringType:
-		return AssignNew{from, to}
+		return AssignNew{GoValue(from), to}
 	case Int:
-		return ConvertToInt{from, to, mkErr}
+		return ConvertToInt(from, to, mkErr)
 	case Int32:
-		return ConvertToInt32{from, to, mkErr}
+		return ConvertToInt32(from, to, mkErr)
 	case Int64:
-		return ConvertToInt64{from, to, mkErr}
+		return ConvertToInt64(from, to, mkErr)
 	case Float32:
-		return ConvertToFloat32{from, to, mkErr}
+		return ConvertToFloat32(from, to, mkErr)
 	case Float64:
-		return ConvertToFloat64{from, to, mkErr}
+		return ConvertToFloat64(from, to, mkErr)
 	}
 	panic(fmt.Errorf("unsupported GoType: %q", g))
 }
@@ -248,7 +248,7 @@ func (s GoSlice) Parser(from, to string, mkErr FuncNewError) Render {
 	case GoType:
 		switch t {
 		case StringType:
-			return Assign{from + "[0]", to}
+			return Assign{GoValue(from + "[0]"), to}
 		}
 	}
 	panic("not implemented")
@@ -261,7 +261,7 @@ func (s GoSlice) StringsParser(from, to string, mkErr FuncNewError) Render {
 	case GoType:
 		switch t {
 		case StringType:
-			return Assign{from, to}
+			return Assign{GoValue(from), to}
 		}
 	}
 	return ConvertStrings{s.Items, from, to, mkErr}
@@ -296,7 +296,7 @@ for i := range {{.From}} {
 func (c ConvertStrings) ItemRender(from, toOrig string) (string, error) {
 	to := "v1"
 	r := c.ItemType.Parser(from, to, c.MkErr)
-	r = Combine{r, Assign{to, toOrig}}
+	r = Combine{r, Assign{GoValue(to), toOrig}}
 	return r.String()
 }
 

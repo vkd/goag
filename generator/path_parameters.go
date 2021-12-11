@@ -70,7 +70,7 @@ func NewPathParamsParsers(path string, params []PathParameter) ([]Render, error)
 		conv := param.Type.Parser("vPath", "v", NewPathErrorFunc(param.Name))
 		out = append(out, PathParameterParser{
 			"vPath",
-			Combine{conv, Assign{"v", to}},
+			Combine{conv, Assign{GoValue("v"), to}},
 			NewPathErrorFunc(param.Name),
 		})
 
