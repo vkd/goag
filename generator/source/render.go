@@ -1,4 +1,4 @@
-package generator
+package source
 
 import "github.com/vkd/goag/generator/render"
 

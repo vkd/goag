@@ -67,11 +67,11 @@ func NewPathParamsParsers(path string, params []PathParameter) ([]Render, error)
 
 		to := "params." + param.FieldName
 
-		conv := param.Type.Parser("vPath", "v", ParseErrorWrapper{"path", param.Name})
+		conv := param.Type.Parser("vPath", "v", ParseError{"path", param.Name})
 		out = append(out, PathParameterParser{
 			"vPath",
 			Combine{conv, Assign{GoValue("v"), to}},
-			ParseErrorWrapper{"path", param.Name},
+			ParseError{"path", param.Name},
 		})
 
 		p = p[r+1:]
@@ -103,8 +103,8 @@ func (p PathConstantParser) String() (string, error) {
 type PathParameterParser struct {
 	Variable string
 
-	Convert      Render
-	ErrorWrapper ErrorWrapper
+	Convert Render
+	Error   ErrorBuilder
 }
 
 var tmPathParameterParser = template.Must(template.New("PathParameterParser").Parse(`{
@@ -116,7 +116,7 @@ var tmPathParameterParser = template.Must(template.New("PathParameterParser").Pa
 	p = p[idx:]
 
 	if len({{.Variable}}) == 0 {
-		return zero, {{.ErrorWrapper.Error "required"}}
+		return zero, {{.Error.New "required"}}
 	}
 
 	{{.Convert.String}}

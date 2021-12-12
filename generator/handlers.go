@@ -228,7 +228,7 @@ func NewQueryParser(p *openapi3.Parameter, field GoStructField) Render {
 
 	from := "q"
 	to := "params." + field.Name
-	mkErr := ParseErrorWrapper{"query", p.Name}
+	mkErr := ParseError{"query", p.Name}
 
 	return QueryParser{
 		QueryVarName:  from,
@@ -264,7 +264,7 @@ func NewHeaderParser(p *openapi3.Parameter, field GoStructField) Render {
 
 	from := "hs"
 	to := "params." + field.Name
-	mkErr := ParseErrorWrapper{"header", p.Name}
+	mkErr := ParseError{"header", p.Name}
 
 	return HeaderParser{
 		HeaderVarName: from,

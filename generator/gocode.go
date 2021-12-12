@@ -203,7 +203,7 @@ const (
 func (g GoType) Parser(from, to string, mkErr ErrorWrapper) Render {
 	switch g {
 	case StringType:
-		return AssignNew{GoValue(from), to}
+		return AssignNew{From: GoValue(from), To: to}
 	case Int:
 		return ConvertToInt(from, to, mkErr)
 	case Int32:

@@ -15,6 +15,7 @@ import (
 	"golang.org/x/tools/imports"
 
 	"github.com/vkd/goag/generator"
+	"github.com/vkd/goag/generator/render"
 )
 
 func GenerateDir(dir, packageName, specFilename, basePath string) error {
@@ -144,7 +145,7 @@ func ExecToFile(templateName string, filepath string, data interface{}) error {
 }
 
 func RenderToFile(filepath string, f generator.Render) error {
-	bs, err := generator.Bytes(f)
+	bs, err := render.Bytes(f)
 	if err != nil {
 		return fmt.Errorf("to bytes: %w", err)
 	}
