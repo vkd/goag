@@ -121,7 +121,7 @@ struct{}
 
 func (g GoStruct) String() (string, error) { return String(tmGoStruct, g) }
 
-func (g GoStruct) Parser(from, to string, mkErr FuncNewError) Render {
+func (g GoStruct) Parser(from, to string, mkErr ErrorWrapper) Render {
 	return StructParser{from, to, mkErr}
 }
 
@@ -200,7 +200,7 @@ const (
 	Float64 GoType = "float64"
 )
 
-func (g GoType) Parser(from, to string, mkErr FuncNewError) Render {
+func (g GoType) Parser(from, to string, mkErr ErrorWrapper) Render {
 	switch g {
 	case StringType:
 		return AssignNew{GoValue(from), to}
@@ -243,7 +243,7 @@ var tmGoSlice = template.Must(template.New("GoSlice").Parse(`[]{{ .Items.String 
 
 func (s GoSlice) String() (string, error) { return String(tmGoSlice, s) }
 
-func (s GoSlice) Parser(from, to string, mkErr FuncNewError) Render {
+func (s GoSlice) Parser(from, to string, mkErr ErrorWrapper) Render {
 	switch t := s.Items.(type) {
 	case GoType:
 		switch t {
@@ -256,7 +256,7 @@ func (s GoSlice) Parser(from, to string, mkErr FuncNewError) Render {
 
 func (GoSlice) Optionable() {}
 
-func (s GoSlice) StringsParser(from, to string, mkErr FuncNewError) Render {
+func (s GoSlice) StringsParser(from, to string, mkErr ErrorWrapper) Render {
 	switch t := s.Items.(type) {
 	case GoType:
 		switch t {
@@ -275,7 +275,7 @@ var tmGoMap = template.Must(template.New("GoMap").Parse(`map[{{ .Key.String }}]{
 
 func (s GoMap) String() (string, error) { return String(tmGoMap, s) }
 
-func (s GoMap) Parser(from, to string, mkErr FuncNewError) Render {
+func (s GoMap) Parser(from, to string, mkErr ErrorWrapper) Render {
 	panic("not implemented")
 }
 
@@ -284,7 +284,7 @@ func (GoMap) Optionable() {}
 type ConvertStrings struct {
 	ItemType SchemaRender
 	From, To string
-	MkErr    FuncNewError
+	MkErr    ErrorWrapper
 }
 
 var tmConvertStrings = template.Must(template.New("ConvertStrings").Parse(`

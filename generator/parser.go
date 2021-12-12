@@ -1,10 +1,10 @@
 package generator
 
 type StringsParser interface {
-	StringsParser(from, to string, _ FuncNewError) Render
+	StringsParser(from, to string, _ ErrorWrapper) Render
 }
 
-func NewStringsParser(s SchemaRender, from, toOrig string, isPointer bool, mkErr FuncNewError) Render {
+func NewStringsParser(s SchemaRender, from, toOrig string, isPointer bool, mkErr ErrorWrapper) Render {
 	to := toOrig
 
 	var conv Render

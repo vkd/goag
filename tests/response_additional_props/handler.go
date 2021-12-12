@@ -75,20 +75,15 @@ func writeJSON(w io.Writer, v interface{}, name string) {
 	}
 }
 
-type ErrParseQueryParam struct {
-	Name string
-	Err  error
+type ErrParseParam struct {
+	In        string
+	Parameter string
+	Reason    string
+	Err       error
 }
 
-func (e ErrParseQueryParam) Error() string {
-	return fmt.Sprintf("query parameter '%s': %e", e.Name, e.Err)
+func (e ErrParseParam) Error() string {
+	return fmt.Sprintf("%s parameter '%s': %s: %v", e.In, e.Parameter, e.Reason, e.Err)
 }
 
-type ErrParsePathParam struct {
-	Name string
-	Err  error
-}
-
-func (e ErrParsePathParam) Error() string {
-	return fmt.Sprintf("path parameter '%s': %e", e.Name, e.Err)
-}
+func (e ErrParseParam) Unwrap() error { return e.Err }

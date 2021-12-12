@@ -17,7 +17,6 @@ type Handlers struct {
 	Handlers []Handler
 
 	IsWriteJSONFunc bool
-	HasHeaders      bool
 }
 
 func NewHandlers(pname string, s *openapi3.Swagger, basePath string) (zero Handlers, _ error) {
@@ -35,9 +34,6 @@ func NewHandlers(pname string, s *openapi3.Swagger, basePath string) (zero Handl
 			out.Handlers = append(out.Handlers, h)
 			if h.IsWriteJSONFunc {
 				out.IsWriteJSONFunc = true
-			}
-			if len(h.Parameters.Headers) > 0 {
-				out.HasHeaders = true
 			}
 		}
 	}
@@ -232,7 +228,7 @@ func NewQueryParser(p *openapi3.Parameter, field GoStructField) Render {
 
 	from := "q"
 	to := "params." + field.Name
-	mkErr := NewQueryErrorFunc(p.Name)
+	mkErr := ParseErrorWrapper{"query", p.Name}
 
 	return QueryParser{
 		QueryVarName:  from,
@@ -263,18 +259,12 @@ func (i QueryParser) String() (string, error) {
 	return String(tmQueryParser, i)
 }
 
-func NewQueryErrorFunc(name string) FuncNewError {
-	return func(s string) string {
-		return `ErrParseQueryParam{Name: "` + name + `", Err: ` + s + `}`
-	}
-}
-
 func NewHeaderParser(p *openapi3.Parameter, field GoStructField) Render {
 	s := NewSchemaRef(p.Schema)
 
 	from := "hs"
 	to := "params." + field.Name
-	mkErr := NewHeaderErrorFunc(p.Name)
+	mkErr := ParseErrorWrapper{"header", p.Name}
 
 	return HeaderParser{
 		HeaderVarName: from,
@@ -303,12 +293,6 @@ if len({{.HeaderVarName}}) > 0 {
 
 func (i HeaderParser) String() (string, error) {
 	return String(tmHeaderParser, i)
-}
-
-func NewHeaderErrorFunc(name string) FuncNewError {
-	return func(s string) string {
-		return `ErrParseHeaderParam{Name: "` + name + `", Err: ` + s + `}`
-	}
 }
 
 func NewBodyRef(spec *openapi3.RequestBodyRef) Render {

@@ -269,7 +269,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 			p = p[idx:]
 
 			if len(vPath) == 0 {
-				return zero, ErrParsePathParam{Name: "shop", Err: fmt.Errorf("is required")}
+				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
 			v := vPath
@@ -356,7 +356,7 @@ func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTRequest, _ err
 			p = p[idx:]
 
 			if len(vPath) == 0 {
-				return zero, ErrParsePathParam{Name: "shop", Err: fmt.Errorf("is required")}
+				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
 			v := vPath
@@ -448,7 +448,7 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsRequest, _
 			p = p[idx:]
 
 			if len(vPath) == 0 {
-				return zero, ErrParsePathParam{Name: "shop", Err: fmt.Errorf("is required")}
+				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
 			v := vPath
@@ -486,20 +486,15 @@ var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
 }
 
-type ErrParseQueryParam struct {
-	Name string
-	Err  error
+type ErrParseParam struct {
+	In        string
+	Parameter string
+	Reason    string
+	Err       error
 }
 
-func (e ErrParseQueryParam) Error() string {
-	return fmt.Sprintf("query parameter '%s': %e", e.Name, e.Err)
+func (e ErrParseParam) Error() string {
+	return fmt.Sprintf("%s parameter '%s': %s: %v", e.In, e.Parameter, e.Reason, e.Err)
 }
 
-type ErrParsePathParam struct {
-	Name string
-	Err  error
-}
-
-func (e ErrParsePathParam) Error() string {
-	return fmt.Sprintf("path parameter '%s': %e", e.Name, e.Err)
-}
+func (e ErrParseParam) Unwrap() error { return e.Err }

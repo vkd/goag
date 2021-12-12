@@ -10,7 +10,7 @@ import (
 
 type SchemaRender interface {
 	Render
-	Parser(from, to string, _ FuncNewError) Render
+	Parser(from, to string, _ ErrorWrapper) Render
 }
 
 func NewSchemaRef(spec *openapi3.SchemaRef) SchemaRender {
@@ -92,7 +92,7 @@ func (r Ref) String() (string, error) {
 	return string(r), nil
 }
 
-func (r Ref) Parser(from, to string, mkErr FuncNewError) Render {
+func (r Ref) Parser(from, to string, mkErr ErrorWrapper) Render {
 	panic("not implemented")
 }
 
