@@ -112,7 +112,7 @@ var specFileBs = []byte(SpecFile)
 
 func SpecFileHandler() http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		rw.Header().Set("Content-Type", "application/")
+		rw.Header().Set("Content-Type", "application/yaml")
 		rw.WriteHeader(http.StatusOK)
 		_, err := rw.Write(specFileBs)
 		if err != nil {
