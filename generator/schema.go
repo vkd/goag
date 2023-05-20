@@ -73,6 +73,8 @@ func NewSchema(spec *openapi3.Schema) SchemaRender {
 			return Float64
 		}
 		return Float64
+	case "boolean":
+		return BooleanType
 	}
 
 	panic(fmt.Errorf("unknown schema type: %q", spec.Type))

@@ -65,7 +65,7 @@ func ConvertToFloat64(from, to string, newError ErrorWrapper) Render {
 type ConvertToFloatXX struct {
 	BitSize     int
 	From, ToNew string
-	NewError    ErrorWrapper
+	Error       ErrorWrapper
 }
 
 var tmConvertToFloatXX = template.Must(template.New("ConvertToFloatXX").Parse(`{{.ToNew}}, err := strconv.ParseFloat({{.From}}, {{.BitSize}})
@@ -74,3 +74,22 @@ if err != nil {
 }`))
 
 func (c ConvertToFloatXX) String() (string, error) { return String(tmConvertToFloatXX, c) }
+
+// bool
+
+func ConvertToBool(from, to string, newError ErrorWrapper) Render {
+	return convertToBool{from, to, newError}
+}
+
+type convertToBool struct {
+	From, ToNew string
+	Error       ErrorWrapper
+}
+
+var tmConvertToBool = template.Must(template.New("convertToBool").Parse(`
+{{.ToNew}}, err := strconv.ParseBool({{.From}})
+if err != nil {
+	return zero, {{.Error.Wrap "parse bool"}}
+}`))
+
+func (c convertToBool) String() (string, error) { return String(tmConvertToBool, c) }

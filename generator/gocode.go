@@ -198,6 +198,8 @@ const (
 
 	Float32 GoType = "float32"
 	Float64 GoType = "float64"
+
+	BooleanType GoType = "bool"
 )
 
 func (g GoType) Parser(from, to string, mkErr ErrorWrapper) Render {
@@ -214,6 +216,8 @@ func (g GoType) Parser(from, to string, mkErr ErrorWrapper) Render {
 		return ConvertToFloat32(from, to, mkErr)
 	case Float64:
 		return ConvertToFloat64(from, to, mkErr)
+	case BooleanType:
+		return source.ConvertToBool(from, to, mkErr)
 	}
 	panic(fmt.Errorf("unsupported GoType: %q", g))
 }
