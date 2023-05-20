@@ -6,6 +6,7 @@ import (
 	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/vkd/goag/generator/source"
 )
 
 type PathParameter struct {
@@ -70,7 +71,10 @@ func NewPathParamsParsers(path string, params []PathParameter) ([]Render, error)
 		conv := param.Type.Parser("vPath", "v", ParseError{"path", param.Name})
 		out = append(out, PathParameterParser{
 			"vPath",
-			Combine{conv, Assign{GoValue("v"), to}},
+			source.Renders{
+				conv,
+				Assign{GoValue("v"), to},
+			},
 			ParseError{"path", param.Name},
 		})
 

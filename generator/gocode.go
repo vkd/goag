@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
+
+	"github.com/vkd/goag/generator/source"
 )
 
 type GoFile struct {
@@ -302,7 +304,7 @@ for i := range {{.From}} {
 func (c ConvertStrings) ItemRender(from, toOrig string) (string, error) {
 	to := "v1"
 	r := c.ItemType.Parser(from, to, c.MkErr)
-	r = Combine{r, Assign{GoValue(to), toOrig}}
+	r = source.Renders{r, Assign{GoValue(to), toOrig}}
 	return r.String()
 }
 

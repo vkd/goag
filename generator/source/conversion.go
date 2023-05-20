@@ -16,14 +16,14 @@ func (c TypeConversion) String() (string, error) { return String(tmTypeConversio
 // int, int32, int64
 
 func ConvertToInt(from, to string, newError ErrorWrapper) Render {
-	return Combine{
+	return Renders{
 		ConvertToIntXX{0, from, "vInt", newError},
 		AssignNew{TypeConversion{"int", "vInt"}, to},
 	}
 }
 
 func ConvertToInt32(from, to string, newError ErrorWrapper) Render {
-	return Combine{
+	return Renders{
 		ConvertToIntXX{32, from, "vInt", newError},
 		AssignNew{TypeConversion{"int32", "vInt"}, to},
 	}
@@ -52,7 +52,7 @@ func (c ConvertToIntXX) String() (string, error) { return String(tmConvertToIntX
 // float32, float64
 
 func ConvertToFloat32(from, to string, newError ErrorWrapper) Render {
-	return Combine{
+	return Renders{
 		ConvertToFloatXX{32, from, "vf", newError},
 		AssignNew{TypeConversion{"float32", "vf"}, to},
 	}
@@ -68,7 +68,8 @@ type ConvertToFloatXX struct {
 	Error       ErrorWrapper
 }
 
-var tmConvertToFloatXX = template.Must(template.New("ConvertToFloatXX").Parse(`{{.ToNew}}, err := strconv.ParseFloat({{.From}}, {{.BitSize}})
+var tmConvertToFloatXX = template.Must(template.New("ConvertToFloatXX").Parse(`
+{{.ToNew}}, err := strconv.ParseFloat({{.From}}, {{.BitSize}})
 if err != nil {
 	return zero, {{.Error.Wrap (print "parse float" (printf "%d" .BitSize))}}
 }`))

@@ -1,5 +1,7 @@
 package generator
 
+import "github.com/vkd/goag/generator/source"
+
 type StringsParser interface {
 	StringsParser(from, to string, _ ErrorWrapper) Render
 }
@@ -19,7 +21,7 @@ func NewStringsParser(s SchemaRender, from, toOrig string, isPointer bool, mkErr
 		if isPointer && !optionable {
 			to = "&" + to
 		}
-		conv = Combine{conv, Assign{GoValue(to), toOrig}}
+		conv = source.Renders{conv, Assign{GoValue(to), toOrig}}
 	}
 
 	return conv
