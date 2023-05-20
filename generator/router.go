@@ -26,7 +26,7 @@ func NewRouter(packageName string, handlers []Handler, spec *openapi3.Swagger, s
 	out.PackageName = packageName
 	out.BasePath = basePath
 	out.SpecFile = string(specRaw)
-	out.SpecFileExt = filepath.Ext(out.SpecFile)
+	out.SpecFileExt = strings.TrimPrefix(filepath.Ext(baseFilename), ".")
 	out.BaseSpecFilename = baseFilename
 
 	out.Handlers = handlers

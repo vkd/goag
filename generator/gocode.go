@@ -73,9 +73,11 @@ type GoTypeDef struct {
 
 func NewGoTypeDef(i SchemasItem) GoTypeDef {
 	sr := NewSchemaRef(i.Schema)
+	comment := i.Schema.Value.Description
+	comment = strings.ReplaceAll(strings.TrimRight(comment, "\n "), "\n", "\n// ")
 	return GoTypeDef{
 		Name:    i.Name,
-		Comment: i.Schema.Value.Description,
+		Comment: comment,
 		Type:    sr,
 	}
 }

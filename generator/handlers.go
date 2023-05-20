@@ -178,6 +178,7 @@ func NewQueryParam(p *openapi3.Parameter) Param {
 		Type:    sr,
 		Comment: p.Description,
 	}
+	f.Comment = strings.ReplaceAll(strings.TrimRight(f.Comment, "\n "), "\n", "\n// ")
 	prs := NewQueryParser(p, f)
 	out := Param{
 		Field:  f,
