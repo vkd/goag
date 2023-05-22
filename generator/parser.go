@@ -21,7 +21,7 @@ func NewStringsParser(s SchemaRender, from, toOrig string, isPointer bool, mkErr
 		if isPointer && !optionable {
 			to = "&" + to
 		}
-		conv = source.Renders{conv, Assign{GoValue(to), toOrig}}
+		conv = source.Renders{conv, source.Assign(toOrig, GoValue(to))}
 	}
 
 	return conv

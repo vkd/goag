@@ -15,10 +15,14 @@ import (
 	"golang.org/x/tools/imports"
 
 	"github.com/vkd/goag/generator"
-	"github.com/vkd/goag/generator/render"
 )
 
-func GenerateDir(dir, packageName, specFilename, basePath string) error {
+type Generator struct {
+	GenClient bool
+	DeleteOld bool
+}
+
+func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath string) error {
 	err := ParseTemplates()
 	if err != nil {
 		return fmt.Errorf("parse templates: %w", err)
@@ -38,7 +42,7 @@ func GenerateDir(dir, packageName, specFilename, basePath string) error {
 
 		specFile := filepath.Join(testpath, specFilename)
 
-		err = generateFile(testpath, packageName, specFile, basePath)
+		err = g.generateFile(filepath.Join(testpath, out), packageName, specFile, basePath)
 		if err != nil {
 			return fmt.Errorf("generate: %w", err)
 		}
@@ -47,15 +51,15 @@ func GenerateDir(dir, packageName, specFilename, basePath string) error {
 	return nil
 }
 
-func GenerateFile(outDir, packageName, specFilename, basePath string) error {
+func (g Generator) GenerateFile(outDir, packageName, specFilename, basePath string) error {
 	err := ParseTemplates()
 	if err != nil {
 		return fmt.Errorf("parse templates: %w", err)
 	}
-	return generateFile(outDir, packageName, specFilename, basePath)
+	return g.generateFile(outDir, packageName, specFilename, basePath)
 }
 
-func generateFile(outDir, packageName, specFilename, basePath string) error {
+func (g Generator) generateFile(outDir, packageName, specFilename, basePath string) error {
 	specRaw, err := ioutil.ReadFile(specFilename)
 	if err != nil {
 		return fmt.Errorf("read spec file: %w", err)
@@ -68,7 +72,7 @@ func generateFile(outDir, packageName, specFilename, basePath string) error {
 
 	specBaseFilename := filepath.Base(specFilename)
 
-	err = Generate(spec, outDir, packageName, specRaw, specBaseFilename, basePath)
+	err = g.Generate(spec, outDir, packageName, specRaw, specBaseFilename, basePath)
 	if err != nil {
 		return fmt.Errorf("generate: %w", err)
 	}
@@ -76,14 +80,21 @@ func generateFile(outDir, packageName, specFilename, basePath string) error {
 	return nil
 }
 
-func Generate(spec *openapi3.Swagger, outDir string, packageName string, specRaw []byte, baseFilename, basePath string) error {
+func (g Generator) Generate(spec *openapi3.Swagger, outDir string, packageName string, specRaw []byte, baseFilename, basePath string) error {
+	componentsFile := path.Join(outDir, "components.go")
+	err := os.Remove(componentsFile)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("remove components file (%s): %w", componentsFile, err)
+		}
+	}
 	components := generator.NewComponents(spec.Components)
 	if len(components.Schemas) > 0 {
 		goFile := generator.GoFile{
 			PackageName: packageName,
 			Renders:     []generator.Render{components},
 		}
-		err := RenderToFile(path.Join(outDir, "components.go"), goFile)
+		err := RenderToFile(componentsFile, goFile)
 		if err != nil {
 			return fmt.Errorf("generate components: %w", err)
 		}
@@ -131,6 +142,34 @@ func Generate(spec *openapi3.Swagger, outDir string, packageName string, specRaw
 		return fmt.Errorf("generate spec_file: %w", err)
 	}
 
+	clientFile := path.Join(outDir, "client.go")
+	err = os.Remove(clientFile)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("remove client file (%s): %w", clientFile, err)
+		}
+	}
+	if g.GenClient {
+		clientBuilder, err := generator.NewClientBuilder(spec, hs.Handlers)
+		if err != nil {
+			return fmt.Errorf("build client structure: %w", err)
+		}
+
+		clientGoContent, err := clientBuilder.Build()
+		if err != nil {
+			return fmt.Errorf("generate client file structure: %w", err)
+		}
+
+		err = RenderToFile(clientFile, generator.GoFile{
+			PackageName: packageName,
+			DoNotEdit:   true,
+			Renders:     []generator.Render{clientGoContent},
+		})
+		if err != nil {
+			return fmt.Errorf("generate client source: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -145,11 +184,11 @@ func ExecToFile(templateName string, filepath string, data interface{}) error {
 }
 
 func RenderToFile(filepath string, f generator.Render) error {
-	bs, err := render.Bytes(f)
+	s, err := f.String()
 	if err != nil {
 		return fmt.Errorf("to bytes: %w", err)
 	}
-	err = WriteToFile(bs, filepath)
+	err = WriteToFile([]byte(s), filepath)
 	if err != nil {
 		return fmt.Errorf("write to file: %w", err)
 	}

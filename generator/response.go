@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -14,7 +15,8 @@ type Response struct {
 	HandlerName string
 
 	Description string
-	Status      string
+	Status      int
+	IsDefault   bool
 
 	ResponserInterfaceName string
 
@@ -72,10 +74,11 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 		out.Name += contentType
 	}
 	out.PrivateName = PrivateFieldName(out.Name)
-	out.Status = status
+	// out.Status = status
 
 	var fields []GoStructField
-	if out.IsDefault() {
+	if strings.EqualFold(status, "default") {
+		out.IsDefault = true
 		fields = append(fields, GoStructField{
 			Name: "Code",
 			Type: Int,
@@ -85,6 +88,12 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 			ArgName:   "code",
 			Type:      Int,
 		})
+	} else {
+		var err error
+		out.Status, err = strconv.Atoi(status)
+		if err != nil {
+			panic(fmt.Errorf("convert response status: %w", err))
+		}
 	}
 
 	if response.Value != nil && response.Value.Description != nil {
@@ -176,7 +185,7 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 	return out
 }
 
-func (r Response) IsDefault() bool { return strings.EqualFold(r.Status, "default") }
+// func (r Response) IsDefault() bool { return strings.EqualFold(r.Status, "default") }
 
 type ResponseArg struct {
 	FieldName string

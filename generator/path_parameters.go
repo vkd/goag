@@ -68,14 +68,14 @@ func NewPathParamsParsers(path string, params []PathParameter) ([]Render, error)
 
 		to := "params." + param.FieldName
 
-		conv := param.Type.Parser("vPath", "v", ParseError{"path", param.Name})
+		conv := param.Type.Parser("vPath", "v", source.PathParseError(param.Name))
 		out = append(out, PathParameterParser{
 			"vPath",
 			source.Renders{
 				conv,
-				Assign{GoValue("v"), to},
+				source.Assign(to, GoValue("v")),
 			},
-			ParseError{"path", param.Name},
+			source.PathParseError(param.Name),
 		})
 
 		p = p[r+1:]

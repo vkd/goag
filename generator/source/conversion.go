@@ -1,45 +1,52 @@
 package source
 
-import "text/template"
+import (
+	"text/template"
+)
 
-type TypeConversion struct {
-	Type string
-	From string
+func TypeConversion(goType, variable string) Render {
+	return typeConversion{goType, variable}
 }
 
-var tmTypeConversion = template.Must(template.New("TypeConversion").Parse(
-	`{{.Type}}({{.From}})`,
-))
+var tmTypeConversion = InitTemplate("TypeConversion", `{{.GoType}}({{.Var}})`)
 
-func (c TypeConversion) String() (string, error) { return String(tmTypeConversion, c) }
+type typeConversion struct {
+	GoType string
+	Var    string
+}
+
+func (c typeConversion) String() (string, error) { return tmTypeConversion.String(c) }
+
+// --- deprecated ---
 
 // int, int32, int64
 
-func ConvertToInt(from, to string, newError ErrorWrapper) Render {
+func ParseInt(to string, from string, newError ErrorWrapper) Render {
 	return Renders{
-		ConvertToIntXX{0, from, "vInt", newError},
-		AssignNew{TypeConversion{"int", "vInt"}, to},
+		ParseIntXX{0, from, "vInt", newError},
+		AssignNew(to, TypeConversion("int", "vInt")),
 	}
 }
 
-func ConvertToInt32(from, to string, newError ErrorWrapper) Render {
+func ParseInt32(to string, from string, newError ErrorWrapper) Render {
 	return Renders{
-		ConvertToIntXX{32, from, "vInt", newError},
-		AssignNew{TypeConversion{"int32", "vInt"}, to},
+		ParseIntXX{32, from, "vInt", newError},
+		AssignNew(to, TypeConversion("int32", "vInt")),
 	}
 }
 
-func ConvertToInt64(from, to string, newError ErrorWrapper) Render {
-	return ConvertToIntXX{64, from, to, newError}
+func ParseInt64(to string, from string, newError ErrorWrapper) Render {
+	return ParseIntXX{64, from, to, newError}
 }
 
-type ConvertToIntXX struct {
-	BitSize     int
-	From, ToNew string
-	Error       ErrorWrapper
+type ParseIntXX struct {
+	BitSize int
+	From    string
+	ToNew   string
+	Error   ErrorWrapper
 }
 
-var tmConvertToIntXX = template.Must(template.New("ConvertToIntXX").Parse(`
+var tmParseIntXX = template.Must(template.New("ParseIntXX").Parse(`
 {{- $bitSize := ""}}
 {{- if .BitSize}}{{$bitSize = (printf "%d" .BitSize)}}{{else}}{{$bitSize = ""}}{{end -}}
 {{.ToNew}}, err := strconv.ParseInt({{.From}}, 10, {{.BitSize}})
@@ -47,14 +54,14 @@ if err != nil {
 	return zero, {{.Error.Wrap (print "parse int" $bitSize)}}
 }`))
 
-func (c ConvertToIntXX) String() (string, error) { return String(tmConvertToIntXX, c) }
+func (c ParseIntXX) String() (string, error) { return String(tmParseIntXX, c) }
 
 // float32, float64
 
 func ConvertToFloat32(from, to string, newError ErrorWrapper) Render {
 	return Renders{
 		ConvertToFloatXX{32, from, "vf", newError},
-		AssignNew{TypeConversion{"float32", "vf"}, to},
+		AssignNew(to, TypeConversion("float32", "vf")),
 	}
 }
 

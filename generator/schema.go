@@ -6,11 +6,14 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
+
+	"github.com/vkd/goag/generator/source"
 )
 
 type SchemaRender interface {
 	Render
 	Parser(from, to string, _ ErrorWrapper) Render
+	Format(s string) source.Templater
 }
 
 func NewSchemaRef(spec *openapi3.SchemaRef) SchemaRender {
@@ -59,9 +62,9 @@ func NewSchema(spec *openapi3.Schema) SchemaRender {
 	case "integer":
 		switch spec.Format {
 		case "int32":
-			return Int32
+			return source.GoIntXXVar(32)
 		case "int64":
-			return Int64
+			return source.GoIntXXVar(64)
 		default:
 			return Int
 		}
@@ -95,6 +98,10 @@ func (r Ref) String() (string, error) {
 }
 
 func (r Ref) Parser(from, to string, mkErr ErrorWrapper) Render {
+	panic("not implemented")
+}
+
+func (r Ref) Format(s string) source.Templater {
 	panic("not implemented")
 }
 

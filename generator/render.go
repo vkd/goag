@@ -1,7 +1,7 @@
 package generator
 
-import "github.com/vkd/goag/generator/render"
+import "github.com/vkd/goag/generator/source"
 
-type Render = render.Render
+type Render = source.Render
 
-var String = render.String
+var String = source.String

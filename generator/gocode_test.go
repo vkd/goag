@@ -49,7 +49,7 @@ func TestGoStructField_String(t *testing.T) {
 	type fields struct {
 		Name    string
 		Comment string
-		Type    Render
+		Type    SchemaRender
 		Tags    []GoFieldTag
 	}
 	tests := []struct {

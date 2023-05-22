@@ -1,13 +1,19 @@
 package source
 
-import "text/template"
-
 type Renders []Render
 
-var tmRenders = template.Must(template.New("Renders").Parse(`
+var tmRenders = InitTemplate("Renders", `
 {{- range $i, $c := . }}{{ if $i }}
 {{ end }}
 {{- $c.String }}
-{{- end }}`))
+{{- end }}`)
 
-func (c Renders) String() (string, error) { return String(tmRenders, c) }
+func (c Renders) String() (string, error) {
+	switch len(c) {
+	case 0:
+		return "", nil
+	case 1:
+		return c[0].String()
+	}
+	return tmRenders.String(c)
+}

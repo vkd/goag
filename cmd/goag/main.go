@@ -9,22 +9,28 @@ import (
 
 var (
 	specFile     = flag.String("file", "openapi.yaml", "Spec file")
-	dir          = flag.String("dir", "", "Specs dir")
+	dir          = flag.String("dir", "", "Specs dir. Used for unittests.")
 	outDir       = flag.String("out", "./", "output dif")
 	packageName  = flag.String("package", "simple", "package name")
 	specFilename = flag.String("spec", "openapi.yaml", "spec filename")
 	basePath     = flag.String("basepath", "", "Base path prefix")
+	genClient    = flag.Bool("client", false, "Generate client code")
+	deleteOld    = flag.Bool("delete", false, "Delete old files")
 )
 
 func main() {
 	log.SetFlags(0)
 	flag.Parse()
 
+	var g goag.Generator
+	g.GenClient = *genClient
+	g.DeleteOld = *deleteOld
+
 	var err error
 	if dir != nil && *dir != "" {
-		err = goag.GenerateDir(*dir, *packageName, *specFilename, *basePath)
+		err = g.GenerateDir(*dir, *outDir, *packageName, *specFilename, *basePath)
 	} else {
-		err = goag.GenerateFile(*outDir, *packageName, *specFile, *basePath)
+		err = g.GenerateFile(*outDir, *packageName, *specFile, *basePath)
 	}
 	if err != nil {
 		log.Fatalf("Error on generate: %v", err)

@@ -129,10 +129,14 @@ func (g GoStruct) Parser(from, to string, mkErr ErrorWrapper) Render {
 	return StructParser{from, to, mkErr}
 }
 
+func (g GoStruct) Format(s string) source.Templater {
+	panic("not implemented")
+}
+
 type GoStructField struct {
 	Name    string
 	Comment string
-	Type    Render
+	Type    SchemaRender
 	Tags    []GoFieldTag
 }
 
@@ -189,7 +193,8 @@ func (g GoFieldTag) String() (string, error) { return fmt.Sprintf("%s:%q", g.Key
 
 type GoType string
 
-func (g GoType) String() (string, error) { return string(g), nil }
+func (g GoType) String() (string, error)          { return string(g), nil }
+func (g GoType) Format(s string) source.Templater { return GoValue(s) }
 
 const (
 	StringType GoType = "string"
@@ -209,21 +214,22 @@ const (
 func (g GoType) Parser(from, to string, mkErr ErrorWrapper) Render {
 	switch g {
 	case StringType:
-		return AssignNew{From: GoValue(from), To: to}
+		return source.AssignNew(to, GoValue(from))
 	case Int:
-		return ConvertToInt(from, to, mkErr)
+		return source.ParseInt(to, from, mkErr)
 	case Int32:
-		return ConvertToInt32(from, to, mkErr)
+		return source.ParseInt32(to, from, mkErr)
 	case Int64:
-		return ConvertToInt64(from, to, mkErr)
+		return source.ParseInt64(to, from, mkErr)
 	case Float32:
 		return ConvertToFloat32(from, to, mkErr)
 	case Float64:
 		return ConvertToFloat64(from, to, mkErr)
 	case BooleanType:
 		return source.ConvertToBool(from, to, mkErr)
+	default:
+		panic(fmt.Errorf("unsupported GoType: %q", g))
 	}
-	panic(fmt.Errorf("unsupported GoType: %q", g))
 }
 
 type GoValue string
@@ -256,10 +262,14 @@ func (s GoSlice) Parser(from, to string, mkErr ErrorWrapper) Render {
 	case GoType:
 		switch t {
 		case StringType:
-			return Assign{GoValue(from + "[0]"), to}
+			return source.Assign(to, GoValue(from+"[0]"))
 		}
 	}
 	panic("not implemented")
+}
+
+func (s GoSlice) Format(v string) source.Templater {
+	return s.Items.Format(v + "[0]")
 }
 
 func (GoSlice) Optionable() {}
@@ -269,7 +279,7 @@ func (s GoSlice) StringsParser(from, to string, mkErr ErrorWrapper) Render {
 	case GoType:
 		switch t {
 		case StringType:
-			return Assign{GoValue(from), to}
+			return source.Assign(to, GoValue(from))
 		}
 	}
 	return ConvertStrings{s.Items, from, to, mkErr}
@@ -284,6 +294,10 @@ var tmGoMap = template.Must(template.New("GoMap").Parse(`map[{{ .Key.String }}]{
 func (s GoMap) String() (string, error) { return String(tmGoMap, s) }
 
 func (s GoMap) Parser(from, to string, mkErr ErrorWrapper) Render {
+	panic("not implemented")
+}
+
+func (s GoMap) Format(_ string) source.Templater {
 	panic("not implemented")
 }
 
@@ -304,7 +318,7 @@ for i := range {{.From}} {
 func (c ConvertStrings) ItemRender(from, toOrig string) (string, error) {
 	to := "v1"
 	r := c.ItemType.Parser(from, to, c.MkErr)
-	r = source.Renders{r, Assign{GoValue(to), toOrig}}
+	r = source.Renders{r, source.Assign(toOrig, GoValue(to))}
 	return r.String()
 }
 

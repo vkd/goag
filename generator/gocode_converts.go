@@ -13,7 +13,8 @@ type StructParser struct {
 
 type ErrorWrapper = source.ErrorWrapper
 type ErrorBuilder = source.ErrorBuilder
-type ParseError = source.ParseError
+
+// type ParseError = source.ParseError
 
 var tmStructParser = template.Must(template.New("StructParser").Parse(`err := {{.To}}.UnmarshalText({{.From}})
 if err != nil {

@@ -8,6 +8,8 @@ import (
 	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
+
+	"github.com/vkd/goag/generator/source"
 )
 
 type Handlers struct {
@@ -64,7 +66,7 @@ type Handler struct {
 	ParamParsers []Render
 
 	// response type which implement handler's responser interface
-	Responses []Render
+	Responses []Response
 
 	IsWriteJSONFunc bool
 }
@@ -160,12 +162,14 @@ func PathName(path string) string {
 type ResponseHeader struct {
 	Name      string
 	FieldName string
-	Type      Render
+	Type      SchemaRender
 }
 
 type Param struct {
-	Field  Render
+	Field  GoStructField
 	Parser Render
+
+	Parameter *openapi3.Parameter
 }
 
 func NewQueryParam(p *openapi3.Parameter) Param {
@@ -181,8 +185,9 @@ func NewQueryParam(p *openapi3.Parameter) Param {
 	f.Comment = strings.ReplaceAll(strings.TrimRight(f.Comment, "\n "), "\n", "\n// ")
 	prs := NewQueryParser(p, f)
 	out := Param{
-		Field:  f,
-		Parser: prs,
+		Field:     f,
+		Parser:    prs,
+		Parameter: p,
 	}
 	return out
 }
@@ -224,12 +229,16 @@ func (r OptionalParam) String() (string, error) {
 	return fmt.Sprintf("*%s", str), nil
 }
 
+func (r OptionalParam) Format(s string) source.Templater {
+	return r.SchemaRender.Format("*" + s)
+}
+
 func NewQueryParser(p *openapi3.Parameter, field GoStructField) Render {
 	s := NewSchemaRef(p.Schema)
 
 	from := "q"
 	to := "params." + field.Name
-	mkErr := ParseError{"query", p.Name}
+	mkErr := source.QueryParseError(p.Name)
 
 	return QueryParser{
 		QueryVarName:  from,
@@ -265,7 +274,7 @@ func NewHeaderParser(p *openapi3.Parameter, field GoStructField) Render {
 
 	from := "hs"
 	to := "params." + field.Name
-	mkErr := ParseError{"header", p.Name}
+	mkErr := source.HeaderParseError(p.Name)
 
 	return HeaderParser{
 		HeaderVarName: from,
