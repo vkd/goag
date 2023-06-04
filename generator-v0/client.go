@@ -3,7 +3,7 @@ package generator
 import (
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/vkd/goag/generator/source"
+	"github.com/vkd/goag/generator-v0/source"
 )
 
 func NewClientBuilder(spec *openapi3.Swagger, handlers []Handler) (interface {
@@ -34,7 +34,7 @@ func (c *ClientBuilder) Build() (*source.ClientFile, error) {
 			Method: h.Method,
 			URL:    h.Path,
 		}
-		for _, q := range h.Parameters.Queries {
+		for _, q := range h.Params.Query {
 			f.Queries = append(f.Queries, source.ClientFuncQuery{
 				QueryName:        q.Parameter.Name,
 				RequestFieldName: q.Field.Name,

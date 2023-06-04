@@ -33,7 +33,9 @@ func (r requestPostShopsNewParams) Parse() (PostShopsNewRequest, error) {
 type PostShopsNewRequest struct {
 	HTTPRequest *http.Request
 
-	Page *int32
+	Query struct {
+		Page *int32
+	}
 }
 
 func newPostShopsNewParams(r *http.Request) (zero PostShopsNewRequest, _ error) {
@@ -51,7 +53,7 @@ func newPostShopsNewParams(r *http.Request) (zero PostShopsNewRequest, _ error) 
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Page = &v
+				params.Query.Page = &v
 			}
 		}
 	}
@@ -113,8 +115,13 @@ func (r requestGetShopsShopParams) Parse() (GetShopsShopRequest, error) {
 type GetShopsShopRequest struct {
 	HTTPRequest *http.Request
 
-	Page *int32
-	Shop string
+	Query struct {
+		Page *int32
+	}
+
+	Path struct {
+		Shop string
+	}
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) {
@@ -132,7 +139,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Page = &v
+				params.Query.Page = &v
 			}
 		}
 	}
@@ -159,7 +166,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 			}
 
 			v := vPath
-			params.Shop = v
+			params.Path.Shop = v
 		}
 	}
 
@@ -220,8 +227,13 @@ func (r requestGetShopsShopReviewsParams) Parse() (GetShopsShopReviewsRequest, e
 type GetShopsShopReviewsRequest struct {
 	HTTPRequest *http.Request
 
-	Page *int32
-	Shop string
+	Query struct {
+		Page *int32
+	}
+
+	Path struct {
+		Shop string
+	}
 }
 
 func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsRequest, _ error) {
@@ -239,7 +251,7 @@ func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsRequ
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Page = &v
+				params.Query.Page = &v
 			}
 		}
 	}
@@ -266,7 +278,7 @@ func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsRequ
 			}
 
 			v := vPath
-			params.Shop = v
+			params.Path.Shop = v
 		}
 
 		if !strings.HasPrefix(p, "/reviews") {

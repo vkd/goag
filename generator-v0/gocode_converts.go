@@ -3,7 +3,7 @@ package generator
 import (
 	"text/template"
 
-	"github.com/vkd/goag/generator/source"
+	"github.com/vkd/goag/generator-v0/source"
 )
 
 type StructParser struct {

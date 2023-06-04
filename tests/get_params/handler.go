@@ -33,9 +33,17 @@ func (r requestGetShopsShopParams) Parse() (GetShopsShopRequest, error) {
 type GetShopsShopRequest struct {
 	HTTPRequest *http.Request
 
-	Page      *int32
-	Shop      string
-	RequestID *string
+	Query struct {
+		Page *int32
+	}
+
+	Path struct {
+		Shop string
+	}
+
+	Headers struct {
+		RequestID *string
+	}
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) {
@@ -53,7 +61,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Page = &v
+				params.Query.Page = &v
 			}
 		}
 	}
@@ -65,7 +73,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
 				v := hs[0]
-				params.RequestID = &v
+				params.Headers.RequestID = &v
 			}
 		}
 	}
@@ -92,7 +100,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 			}
 
 			v := vPath
-			params.Shop = v
+			params.Path.Shop = v
 		}
 	}
 

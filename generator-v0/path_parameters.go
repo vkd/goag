@@ -6,7 +6,7 @@ import (
 	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/vkd/goag/generator/source"
+	"github.com/vkd/goag/generator-v0/source"
 )
 
 type PathParameter struct {
@@ -14,6 +14,8 @@ type PathParameter struct {
 	FieldName string
 	// GoType    GoType
 	Type SchemaRender
+
+	Field GoStructField
 }
 
 func NewPathParameter(p *openapi3.Parameter) PathParameter {
@@ -23,6 +25,7 @@ func NewPathParameter(p *openapi3.Parameter) PathParameter {
 	// out.GoType = NewGoType(p.Schema)
 	sr := NewSchema(p.Schema.Value)
 	out.Type = sr
+	out.Field = NewGoStructField(p.Name, p.Schema, p.Description)
 	return out
 }
 
@@ -66,7 +69,7 @@ func NewPathParamsParsers(path string, params []PathParameter) ([]Render, error)
 		// 	NewPathErrorFunc(param.Name),
 		// )
 
-		to := "params." + param.FieldName
+		to := "params.Path." + param.FieldName
 
 		conv := param.Type.Parser("vPath", "v", source.PathParseError(param.Name))
 		out = append(out, PathParameterParser{

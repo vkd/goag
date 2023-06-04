@@ -236,7 +236,9 @@ func (r requestGetShopsShopParams) Parse() (GetShopsShopRequest, error) {
 type GetShopsShopRequest struct {
 	HTTPRequest *http.Request
 
-	Shop string
+	Path struct {
+		Shop string
+	}
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) {
@@ -273,7 +275,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 			}
 
 			v := vPath
-			params.Shop = v
+			params.Path.Shop = v
 		}
 	}
 
@@ -323,7 +325,9 @@ func (r requestGetShopsShopRTParams) Parse() (GetShopsShopRTRequest, error) {
 type GetShopsShopRTRequest struct {
 	HTTPRequest *http.Request
 
-	Shop string
+	Path struct {
+		Shop string
+	}
 }
 
 func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTRequest, _ error) {
@@ -360,7 +364,7 @@ func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTRequest, _ err
 			}
 
 			v := vPath
-			params.Shop = v
+			params.Path.Shop = v
 		}
 
 		if !strings.HasPrefix(p, "/") {
@@ -415,7 +419,9 @@ func (r requestGetShopsShopPetsParams) Parse() (GetShopsShopPetsRequest, error) 
 type GetShopsShopPetsRequest struct {
 	HTTPRequest *http.Request
 
-	Shop string
+	Path struct {
+		Shop string
+	}
 }
 
 func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsRequest, _ error) {
@@ -452,7 +458,7 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsRequest, _
 			}
 
 			v := vPath
-			params.Shop = v
+			params.Path.Shop = v
 		}
 
 		if !strings.HasPrefix(p, "/pets") {

@@ -14,7 +14,8 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/tools/imports"
 
-	"github.com/vkd/goag/generator"
+	"github.com/vkd/goag/generator-v0"
+	"github.com/vkd/goag/generator-v0/source"
 )
 
 type Generator struct {
@@ -115,12 +116,34 @@ func (g Generator) Generate(spec *openapi3.Swagger, outDir string, packageName s
 		basePath = u.Path
 	}
 
-	hs, err := generator.NewHandlers(packageName, spec, basePath)
+	hs, err := generator.NewHandlers(spec, basePath)
 	if err != nil {
 		return fmt.Errorf("generate handlers: %w", err)
 	}
 
-	err = ExecToFile("handler.gotmpl", path.Join(outDir, "handler.go"), hs)
+	var handlers []source.Handler
+	for _, h := range hs.Handlers {
+		handlers = append(handlers, h.Handler)
+	}
+
+	err = RenderToFile(path.Join(outDir, "handler.go"), source.GoFile{
+		PackageName: packageName,
+		Imports: []string{
+			"encoding/json",
+			"fmt",
+			"io",
+			"log",
+			"net/http",
+			"strconv",
+			"strings",
+		},
+		Body: []source.Templater{
+			source.HandlersFile{
+				Handlers:        handlers,
+				IsWriteJSONFunc: hs.IsWriteJSONFunc,
+			},
+		},
+	})
 	if err != nil {
 		return fmt.Errorf("generate handler: %w", err)
 	}

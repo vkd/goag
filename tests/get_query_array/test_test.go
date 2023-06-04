@@ -14,7 +14,7 @@ func TestGetQueryArray_Strings(t *testing.T) {
 			if err != nil {
 				return GetPetsResponseDefault(400)
 			}
-			assert.Equal(t, []string{"cat", "dog"}, req.Tag)
+			assert.Equal(t, []string{"cat", "dog"}, req.Query.Tag)
 			return GetPetsResponse200()
 		},
 	)
@@ -32,7 +32,7 @@ func TestGetQueryArray_Ints(t *testing.T) {
 			if err != nil {
 				return GetPetsResponseDefault(400)
 			}
-			assert.Equal(t, []int64{2, 4}, req.Page)
+			assert.Equal(t, []int64{2, 4}, req.Query.Page)
 			return GetPetsResponse200()
 		},
 	)

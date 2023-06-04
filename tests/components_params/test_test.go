@@ -18,8 +18,8 @@ func TestComponentsParams(t *testing.T) {
 			if err != nil {
 				return GetShopsShopResponseDefault(400)
 			}
-			assert.Equal(t, testShop, req.Shop)
-			assert.Equal(t, testPage, *req.Page)
+			assert.Equal(t, testShop, req.Path.Shop)
+			assert.Equal(t, testPage, *req.Query.Page)
 			return GetShopsShopResponse200()
 		},
 	}
@@ -38,7 +38,7 @@ func TestComponentsParams_Optional(t *testing.T) {
 			if err != nil {
 				return GetShopsShopResponseDefault(400)
 			}
-			assert.Nil(t, req.Page)
+			assert.Nil(t, req.Query.Page)
 			return GetShopsShopResponse200()
 		},
 	}

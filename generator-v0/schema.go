@@ -7,7 +7,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/vkd/goag/generator/source"
+	"github.com/vkd/goag/generator-v0/source"
 )
 
 type SchemaRender interface {

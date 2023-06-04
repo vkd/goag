@@ -1,8 +1,9 @@
-{{/* {{ template "do_not_edit" }} */}}
+package source
 
-package {{.PackageName}}
-{{- $basePath := $.BasePath }}
+type HandlersFile struct {
+}
 
+var tmHandlersFile = MustTemplate("HandlersFile", `
 import (
 	"encoding/json"
 	"fmt"
@@ -14,13 +15,13 @@ import (
 )
 {{ range $_, $h := .Handlers }}
 {{- $name := $h.Name}}
-{{- $handlerFuncName := print $name `HandlerFunc` }}
-{{- $requestName := print $name `Request` }}
-{{- $requesterName := print $name `Requester` }}
-{{- $responderName := print $name `Responder` }}
-{{- $writeResponseFuncName := print `write` $name `Response` }}
-{{- $requestParamsName := print `request` $name `Params` }}
-{{- $newParamsName := print `new` $name `Params` }}
+{{- $handlerFuncName := print $name "HandlerFunc" }}
+{{- $requestName := print $name "Request" }}
+{{- $requesterName := print $name "Requester" }}
+{{- $responderName := print $name "Responder" }}
+{{- $writeResponseFuncName := print "write" $name "Response" }}
+{{- $requestParamsName := print "request" $name "Params" }}
+{{- $newParamsName := print "new" $name "Params" }}
 {{- $needInvalidFn := or .Parameters.Queries .Parameters.Path .RequestBody}}
 {{- /* --------------------------------- */}}
 // ---------------------------------------------
@@ -161,3 +162,6 @@ func (e ErrParseParam) Error() string {
 }
 
 func (e ErrParseParam) Unwrap() error { return e.Err }
+`)
+
+func (h *HandlersFile) Execute() (string, error) { return tmHandlersFile.Execute(h) }

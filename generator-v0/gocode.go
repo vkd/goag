@@ -5,7 +5,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/vkd/goag/generator/source"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/vkd/goag/generator-v0/source"
 )
 
 type GoFile struct {
@@ -140,14 +141,19 @@ type GoStructField struct {
 	Tags    []GoFieldTag
 }
 
-func NewGoStructField(i SchemasItem) (zero GoStructField) {
-	sr := NewSchemaRef(i.Schema)
+func NewGoStructField(name string, schema *openapi3.SchemaRef, description string) (zero GoStructField) {
 	sf := GoStructField{
-		Name: PublicFieldName(i.Name),
-		Type: sr,
+		Name:    PublicFieldName(name),
+		Type:    NewSchemaRef(schema),
+		Comment: strings.ReplaceAll(strings.TrimRight(description, "\n "), "\n", "\n// "),
 	}
-	if sf.Name != i.Name {
-		sf.Tags = append(sf.Tags, GoFieldTag{"json", i.Name})
+	return sf
+}
+
+func NewGoStructFieldTags(name string, schema *openapi3.SchemaRef, tags ...GoFieldTag) (zero GoStructField) {
+	sf := NewGoStructField(name, schema, "")
+	if sf.Name != name {
+		sf.Tags = append(sf.Tags, tags...)
 	}
 	return sf
 }
@@ -155,7 +161,7 @@ func NewGoStructField(i SchemasItem) (zero GoStructField) {
 func NewGoStructFields(si SchemasItems) []GoStructField {
 	out := make([]GoStructField, 0, len(si))
 	for _, i := range si {
-		sf := NewGoStructField(i)
+		sf := NewGoStructFieldTags(i.Name, i.Schema, GoFieldTag{"json", i.Name})
 		out = append(out, sf)
 	}
 	return out

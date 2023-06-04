@@ -1,6 +1,6 @@
 package generator
 
-import "github.com/vkd/goag/generator/source"
+import "github.com/vkd/goag/generator-v0/source"
 
 type StringsParser interface {
 	StringsParser(from, to string, _ ErrorWrapper) Render

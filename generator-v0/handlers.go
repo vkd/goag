@@ -9,23 +9,17 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/vkd/goag/generator/source"
+	"github.com/vkd/goag/generator-v0/source"
 )
 
 type Handlers struct {
-	PackageName string
-	BasePath    string
-
 	Handlers []Handler
 
 	IsWriteJSONFunc bool
 }
 
-func NewHandlers(pname string, s *openapi3.Swagger, basePath string) (zero Handlers, _ error) {
+func NewHandlers(s *openapi3.Swagger, basePath string) (zero Handlers, _ error) {
 	var out Handlers
-	out.PackageName = pname
-	out.BasePath = basePath
-
 	out.Handlers = make([]Handler, 0, len(s.Paths))
 	for _, p := range Paths(s.Paths) {
 		for _, o := range PathOperations(p.Item) {
@@ -33,6 +27,7 @@ func NewHandlers(pname string, s *openapi3.Swagger, basePath string) (zero Handl
 			if err != nil {
 				return zero, fmt.Errorf("new handler for [%s]%q: %w", o.Method, p.Path, err)
 			}
+			h.BasePathPrefix = basePath
 			out.Handlers = append(out.Handlers, h)
 			if h.IsWriteJSONFunc {
 				out.IsWriteJSONFunc = true
@@ -44,36 +39,17 @@ func NewHandlers(pname string, s *openapi3.Swagger, basePath string) (zero Handl
 }
 
 type Handler struct {
-	Name        string
-	Path        string
-	Method      string
-	Description string
-	Summary     string
+	source.Handler
 
-	ResponserInterfaceName string
+	Path   string
+	Method string
 
-	Parameters struct {
-		Queries []Param
-
-		Path        []PathParameter
-		PathParsers []Render
-
-		Headers []Param
-	}
-
-	RequestBody Render
-
-	ParamParsers []Render
-
-	// response type which implement handler's responser interface
 	Responses []Response
 
-	IsWriteJSONFunc bool
+	Params struct {
+		Query []Param
+	}
 }
-
-// const txtHandler = ``
-
-// var tmHandler = template.Must(template.New("Handler").Parse(txtHandler))
 
 func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Parameters) (zero Handler, _ error) {
 	var out Handler
@@ -87,24 +63,37 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 	allParams = append(allParams, params...)
 	allParams = append(allParams, p.Parameters...)
 
+	var pathParams []PathParameter
+
 	for _, pr := range allParams {
 		p := pr.Value
 		switch p.In {
 		case openapi3.ParameterInQuery:
 			par := NewQueryParam(p)
-			out.Parameters.Queries = append(out.Parameters.Queries, par)
+			out.Params.Query = append(out.Params.Query, par)
+			out.Parameters.Query = append(out.Parameters.Query, source.Param{
+				Field:  par.Field,
+				Parser: par.Parser,
+			})
 		case openapi3.ParameterInPath:
 			pp := NewPathParameter(p)
-			out.Parameters.Path = append(out.Parameters.Path, pp)
+			pathParams = append(pathParams, pp)
+			out.Parameters.Path = append(out.Parameters.Path, source.Param{
+				Field: pp.Field,
+				// Parser: NewPathParamsParsers(),
+			})
 		case openapi3.ParameterInHeader:
 			pp := NewHeaderParam(p)
-			out.Parameters.Headers = append(out.Parameters.Headers, pp)
+			out.Parameters.Headers = append(out.Parameters.Headers, source.Param{
+				Field:  pp.Field,
+				Parser: pp.Parser,
+			})
 		}
 	}
 
 	if len(out.Parameters.Path) > 0 {
 		var err error
-		out.Parameters.PathParsers, err = NewPathParamsParsers(path, out.Parameters.Path)
+		out.Parameters.PathParsers, err = NewPathParamsParsers(path, pathParams)
 		if err != nil {
 			return zero, fmt.Errorf("new path params parsers: %w", err)
 		}
@@ -112,28 +101,36 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 
 	if p.RequestBody != nil {
 		br := NewBodyRef(p.RequestBody)
-		out.RequestBody = br
+		out.Body.TypeName = br
 	}
 
 	out.ResponserInterfaceName = "write" + out.Name + "Response"
 
+	var responses []Response
+
 	for _, r := range PathResponses(p.Responses) {
 		if len(r.Response.Value.Content) == 0 {
 			resp := NewResponse(nil, out.Name, out.ResponserInterfaceName, r.Code, "", r.Response.Value, "|", r.Code, r.Response)
-			out.Responses = append(out.Responses, resp)
+			responses = append(responses, resp)
 			if resp.IsBody {
 				out.IsWriteJSONFunc = true
 			}
 		} else {
 			for mtype, ct := range r.Response.Value.Content {
 				resp := NewResponse(ct.Schema, out.Name, out.ResponserInterfaceName, r.Code, mtype, r.Response.Value, "|", r.Code, r.Response)
-				out.Responses = append(out.Responses, resp)
+				responses = append(responses, resp)
 				if resp.IsBody {
 					out.IsWriteJSONFunc = true
 				}
 			}
 		}
 	}
+	for _, r := range responses {
+		out.Responses = append(out.Responses, r)
+		out.Handler.Responses = append(out.Handler.Responses, r)
+	}
+
+	out.CanParseError = len(out.Parameters.Query) > 0 || len(out.Parameters.Path) > 0 || len(out.Parameters.Headers) > 0 || out.Body.TypeName != nil
 
 	return out, nil
 }
@@ -237,7 +234,7 @@ func NewQueryParser(p *openapi3.Parameter, field GoStructField) Render {
 	s := NewSchemaRef(p.Schema)
 
 	from := "q"
-	to := "params." + field.Name
+	to := "params.Query." + field.Name
 	mkErr := source.QueryParseError(p.Name)
 
 	return QueryParser{
@@ -273,7 +270,7 @@ func NewHeaderParser(p *openapi3.Parameter, field GoStructField) Render {
 	s := NewSchemaRef(p.Schema)
 
 	from := "hs"
-	to := "params." + field.Name
+	to := "params.Headers." + field.Name
 	mkErr := source.HeaderParseError(p.Name)
 
 	return HeaderParser{
