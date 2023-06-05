@@ -133,7 +133,7 @@ func (g Generator) Generate(spec *openapi3.Swagger, outDir string, packageName s
 		handlers = append(handlers, h.Handler)
 	}
 
-	err = RenderToFile(path.Join(outDir, "handler.go"), source.GoFile{
+	err = RenderToFile(path.Join(outDir, "handler.go"), source.Executor(generatorv2.GoFile{
 		PackageName: packageName,
 		Imports: []string{
 			"encoding/json",
@@ -144,13 +144,11 @@ func (g Generator) Generate(spec *openapi3.Swagger, outDir string, packageName s
 			"strconv",
 			"strings",
 		},
-		Body: []source.Templater{
-			source.Executor(generatorv2.HandlersFile{
-				Handlers:        handlers,
-				IsWriteJSONFunc: hs.IsWriteJSONFunc,
-			}),
-		},
-	})
+		Body: source.Executor(generatorv2.HandlersFile{
+			Handlers:        handlers,
+			IsWriteJSONFunc: hs.IsWriteJSONFunc,
+		}),
+	}))
 	if err != nil {
 		return fmt.Errorf("generate handler: %w", err)
 	}

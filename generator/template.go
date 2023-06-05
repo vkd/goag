@@ -32,6 +32,16 @@ func (t *Template) Execute(data interface{}) (string, error) {
 	return bs.String(), nil
 }
 
+type Templaters []Template
+
+var tmTemplaters = InitTemplate("Templaters", `
+{{ range $_, $t := . }}
+{{ exec $t }}
+{{ end }}
+`)
+
+func (t Templaters) Execute() (string, error) { return tmTemplaters.Execute(t) }
+
 // --- Functions ---
 
 func execTemplateFunc(t reflect.Value) (string, error) {
