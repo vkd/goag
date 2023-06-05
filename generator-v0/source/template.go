@@ -33,9 +33,6 @@ func (t *Template) String(data interface{}) (string, error) {
 }
 
 func execTemplateFunc(t reflect.Value) (string, error) {
-	if t.IsNil() {
-		return "", fmt.Errorf("cannot exec 'nil'")
-	}
 	tmp, ok := t.Interface().(Templater)
 	if !ok {
 		return "", fmt.Errorf("unexpected type %T: 'Templater' is expected", t.Interface())
@@ -55,3 +52,11 @@ func String(tm *template.Template, data interface{}) (string, error) {
 	}
 	return bs.String(), nil
 }
+
+func Executor(e interface{ Execute() (string, error) }) Render { return executor{e} }
+
+type executor struct {
+	r interface{ Execute() (string, error) }
+}
+
+func (e executor) String() (string, error) { return e.r.Execute() }

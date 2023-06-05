@@ -1,10 +1,45 @@
-package source
+package generator
 
 type HandlersFile struct {
 	Handlers []Handler
 
 	IsWriteJSONFunc bool
 }
+
+var tmHandlersFile = InitTemplate("HandlersFile", `
+{{ range $_, $h := .Handlers }}
+{{ exec $h }}
+{{ end -}}
+
+var LogError = func(err error) {
+	log.Println(fmt.Sprintf("Error: %v", err))
+}
+
+{{ if .IsWriteJSONFunc -}}
+func writeJSON(w io.Writer, v interface{}, name string) {
+	err := json.NewEncoder(w).Encode(v)
+	if err != nil {
+		LogError(fmt.Errorf("write json response %q: %w", name, err))
+	}
+}
+
+{{ end -}}
+
+type ErrParseParam struct {
+	In        string
+	Parameter string
+	Reason    string
+	Err       error
+}
+
+func (e ErrParseParam) Error() string {
+	return fmt.Sprintf("%s parameter '%s': %s: %v", e.In, e.Parameter, e.Reason, e.Err)
+}
+
+func (e ErrParseParam) Unwrap() error { return e.Err }
+`)
+
+func (h HandlersFile) Execute() (string, error) { return tmHandlersFile.Execute(h) }
 
 type Handler struct {
 	Name        string
@@ -34,13 +69,8 @@ type Handler struct {
 	Responses []Templater
 }
 
-type Param struct {
-	Field  Templater
-	Parser Templater
-}
-
-var tmHandlersFile = InitTemplate("HandlersFile", `
-{{ range $_, $h := .Handlers }}
+var tmHandler = InitTemplate("Handler", `
+{{- $h := . }}
 {{- $name := $h.Name}}
 {{- $handlerFunc := print $name "HandlerFunc" }}
 {{- $requester := print $name "Requester" }}
@@ -175,35 +205,11 @@ type {{ $responder }} interface {
 {{ range $_, $r := .Responses }}
 {{ exec $r }}
 {{ end }}
-
-{{ end -}}
-
-var LogError = func(err error) {
-	log.Println(fmt.Sprintf("Error: %v", err))
-}
-
-{{ if .IsWriteJSONFunc -}}
-func writeJSON(w io.Writer, v interface{}, name string) {
-	err := json.NewEncoder(w).Encode(v)
-	if err != nil {
-		LogError(fmt.Errorf("write json response %q: %w", name, err))
-	}
-}
-
-{{ end -}}
-
-type ErrParseParam struct {
-	In        string
-	Parameter string
-	Reason    string
-	Err       error
-}
-
-func (e ErrParseParam) Error() string {
-	return fmt.Sprintf("%s parameter '%s': %s: %v", e.In, e.Parameter, e.Reason, e.Err)
-}
-
-func (e ErrParseParam) Unwrap() error { return e.Err }
 `)
 
-func (h HandlersFile) String() (string, error) { return tmHandlersFile.String(h) }
+func (h Handler) Execute() (string, error) { return tmHandler.Execute(h) }
+
+type Param struct {
+	Field  Templater
+	Parser Templater
+}

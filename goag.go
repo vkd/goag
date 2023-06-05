@@ -14,6 +14,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/tools/imports"
 
+	generatorv2 "github.com/vkd/goag/generator"
 	"github.com/vkd/goag/generator-v0"
 	"github.com/vkd/goag/generator-v0/source"
 	specification "github.com/vkd/goag/spec"
@@ -127,7 +128,7 @@ func (g Generator) Generate(spec *openapi3.Swagger, outDir string, packageName s
 		return fmt.Errorf("generate handlers: %w", err)
 	}
 
-	var handlers []source.Handler
+	var handlers []generatorv2.Handler
 	for _, h := range hs.Handlers {
 		handlers = append(handlers, h.Handler)
 	}
@@ -144,10 +145,10 @@ func (g Generator) Generate(spec *openapi3.Swagger, outDir string, packageName s
 			"strings",
 		},
 		Body: []source.Templater{
-			source.HandlersFile{
+			source.Executor(generatorv2.HandlersFile{
 				Handlers:        handlers,
 				IsWriteJSONFunc: hs.IsWriteJSONFunc,
-			},
+			}),
 		},
 	})
 	if err != nil {

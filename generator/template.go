@@ -1,4 +1,4 @@
-package source
+package generator
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 )
 
 type Templater interface {
-	Execute() (string, error)
+	// Execute() (string, error)
 }
 
 func InitTemplate(name, text string) *Template {
@@ -35,10 +35,15 @@ func (t *Template) Execute(data interface{}) (string, error) {
 // --- Functions ---
 
 func execTemplateFunc(t reflect.Value) (string, error) {
-	if t.IsNil() {
-		return "", fmt.Errorf("cannot execute 'nil'")
+	str, ok := t.Interface().(interface {
+		String() (string, error)
+	})
+	if ok {
+		return str.String()
 	}
-	tmp, ok := t.Interface().(Templater)
+	tmp, ok := t.Interface().(interface {
+		Execute() (string, error)
+	})
 	if !ok {
 		return "", fmt.Errorf("%T does not implement Templater: missing method Execute() (string, error)", t.Interface())
 	}

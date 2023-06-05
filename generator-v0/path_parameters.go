@@ -6,6 +6,7 @@ import (
 	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/vkd/goag/generator"
 	"github.com/vkd/goag/generator-v0/source"
 )
 
@@ -29,13 +30,13 @@ func NewPathParameter(p *openapi3.Parameter) PathParameter {
 	return out
 }
 
-func NewPathParamsParsers(path string, params []PathParameter) ([]Render, error) {
+func NewPathParamsParsers(path string, params []PathParameter) ([]generator.Templater, error) {
 	m := make(map[string]PathParameter)
 	for _, p := range params {
 		m[p.Name] = p
 	}
 
-	var out []Render
+	var out []generator.Templater
 
 	p := path
 	for len(p) > 0 {

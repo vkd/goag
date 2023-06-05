@@ -5,8 +5,6 @@ import (
 	"sort"
 
 	"github.com/getkin/kin-openapi/openapi3"
-
-	"github.com/vkd/goag/generator-v0/source"
 )
 
 type Spec struct {
@@ -41,10 +39,6 @@ func Parse(spec *openapi3.Swagger) (*Spec, error) {
 		}
 	}
 	return &s, nil
-}
-
-func (s *Spec) GenerateHandlersFile() (source.HandlersFile, error) {
-	panic("not implemented")
 }
 
 func sortedPaths(paths openapi3.Paths) (out []string) {

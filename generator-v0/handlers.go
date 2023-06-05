@@ -9,6 +9,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"github.com/vkd/goag/generator"
 	"github.com/vkd/goag/generator-v0/source"
 	"github.com/vkd/goag/spec"
 )
@@ -38,7 +39,7 @@ func NewHandlers(s *spec.Spec, basePath string) (zero Handlers, _ error) {
 }
 
 type Handler struct {
-	source.Handler
+	generator.Handler
 
 	Path   string
 	Method string
@@ -70,20 +71,20 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 		case openapi3.ParameterInQuery:
 			par := NewQueryParam(p)
 			out.Params.Query = append(out.Params.Query, par)
-			out.Parameters.Query = append(out.Parameters.Query, source.Param{
+			out.Parameters.Query = append(out.Parameters.Query, generator.Param{
 				Field:  par.Field,
 				Parser: par.Parser,
 			})
 		case openapi3.ParameterInPath:
 			pp := NewPathParameter(p)
 			pathParams = append(pathParams, pp)
-			out.Parameters.Path = append(out.Parameters.Path, source.Param{
+			out.Parameters.Path = append(out.Parameters.Path, generator.Param{
 				Field: pp.Field,
 				// Parser: NewPathParamsParsers(),
 			})
 		case openapi3.ParameterInHeader:
 			pp := NewHeaderParam(p)
-			out.Parameters.Headers = append(out.Parameters.Headers, source.Param{
+			out.Parameters.Headers = append(out.Parameters.Headers, generator.Param{
 				Field:  pp.Field,
 				Parser: pp.Parser,
 			})
