@@ -134,7 +134,8 @@ func (g Generator) Generate(spec *openapi3.Swagger, outDir string, packageName s
 	}
 
 	err = RenderToFile(path.Join(outDir, "handler.go"), source.Executor(generatorv2.GoFile{
-		PackageName: packageName,
+		SkipDoNotEdit: true,
+		PackageName:   packageName,
 		Imports: []string{
 			"encoding/json",
 			"fmt",
