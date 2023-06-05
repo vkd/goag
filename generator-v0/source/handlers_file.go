@@ -40,8 +40,6 @@ type Param struct {
 }
 
 var tmHandlersFile = InitTemplate("HandlersFile", `
-
-
 {{ range $_, $h := .Handlers }}
 {{- $name := $h.Name}}
 {{- $handlerFunc := print $name "HandlerFunc" }}

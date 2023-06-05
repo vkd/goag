@@ -10,6 +10,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 
 	"github.com/vkd/goag/generator-v0/source"
+	"github.com/vkd/goag/spec"
 )
 
 type Handlers struct {
@@ -18,20 +19,18 @@ type Handlers struct {
 	IsWriteJSONFunc bool
 }
 
-func NewHandlers(s *openapi3.Swagger, basePath string) (zero Handlers, _ error) {
+func NewHandlers(s *spec.Spec, basePath string) (zero Handlers, _ error) {
 	var out Handlers
-	out.Handlers = make([]Handler, 0, len(s.Paths))
-	for _, p := range Paths(s.Paths) {
-		for _, o := range PathOperations(p.Item) {
-			h, err := NewHandler(o.Operation, p.Path, o.Method, p.Item.Parameters)
-			if err != nil {
-				return zero, fmt.Errorf("new handler for [%s]%q: %w", o.Method, p.Path, err)
-			}
-			h.BasePathPrefix = basePath
-			out.Handlers = append(out.Handlers, h)
-			if h.IsWriteJSONFunc {
-				out.IsWriteJSONFunc = true
-			}
+	out.Handlers = make([]Handler, 0, len(s.Handlers))
+	for _, o := range s.Handlers {
+		h, err := NewHandler(o.Operation, o.Path, o.Method, o.PathItem.Parameters)
+		if err != nil {
+			return zero, fmt.Errorf("new handler for [%s]%q: %w", o.Method, o.Path, err)
+		}
+		h.BasePathPrefix = basePath
+		out.Handlers = append(out.Handlers, h)
+		if h.IsWriteJSONFunc {
+			out.IsWriteJSONFunc = true
 		}
 	}
 

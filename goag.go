@@ -16,6 +16,7 @@ import (
 
 	"github.com/vkd/goag/generator-v0"
 	"github.com/vkd/goag/generator-v0/source"
+	specification "github.com/vkd/goag/spec"
 )
 
 type Generator struct {
@@ -116,7 +117,12 @@ func (g Generator) Generate(spec *openapi3.Swagger, outDir string, packageName s
 		basePath = u.Path
 	}
 
-	hs, err := generator.NewHandlers(spec, basePath)
+	s, err := specification.Parse(spec)
+	if err != nil {
+		return fmt.Errorf("parse specification: %w", err)
+	}
+
+	hs, err := generator.NewHandlers(s, basePath)
 	if err != nil {
 		return fmt.Errorf("generate handlers: %w", err)
 	}
