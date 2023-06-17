@@ -9,6 +9,7 @@ import (
 
 type Templater interface {
 	// Execute() (string, error)
+	String() (string, error)
 }
 
 func InitTemplate(name, text string) *Template {
@@ -45,17 +46,14 @@ func (t Templaters) Execute() (string, error) { return tmTemplaters.Execute(t) }
 // --- Functions ---
 
 func execTemplateFunc(t reflect.Value) (string, error) {
-	str, ok := t.Interface().(interface {
-		String() (string, error)
-	})
-	if ok {
-		return str.String()
-	}
-	tmp, ok := t.Interface().(interface {
+	switch t := t.Interface().(type) {
+	case Templater:
+		return t.String()
+	case interface {
 		Execute() (string, error)
-	})
-	if !ok {
-		return "", fmt.Errorf("%T does not implement Templater: missing method Execute() (string, error)", t.Interface())
+	}:
+		return t.Execute()
 	}
-	return tmp.Execute()
+
+	return "", fmt.Errorf("%T does not implement Templater: missing method Execute() (string, error)", t.Interface())
 }

@@ -1,9 +1,7 @@
 package goag
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -26,11 +24,6 @@ type Generator struct {
 }
 
 func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath string) error {
-	err := ParseTemplates()
-	if err != nil {
-		return fmt.Errorf("parse templates: %w", err)
-	}
-
 	ts, err := os.ReadDir(dir)
 	if err != nil {
 		return fmt.Errorf("read dir %q: %w", dir, err)
@@ -55,15 +48,11 @@ func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath str
 }
 
 func (g Generator) GenerateFile(outDir, packageName, specFilename, basePath string) error {
-	err := ParseTemplates()
-	if err != nil {
-		return fmt.Errorf("parse templates: %w", err)
-	}
 	return g.generateFile(outDir, packageName, specFilename, basePath)
 }
 
 func (g Generator) generateFile(outDir, packageName, specFilename, basePath string) error {
-	specRaw, err := ioutil.ReadFile(specFilename)
+	specRaw, err := os.ReadFile(specFilename)
 	if err != nil {
 		return fmt.Errorf("read spec file: %w", err)
 	}
@@ -159,9 +148,17 @@ func (g Generator) Generate(spec *openapi3.Swagger, outDir string, packageName s
 		return fmt.Errorf("generate router: %w", err)
 	}
 
-	err = ExecToFile("router.gotmpl", path.Join(outDir, "router.go"), r)
+	err = RenderToFile(path.Join(outDir, "router.go"), source.Executor(generatorv2.GoFile{
+		SkipDoNotEdit: true,
+		PackageName:   packageName,
+		Imports: []string{
+			"net/http",
+			"strings",
+		},
+		Body: source.Executor(generatorv2.NewRouterFile(s, handlers, r)),
+	}))
 	if err != nil {
-		return fmt.Errorf("generate router: %w", err)
+		return fmt.Errorf("generate handler: %w", err)
 	}
 
 	specFile := generator.SpecFile(packageName, specRaw)
@@ -200,16 +197,6 @@ func (g Generator) Generate(spec *openapi3.Swagger, outDir string, packageName s
 	}
 
 	return nil
-}
-
-func ExecToFile(templateName string, filepath string, data interface{}) error {
-	var bb bytes.Buffer
-	err := tmps.ExecuteTemplate(&bb, templateName, data)
-	if err != nil {
-		return fmt.Errorf("error on exec template: %w", err)
-	}
-
-	return WriteToFile(bb.Bytes(), filepath)
 }
 
 func RenderToFile(filepath string, f generator.Render) error {

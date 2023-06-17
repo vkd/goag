@@ -69,10 +69,12 @@ type Handler struct {
 	Responses []Templater
 }
 
+func (h Handler) HandlerFuncName() string { return h.Name + "HandlerFunc" }
+
 var tmHandler = InitTemplate("Handler", `
 {{- $h := . }}
 {{- $name := $h.Name}}
-{{- $handlerFunc := print $name "HandlerFunc" }}
+{{- $handlerFunc := $h.HandlerFuncName }}
 {{- $requester := print $name "Requester" }}
 {{- $requestParams := print "request" $name "Params" }}
 {{- $request := print $name "Request" }}

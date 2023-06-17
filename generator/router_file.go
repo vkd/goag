@@ -1,16 +1,25 @@
-{{/* {{ template "do_not_edit" }} */}}
-{{- $router := .}}
+package generator
 
-package {{.PackageName}}
+import "github.com/vkd/goag/spec"
 
-import (
-	"net/http"
-	"strings"
-)
+type RouterFile struct {
+	Handlers []Handler
+	Data     any
+}
+
+func NewRouterFile(spec *spec.Spec, handlers []Handler, oldRouter any) RouterFile {
+	return RouterFile{
+		Handlers: handlers,
+		Data:     oldRouter,
+	}
+}
+
+var tmRouterFile = InitTemplate("RouterFile", `
+{{- $router := .Data}}
 
 type API struct {
 	{{range $_, $h := .Handlers}}
-	{{$h.Name}}Handler {{$h.Name}}HandlerFunc
+	{{$h.Name}}Handler {{$h.HandlerFuncName}}
 	{{- end}}
 
 	// not found
@@ -24,7 +33,7 @@ type API struct {
 func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
-	if rt.SpecFileHandler != nil && path == "{{$router.BasePath}}/{{.BaseSpecFilename}}" {
+	if rt.SpecFileHandler != nil && path == "{{$router.BasePath}}/{{.Data.BaseSpecFilename}}" {
 		rt.SpecFileHandler.ServeHTTP(rw, r)
 		return
 	}
@@ -46,7 +55,7 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	h.ServeHTTP(rw, r)
 }
 
-{{ range $_, $r := .Routes }}
+{{ range $_, $r := .Data.Routes }}
 func (rt *API) route{{$r.Name}}(path, method string) (http.Handler, string) {
 	{{- $basePath := $router.BasePath }}
 	{{- if and $basePath (not $r.Name) }}
@@ -67,23 +76,23 @@ func (rt *API) route{{$r.Name}}(path, method string) (http.Handler, string) {
 	if path == "" {
 		{{if .Handlers -}}
 		switch prefix {
-		{{range $_, $h := .Handlers -}}
+			{{range $_, $h := .Handlers -}}
 		case "{{.Prefix}}":
 			switch method {
-			{{- range $_, $m := .Methods}}
+				{{- range $_, $m := .Methods}}
 			case http.Method{{.Method}}:
 				return rt.{{.HandlerName}}Handler, "{{.Path}}"
-			{{- end}}
+				{{- end}}
 			}
-		{{end -}}
+			{{end -}}
 		}
 		{{- end}}
 		{{- if .WildcardHandler}}
 		switch method {
-		{{- range $_, $m := .WildcardHandler.Methods}}
+			{{- range $_, $m := .WildcardHandler.Methods}}
 		case http.Method{{.Method}}:
 			return rt.{{.HandlerName}}Handler, "{{.Path}}"
-		{{- end}}
+			{{- end}}
 		}
 		{{- end}}
 	}
@@ -124,7 +133,7 @@ var specFileBs = []byte(SpecFile)
 
 func SpecFileHandler() http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		rw.Header().Set("Content-Type", "application/{{.SpecFileExt}}")
+		rw.Header().Set("Content-Type", "application/{{.Data.SpecFileExt}}")
 		rw.WriteHeader(http.StatusOK)
 		_, err := rw.Write(specFileBs)
 		if err != nil {
@@ -143,3 +152,6 @@ func splitPath(s string) (string, string) {
 	}
 	return s[:idx+1], s[idx+1:]
 }
+`)
+
+func (r RouterFile) Execute() (string, error) { return tmRouterFile.Execute(r) }
