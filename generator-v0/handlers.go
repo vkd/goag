@@ -11,7 +11,7 @@ import (
 
 	"github.com/vkd/goag/generator"
 	"github.com/vkd/goag/generator-v0/source"
-	"github.com/vkd/goag/spec"
+	"github.com/vkd/goag/specification"
 )
 
 type Handlers struct {
@@ -20,7 +20,7 @@ type Handlers struct {
 	IsWriteJSONFunc bool
 }
 
-func NewHandlers(s *spec.Spec, basePath string) (zero Handlers, _ error) {
+func NewHandlers(s *specification.Spec, basePath string) (zero Handlers, _ error) {
 	var out Handlers
 	out.Handlers = make([]Handler, 0, len(s.Handlers))
 	for _, o := range s.Handlers {
@@ -138,6 +138,7 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 func HandlerName(path, method string) string {
 	var suffix string
 	if strings.HasSuffix(path, "/") {
+		// "/shops" and "/shops/" need to have separate handlers
 		suffix = "RT"
 	}
 	return strings.Title(strings.ToLower(method)) + PathName(path) + suffix

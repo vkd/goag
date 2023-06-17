@@ -12,6 +12,20 @@ type Templater interface {
 	String() (string, error)
 }
 
+type executor interface {
+	Execute() (string, error)
+}
+
+func OldTemplater(t interface{ Execute() (string, error) }) Templater {
+	return executorWrapper{t: t}
+}
+
+type executorWrapper struct {
+	t interface{ Execute() (string, error) }
+}
+
+func (e executorWrapper) String() (string, error) { return e.t.Execute() }
+
 func InitTemplate(name, text string) *Template {
 	return &Template{
 		tm: template.Must(template.New(name).Funcs(template.FuncMap{
@@ -49,9 +63,7 @@ func execTemplateFunc(t reflect.Value) (string, error) {
 	switch t := t.Interface().(type) {
 	case Templater:
 		return t.String()
-	case interface {
-		Execute() (string, error)
-	}:
+	case executor:
 		return t.Execute()
 	}
 

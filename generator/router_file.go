@@ -1,13 +1,13 @@
 package generator
 
-import "github.com/vkd/goag/spec"
+import "github.com/vkd/goag/specification"
 
 type RouterFile struct {
 	Handlers []Handler
 	Data     any
 }
 
-func NewRouterFile(spec *spec.Spec, handlers []Handler, oldRouter any) RouterFile {
+func NewRouterFile(spec *specification.Spec, handlers []Handler, oldRouter any) RouterFile {
 	return RouterFile{
 		Handlers: handlers,
 		Data:     oldRouter,
