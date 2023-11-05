@@ -106,7 +106,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		basePath = u.Path
 	}
 
-	s, err := specification.Parse(openapi3Spec)
+	s, err := specification.ParseSwagger(openapi3Spec)
 	if err != nil {
 		return fmt.Errorf("parse specification: %w", err)
 	}
@@ -141,7 +141,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		return fmt.Errorf("generate router: %w", err)
 	}
 
-	rFile, err := gen.RouterFile(handlers, r)
+	rFile, err := gen.RouterFile(basePath, baseFilename, handlers, r)
 	if err != nil {
 		return fmt.Errorf("generate router file: %w", err)
 	}

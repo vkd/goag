@@ -63,7 +63,9 @@ func execTemplateFunc(t reflect.Value) (string, error) {
 	switch t := t.Interface().(type) {
 	case Templater:
 		return t.String()
-	case executor:
+	case interface {
+		Execute() (string, error)
+	}:
 		return t.Execute()
 	}
 

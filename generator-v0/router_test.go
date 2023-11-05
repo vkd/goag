@@ -7,10 +7,11 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/require"
+	"github.com/vkd/goag/specification"
 )
 
 func MustHandler(method, path string) Handler {
-	h, err := NewHandler(&openapi3.Operation{}, path, method, nil)
+	h, err := NewHandler(&openapi3.Operation{}, specification.Path(path), method, nil)
 	if err != nil {
 		panic(fmt.Errorf("new handler %q: %w", path, err))
 	}

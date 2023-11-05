@@ -13,7 +13,8 @@ simple-example:
 # 	done
 
 test-gen:
-	@ go run cmd/goag/main.go --dir ./${TESTS_DIR} --package test
+# go run cmd/goag/main.go --dir ./${TESTS_DIR} --package test
+	go run cmd/goag/main.go $(if ${RUN_TEST},--file ./${TESTS_DIR}/${RUN_TEST}/openapi.yaml --out ./${TESTS_DIR}/${RUN_TEST}/,--dir ./${TESTS_DIR})  --package test
 
 test-only:
 	go test $(if ${RUN},-run=${RUN},) ./...

@@ -22,8 +22,8 @@ type Handlers struct {
 
 func NewHandlers(s *specification.Spec, basePath string) (zero Handlers, _ error) {
 	var out Handlers
-	out.Handlers = make([]Handler, 0, len(s.Handlers))
-	for _, o := range s.Handlers {
+	out.Handlers = make([]Handler, 0, len(s.Operations))
+	for _, o := range s.Operations {
 		h, err := NewHandler(o.Operation, o.Path, o.Method, o.PathItem.Parameters)
 		if err != nil {
 			return zero, fmt.Errorf("new handler for [%s]%q: %w", o.Method, o.Path, err)
@@ -51,10 +51,10 @@ type Handler struct {
 	}
 }
 
-func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Parameters) (zero Handler, _ error) {
+func NewHandler(p *openapi3.Operation, path specification.Path, method string, params openapi3.Parameters) (zero Handler, _ error) {
 	var out Handler
 	out.Name = HandlerName(path, method)
-	out.Path = path
+	out.Path = string(path)
 	out.Method = method
 	out.Description = strings.ReplaceAll(strings.TrimSpace(p.Description), "\n", "\n// ")
 	out.Summary = p.Summary
@@ -93,7 +93,7 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 
 	if len(out.Parameters.Path) > 0 {
 		var err error
-		out.Parameters.PathParsers, err = NewPathParamsParsers(path, pathParams)
+		out.Parameters.PathParsers, err = NewPathParamsParsers(string(path), pathParams)
 		if err != nil {
 			return zero, fmt.Errorf("new path params parsers: %w", err)
 		}
@@ -135,27 +135,37 @@ func NewHandler(p *openapi3.Operation, path, method string, params openapi3.Para
 	return out, nil
 }
 
-func HandlerName(path, method string) string {
-	var suffix string
-	if strings.HasSuffix(path, "/") {
-		// "/shops" and "/shops/" need to have separate handlers
-		suffix = "RT"
+var HandlerName = generator.OperationName
+
+// func HandlerName(path, method string) string {
+// 	var suffix string
+// 	if strings.HasSuffix(path, "/") {
+// 		// "/shops" and "/shops/" need to have separate handlers
+// 		suffix = "RT"
+// 	}
+// 	return strings.Title(strings.ToLower(method)) + PathName(path) + suffix
+// }
+
+func PathName(s string) string {
+	if s == "" {
+		return ""
 	}
-	return strings.Title(strings.ToLower(method)) + PathName(path) + suffix
+	return specification.Path(s).Name(func(s specification.Prefix) string { return strings.Title(strings.ToLower(s.Name())) }, "")
 }
 
-func PathName(path string) string {
-	ps := strings.Split(path, "/")
-	for i, p := range ps {
-		if strings.HasPrefix(p, "{") && strings.HasSuffix(p, "}") {
-			p = p[1 : len(p)-1]
-		} else {
-			p = strings.ToLower(p)
-		}
-		ps[i] = PublicFieldName(p)
-	}
-	return strings.Join(ps, "")
-}
+// func PathName(path string) string {
+// 	ps := strings.Split(path, "/")
+// 	for i, p := range ps {
+// 		if strings.HasPrefix(p, "{") && strings.HasSuffix(p, "}") {
+// 			p = p[1 : len(p)-1]
+// 			// p = "var"
+// 		} else {
+// 			p = strings.ToLower(p)
+// 		}
+// 		ps[i] = PublicFieldName(p)
+// 	}
+// 	return strings.Join(ps, "")
+// }
 
 type ResponseHeader struct {
 	Name      string
