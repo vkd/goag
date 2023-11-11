@@ -6,6 +6,23 @@ type HandlersFile struct {
 	IsWriteJSONFunc bool
 }
 
+func (g *Generator) HandlersFile(hs []Handler, isJSON bool) (Templater, error) {
+	file := HandlersFile{
+		Handlers:        hs,
+		IsWriteJSONFunc: isJSON,
+	}
+
+	return g.goFile([]string{
+		"encoding/json",
+		"fmt",
+		"io",
+		"log",
+		"net/http",
+		"strconv",
+		"strings",
+	}, file), nil
+}
+
 var tmHandlersFile = InitTemplate("HandlersFile", `
 {{ range $_, $h := .Handlers }}
 {{ exec $h }}
@@ -75,32 +92,36 @@ var tmHandler = InitTemplate("Handler", `
 {{- $h := . }}
 {{- $name := $h.Name}}
 {{- $handlerFunc := $h.HandlerFuncName }}
-{{- $requester := print $name "Requester" }}
-{{- $requestParams := print "request" $name "Params" }}
+{{- $requestParser := print $name "RequestParser" }}
+{{- $httpRequestParser := print "" $name "HTTPRequest" }}
 {{- $request := print $name "Request" }}
 {{- $newParams := print "new" $name "Params" }}
-{{- $responder := print $name "Responder" }}
-{{- $writeResponse := $h.ResponserInterfaceName }}
+{{- $responseWriter := print $name "Response" }}
+{{- $responseIface := $h.ResponserInterfaceName }}
 // ---------------------------------------------
 // {{$name}} - {{$h.Description}}
 // ---------------------------------------------
 
 {{if $h.Summary}}// {{$handlerFunc}} - {{$h.Summary}}{{end}}
-type {{ $handlerFunc }} func(r {{$requester}}) {{$responder}}
+type {{ $handlerFunc }} func(r {{$requestParser}}) {{$responseWriter}}
 
 func (f {{$handlerFunc}}) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f({{$requestParams}}{Request: r}).{{$writeResponse}}(w)
+	f({{$httpRequestParser}}(r)).Write(w)
 }
 
-type {{$requester}} interface {
+type {{$requestParser}} interface {
 	Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}}
 }
 
-type {{$requestParams}} struct {
+func {{ $httpRequestParser }}(r *http.Request) {{ $requestParser }} {
+	return {{ private $httpRequestParser }}{r}
+}
+
+type {{ private $httpRequestParser }} struct {
 	Request *http.Request
 }
 
-func (r {{$requestParams}}) Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}} {
+func (r {{ private $httpRequestParser }}) Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}} {
 	return {{$newParams}}(r.Request)
 }
 
@@ -200,8 +221,11 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 	return params{{ if $h.CanParseError }}, nil{{ end }}
 }
 
-type {{ $responder }} interface {
-	{{$writeResponse}}(w http.ResponseWriter)
+func (r {{ $request }}) Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}} {	return r{{if $h.CanParseError}}, nil{{end}} }
+
+type {{ $responseWriter }} interface {
+	{{$responseIface}}()
+	Write(w http.ResponseWriter)
 }
 
 {{ range $_, $r := .Responses }}

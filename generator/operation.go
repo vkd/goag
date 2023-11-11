@@ -18,23 +18,56 @@ type Operation struct {
 
 	Name            string
 	HandlerTypeName string
-	Handler         *Handler
+
+	PathParameters   []Parameter[specification.PathParameter]
+	QueryParameters  []Parameter[specification.QueryParameter]
+	HeaderParameters []Parameter[specification.HeaderParameter]
+
+	Handler *Handler // Deprecated
 }
 
 func NewOperation(operation *specification.Operation) *Operation {
 	o := &Operation{
 		Operation: operation,
 	}
-	o.Name = OperationName(operation.Path, operation.Method)
+	o.Name = OperationName(operation.PathItem.Path, operation.Method)
 	o.HandlerTypeName = o.Name + "HandlerFunc"
+
+	for _, header := range operation.Parameters.Path {
+		o.PathParameters = append(o.PathParameters, Parameter[specification.PathParameter]{
+			Spec: header,
+
+			FieldName: PublicFieldName(header.Name),
+		})
+	}
+	for _, header := range operation.Parameters.Query {
+		o.QueryParameters = append(o.QueryParameters, Parameter[specification.QueryParameter]{
+			Spec: header,
+
+			FieldName: PublicFieldName(header.Name),
+		})
+	}
+	for _, header := range operation.Parameters.Headers {
+		o.HeaderParameters = append(o.HeaderParameters, Parameter[specification.HeaderParameter]{
+			Spec: header,
+
+			FieldName: PublicFieldName(header.Name),
+		})
+	}
+
 	return o
 }
 
 func OperationName(path specification.Path, method string) string {
 	var suffix string
 	if strings.HasSuffix(string(path), "/") {
-		// "/shops" and "/shops/" need to have separate handlers
-		suffix = "RT" // RT = root
+		// special case for "/"
+		if path == "/" {
+			suffix = ""
+		} else {
+			// "/shops" and "/shops/" need to have separate handlers
+			suffix = "RT" // RT = root
+		}
 	}
 	return method + path.Name(PrefixTitle, "") + suffix
 }
@@ -80,4 +113,20 @@ func PublicFieldName(name string) string {
 		}
 	}
 	return strings.Join(names, "")
+}
+
+type Parameter[T interface {
+	specification.PathParameter | specification.QueryParameter | specification.HeaderParameter
+}] struct {
+	Spec T
+
+	FieldName string
+	Type      GoType
+}
+
+func PrivateFieldName(name string) string {
+	if len(name) == 0 {
+		return ""
+	}
+	return strings.ToLower(name[:1]) + name[1:]
 }

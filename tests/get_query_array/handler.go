@@ -11,21 +11,25 @@ import (
 // GetPets -
 // ---------------------------------------------
 
-type GetPetsHandlerFunc func(r GetPetsRequester) GetPetsResponder
+type GetPetsHandlerFunc func(r GetPetsRequestParser) GetPetsResponse
 
 func (f GetPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(requestGetPetsParams{Request: r}).writeGetPetsResponse(w)
+	f(GetPetsHTTPRequest(r)).Write(w)
 }
 
-type GetPetsRequester interface {
+type GetPetsRequestParser interface {
 	Parse() (GetPetsRequest, error)
 }
 
-type requestGetPetsParams struct {
+func GetPetsHTTPRequest(r *http.Request) GetPetsRequestParser {
+	return getPetsHTTPRequest{r}
+}
+
+type getPetsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r requestGetPetsParams) Parse() (GetPetsRequest, error) {
+func (r getPetsHTTPRequest) Parse() (GetPetsRequest, error) {
 	return newGetPetsParams(r.Request)
 }
 
@@ -71,32 +75,39 @@ func newGetPetsParams(r *http.Request) (zero GetPetsRequest, _ error) {
 	return params, nil
 }
 
-type GetPetsResponder interface {
-	writeGetPetsResponse(w http.ResponseWriter)
+func (r GetPetsRequest) Parse() (GetPetsRequest, error) { return r, nil }
+
+type GetPetsResponse interface {
+	getPets()
+	Write(w http.ResponseWriter)
 }
 
-func GetPetsResponse200() GetPetsResponder {
-	var out getPetsResponse200
+func NewGetPetsResponse200() GetPetsResponse {
+	var out GetPetsResponse200
 	return out
 }
 
-type getPetsResponse200 struct{}
+type GetPetsResponse200 struct{}
 
-func (r getPetsResponse200) writeGetPetsResponse(w http.ResponseWriter) {
+func (r GetPetsResponse200) getPets() {}
+
+func (r GetPetsResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
 }
 
-func GetPetsResponseDefault(code int) GetPetsResponder {
-	var out getPetsResponseDefault
+func NewGetPetsResponseDefault(code int) GetPetsResponse {
+	var out GetPetsResponseDefault
 	out.Code = code
 	return out
 }
 
-type getPetsResponseDefault struct {
+type GetPetsResponseDefault struct {
 	Code int
 }
 
-func (r getPetsResponseDefault) writeGetPetsResponse(w http.ResponseWriter) {
+func (r GetPetsResponseDefault) getPets() {}
+
+func (r GetPetsResponseDefault) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
 }
 

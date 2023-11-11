@@ -9,13 +9,13 @@ import (
 
 func TestGetQueryArray_Strings(t *testing.T) {
 	handler := GetPetsHandlerFunc(
-		func(r GetPetsRequester) GetPetsResponder {
+		func(r GetPetsRequestParser) GetPetsResponse {
 			req, err := r.Parse()
 			if err != nil {
-				return GetPetsResponseDefault(400)
+				return NewGetPetsResponseDefault(400)
 			}
 			assert.Equal(t, []string{"cat", "dog"}, req.Query.Tag)
-			return GetPetsResponse200()
+			return NewGetPetsResponse200()
 		},
 	)
 
@@ -27,13 +27,13 @@ func TestGetQueryArray_Strings(t *testing.T) {
 
 func TestGetQueryArray_Ints(t *testing.T) {
 	handler := GetPetsHandlerFunc(
-		func(r GetPetsRequester) GetPetsResponder {
+		func(r GetPetsRequestParser) GetPetsResponse {
 			req, err := r.Parse()
 			if err != nil {
-				return GetPetsResponseDefault(400)
+				return NewGetPetsResponseDefault(400)
 			}
 			assert.Equal(t, []int64{2, 4}, req.Query.Page)
-			return GetPetsResponse200()
+			return NewGetPetsResponse200()
 		},
 	)
 

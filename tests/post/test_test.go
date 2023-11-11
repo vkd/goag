@@ -8,8 +8,8 @@ import (
 )
 
 func TestPostRequest(t *testing.T) {
-	handler := PostPetsHandlerFunc(func(_ PostPetsRequester) PostPetsResponder {
-		return PostPetsResponse200()
+	handler := PostPetsHandlerFunc(func(_ PostPetsRequestParser) PostPetsResponse {
+		return NewPostPetsResponse200()
 	})
 
 	w := httptest.NewRecorder()

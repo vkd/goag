@@ -1,12 +1,11 @@
 package generator
 
 import (
-	"strings"
-
 	"github.com/vkd/goag/generator"
 )
 
 var PublicFieldName = generator.PublicFieldName
+var PrivateFieldName = generator.PrivateFieldName
 
 // func PublicFieldName(name string) string {
 // 	if strings.HasSuffix(name, "Id") {
@@ -29,10 +28,3 @@ var PublicFieldName = generator.PublicFieldName
 // 	}
 // 	return strings.Join(names, "")
 // }
-
-func PrivateFieldName(name string) string {
-	if len(name) == 0 {
-		return ""
-	}
-	return strings.ToLower(name[:1]) + name[1:]
-}

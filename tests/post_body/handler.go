@@ -11,21 +11,25 @@ import (
 // PostPets -
 // ---------------------------------------------
 
-type PostPetsHandlerFunc func(r PostPetsRequester) PostPetsResponder
+type PostPetsHandlerFunc func(r PostPetsRequestParser) PostPetsResponse
 
 func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(requestPostPetsParams{Request: r}).writePostPetsResponse(w)
+	f(PostPetsHTTPRequest(r)).Write(w)
 }
 
-type PostPetsRequester interface {
+type PostPetsRequestParser interface {
 	Parse() (PostPetsRequest, error)
 }
 
-type requestPostPetsParams struct {
+func PostPetsHTTPRequest(r *http.Request) PostPetsRequestParser {
+	return postPetsHTTPRequest{r}
+}
+
+type postPetsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r requestPostPetsParams) Parse() (PostPetsRequest, error) {
+func (r postPetsHTTPRequest) Parse() (PostPetsRequest, error) {
 	return newPostPetsParams(r.Request)
 }
 
@@ -48,32 +52,39 @@ func newPostPetsParams(r *http.Request) (zero PostPetsRequest, _ error) {
 	return params, nil
 }
 
-type PostPetsResponder interface {
-	writePostPetsResponse(w http.ResponseWriter)
+func (r PostPetsRequest) Parse() (PostPetsRequest, error) { return r, nil }
+
+type PostPetsResponse interface {
+	postPets()
+	Write(w http.ResponseWriter)
 }
 
-func PostPetsResponse201() PostPetsResponder {
-	var out postPetsResponse201
+func NewPostPetsResponse201() PostPetsResponse {
+	var out PostPetsResponse201
 	return out
 }
 
-type postPetsResponse201 struct{}
+type PostPetsResponse201 struct{}
 
-func (r postPetsResponse201) writePostPetsResponse(w http.ResponseWriter) {
+func (r PostPetsResponse201) postPets() {}
+
+func (r PostPetsResponse201) Write(w http.ResponseWriter) {
 	w.WriteHeader(201)
 }
 
-func PostPetsResponseDefault(code int) PostPetsResponder {
-	var out postPetsResponseDefault
+func NewPostPetsResponseDefault(code int) PostPetsResponse {
+	var out PostPetsResponseDefault
 	out.Code = code
 	return out
 }
 
-type postPetsResponseDefault struct {
+type PostPetsResponseDefault struct {
 	Code int
 }
 
-func (r postPetsResponseDefault) writePostPetsResponse(w http.ResponseWriter) {
+func (r PostPetsResponseDefault) postPets() {}
+
+func (r PostPetsResponseDefault) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
 }
 

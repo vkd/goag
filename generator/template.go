@@ -12,6 +12,11 @@ type Templater interface {
 	String() (string, error)
 }
 
+type ExecTemplater interface {
+	Execute() (string, error)
+	// String() (string, error)
+}
+
 type executor interface {
 	Execute() (string, error)
 }
@@ -29,7 +34,8 @@ func (e executorWrapper) String() (string, error) { return e.t.Execute() }
 func InitTemplate(name, text string) *Template {
 	return &Template{
 		tm: template.Must(template.New(name).Funcs(template.FuncMap{
-			"exec": execTemplateFunc,
+			"exec":    execTemplateFunc,
+			"private": privateTemplateFunc,
 		}).Parse(text)),
 	}
 }
@@ -57,6 +63,20 @@ var tmTemplaters = InitTemplate("Templaters", `
 
 func (t Templaters) Execute() (string, error) { return tmTemplaters.Execute(t) }
 
+func TemplateData(tm *Template, data interface{}) Templater {
+	return templateData{tm, data}
+}
+
+type templateData struct {
+	tm   *Template
+	data interface{}
+}
+
+func (t templateData) Execute() (string, error) {
+	return t.tm.Execute(t.data)
+}
+func (t templateData) String() (string, error) { return t.Execute() }
+
 // --- Functions ---
 
 func execTemplateFunc(t reflect.Value) (string, error) {
@@ -70,4 +90,13 @@ func execTemplateFunc(t reflect.Value) (string, error) {
 	}
 
 	return "", fmt.Errorf("%T does not implement Templater: missing method Execute() (string, error)", t.Interface())
+}
+
+func privateTemplateFunc(t reflect.Value) (string, error) {
+	switch t := t.Interface().(type) {
+	case string:
+		return PrivateFieldName(t), nil
+	}
+
+	return "", fmt.Errorf("%T is not string", t.Interface())
 }

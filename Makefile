@@ -14,7 +14,11 @@ simple-example:
 
 test-gen:
 # go run cmd/goag/main.go --dir ./${TESTS_DIR} --package test
-	go run cmd/goag/main.go $(if ${RUN_TEST},--file ./${TESTS_DIR}/${RUN_TEST}/openapi.yaml --out ./${TESTS_DIR}/${RUN_TEST}/,--dir ./${TESTS_DIR})  --package test
+	go run cmd/goag/main.go $(if ${RUN_TEST},--file ./${TESTS_DIR}/${RUN_TEST}/openapi.yaml --out ./${TESTS_DIR}/${RUN_TEST}/,--dir ./${TESTS_DIR})  --package test $(if ${TEST_CLIENT},--client=true,)
+
+EXAMPLES_DIR?=examples
+examples-gen:
+	go run cmd/goag/main.go $(if ${RUN_EXAMPLE},--file ./${EXAMPLES_DIR}/${RUN_EXAMPLE}/openapi.yaml --out ./${EXAMPLES_DIR}/${RUN_EXAMPLE}/,--dir ./${EXAMPLES_DIR})  --package test $(if ${CLIENT},--client=true,)
 
 test-only:
 	go test $(if ${RUN},-run=${RUN},) ./...

@@ -14,10 +14,10 @@ func TestGetRequest(t *testing.T) {
 	testValue := "test_value"
 
 	api := API{
-		GetPetsHandler: GetPetsHandlerFunc(func(r GetPetsRequester) GetPetsResponder {
+		GetPetsHandler: GetPetsHandlerFunc(func(r GetPetsRequestParser) GetPetsResponse {
 			req := r.Parse()
 			assert.Equal(t, testValue, req.HTTPRequest.Context().Value(testKey{}).(string))
-			return GetPetsResponse200()
+			return NewGetPetsResponse200()
 		}),
 	}
 

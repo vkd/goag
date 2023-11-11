@@ -18,7 +18,7 @@ type Spec struct {
 func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 	var s Spec
 
-	for _, path := range sortedPaths(spec.Paths) {
+	for _, path := range sortedKeys(spec.Paths) {
 		p, err := NewPath(path)
 		if err != nil {
 			return nil, fmt.Errorf("validate path %q: %w", path, err)
@@ -28,18 +28,12 @@ func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 			Path:     p,
 			PathItem: pathItem,
 		}
-		for _, method := range methods() {
+		for _, method := range httpMethods() {
 			operation := pathItem.GetOperation(method.HTTP)
 			if operation == nil {
 				continue
 			}
-			o := &Operation{
-				Path:       p,
-				PathItem:   pathItem,
-				HTTPMethod: method.HTTP,
-				Method:     method.Title,
-				Operation:  operation,
-			}
+			o := NewOperation(pi, method, operation)
 			pi.Operations = append(pi.Operations, o)
 			s.Operations = append(s.Operations, o)
 		}
@@ -56,23 +50,143 @@ type PathItem struct {
 }
 
 type Operation struct {
-	Path       Path
-	PathItem   *openapi3.PathItem
+	PathItem   *PathItem
 	HTTPMethod string
 	Method     string
 	Operation  *openapi3.Operation
+
+	Parameters struct {
+		Path    []PathParameter
+		Query   []QueryParameter
+		Headers []HeaderParameter
+	}
+
+	DefaultResponse *Response
+	Responses       []Response
 }
 
-func sortedPaths(paths openapi3.Paths) (out []string) {
-	for k := range paths {
+func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation) *Operation {
+	o := &Operation{
+		PathItem:   pi,
+		HTTPMethod: method.HTTP,
+		Method:     method.Title,
+		Operation:  operation,
+	}
+
+	for _, param := range operation.Parameters {
+		switch param.Value.In {
+		case openapi3.ParameterInPath:
+			o.Parameters.Path = append(o.Parameters.Path, PathParameter{
+				RefName:     param.Ref,
+				Name:        param.Value.Name,
+				Description: param.Value.Description,
+				Schema:      NewSchema(param.Value.Schema),
+			})
+		case openapi3.ParameterInQuery:
+			o.Parameters.Query = append(o.Parameters.Query, QueryParameter{
+				RefName:     param.Ref,
+				Name:        param.Value.Name,
+				Description: param.Value.Description,
+				Required:    param.Value.Required,
+				Schema:      NewSchema(param.Value.Schema),
+			})
+		case openapi3.ParameterInHeader:
+			o.Parameters.Headers = append(o.Parameters.Headers, HeaderParameter{
+				RefName:     param.Ref,
+				Name:        param.Value.Name,
+				Description: param.Value.Description,
+				Required:    param.Value.Required,
+				Schema:      NewSchema(param.Value.Schema),
+			})
+		}
+	}
+
+	for _, responseStatusCode := range sortedKeys(operation.Responses) {
+		response := operation.Responses[responseStatusCode]
+		if responseStatusCode == "default" {
+			defaultResponse := NewResponse(responseStatusCode, o, response)
+			o.DefaultResponse = &defaultResponse
+		} else {
+			o.Responses = append(o.Responses, NewResponse(responseStatusCode, o, response))
+		}
+	}
+
+	return o
+}
+
+type PathParameter struct {
+	RefName     string
+	Name        string
+	Description string
+	Schema      Schema
+}
+
+type QueryParameter struct {
+	RefName     string
+	Name        string
+	Description string
+	Required    bool
+	Schema      Schema
+}
+
+type HeaderParameter struct {
+	RefName     string
+	Name        string
+	Description string
+	Required    bool
+	Schema      Schema
+}
+
+// type Parameter struct {
+// 	RefName     string
+// 	Name        string
+// 	Description string
+// 	Required    bool
+// }
+
+type Response struct {
+	StatusCode string
+	Operation  *Operation
+	Spec       *openapi3.Response
+
+	RefName string
+	Headers []Header
+}
+
+func NewResponse(responseStatusCode string, o *Operation, r *openapi3.ResponseRef) Response {
+	out := Response{
+		StatusCode: responseStatusCode,
+		Operation:  o,
+		Spec:       r.Value,
+
+		RefName: r.Ref,
+		Headers: Headers(r.Value.Headers),
+	}
+	return out
+}
+
+type Schema struct {
+	Ref    string
+	Schema *openapi3.Schema
+}
+
+func NewSchema(schema *openapi3.SchemaRef) Schema {
+	return Schema{
+		Ref:    schema.Ref,
+		Schema: schema.Value,
+	}
+}
+
+func sortedKeys[T any](m map[string]T) (out []string) {
+	for k := range m {
 		out = append(out, k)
 	}
 	sort.Strings(out)
 	return out
 }
 
-func methods() []method {
-	return []method{
+func httpMethods() []httpMethod {
+	return []httpMethod{
 		{http.MethodGet, "Get"},
 		{http.MethodPost, "Post"},
 		{http.MethodPatch, "Patch"},
@@ -85,7 +199,7 @@ func methods() []method {
 	}
 }
 
-type method struct {
+type httpMethod struct {
 	HTTP  string
 	Title string
 }

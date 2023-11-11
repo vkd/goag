@@ -24,9 +24,9 @@ func NewHandlers(s *specification.Spec, basePath string) (zero Handlers, _ error
 	var out Handlers
 	out.Handlers = make([]Handler, 0, len(s.Operations))
 	for _, o := range s.Operations {
-		h, err := NewHandler(o.Operation, o.Path, o.Method, o.PathItem.Parameters)
+		h, err := NewHandler(o.Operation, o.PathItem.Path, o.Method, o.PathItem.PathItem.Parameters)
 		if err != nil {
-			return zero, fmt.Errorf("new handler for [%s]%q: %w", o.Method, o.Path, err)
+			return zero, fmt.Errorf("new handler for [%s]%q: %w", o.Method, o.PathItem.Path, err)
 		}
 		h.BasePathPrefix = basePath
 		out.Handlers = append(out.Handlers, h)
@@ -104,7 +104,7 @@ func NewHandler(p *openapi3.Operation, path specification.Path, method string, p
 		out.Body.TypeName = br
 	}
 
-	out.ResponserInterfaceName = "write" + out.Name + "Response"
+	out.ResponserInterfaceName = PrivateFieldName(out.Name)
 
 	var responses []Response
 

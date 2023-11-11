@@ -9,8 +9,8 @@ import (
 )
 
 func TestSchemaAllOf(t *testing.T) {
-	handler := GetPetHandlerFunc(func(_ GetPetRequester) GetPetResponder {
-		return GetPetResponse200JSON(Pet{ID: 1, NewPet: NewPet{Name: "mike", Tag: "cat"}})
+	handler := GetPetHandlerFunc(func(_ GetPetRequestParser) GetPetResponse {
+		return NewGetPetResponse200JSON(Pet{ID: 1, NewPet: NewPet{Name: "mike", Tag: "cat"}})
 	})
 
 	w := httptest.NewRecorder()

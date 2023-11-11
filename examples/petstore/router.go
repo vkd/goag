@@ -8,13 +8,9 @@ import (
 )
 
 type API struct {
-	GetHandler              GetHandlerFunc
-	GetShopsHandler         GetShopsHandlerFunc
-	GetShopsRTHandler       GetShopsRTHandlerFunc
-	GetShopsActivateHandler GetShopsActivateHandlerFunc
-	GetShopsShopHandler     GetShopsShopHandlerFunc
-	GetShopsShopRTHandler   GetShopsShopRTHandlerFunc
-	GetShopsShopPetsHandler GetShopsShopPetsHandlerFunc
+	GetPetsHandler      GetPetsHandlerFunc
+	PostPetsHandler     PostPetsHandlerFunc
+	GetPetsPetIDHandler GetPetsPetIDHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
@@ -27,7 +23,7 @@ type API struct {
 func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
-	if rt.SpecFileHandler != nil && path == "/api/v1/openapi.yaml" {
+	if rt.SpecFileHandler != nil && path == "/v1/openapi.yaml" {
 		rt.SpecFileHandler.ServeHTTP(rw, r)
 		return
 	}
@@ -50,10 +46,10 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (rt *API) route(path, method string) (http.Handler, string) {
-	if !strings.HasPrefix(path, "/api/v1") {
+	if !strings.HasPrefix(path, "/v1") {
 		return nil, ""
 	}
-	path = path[7:] // "/api/v1"
+	path = path[3:] // "/v1"
 
 	if !strings.HasPrefix(path, "/") {
 		return nil, ""
@@ -63,74 +59,34 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 
 	if path == "" {
 		switch prefix {
-		case "/":
-			switch method {
-			case http.MethodGet:
-				return rt.GetHandler, "/"
-			}
-		case "/shops":
-			switch method {
-			case http.MethodGet:
-				return rt.GetShopsHandler, "/shops"
-			}
-		}
-	}
-
-	if path != "" {
-		switch prefix {
-		case "/shops":
-			return rt.routeShops(path, method)
-		}
-	}
-
-	return nil, ""
-}
-
-func (rt *API) routeShops(path, method string) (http.Handler, string) {
-	prefix, path := splitPath(path)
-
-	if path == "" {
-		switch prefix {
-		case "/":
-			switch method {
-			case http.MethodGet:
-				return rt.GetShopsRTHandler, "/shops/"
-			}
-		case "/activate":
-			switch method {
-			case http.MethodGet:
-				return rt.GetShopsActivateHandler, "/shops/activate"
-			}
-		}
-		switch method {
-		case http.MethodGet:
-			return rt.GetShopsShopHandler, "/shops/{shop}"
-		}
-	}
-
-	if path != "" {
-
-		return rt.routeShopsShop(path, method)
-	}
-
-	return nil, ""
-}
-
-func (rt *API) routeShopsShop(path, method string) (http.Handler, string) {
-	prefix, path := splitPath(path)
-
-	if path == "" {
-		switch prefix {
-		case "/":
-			switch method {
-			case http.MethodGet:
-				return rt.GetShopsShopRTHandler, "/shops/{shop}/"
-			}
 		case "/pets":
 			switch method {
 			case http.MethodGet:
-				return rt.GetShopsShopPetsHandler, "/shops/{shop}/pets"
+				return rt.GetPetsHandler, "/pets"
+			case http.MethodPost:
+				return rt.PostPetsHandler, "/pets"
 			}
+		}
+	}
+
+	if path != "" {
+		switch prefix {
+		case "/pets":
+			return rt.routePets(path, method)
+		}
+	}
+
+	return nil, ""
+}
+
+func (rt *API) routePets(path, method string) (http.Handler, string) {
+	_, path = splitPath(path)
+
+	if path == "" {
+
+		switch method {
+		case http.MethodGet:
+			return rt.GetPetsPetIDHandler, "/pets/{petId}"
 		}
 	}
 

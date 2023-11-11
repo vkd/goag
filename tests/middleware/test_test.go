@@ -27,7 +27,7 @@ func TestApiKeySecurity(t *testing.T) {
 	testToken := "1234"
 
 	api := API{
-		GetPetsHandler: func(_ GetPetsRequester) GetPetsResponder { return GetPetsResponse200() },
+		GetPetsHandler: func(_ GetPetsRequestParser) GetPetsResponse { return NewGetPetsResponse200() },
 	}
 	api.Middlewares = append(api.Middlewares, AuthMiddleware(testHeader, "Bearer "+testToken))
 
@@ -59,7 +59,7 @@ func TestApiKeySecurity_NotFound(t *testing.T) {
 	testToken := "1234"
 
 	api := API{
-		GetPetsHandler: func(_ GetPetsRequester) GetPetsResponder { return GetPetsResponse200() },
+		GetPetsHandler: func(_ GetPetsRequestParser) GetPetsResponse { return NewGetPetsResponse200() },
 	}
 	api.Middlewares = append(api.Middlewares, func(h http.Handler) http.Handler {
 		t.Fail()
@@ -97,9 +97,9 @@ func TestMiddleware_Order(t *testing.T) {
 	}
 
 	api := API{
-		GetPetsHandler: func(_ GetPetsRequester) GetPetsResponder {
+		GetPetsHandler: func(_ GetPetsRequestParser) GetPetsResponse {
 			flag("handler")
-			return GetPetsResponse200()
+			return NewGetPetsResponse200()
 		},
 	}
 

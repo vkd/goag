@@ -14,15 +14,15 @@ func TestGetMultiParams(t *testing.T) {
 	testRequestID := "abcdef"
 
 	api := API{
-		GetShopsShopHandler: func(r GetShopsShopRequester) GetShopsShopResponder {
+		GetShopsShopHandler: func(r GetShopsShopRequestParser) GetShopsShopResponse {
 			req, err := r.Parse()
 			if err != nil {
-				return GetShopsShopResponseDefault(400)
+				return NewGetShopsShopResponseDefault(400)
 			}
 			assert.Equal(t, testShop, req.Path.Shop)
 			assert.Equal(t, testPage, *req.Query.Page)
 			assert.Equal(t, testRequestID, *req.Headers.RequestID)
-			return GetShopsShopResponse200()
+			return NewGetShopsShopResponse200()
 		},
 	}
 
@@ -37,13 +37,13 @@ func TestGetMultiParams(t *testing.T) {
 
 func TestGetMultiParams_Optional(t *testing.T) {
 	api := API{
-		GetShopsShopHandler: func(r GetShopsShopRequester) GetShopsShopResponder {
+		GetShopsShopHandler: func(r GetShopsShopRequestParser) GetShopsShopResponse {
 			req, err := r.Parse()
 			if err != nil {
-				return GetShopsShopResponseDefault(400)
+				return NewGetShopsShopResponseDefault(400)
 			}
 			assert.Nil(t, req.Query.Page)
-			return GetShopsShopResponse200()
+			return NewGetShopsShopResponse200()
 		},
 	}
 
@@ -55,12 +55,12 @@ func TestGetMultiParams_Optional(t *testing.T) {
 
 func TestGetMultiParams_BadRequest(t *testing.T) {
 	api := API{
-		GetShopsShopHandler: func(r GetShopsShopRequester) GetShopsShopResponder {
+		GetShopsShopHandler: func(r GetShopsShopRequestParser) GetShopsShopResponse {
 			_, err := r.Parse()
 			if err != nil {
-				return GetShopsShopResponseDefault(400)
+				return NewGetShopsShopResponseDefault(400)
 			}
-			return GetShopsShopResponse200()
+			return NewGetShopsShopResponse200()
 		},
 	}
 

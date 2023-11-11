@@ -10,8 +10,8 @@ import (
 )
 
 func TestSchemaArray(t *testing.T) {
-	h := GetPetsHandlerFunc(func(_ GetPetsRequester) GetPetsResponder {
-		return GetPetsResponse200JSON([]Pet{{ID: 1, Name: "mike"}})
+	h := GetPetsHandlerFunc(func(_ GetPetsRequestParser) GetPetsResponse {
+		return NewGetPetsResponse200JSON([]Pet{{ID: 1, Name: "mike"}})
 	})
 
 	w := httptest.NewRecorder()
@@ -27,8 +27,8 @@ func TestSchemaArray(t *testing.T) {
 }
 
 func TestSchemaArray_Names(t *testing.T) {
-	h := GetPetsNamesHandlerFunc(func(_ GetPetsNamesRequester) GetPetsNamesResponder {
-		return GetPetsNamesResponse200JSON([]string{"mike"})
+	h := GetPetsNamesHandlerFunc(func(_ GetPetsNamesRequestParser) GetPetsNamesResponse {
+		return NewGetPetsNamesResponse200JSON([]string{"mike"})
 	})
 
 	w := httptest.NewRecorder()

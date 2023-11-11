@@ -34,18 +34,6 @@ func (p Path) Name(fn func(Prefix) string, sep string) string {
 		out += fn(prefix) + sep
 		p = path
 	}
-
-	// ps := strings.Split(string(p), "/")
-	// for i, p := range ps {
-	// 	if strings.HasPrefix(p, "{") && strings.HasSuffix(p, "}") {
-	// 		p = p[1 : len(p)-1]
-	// 		// p = "var"
-	// 		// } else {
-	// 		// 	p = strings.ToLower(p)
-	// 	}
-	// 	ps[i] = strings.Title(p)
-	// }
-	// return strings.Join(ps, "")
 }
 
 // Prefix always starts with '/'
@@ -57,7 +45,6 @@ func (p Prefix) IsVariable() bool {
 
 func (p Prefix) Name() string {
 	if p.IsVariable() {
-		// return "Var"
 		return string(p[2 : len(p)-1])
 	}
 	return string(p[1:])

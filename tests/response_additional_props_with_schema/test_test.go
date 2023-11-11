@@ -10,8 +10,8 @@ import (
 )
 
 func TestResponseSchema(t *testing.T) {
-	handler := GetPetHandlerFunc(func(_ GetPetRequester) GetPetResponder {
-		return GetPetResponse200JSON(GetPetResponse200JSONBody{
+	handler := GetPetHandlerFunc(func(_ GetPetRequestParser) GetPetResponse {
+		return NewGetPetResponse200JSON(GetPetResponse200JSONBody{
 			Length: 1,
 			AdditionalProperties: map[string]Pets{
 				"cats": {Pet{Name: "mike"}},

@@ -10,8 +10,8 @@ import (
 func TestResponseHeader(t *testing.T) {
 	testHeader := "test_header"
 
-	handler := GetPetsHandlerFunc(func(_ GetPetsRequester) GetPetsResponder {
-		return GetPetsResponse200(testHeader)
+	handler := GetPetsHandlerFunc(func(_ GetPetsRequestParser) GetPetsResponse {
+		return NewGetPetsResponse200(testHeader)
 	})
 
 	w := httptest.NewRecorder()

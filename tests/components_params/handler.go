@@ -12,21 +12,25 @@ import (
 // PostShopsNew -
 // ---------------------------------------------
 
-type PostShopsNewHandlerFunc func(r PostShopsNewRequester) PostShopsNewResponder
+type PostShopsNewHandlerFunc func(r PostShopsNewRequestParser) PostShopsNewResponse
 
 func (f PostShopsNewHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(requestPostShopsNewParams{Request: r}).writePostShopsNewResponse(w)
+	f(PostShopsNewHTTPRequest(r)).Write(w)
 }
 
-type PostShopsNewRequester interface {
+type PostShopsNewRequestParser interface {
 	Parse() (PostShopsNewRequest, error)
 }
 
-type requestPostShopsNewParams struct {
+func PostShopsNewHTTPRequest(r *http.Request) PostShopsNewRequestParser {
+	return postShopsNewHTTPRequest{r}
+}
+
+type postShopsNewHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r requestPostShopsNewParams) Parse() (PostShopsNewRequest, error) {
+func (r postShopsNewHTTPRequest) Parse() (PostShopsNewRequest, error) {
 	return newPostShopsNewParams(r.Request)
 }
 
@@ -61,32 +65,39 @@ func newPostShopsNewParams(r *http.Request) (zero PostShopsNewRequest, _ error) 
 	return params, nil
 }
 
-type PostShopsNewResponder interface {
-	writePostShopsNewResponse(w http.ResponseWriter)
+func (r PostShopsNewRequest) Parse() (PostShopsNewRequest, error) { return r, nil }
+
+type PostShopsNewResponse interface {
+	postShopsNew()
+	Write(w http.ResponseWriter)
 }
 
-func PostShopsNewResponse200() PostShopsNewResponder {
-	var out postShopsNewResponse200
+func NewPostShopsNewResponse200() PostShopsNewResponse {
+	var out PostShopsNewResponse200
 	return out
 }
 
-type postShopsNewResponse200 struct{}
+type PostShopsNewResponse200 struct{}
 
-func (r postShopsNewResponse200) writePostShopsNewResponse(w http.ResponseWriter) {
+func (r PostShopsNewResponse200) postShopsNew() {}
+
+func (r PostShopsNewResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
 }
 
-func PostShopsNewResponseDefault(code int) PostShopsNewResponder {
-	var out postShopsNewResponseDefault
+func NewPostShopsNewResponseDefault(code int) PostShopsNewResponse {
+	var out PostShopsNewResponseDefault
 	out.Code = code
 	return out
 }
 
-type postShopsNewResponseDefault struct {
+type PostShopsNewResponseDefault struct {
 	Code int
 }
 
-func (r postShopsNewResponseDefault) writePostShopsNewResponse(w http.ResponseWriter) {
+func (r PostShopsNewResponseDefault) postShopsNew() {}
+
+func (r PostShopsNewResponseDefault) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
 }
 
@@ -94,21 +105,25 @@ func (r postShopsNewResponseDefault) writePostShopsNewResponse(w http.ResponseWr
 // GetShopsShop -
 // ---------------------------------------------
 
-type GetShopsShopHandlerFunc func(r GetShopsShopRequester) GetShopsShopResponder
+type GetShopsShopHandlerFunc func(r GetShopsShopRequestParser) GetShopsShopResponse
 
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(requestGetShopsShopParams{Request: r}).writeGetShopsShopResponse(w)
+	f(GetShopsShopHTTPRequest(r)).Write(w)
 }
 
-type GetShopsShopRequester interface {
+type GetShopsShopRequestParser interface {
 	Parse() (GetShopsShopRequest, error)
 }
 
-type requestGetShopsShopParams struct {
+func GetShopsShopHTTPRequest(r *http.Request) GetShopsShopRequestParser {
+	return getShopsShopHTTPRequest{r}
+}
+
+type getShopsShopHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r requestGetShopsShopParams) Parse() (GetShopsShopRequest, error) {
+func (r getShopsShopHTTPRequest) Parse() (GetShopsShopRequest, error) {
 	return newGetShopsShopParams(r.Request)
 }
 
@@ -173,32 +188,39 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 	return params, nil
 }
 
-type GetShopsShopResponder interface {
-	writeGetShopsShopResponse(w http.ResponseWriter)
+func (r GetShopsShopRequest) Parse() (GetShopsShopRequest, error) { return r, nil }
+
+type GetShopsShopResponse interface {
+	getShopsShop()
+	Write(w http.ResponseWriter)
 }
 
-func GetShopsShopResponse200() GetShopsShopResponder {
-	var out getShopsShopResponse200
+func NewGetShopsShopResponse200() GetShopsShopResponse {
+	var out GetShopsShopResponse200
 	return out
 }
 
-type getShopsShopResponse200 struct{}
+type GetShopsShopResponse200 struct{}
 
-func (r getShopsShopResponse200) writeGetShopsShopResponse(w http.ResponseWriter) {
+func (r GetShopsShopResponse200) getShopsShop() {}
+
+func (r GetShopsShopResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
 }
 
-func GetShopsShopResponseDefault(code int) GetShopsShopResponder {
-	var out getShopsShopResponseDefault
+func NewGetShopsShopResponseDefault(code int) GetShopsShopResponse {
+	var out GetShopsShopResponseDefault
 	out.Code = code
 	return out
 }
 
-type getShopsShopResponseDefault struct {
+type GetShopsShopResponseDefault struct {
 	Code int
 }
 
-func (r getShopsShopResponseDefault) writeGetShopsShopResponse(w http.ResponseWriter) {
+func (r GetShopsShopResponseDefault) getShopsShop() {}
+
+func (r GetShopsShopResponseDefault) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
 }
 
@@ -206,21 +228,25 @@ func (r getShopsShopResponseDefault) writeGetShopsShopResponse(w http.ResponseWr
 // GetShopsShopReviews -
 // ---------------------------------------------
 
-type GetShopsShopReviewsHandlerFunc func(r GetShopsShopReviewsRequester) GetShopsShopReviewsResponder
+type GetShopsShopReviewsHandlerFunc func(r GetShopsShopReviewsRequestParser) GetShopsShopReviewsResponse
 
 func (f GetShopsShopReviewsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(requestGetShopsShopReviewsParams{Request: r}).writeGetShopsShopReviewsResponse(w)
+	f(GetShopsShopReviewsHTTPRequest(r)).Write(w)
 }
 
-type GetShopsShopReviewsRequester interface {
+type GetShopsShopReviewsRequestParser interface {
 	Parse() (GetShopsShopReviewsRequest, error)
 }
 
-type requestGetShopsShopReviewsParams struct {
+func GetShopsShopReviewsHTTPRequest(r *http.Request) GetShopsShopReviewsRequestParser {
+	return getShopsShopReviewsHTTPRequest{r}
+}
+
+type getShopsShopReviewsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r requestGetShopsShopReviewsParams) Parse() (GetShopsShopReviewsRequest, error) {
+func (r getShopsShopReviewsHTTPRequest) Parse() (GetShopsShopReviewsRequest, error) {
 	return newGetShopsShopReviewsParams(r.Request)
 }
 
@@ -290,32 +316,39 @@ func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsRequ
 	return params, nil
 }
 
-type GetShopsShopReviewsResponder interface {
-	writeGetShopsShopReviewsResponse(w http.ResponseWriter)
+func (r GetShopsShopReviewsRequest) Parse() (GetShopsShopReviewsRequest, error) { return r, nil }
+
+type GetShopsShopReviewsResponse interface {
+	getShopsShopReviews()
+	Write(w http.ResponseWriter)
 }
 
-func GetShopsShopReviewsResponse200() GetShopsShopReviewsResponder {
-	var out getShopsShopReviewsResponse200
+func NewGetShopsShopReviewsResponse200() GetShopsShopReviewsResponse {
+	var out GetShopsShopReviewsResponse200
 	return out
 }
 
-type getShopsShopReviewsResponse200 struct{}
+type GetShopsShopReviewsResponse200 struct{}
 
-func (r getShopsShopReviewsResponse200) writeGetShopsShopReviewsResponse(w http.ResponseWriter) {
+func (r GetShopsShopReviewsResponse200) getShopsShopReviews() {}
+
+func (r GetShopsShopReviewsResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
 }
 
-func GetShopsShopReviewsResponseDefault(code int) GetShopsShopReviewsResponder {
-	var out getShopsShopReviewsResponseDefault
+func NewGetShopsShopReviewsResponseDefault(code int) GetShopsShopReviewsResponse {
+	var out GetShopsShopReviewsResponseDefault
 	out.Code = code
 	return out
 }
 
-type getShopsShopReviewsResponseDefault struct {
+type GetShopsShopReviewsResponseDefault struct {
 	Code int
 }
 
-func (r getShopsShopReviewsResponseDefault) writeGetShopsShopReviewsResponse(w http.ResponseWriter) {
+func (r GetShopsShopReviewsResponseDefault) getShopsShopReviews() {}
+
+func (r GetShopsShopReviewsResponseDefault) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
 }
 

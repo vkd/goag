@@ -20,6 +20,13 @@ func Title(s string) string {
 		}
 		return strings.Join(ss, "")
 	}
+	lower := strings.ToLower(s)
+	switch {
+	case strings.HasSuffix(lower, "id"):
+		return strings.Title(strings.TrimSuffix(lower, "id")) + "ID"
+	case strings.HasSuffix(lower, "ids"):
+		return strings.Title(strings.TrimSuffix(lower, "ids")) + "IDs"
+	}
 	return strings.Title(strings.ToLower(s))
 }
 

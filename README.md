@@ -8,85 +8,95 @@ It makes impossible to return undocumented type/response by endpoint.
 Example
 -
 
-Instead of the unmarshaling of parameters we can just write the logic itself of endpoint:
-
 ```golang
 var db interface {
-  GetPet(context.Context, int64) (Pet, error)
+	GetPet(_ context.Context, id string) (Pet, error)
 }
 
-api := &API{
-  GetPetsHandler: ...,
-  PostPetsHandler: ...,
-  GetPetsIDHandler: func(r GetPetsIDRequester) GetPetsIDResponder {
-    req, err := r.Parse()
-    if err != nil {
-      return GetPetsIDResponseDefaultJSON(http.StatusBadRequest, Error{
-        Code:    400,
-        Message: fmt.Sprintf("Bad request: %v", err),
-      })
-    }
+func ExampleAPI_petsStore() {
+	api := &API{
+		GetPetsPetIDHandler: func(r GetPetsPetIDRequestParser) GetPetsPetIDResponse {
+			req, err := r.Parse()
+			if err != nil {
+				return NewGetPetsPetIDResponseDefaultJSON(http.StatusBadRequest, Error{
+					Code:    400,
+					Message: fmt.Sprintf("Bad request: %v", err),
+				})
+			}
 
-    out, err := db.GetPet(req.HTTPRequest.Context(), req.ID)
-    if err != nil {
-      return GetPetsIDResponseDefaultJSON(http.StatusInternalServerError, Error{
-        Code:    500,
-        Message: fmt.Sprintf("Internal server error: %v", err),
-      })
-    }
+			out, err := db.GetPet(req.HTTPRequest.Context(), req.Path.PetID)
+			if err != nil {
+				return NewGetPetsPetIDResponseDefaultJSON(http.StatusInternalServerError, Error{
+					Code:    500,
+					Message: fmt.Sprintf("Internal server error: %v", err),
+				})
+			}
 
-    return GetPetsIDResponse200JSON(out)
-  },
+			return NewGetPetsPetIDResponse200JSON(out)
+		},
+		// ...
+	}
+
+	_ = http.ListenAndServe(":8080", api)
 }
-
-_ = http.ListenAndServe(":8080", api)
 ```
 
 ```yaml
 openapi: "3.0.0"
 info:
+  version: 1.0.0
   title: Swagger Petstore
-...
+  license:
+    name: MIT
 servers:
-  - url: http://petstore.swagger.io/api
+  - url: http://petstore.swagger.io/v1
 paths:
-  ...
-  /pets/{id}:
+  /pets/{petId}:
     get:
+      summary: Info for a specific pet
+      operationId: showPetById
+      tags:
+        - pets
       parameters:
-        - name: id
+        - name: petId
           in: path
-          description: ID of pet to fetch
           required: true
+          description: The id of the pet to retrieve
           schema:
-            type: integer
-            format: int64
+            type: string
       responses:
         '200':
-          description: pet response
+          description: Expected response to a valid request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pet'
+                $ref: "#/components/schemas/Pet"
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 components:
   schemas:
     Pet:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
           type: integer
           format: int64
         name:
           type: string
-
+        tag:
+          type: string
     Error:
       type: object
+      required:
+        - code
+        - message
       properties:
         code:
           type: integer
@@ -94,24 +104,3 @@ components:
         message:
           type: string
 ```
-
----
-
-Limitations:
-
-* JSON only
-* only one spec file
-* allOf only for objects
-* (?) component cannot has reference item
-* no webhooks
-* no file uploads
-* no multipart
-* no callbacks
-* no links
-* no discriminators
-* no XML object
-* no security scheme objects
-* (?) not full JSON Schema supported
-* schema.required is not applied
-* no externalDocs
-* no cookies

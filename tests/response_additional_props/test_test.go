@@ -8,8 +8,8 @@ import (
 )
 
 func TestResponseSchema(t *testing.T) {
-	handler := GetPetHandlerFunc(func(_ GetPetRequester) GetPetResponder {
-		return GetPetResponse200JSON(GetPetResponse200JSONBody{
+	handler := GetPetHandlerFunc(func(_ GetPetRequestParser) GetPetResponse {
+		return NewGetPetResponse200JSON(GetPetResponse200JSONBody{
 			Groups: map[string]Pets{
 				"cats": {Pet{Name: "mike"}, Pet{Name: "alex"}},
 			},

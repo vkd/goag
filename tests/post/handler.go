@@ -10,21 +10,25 @@ import (
 // PostPets -
 // ---------------------------------------------
 
-type PostPetsHandlerFunc func(r PostPetsRequester) PostPetsResponder
+type PostPetsHandlerFunc func(r PostPetsRequestParser) PostPetsResponse
 
 func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(requestPostPetsParams{Request: r}).writePostPetsResponse(w)
+	f(PostPetsHTTPRequest(r)).Write(w)
 }
 
-type PostPetsRequester interface {
+type PostPetsRequestParser interface {
 	Parse() PostPetsRequest
 }
 
-type requestPostPetsParams struct {
+func PostPetsHTTPRequest(r *http.Request) PostPetsRequestParser {
+	return postPetsHTTPRequest{r}
+}
+
+type postPetsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r requestPostPetsParams) Parse() PostPetsRequest {
+func (r postPetsHTTPRequest) Parse() PostPetsRequest {
 	return newPostPetsParams(r.Request)
 }
 
@@ -39,18 +43,23 @@ func newPostPetsParams(r *http.Request) (zero PostPetsRequest) {
 	return params
 }
 
-type PostPetsResponder interface {
-	writePostPetsResponse(w http.ResponseWriter)
+func (r PostPetsRequest) Parse() PostPetsRequest { return r }
+
+type PostPetsResponse interface {
+	postPets()
+	Write(w http.ResponseWriter)
 }
 
-func PostPetsResponse200() PostPetsResponder {
-	var out postPetsResponse200
+func NewPostPetsResponse200() PostPetsResponse {
+	var out PostPetsResponse200
 	return out
 }
 
-type postPetsResponse200 struct{}
+type PostPetsResponse200 struct{}
 
-func (r postPetsResponse200) writePostPetsResponse(w http.ResponseWriter) {
+func (r PostPetsResponse200) postPets() {}
+
+func (r PostPetsResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
 }
 

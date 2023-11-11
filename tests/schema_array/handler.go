@@ -12,21 +12,25 @@ import (
 // GetPets -
 // ---------------------------------------------
 
-type GetPetsHandlerFunc func(r GetPetsRequester) GetPetsResponder
+type GetPetsHandlerFunc func(r GetPetsRequestParser) GetPetsResponse
 
 func (f GetPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(requestGetPetsParams{Request: r}).writeGetPetsResponse(w)
+	f(GetPetsHTTPRequest(r)).Write(w)
 }
 
-type GetPetsRequester interface {
+type GetPetsRequestParser interface {
 	Parse() GetPetsRequest
 }
 
-type requestGetPetsParams struct {
+func GetPetsHTTPRequest(r *http.Request) GetPetsRequestParser {
+	return getPetsHTTPRequest{r}
+}
+
+type getPetsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r requestGetPetsParams) Parse() GetPetsRequest {
+func (r getPetsHTTPRequest) Parse() GetPetsRequest {
 	return newGetPetsParams(r.Request)
 }
 
@@ -41,21 +45,26 @@ func newGetPetsParams(r *http.Request) (zero GetPetsRequest) {
 	return params
 }
 
-type GetPetsResponder interface {
-	writeGetPetsResponse(w http.ResponseWriter)
+func (r GetPetsRequest) Parse() GetPetsRequest { return r }
+
+type GetPetsResponse interface {
+	getPets()
+	Write(w http.ResponseWriter)
 }
 
-func GetPetsResponse200JSON(body []Pet) GetPetsResponder {
-	var out getPetsResponse200JSON
+func NewGetPetsResponse200JSON(body []Pet) GetPetsResponse {
+	var out GetPetsResponse200JSON
 	out.Body = body
 	return out
 }
 
-type getPetsResponse200JSON struct {
+type GetPetsResponse200JSON struct {
 	Body []Pet
 }
 
-func (r getPetsResponse200JSON) writeGetPetsResponse(w http.ResponseWriter) {
+func (r GetPetsResponse200JSON) getPets() {}
+
+func (r GetPetsResponse200JSON) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "GetPetsResponse200JSON")
 }
@@ -64,21 +73,25 @@ func (r getPetsResponse200JSON) writeGetPetsResponse(w http.ResponseWriter) {
 // GetPetsNames -
 // ---------------------------------------------
 
-type GetPetsNamesHandlerFunc func(r GetPetsNamesRequester) GetPetsNamesResponder
+type GetPetsNamesHandlerFunc func(r GetPetsNamesRequestParser) GetPetsNamesResponse
 
 func (f GetPetsNamesHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(requestGetPetsNamesParams{Request: r}).writeGetPetsNamesResponse(w)
+	f(GetPetsNamesHTTPRequest(r)).Write(w)
 }
 
-type GetPetsNamesRequester interface {
+type GetPetsNamesRequestParser interface {
 	Parse() GetPetsNamesRequest
 }
 
-type requestGetPetsNamesParams struct {
+func GetPetsNamesHTTPRequest(r *http.Request) GetPetsNamesRequestParser {
+	return getPetsNamesHTTPRequest{r}
+}
+
+type getPetsNamesHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r requestGetPetsNamesParams) Parse() GetPetsNamesRequest {
+func (r getPetsNamesHTTPRequest) Parse() GetPetsNamesRequest {
 	return newGetPetsNamesParams(r.Request)
 }
 
@@ -93,21 +106,26 @@ func newGetPetsNamesParams(r *http.Request) (zero GetPetsNamesRequest) {
 	return params
 }
 
-type GetPetsNamesResponder interface {
-	writeGetPetsNamesResponse(w http.ResponseWriter)
+func (r GetPetsNamesRequest) Parse() GetPetsNamesRequest { return r }
+
+type GetPetsNamesResponse interface {
+	getPetsNames()
+	Write(w http.ResponseWriter)
 }
 
-func GetPetsNamesResponse200JSON(body []string) GetPetsNamesResponder {
-	var out getPetsNamesResponse200JSON
+func NewGetPetsNamesResponse200JSON(body []string) GetPetsNamesResponse {
+	var out GetPetsNamesResponse200JSON
 	out.Body = body
 	return out
 }
 
-type getPetsNamesResponse200JSON struct {
+type GetPetsNamesResponse200JSON struct {
 	Body []string
 }
 
-func (r getPetsNamesResponse200JSON) writeGetPetsNamesResponse(w http.ResponseWriter) {
+func (r GetPetsNamesResponse200JSON) getPetsNames() {}
+
+func (r GetPetsNamesResponse200JSON) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "GetPetsNamesResponse200JSON")
 }

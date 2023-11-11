@@ -30,8 +30,8 @@ type Response struct {
 }
 
 const txtResponse = `{{$response := . -}}
-func {{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.Type.String}}{{end}}) {{.HandlerName}}Responder {
-	var out {{.PrivateName}}
+func New{{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.Type.String}}{{end}}) {{.HandlerName}}Response {
+	var out {{.Name}}
 	{{- range $_, $a := .Args}}
 	out.{{if .IsHeader}}Headers.{{end}}{{.FieldName}} = {{.ArgName}}
 	{{- end}}
@@ -45,10 +45,12 @@ func {{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.Typ
 
 {{.Struct.String}}
 
-func (r {{.PrivateName}}) {{.ResponserInterfaceName}}(w http.ResponseWriter) {
-	{{if .IsDefault}}w.WriteHeader(r.Code){{else}}w.WriteHeader({{.Status}}){{end}}
+func (r {{.Name}}) {{.ResponserInterfaceName}}() {}
+
+func (r {{.Name}}) Write(w http.ResponseWriter) {
 	{{range $_, $h := .Headers}}w.Header().Set("{{$h.Name}}", r.Headers.{{$h.FieldName}})
 	{{end -}}
+	{{if .IsDefault}}w.WriteHeader(r.Code){{else}}w.WriteHeader({{.Status}}){{end}}
 	{{if .IsBody}}writeJSON(w, r.Body, "{{.Name}}")
 	{{end -}}
 }`
@@ -73,6 +75,7 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 	default:
 		out.Name += contentType
 	}
+	out.PrivateName = out.Name
 	out.PrivateName = PrivateFieldName(out.Name)
 	// out.Status = status
 
@@ -176,7 +179,7 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 
 	out.Struct = GoTypeDef{
 		Comment: out.Description,
-		Name:    out.PrivateName,
+		Name:    out.Name,
 		Type: GoStruct{
 			Fields: fields,
 		},

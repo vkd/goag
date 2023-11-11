@@ -124,7 +124,7 @@ func (rt *API) route{{$r.Name}}(path, method string) (http.Handler, string) {
 			switch method {
 				{{- range $_, $m := .PathItem.Operations}}
 			case http.Method{{.Operation.Method}}:
-				return rt.{{.Handler.Name}}Handler, "{{.Operation.Path}}"
+				return rt.{{.Handler.Name}}Handler, "{{.Operation.PathItem.Path}}"
 				{{- end}}
 			}
 			{{end -}}
@@ -134,7 +134,7 @@ func (rt *API) route{{$r.Name}}(path, method string) (http.Handler, string) {
 		switch method {
 			{{- range $_, $m := .PathItem.Operations}}
 		case http.Method{{.Operation.Method}}:
-			return rt.{{.Handler.Name}}Handler, "{{.Operation.Path}}"
+			return rt.{{.Handler.Name}}Handler, "{{.Operation.PathItem.Path}}"
 			{{- end}}
 		}
 		{{- end}}

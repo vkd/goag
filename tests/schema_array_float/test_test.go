@@ -10,8 +10,8 @@ import (
 )
 
 func TestSchemaArrayFloat(t *testing.T) {
-	h := GetPetsIDsHandlerFunc(func(_ GetPetsIDsRequester) GetPetsIDsResponder {
-		return GetPetsIDsResponse200JSON([]float64{0.8})
+	h := GetPetsIDsHandlerFunc(func(_ GetPetsIDsRequestParser) GetPetsIDsResponse {
+		return NewGetPetsIDsResponse200JSON([]float64{0.8})
 	})
 
 	w := httptest.NewRecorder()

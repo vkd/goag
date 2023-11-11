@@ -8,8 +8,8 @@ import (
 )
 
 func TestResponseSchema(t *testing.T) {
-	handler := GetPetHandlerFunc(func(_ GetPetRequester) GetPetResponder {
-		return GetPetResponse200JSON(Pet{ID: 1, Name: "mike"})
+	handler := GetPetHandlerFunc(func(_ GetPetRequestParser) GetPetResponse {
+		return NewGetPetResponse200JSON(Pet{ID: 1, Name: "mike"})
 	})
 
 	w := httptest.NewRecorder()
