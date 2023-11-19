@@ -1,0 +1,132 @@
+package test
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
+)
+
+type Client struct {
+	BaseURL    string
+	HTTPClient HTTPClient
+}
+
+type HTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
+var _ HTTPClient = (*http.Client)(nil)
+
+func NewClient(baseURL string, httpClient HTTPClient) *Client {
+	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
+}
+
+// PostShopsNew - POST /shops/new
+func (c *Client) PostShopsNew(ctx context.Context, request PostShopsNewRequest) (PostShopsNewResponse, error) {
+	var requestURL = c.BaseURL + "/shops/new"
+
+	query := make(url.Values, 1)
+	if request.Query.Page != nil {
+		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+	}
+	requestURL += "?" + query.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("new request: %w", err)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http client Do(): %w", err)
+	}
+
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	switch resp.StatusCode {
+	case 200:
+		var response PostShopsNewResponse200
+		return response, nil
+	default:
+		var response PostShopsNewResponseDefault
+		response.Code = resp.StatusCode
+
+		return response, nil
+	}
+}
+
+// GetShopsShop - GET /shops/{shop}
+func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopRequest) (GetShopsShopResponse, error) {
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
+
+	query := make(url.Values, 1)
+	if request.Query.Page != nil {
+		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+	}
+	requestURL += "?" + query.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("new request: %w", err)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http client Do(): %w", err)
+	}
+
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	switch resp.StatusCode {
+	case 200:
+		var response GetShopsShopResponse200
+		return response, nil
+	default:
+		var response GetShopsShopResponseDefault
+		response.Code = resp.StatusCode
+
+		return response, nil
+	}
+}
+
+// GetShopsShopReviews - GET /shops/{shop}/reviews
+func (c *Client) GetShopsShopReviews(ctx context.Context, request GetShopsShopReviewsRequest) (GetShopsShopReviewsResponse, error) {
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/reviews"
+
+	query := make(url.Values, 1)
+	if request.Query.Page != nil {
+		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+	}
+	requestURL += "?" + query.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("new request: %w", err)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http client Do(): %w", err)
+	}
+
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	switch resp.StatusCode {
+	case 200:
+		var response GetShopsShopReviewsResponse200
+		return response, nil
+	default:
+		var response GetShopsShopReviewsResponseDefault
+		response.Code = resp.StatusCode
+
+		return response, nil
+	}
+}

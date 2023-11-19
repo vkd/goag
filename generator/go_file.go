@@ -2,8 +2,8 @@ package generator
 
 func (g *Generator) goFile(ims []string, body executor) Templater {
 	return OldTemplater(GoFile{
-		SkipDoNotEdit: g.skipDoNotEdit,
-		PackageName:   g.packageName,
+		SkipDoNotEdit: !g.Options.DoNotEdit,
+		PackageName:   g.Options.PackageName,
 		Imports:       ims,
 		Body:          OldTemplater(body),
 	})

@@ -16,18 +16,20 @@ type Spec struct {
 }
 
 func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
-	var s Spec
+	s := &Spec{}
 
 	for _, path := range sortedKeys(spec.Paths) {
 		p, err := NewPath(path)
 		if err != nil {
-			return nil, fmt.Errorf("validate path %q: %w", path, err)
+			return nil, fmt.Errorf("parse path %q: %w", path, err)
 		}
 		pathItem := spec.Paths[path]
 		pi := &PathItem{
 			Path:     p,
 			PathItem: pathItem,
+			Spec:     s,
 		}
+		pi.PathOld, _ = NewPathOld(path)
 		for _, method := range httpMethods() {
 			operation := pathItem.GetOperation(method.HTTP)
 			if operation == nil {
@@ -39,30 +41,33 @@ func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 		}
 		s.Paths = append(s.Paths, pi)
 	}
-	return &s, nil
+	return s, nil
 }
 
 type PathItem struct {
 	Path     Path
+	PathOld  PathOld
 	PathItem *openapi3.PathItem
+	Spec     *Spec
 
 	Operations []*Operation
 }
 
 type Operation struct {
-	PathItem   *PathItem
+	PathItem *PathItem
+
 	HTTPMethod string
 	Method     string
 	Operation  *openapi3.Operation
 
 	Parameters struct {
-		Path    []PathParameter
+		Path    PathParameters
 		Query   []QueryParameter
-		Headers []HeaderParameter
+		Headers []*HeaderParameter
 	}
 
 	DefaultResponse *Response
-	Responses       []Response
+	Responses       []*Response
 }
 
 func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation) *Operation {
@@ -73,15 +78,18 @@ func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation
 		Operation:  operation,
 	}
 
-	for _, param := range operation.Parameters {
+	for _, param := range append(append(openapi3.Parameters{}, pi.PathItem.Parameters...), operation.Parameters...) {
 		switch param.Value.In {
 		case openapi3.ParameterInPath:
-			o.Parameters.Path = append(o.Parameters.Path, PathParameter{
-				RefName:     param.Ref,
-				Name:        param.Value.Name,
-				Description: param.Value.Description,
-				Schema:      NewSchema(param.Value.Schema),
-			})
+			p, ok := pi.Path.Params.Get(param.Value.Name)
+			if !ok {
+				p = &PathParameter{Name: param.Value.Name}
+			}
+			p.RefName = param.Ref
+			p.Description = param.Value.Description
+			p.Schema = NewSchema(param.Value.Schema)
+
+			o.Parameters.Path = append(o.Parameters.Path, p)
 		case openapi3.ParameterInQuery:
 			o.Parameters.Query = append(o.Parameters.Query, QueryParameter{
 				RefName:     param.Ref,
@@ -91,7 +99,7 @@ func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation
 				Schema:      NewSchema(param.Value.Schema),
 			})
 		case openapi3.ParameterInHeader:
-			o.Parameters.Headers = append(o.Parameters.Headers, HeaderParameter{
+			o.Parameters.Headers = append(o.Parameters.Headers, &HeaderParameter{
 				RefName:     param.Ref,
 				Name:        param.Value.Name,
 				Description: param.Value.Description,
@@ -105,13 +113,24 @@ func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation
 		response := operation.Responses[responseStatusCode]
 		if responseStatusCode == "default" {
 			defaultResponse := NewResponse(responseStatusCode, o, response)
-			o.DefaultResponse = &defaultResponse
+			o.DefaultResponse = defaultResponse
 		} else {
 			o.Responses = append(o.Responses, NewResponse(responseStatusCode, o, response))
 		}
 	}
 
 	return o
+}
+
+type PathParameters []*PathParameter
+
+func (ps PathParameters) Get(name string) (*PathParameter, bool) {
+	for _, p := range ps {
+		if p.Name == name {
+			return p, true
+		}
+	}
+	return nil, false
 }
 
 type PathParameter struct {
@@ -153,8 +172,8 @@ type Response struct {
 	Headers []Header
 }
 
-func NewResponse(responseStatusCode string, o *Operation, r *openapi3.ResponseRef) Response {
-	out := Response{
+func NewResponse(responseStatusCode string, o *Operation, r *openapi3.ResponseRef) *Response {
+	out := &Response{
 		StatusCode: responseStatusCode,
 		Operation:  o,
 		Spec:       r.Value,
@@ -168,13 +187,19 @@ func NewResponse(responseStatusCode string, o *Operation, r *openapi3.ResponseRe
 type Schema struct {
 	Ref    string
 	Schema *openapi3.Schema
+	Items  *Schema
 }
 
 func NewSchema(schema *openapi3.SchemaRef) Schema {
-	return Schema{
+	out := Schema{
 		Ref:    schema.Ref,
 		Schema: schema.Value,
 	}
+	if schema.Value.Items != nil {
+		s := NewSchema(schema.Value.Items)
+		out.Items = &s
+	}
+	return out
 }
 
 func sortedKeys[T any](m map[string]T) (out []string) {

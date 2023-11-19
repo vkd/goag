@@ -1,0 +1,108 @@
+{{ define "Client" }}
+type Client struct {
+	BaseURL    string
+	HTTPClient HTTPClient
+}
+
+type HTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
+var _ HTTPClient = (*http.Client)(nil)
+
+func NewClient(baseURL string, httpClient HTTPClient) *Client {
+	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
+}
+
+{{ range $_, $handler := .Handlers }}
+	{{ template "ClientHandler" $handler }}
+{{- end }}
+
+{{ if .IsDecodeJSONFunc -}}
+func decodeJSON(r io.Reader, v interface{}, name string) {
+	err := json.NewDecoder(r).Decode(v)
+	if err != nil {
+		LogError(fmt.Errorf("decode json response %q: %w", name, err))
+	}
+}
+{{- end }}
+{{ end }}
+
+{{/* ------------------------------------------------------------------ */}}
+
+{{ define "ClientHandler" }}
+{{ $handler := . }}
+// {{ .Name }} - {{ .HTTPMethod }} {{ .Path.Spec }}
+func (c *Client) {{ .Name }}(ctx context.Context, {{ .RequestVarName }} {{ .RequestTypeName }}) ({{ .ResponseTypeName }}, error) {
+	var requestURL = c.BaseURL {{ range $_, $pb := .PathBuilder }} + {{ exec ($pb.FormatTemplater "request") }}{{ end }}
+
+	{{ if .Params.Query }}
+	query := make(url.Values, {{ len .Params.Query }})
+	{{- range $_, $q := .Params.Query }}
+	{{ $q.ExecuteFormat "request" "query" }}
+	{{- end }}
+	requestURL += "?" + query.Encode()
+	{{ end }}
+
+	req, err := http.NewRequestWithContext(ctx, http.Method{{ .Method }}, requestURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("new request: %w", err)
+	}
+
+	{{- range $_, $h := .Params.Headers }}
+	{{- if not $h.Required }}
+	if request.Headers.{{ $h.FieldName }} != nil {
+	{{- end }}
+	req.Header.Set("{{ $h.Name }}", {{- if not $h.Required }}*{{end}}request.Headers.{{ $h.FieldName }})
+	{{- if not $h.Required }}}{{- end }}
+	{{- end }}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http client Do(): %w", err)
+	}
+
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	switch resp.StatusCode {
+	{{- range $_, $response := .Responses }}
+	case {{ $response.StatusCode }}:
+		{{ template "ClientResponse" $response }}
+	{{- end }}
+	{{ if .DefaultResponse.OK -}}
+	default:
+		{{ template "ClientResponse" .DefaultResponse.Value }}
+	{{- else }}
+	default:
+		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
+	{{- end }}
+	}
+}
+{{ end }}
+
+{{/* ------------------------------------------------------------------ */}}
+{{ define "xxx" -}}
+{{- end }}
+{{/* ------------------------------------------------------------------ */}}
+
+{{ define "ClientResponse" -}}
+var response {{ .Name }}
+
+{{- if eq .StatusCode "default" }}
+	response.Code = resp.StatusCode
+{{ end }}
+
+{{- range $_, $h := .Headers }}
+	response.Headers.{{ $h.FieldName }} = resp.Header.Get("{{ $h.Key }}")
+{{ end }}
+
+{{- if .Body.OK }}
+err := json.NewDecoder(resp.Body).Decode(&response.Body)
+if err != nil {
+	return nil, fmt.Errorf("decode '{{ .Name }}' response body: %w", err)
+}
+{{- end }}
+return response, nil
+{{- end }}

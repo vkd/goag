@@ -22,7 +22,7 @@ type routerHandler struct {
 	Type string
 }
 
-func (g *Generator) RouterFile(basePath, baseFilename string, hs []Handler, oldRouter any) (Templater, error) {
+func (g *Generator) RouterFile(basePath, baseFilename string, hs []HandlerOld, oldRouter any) (Templater, error) {
 	file := RouterFile{
 		BasePath:         basePath,
 		BaseSpecFilename: baseFilename,
@@ -124,7 +124,7 @@ func (rt *API) route{{$r.Name}}(path, method string) (http.Handler, string) {
 			switch method {
 				{{- range $_, $m := .PathItem.Operations}}
 			case http.Method{{.Operation.Method}}:
-				return rt.{{.Handler.Name}}Handler, "{{.Operation.PathItem.Path}}"
+				return rt.{{.Handler.Name}}Handler, "{{.Operation.PathItem.Path.Spec}}"
 				{{- end}}
 			}
 			{{end -}}
@@ -134,7 +134,7 @@ func (rt *API) route{{$r.Name}}(path, method string) (http.Handler, string) {
 		switch method {
 			{{- range $_, $m := .PathItem.Operations}}
 		case http.Method{{.Operation.Method}}:
-			return rt.{{.Handler.Name}}Handler, "{{.Operation.PathItem.Path}}"
+			return rt.{{.Handler.Name}}Handler, "{{.Operation.PathItem.Path.Spec}}"
 			{{- end}}
 		}
 		{{- end}}
@@ -202,9 +202,9 @@ func (r RouterFile) Execute() (string, error) { return tmRouterFile.Execute(r) }
 func (g *Generator) newRoutes() ([]routeMethod, error) {
 	var route routeMethod
 	for _, pi := range g.Paths {
-		err := route.add(pi.PathItem.Path, pi)
+		err := route.add(pi.PathItem.PathOld, pi)
 		if err != nil {
-			return nil, fmt.Errorf("add %q path: %w", pi.PathItem.Path, err)
+			return nil, fmt.Errorf("add %q path: %w", pi.PathItem.Path.Spec, err)
 		}
 	}
 
@@ -300,7 +300,7 @@ func (r *routeMethod) routes() []routeMethod {
 	return out
 }
 
-func (r *routeMethod) add(path specification.Path, pathItem *PathItem) error {
+func (r *routeMethod) add(path specification.PathOld, pathItem *PathItem) error {
 	prefix, path, ok := path.Cut()
 	if !ok {
 		if prefix.IsVariable() {

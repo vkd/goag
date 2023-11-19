@@ -1,0 +1,20 @@
+{{ define "Int64ToString" }}strconv.FormatInt({{ exec . }}, 10){{ end }}
+{{ define "Int32ToInt64" }}int64({{ exec . }}){{ end }}
+{{ define "IntToInt64" }}int64({{ exec . }}){{ end }}
+{{ define "Assign" }}{{ exec .To }} {{ if .IsNew }}:{{ end }}= {{ exec .From }}{{ end }}
+
+{{ define "SliceToSliceStrings" -}}
+{
+    query_values := make([]string, 0, {{ .Len }})
+    for _, v := range {{ exec .From }} {
+        query_values = append(query_values, {{ exec (.Items.TemplateToString (raw "v")) }})
+    }
+    {{ exec .To }} = query_values
+}
+{{- end }}
+{{ define "OptionalAssign" -}}
+if {{ exec .From }} != nil {
+    {{ exec .T }}
+}
+{{- end }}
+{{ define "ToSliceStrings" }}[]string{ {{ exec . }} }{{ end }}

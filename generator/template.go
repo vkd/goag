@@ -2,10 +2,30 @@ package generator
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"reflect"
 	"text/template"
 )
+
+//go:embed *.gotmpl
+var templatesFS embed.FS
+var templates *Template
+
+func init() {
+	templates = &Template{
+		template.Must(
+			template.
+				New("Generator").
+				Funcs(template.FuncMap{
+					"exec":    execTemplateFunc,
+					"private": privateTemplateFunc,
+					"raw":     rawTemplateFunc,
+				}).
+				ParseFS(templatesFS, "*.gotmpl"),
+		),
+	}
+}
 
 type Templater interface {
 	// Execute() (string, error)
@@ -53,33 +73,51 @@ func (t *Template) Execute(data interface{}) (string, error) {
 	return bs.String(), nil
 }
 
-type Templaters []Template
+func (t *Template) ExecuteTemplate(name string, data interface{}) (string, error) {
+	var bs bytes.Buffer
+	err := t.tm.ExecuteTemplate(&bs, name, data)
+	if err != nil {
+		return "", fmt.Errorf("execute template (%s): %w", name, err)
+	}
+	return bs.String(), nil
+}
 
-var tmTemplaters = InitTemplate("Templaters", `
-{{ range $_, $t := . }}
-{{ exec $t }}
-{{ end }}
-`)
+type Templaters []Templater
+
+var tmTemplaters = InitTemplate("Templaters", `{{ range $_, $t := . }}{{ exec $t }}{{ end }}`)
 
 func (t Templaters) Execute() (string, error) { return tmTemplaters.Execute(t) }
 
-func TemplateData(tm *Template, data interface{}) Templater {
-	return templateData{tm, data}
+func (t Templaters) ExecuteArgs(args ...any) (string, error) {
+	return tmTemplaters.Execute(t)
+}
+
+func TemplateData(name string, data interface{}) Templater {
+	return templateData{name, data}
 }
 
 type templateData struct {
-	tm   *Template
+	name string
 	data interface{}
 }
 
 func (t templateData) Execute() (string, error) {
-	return t.tm.Execute(t.data)
+	return templates.ExecuteTemplate(t.name, t.data)
 }
 func (t templateData) String() (string, error) { return t.Execute() }
 
+type RawTemplate string
+
+func (t RawTemplate) Execute() (string, error) {
+	return string(t), nil
+}
+func (t RawTemplate) String() (string, error) { return t.Execute() }
+
+type TData map[string]any
+
 // --- Functions ---
 
-func execTemplateFunc(t reflect.Value) (string, error) {
+func execTemplateFunc(t reflect.Value, args ...any) (string, error) {
 	switch t := t.Interface().(type) {
 	case Templater:
 		return t.String()
@@ -87,6 +125,10 @@ func execTemplateFunc(t reflect.Value) (string, error) {
 		Execute() (string, error)
 	}:
 		return t.Execute()
+	case interface {
+		ExecuteArgs(...any) (string, error)
+	}:
+		return t.ExecuteArgs(args...)
 	}
 
 	return "", fmt.Errorf("%T does not implement Templater: missing method Execute() (string, error)", t.Interface())
@@ -99,4 +141,13 @@ func privateTemplateFunc(t reflect.Value) (string, error) {
 	}
 
 	return "", fmt.Errorf("%T is not string", t.Interface())
+}
+
+func rawTemplateFunc(t reflect.Value) (Templater, error) {
+	switch t := t.Interface().(type) {
+	case string:
+		return RawTemplate(t), nil
+	}
+
+	return nil, fmt.Errorf("%T is not string", t.Interface())
 }

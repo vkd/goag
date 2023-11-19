@@ -5,26 +5,55 @@ import (
 	"strings"
 )
 
-// Path always starts with '/'
-type Path string
+type Path struct {
+	Spec   string
+	Dirs   []*PathDir
+	Params PathParameters
+}
 
-func NewPath(s string) (Path, error) {
+type PathDir struct {
+	Raw      Prefix
+	ParamRef *PathParameter
+}
+
+func NewPath(s string) (zero Path, _ error) {
+	if !strings.HasPrefix(s, "/") {
+		return zero, fmt.Errorf("the field name MUST begin with a forward slash (/)")
+	}
+	out := Path{Spec: s}
+	for _, p := range strings.Split(s[1:], "/") {
+		prefix := Prefix("/" + p)
+		param := &PathParameter{Name: prefix.Name()}
+		out.Dirs = append(out.Dirs, &PathDir{
+			Raw:      prefix,
+			ParamRef: param,
+		})
+		out.Params = append(out.Params, param)
+	}
+
+	return out, nil
+}
+
+// PathOld always starts with '/'
+type PathOld string
+
+func NewPathOld(s string) (PathOld, error) {
 	if !strings.HasPrefix(s, "/") {
 		return "", fmt.Errorf("path must start with '/'")
 	}
-	return Path(s), nil
+	return PathOld(s), nil
 }
 
-func (p Path) Cut() (Prefix, Path, bool) {
+func (p PathOld) Cut() (Prefix, PathOld, bool) {
 	// s := string(p[1:])
 	idx := strings.Index(string(p[1:]), "/")
 	if idx == -1 {
 		return Prefix(p), "", false
 	}
-	return Prefix(p[:idx+1]), Path(p[idx+1:]), true
+	return Prefix(p[:idx+1]), PathOld(p[idx+1:]), true
 }
 
-func (p Path) Name(fn func(Prefix) string, sep string) string {
+func (p PathOld) Name(fn func(Prefix) string, sep string) string {
 	var out string
 	for {
 		prefix, path, ok := p.Cut()
@@ -35,6 +64,8 @@ func (p Path) Name(fn func(Prefix) string, sep string) string {
 		p = path
 	}
 }
+
+func (p PathOld) String() string { return string(p) }
 
 // Prefix always starts with '/'
 type Prefix string

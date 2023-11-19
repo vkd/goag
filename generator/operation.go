@@ -7,23 +7,17 @@ import (
 	"github.com/vkd/goag/specification"
 )
 
-type PathItem struct {
-	PathItem *specification.PathItem
-
-	Operations []*Operation
-}
-
 type Operation struct {
 	Operation *specification.Operation
 
 	Name            string
 	HandlerTypeName string
 
-	PathParameters   []Parameter[specification.PathParameter]
+	PathParameters   []Parameter[*specification.PathParameter]
 	QueryParameters  []Parameter[specification.QueryParameter]
-	HeaderParameters []Parameter[specification.HeaderParameter]
+	HeaderParameters []Parameter[*specification.HeaderParameter]
 
-	Handler *Handler // Deprecated
+	Handler *HandlerOld // Deprecated
 }
 
 func NewOperation(operation *specification.Operation) *Operation {
@@ -33,22 +27,22 @@ func NewOperation(operation *specification.Operation) *Operation {
 	o.Name = OperationName(operation.PathItem.Path, operation.Method)
 	o.HandlerTypeName = o.Name + "HandlerFunc"
 
-	for _, header := range operation.Parameters.Path {
-		o.PathParameters = append(o.PathParameters, Parameter[specification.PathParameter]{
-			Spec: header,
+	for _, pathParam := range operation.Parameters.Path {
+		o.PathParameters = append(o.PathParameters, Parameter[*specification.PathParameter]{
+			Spec: pathParam,
 
-			FieldName: PublicFieldName(header.Name),
+			FieldName: PublicFieldName(pathParam.Name),
 		})
 	}
-	for _, header := range operation.Parameters.Query {
+	for _, query := range operation.Parameters.Query {
 		o.QueryParameters = append(o.QueryParameters, Parameter[specification.QueryParameter]{
-			Spec: header,
+			Spec: query,
 
-			FieldName: PublicFieldName(header.Name),
+			FieldName: PublicFieldName(query.Name),
 		})
 	}
 	for _, header := range operation.Parameters.Headers {
-		o.HeaderParameters = append(o.HeaderParameters, Parameter[specification.HeaderParameter]{
+		o.HeaderParameters = append(o.HeaderParameters, Parameter[*specification.HeaderParameter]{
 			Spec: header,
 
 			FieldName: PublicFieldName(header.Name),
@@ -59,17 +53,17 @@ func NewOperation(operation *specification.Operation) *Operation {
 }
 
 func OperationName(path specification.Path, method string) string {
-	var suffix string
-	if strings.HasSuffix(string(path), "/") {
-		// special case for "/"
-		if path == "/" {
-			suffix = ""
-		} else {
-			// "/shops" and "/shops/" need to have separate handlers
-			suffix = "RT" // RT = root
-		}
+	var out string
+	for _, dir := range path.Dirs {
+		out += PrefixTitle(dir.Raw)
 	}
-	return method + path.Name(PrefixTitle, "") + suffix
+
+	var suffix string
+	if len(path.Dirs) > 1 && path.Dirs[len(path.Dirs)-1].Raw == "/" {
+		suffix = "RT"
+	}
+
+	return method + out + suffix
 }
 
 func PublicFieldName(name string) string {
@@ -116,12 +110,12 @@ func PublicFieldName(name string) string {
 }
 
 type Parameter[T interface {
-	specification.PathParameter | specification.QueryParameter | specification.HeaderParameter
+	*specification.PathParameter | specification.QueryParameter | *specification.HeaderParameter
 }] struct {
 	Spec T
 
 	FieldName string
-	Type      GoType
+	// Type      GoType
 }
 
 func PrivateFieldName(name string) string {

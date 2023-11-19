@@ -1,12 +1,12 @@
 package generator
 
 type HandlersFile struct {
-	Handlers []Handler
+	Handlers []HandlerOld
 
 	IsWriteJSONFunc bool
 }
 
-func (g *Generator) HandlersFile(hs []Handler, isJSON bool) (Templater, error) {
+func (g *Generator) HandlersFile(hs []HandlerOld, isJSON bool) (Templater, error) {
 	file := HandlersFile{
 		Handlers:        hs,
 		IsWriteJSONFunc: isJSON,
@@ -58,7 +58,10 @@ func (e ErrParseParam) Unwrap() error { return e.Err }
 
 func (h HandlersFile) Execute() (string, error) { return tmHandlersFile.Execute(h) }
 
-type Handler struct {
+type HandlerOld struct {
+	// client
+
+	// deprecated
 	Name        string
 	Description string
 	Summary     string
@@ -86,7 +89,7 @@ type Handler struct {
 	Responses []Templater
 }
 
-func (h Handler) HandlerFuncName() string { return h.Name + "HandlerFunc" }
+func (h HandlerOld) HandlerFuncName() string { return h.Name + "HandlerFunc" }
 
 var tmHandler = InitTemplate("Handler", `
 {{- $h := . }}
@@ -233,7 +236,7 @@ type {{ $responseWriter }} interface {
 {{ end }}
 `)
 
-func (h Handler) Execute() (string, error) { return tmHandler.Execute(h) }
+func (h HandlerOld) Execute() (string, error) { return tmHandler.Execute(h) }
 
 type Param struct {
 	Field  Templater

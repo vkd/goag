@@ -26,7 +26,7 @@ func NewHandlers(s *specification.Spec, basePath string) (zero Handlers, _ error
 	for _, o := range s.Operations {
 		h, err := NewHandler(o.Operation, o.PathItem.Path, o.Method, o.PathItem.PathItem.Parameters)
 		if err != nil {
-			return zero, fmt.Errorf("new handler for [%s]%q: %w", o.Method, o.PathItem.Path, err)
+			return zero, fmt.Errorf("new handler for [%s]%q: %w", o.Method, o.PathItem.Path.Spec, err)
 		}
 		h.BasePathPrefix = basePath
 		out.Handlers = append(out.Handlers, h)
@@ -39,7 +39,7 @@ func NewHandlers(s *specification.Spec, basePath string) (zero Handlers, _ error
 }
 
 type Handler struct {
-	generator.Handler
+	generator.HandlerOld
 
 	Path   string
 	Method string
@@ -54,7 +54,7 @@ type Handler struct {
 func NewHandler(p *openapi3.Operation, path specification.Path, method string, params openapi3.Parameters) (zero Handler, _ error) {
 	var out Handler
 	out.Name = HandlerName(path, method)
-	out.Path = string(path)
+	out.Path = path.Spec
 	out.Method = method
 	out.Description = strings.ReplaceAll(strings.TrimSpace(p.Description), "\n", "\n// ")
 	out.Summary = p.Summary
@@ -93,7 +93,7 @@ func NewHandler(p *openapi3.Operation, path specification.Path, method string, p
 
 	if len(out.Parameters.Path) > 0 {
 		var err error
-		out.Parameters.PathParsers, err = NewPathParamsParsers(string(path), pathParams)
+		out.Parameters.PathParsers, err = NewPathParamsParsers(string(path.Spec), pathParams)
 		if err != nil {
 			return zero, fmt.Errorf("new path params parsers: %w", err)
 		}
@@ -127,7 +127,7 @@ func NewHandler(p *openapi3.Operation, path specification.Path, method string, p
 	}
 	for _, r := range responses {
 		out.Responses = append(out.Responses, r)
-		out.Handler.Responses = append(out.Handler.Responses, r)
+		out.HandlerOld.Responses = append(out.HandlerOld.Responses, r)
 	}
 
 	out.CanParseError = len(out.Parameters.Query) > 0 || len(out.Parameters.Path) > 0 || len(out.Parameters.Headers) > 0 || out.Body.TypeName != nil
@@ -150,7 +150,7 @@ func PathName(s string) string {
 	if s == "" {
 		return ""
 	}
-	return specification.Path(s).Name(func(s specification.Prefix) string { return strings.Title(strings.ToLower(s.Name())) }, "")
+	return specification.PathOld(s).Name(func(s specification.Prefix) string { return strings.Title(strings.ToLower(s.Name())) }, "")
 }
 
 // func PathName(path string) string {

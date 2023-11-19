@@ -1,10 +1,10 @@
 package generator
 
-type GoStructField struct {
-	Field string
-	Type  string
-}
+// type GoStructFieldRef struct {
+// 	Field string
+// 	Type  string
+// }
 
-var tmGoStructField = InitTemplate("GoStructField", `{{ .Field }} {{ .Type }}`)
+// var tmGoStructField = InitTemplate("GoStructFieldRef", `{{ .Field }} {{ .Type }}`)
 
-func (s GoStructField) String() (string, error) { return tmGoStructField.Execute(s) }
+// func (s GoStructFieldRef) String() (string, error) { return tmGoStructField.Execute(s) }

@@ -7,34 +7,27 @@ import (
 )
 
 type Response struct {
-	Spec          specification.Response
-	ClientHandler *ClientHandler
-	Operation     *Operation
+	s *specification.Response
 
-	PublicTypeName string
-	StatusCode     string
-	Description    string
-	Headers        []Header
+	Name       string
+	StatusCode string
 
-	// temporary
-	HasBody bool
+	Headers []Header
+
+	Body Optional[any]
 }
 
-func NewResponse(ch *ClientHandler, o *Operation, spec specification.Response) Response {
-	r := Response{
-		Spec:          spec,
-		ClientHandler: ch,
-		Operation:     o,
+func NewResponse(handlerName string, response *specification.Response) *Response {
+	r := &Response{s: response}
+	r.Name = handlerName + "Response" + strings.Title(response.StatusCode)
+	if len(response.Spec.Content) > 0 {
+		r.Name += "JSON"
+		r.Body.OK = true
+	}
+	r.StatusCode = response.StatusCode
 
-		StatusCode: spec.StatusCode,
-		HasBody:    len(spec.Spec.Content) > 0,
-	}
-	r.PublicTypeName = o.Name + "Response" + strings.Title(spec.StatusCode)
-	if r.HasBody {
-		r.PublicTypeName += "JSON"
-	}
-	for _, h := range spec.Headers {
-		r.Headers = append(r.Headers, NewHeader(&r, h))
+	for _, header := range response.Headers {
+		r.Headers = append(r.Headers, NewHeader(header))
 	}
 	return r
 }
