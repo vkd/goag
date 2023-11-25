@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 type Client struct {
-	baseURL    string
+	BaseURL    string
 	HTTPClient HTTPClient
 }
 
@@ -21,19 +21,18 @@ type HTTPClient interface {
 var _ HTTPClient = (*http.Client)(nil)
 
 func NewClient(baseURL string, httpClient HTTPClient) *Client {
-	return &Client{baseURL: baseURL, HTTPClient: httpClient}
+	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
+// GetPets - GET /pets
 func (c *Client) GetPets(ctx context.Context, request GetPetsRequest) (GetPetsResponse, error) {
-	var requestURL = c.baseURL + "/pets"
+	var requestURL = c.BaseURL + "/pets"
 
-	{
-		var q = url.Values{}
-
-		//q["limit"] = request.Query.Limit
-
-		requestURL += "?" + q.Encode()
+	query := make(url.Values, 1)
+	if request.Query.Limit != nil {
+		query["limit"] = []string{strconv.FormatInt(int64(*request.Query.Limit), 10)}
 	}
+	requestURL += "?" + query.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -52,7 +51,6 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsRequest) (GetPetsRe
 	switch resp.StatusCode {
 	case 200:
 		var response GetPetsResponse200JSON
-
 		response.Headers.XNext = resp.Header.Get("x-next")
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
@@ -60,7 +58,6 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsRequest) (GetPetsRe
 			return nil, fmt.Errorf("decode 'GetPetsResponse200JSON' response body: %w", err)
 		}
 		return response, nil
-
 	default:
 		var response GetPetsResponseDefaultJSON
 		response.Code = resp.StatusCode
@@ -70,12 +67,12 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsRequest) (GetPetsRe
 			return nil, fmt.Errorf("decode 'GetPetsResponseDefaultJSON' response body: %w", err)
 		}
 		return response, nil
-
 	}
 }
 
+// PostPets - POST /pets
 func (c *Client) PostPets(ctx context.Context, request PostPetsRequest) (PostPetsResponse, error) {
-	var requestURL = c.baseURL + "/pets"
+	var requestURL = c.BaseURL + "/pets"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, nil)
 	if err != nil {
@@ -94,9 +91,7 @@ func (c *Client) PostPets(ctx context.Context, request PostPetsRequest) (PostPet
 	switch resp.StatusCode {
 	case 201:
 		var response PostPetsResponse201
-
 		return response, nil
-
 	default:
 		var response PostPetsResponseDefaultJSON
 		response.Code = resp.StatusCode
@@ -106,12 +101,12 @@ func (c *Client) PostPets(ctx context.Context, request PostPetsRequest) (PostPet
 			return nil, fmt.Errorf("decode 'PostPetsResponseDefaultJSON' response body: %w", err)
 		}
 		return response, nil
-
 	}
 }
 
+// GetPetsPetID - GET /pets/{petId}
 func (c *Client) GetPetsPetID(ctx context.Context, request GetPetsPetIDRequest) (GetPetsPetIDResponse, error) {
-	var requestURL = c.baseURL + "/pets/{petId}"
+	var requestURL = c.BaseURL + "/pets/" + request.Path.PetID
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -130,13 +125,11 @@ func (c *Client) GetPetsPetID(ctx context.Context, request GetPetsPetIDRequest) 
 	switch resp.StatusCode {
 	case 200:
 		var response GetPetsPetIDResponse200JSON
-
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
 			return nil, fmt.Errorf("decode 'GetPetsPetIDResponse200JSON' response body: %w", err)
 		}
 		return response, nil
-
 	default:
 		var response GetPetsPetIDResponseDefaultJSON
 		response.Code = resp.StatusCode
@@ -146,13 +139,5 @@ func (c *Client) GetPetsPetID(ctx context.Context, request GetPetsPetIDRequest) 
 			return nil, fmt.Errorf("decode 'GetPetsPetIDResponseDefaultJSON' response body: %w", err)
 		}
 		return response, nil
-
-	}
-}
-
-func decodeJSON(r io.Reader, v interface{}, name string) {
-	err := json.NewDecoder(r).Decode(v)
-	if err != nil {
-		LogError(fmt.Errorf("decode json response %q: %w", name, err))
 	}
 }
