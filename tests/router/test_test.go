@@ -11,13 +11,13 @@ import (
 
 func TestRouter(t *testing.T) {
 	api := API{
-		GetHandler: GetHandlerFunc(func(_ GetRequestParser) GetResponse { return NewGetResponseDefault(201) }),
+		GetHandler: GetHandlerFunc(func(_ GetRequest) GetResponse { return NewGetResponseDefault(201) }),
 
-		GetShopsHandler: GetShopsHandlerFunc(func(_ GetShopsRequestParser) GetShopsResponse { return NewGetShopsResponseDefault(202) }),
+		GetShopsHandler: GetShopsHandlerFunc(func(_ GetShopsRequest) GetShopsResponse { return NewGetShopsResponseDefault(202) }),
 
-		GetShopsRTHandler: GetShopsRTHandlerFunc(func(_ GetShopsRTRequestParser) GetShopsRTResponse { return NewGetShopsRTResponseDefault(203) }),
+		GetShopsRTHandler: GetShopsRTHandlerFunc(func(_ GetShopsRTRequest) GetShopsRTResponse { return NewGetShopsRTResponseDefault(203) }),
 
-		GetShopsShopHandler: GetShopsShopHandlerFunc(func(r GetShopsShopRequestParser) GetShopsShopResponse {
+		GetShopsShopHandler: GetShopsShopHandlerFunc(func(r GetShopsShopRequest) GetShopsShopResponse {
 			_, err := r.Parse()
 			if err != nil {
 				return NewGetShopsShopResponseDefault(400)
@@ -25,7 +25,7 @@ func TestRouter(t *testing.T) {
 			return NewGetShopsShopResponseDefault(204)
 		}),
 
-		GetShopsShopRTHandler: GetShopsShopRTHandlerFunc(func(r GetShopsShopRTRequestParser) GetShopsShopRTResponse {
+		GetShopsShopRTHandler: GetShopsShopRTHandlerFunc(func(r GetShopsShopRTRequest) GetShopsShopRTResponse {
 			_, err := r.Parse()
 			if err != nil {
 				return NewGetShopsShopRTResponseDefault(400)
@@ -33,7 +33,7 @@ func TestRouter(t *testing.T) {
 			return NewGetShopsShopRTResponseDefault(205)
 		}),
 
-		GetShopsShopPetsHandler: GetShopsShopPetsHandlerFunc(func(r GetShopsShopPetsRequestParser) GetShopsShopPetsResponse {
+		GetShopsShopPetsHandler: GetShopsShopPetsHandlerFunc(func(r GetShopsShopPetsRequest) GetShopsShopPetsResponse {
 			_, err := r.Parse()
 			if err != nil {
 				return NewGetShopsShopPetsResponseDefault(400)
@@ -41,7 +41,7 @@ func TestRouter(t *testing.T) {
 			return NewGetShopsShopPetsResponseDefault(206)
 		}),
 
-		GetShopsActivateHandler: GetShopsActivateHandlerFunc(func(_ GetShopsActivateRequestParser) GetShopsActivateResponse {
+		GetShopsActivateHandler: GetShopsActivateHandlerFunc(func(_ GetShopsActivateRequest) GetShopsActivateResponse {
 			return NewGetShopsActivateResponseDefault(207)
 		}),
 	}

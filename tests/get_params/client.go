@@ -24,7 +24,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 }
 
 // GetShopsShop - GET /shops/{shop}
-func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopRequest) (GetShopsShopResponse, error) {
+func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
 
 	query := make(url.Values, 1)

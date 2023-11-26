@@ -12,17 +12,18 @@ import (
 // PostShopsNew -
 // ---------------------------------------------
 
-type PostShopsNewHandlerFunc func(r PostShopsNewRequestParser) PostShopsNewResponse
+type PostShopsNewHandlerFunc func(r PostShopsNewRequest) PostShopsNewResponse
 
 func (f PostShopsNewHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(PostShopsNewHTTPRequest(r)).Write(w)
 }
 
-type PostShopsNewRequestParser interface {
-	Parse() (PostShopsNewRequest, error)
+type PostShopsNewRequest interface {
+	HTTP() *http.Request
+	Parse() (PostShopsNewParams, error)
 }
 
-func PostShopsNewHTTPRequest(r *http.Request) PostShopsNewRequestParser {
+func PostShopsNewHTTPRequest(r *http.Request) PostShopsNewRequest {
 	return postShopsNewHTTPRequest{r}
 }
 
@@ -30,21 +31,20 @@ type postShopsNewHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r postShopsNewHTTPRequest) Parse() (PostShopsNewRequest, error) {
+func (r postShopsNewHTTPRequest) HTTP() *http.Request { return r.Request }
+
+func (r postShopsNewHTTPRequest) Parse() (PostShopsNewParams, error) {
 	return newPostShopsNewParams(r.Request)
 }
 
-type PostShopsNewRequest struct {
-	HTTPRequest *http.Request
-
+type PostShopsNewParams struct {
 	Query struct {
 		Page *int32
 	}
 }
 
-func newPostShopsNewParams(r *http.Request) (zero PostShopsNewRequest, _ error) {
-	var params PostShopsNewRequest
-	params.HTTPRequest = r
+func newPostShopsNewParams(r *http.Request) (zero PostShopsNewParams, _ error) {
+	var params PostShopsNewParams
 
 	// Query parameters
 	{
@@ -65,7 +65,9 @@ func newPostShopsNewParams(r *http.Request) (zero PostShopsNewRequest, _ error) 
 	return params, nil
 }
 
-func (r PostShopsNewRequest) Parse() (PostShopsNewRequest, error) { return r, nil }
+func (r PostShopsNewParams) HTTP() *http.Request { return nil }
+
+func (r PostShopsNewParams) Parse() (PostShopsNewParams, error) { return r, nil }
 
 type PostShopsNewResponse interface {
 	postShopsNew()
@@ -105,17 +107,18 @@ func (r PostShopsNewResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsShop -
 // ---------------------------------------------
 
-type GetShopsShopHandlerFunc func(r GetShopsShopRequestParser) GetShopsShopResponse
+type GetShopsShopHandlerFunc func(r GetShopsShopRequest) GetShopsShopResponse
 
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(GetShopsShopHTTPRequest(r)).Write(w)
 }
 
-type GetShopsShopRequestParser interface {
-	Parse() (GetShopsShopRequest, error)
+type GetShopsShopRequest interface {
+	HTTP() *http.Request
+	Parse() (GetShopsShopParams, error)
 }
 
-func GetShopsShopHTTPRequest(r *http.Request) GetShopsShopRequestParser {
+func GetShopsShopHTTPRequest(r *http.Request) GetShopsShopRequest {
 	return getShopsShopHTTPRequest{r}
 }
 
@@ -123,13 +126,13 @@ type getShopsShopHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r getShopsShopHTTPRequest) Parse() (GetShopsShopRequest, error) {
+func (r getShopsShopHTTPRequest) HTTP() *http.Request { return r.Request }
+
+func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 	return newGetShopsShopParams(r.Request)
 }
 
-type GetShopsShopRequest struct {
-	HTTPRequest *http.Request
-
+type GetShopsShopParams struct {
 	Query struct {
 		Page *int32
 	}
@@ -139,9 +142,8 @@ type GetShopsShopRequest struct {
 	}
 }
 
-func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) {
-	var params GetShopsShopRequest
-	params.HTTPRequest = r
+func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
+	var params GetShopsShopParams
 
 	// Query parameters
 	{
@@ -188,7 +190,9 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 	return params, nil
 }
 
-func (r GetShopsShopRequest) Parse() (GetShopsShopRequest, error) { return r, nil }
+func (r GetShopsShopParams) HTTP() *http.Request { return nil }
+
+func (r GetShopsShopParams) Parse() (GetShopsShopParams, error) { return r, nil }
 
 type GetShopsShopResponse interface {
 	getShopsShop()
@@ -228,17 +232,18 @@ func (r GetShopsShopResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsShopReviews -
 // ---------------------------------------------
 
-type GetShopsShopReviewsHandlerFunc func(r GetShopsShopReviewsRequestParser) GetShopsShopReviewsResponse
+type GetShopsShopReviewsHandlerFunc func(r GetShopsShopReviewsRequest) GetShopsShopReviewsResponse
 
 func (f GetShopsShopReviewsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(GetShopsShopReviewsHTTPRequest(r)).Write(w)
 }
 
-type GetShopsShopReviewsRequestParser interface {
-	Parse() (GetShopsShopReviewsRequest, error)
+type GetShopsShopReviewsRequest interface {
+	HTTP() *http.Request
+	Parse() (GetShopsShopReviewsParams, error)
 }
 
-func GetShopsShopReviewsHTTPRequest(r *http.Request) GetShopsShopReviewsRequestParser {
+func GetShopsShopReviewsHTTPRequest(r *http.Request) GetShopsShopReviewsRequest {
 	return getShopsShopReviewsHTTPRequest{r}
 }
 
@@ -246,13 +251,13 @@ type getShopsShopReviewsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r getShopsShopReviewsHTTPRequest) Parse() (GetShopsShopReviewsRequest, error) {
+func (r getShopsShopReviewsHTTPRequest) HTTP() *http.Request { return r.Request }
+
+func (r getShopsShopReviewsHTTPRequest) Parse() (GetShopsShopReviewsParams, error) {
 	return newGetShopsShopReviewsParams(r.Request)
 }
 
-type GetShopsShopReviewsRequest struct {
-	HTTPRequest *http.Request
-
+type GetShopsShopReviewsParams struct {
 	Query struct {
 		Page *int32
 	}
@@ -262,9 +267,8 @@ type GetShopsShopReviewsRequest struct {
 	}
 }
 
-func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsRequest, _ error) {
-	var params GetShopsShopReviewsRequest
-	params.HTTPRequest = r
+func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsParams, _ error) {
+	var params GetShopsShopReviewsParams
 
 	// Query parameters
 	{
@@ -316,7 +320,9 @@ func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsRequ
 	return params, nil
 }
 
-func (r GetShopsShopReviewsRequest) Parse() (GetShopsShopReviewsRequest, error) { return r, nil }
+func (r GetShopsShopReviewsParams) HTTP() *http.Request { return nil }
+
+func (r GetShopsShopReviewsParams) Parse() (GetShopsShopReviewsParams, error) { return r, nil }
 
 type GetShopsShopReviewsResponse interface {
 	getShopsShopReviews()

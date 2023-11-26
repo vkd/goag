@@ -12,7 +12,7 @@ var db interface {
 
 func ExampleAPI_petsStore() {
 	api := &API{
-		GetPetsPetIDHandler: func(r GetPetsPetIDRequestParser) GetPetsPetIDResponse {
+		GetPetsPetIDHandler: func(r GetPetsPetIDRequest) GetPetsPetIDResponse {
 			req, err := r.Parse()
 			if err != nil {
 				return NewGetPetsPetIDResponseDefaultJSON(http.StatusBadRequest, Error{
@@ -21,7 +21,7 @@ func ExampleAPI_petsStore() {
 				})
 			}
 
-			out, err := db.GetPet(req.HTTPRequest.Context(), req.Path.PetID)
+			out, err := db.GetPet(r.HTTP().Context(), req.Path.PetID)
 			if err != nil {
 				return NewGetPetsPetIDResponseDefaultJSON(http.StatusInternalServerError, Error{
 					Code:    500,

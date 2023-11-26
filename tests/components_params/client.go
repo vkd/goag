@@ -24,7 +24,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 }
 
 // PostShopsNew - POST /shops/new
-func (c *Client) PostShopsNew(ctx context.Context, request PostShopsNewRequest) (PostShopsNewResponse, error) {
+func (c *Client) PostShopsNew(ctx context.Context, request PostShopsNewParams) (PostShopsNewResponse, error) {
 	var requestURL = c.BaseURL + "/shops/new"
 
 	query := make(url.Values, 1)
@@ -60,7 +60,7 @@ func (c *Client) PostShopsNew(ctx context.Context, request PostShopsNewRequest) 
 }
 
 // GetShopsShop - GET /shops/{shop}
-func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopRequest) (GetShopsShopResponse, error) {
+func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
 
 	query := make(url.Values, 1)
@@ -96,7 +96,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopRequest) 
 }
 
 // GetShopsShopReviews - GET /shops/{shop}/reviews
-func (c *Client) GetShopsShopReviews(ctx context.Context, request GetShopsShopReviewsRequest) (GetShopsShopReviewsResponse, error) {
+func (c *Client) GetShopsShopReviews(ctx context.Context, request GetShopsShopReviewsParams) (GetShopsShopReviewsResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/reviews"
 
 	query := make(url.Values, 1)

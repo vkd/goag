@@ -11,17 +11,18 @@ import (
 // PostPets -
 // ---------------------------------------------
 
-type PostPetsHandlerFunc func(r PostPetsRequestParser) PostPetsResponse
+type PostPetsHandlerFunc func(r PostPetsRequest) PostPetsResponse
 
 func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(PostPetsHTTPRequest(r)).Write(w)
 }
 
-type PostPetsRequestParser interface {
-	Parse() (PostPetsRequest, error)
+type PostPetsRequest interface {
+	HTTP() *http.Request
+	Parse() (PostPetsParams, error)
 }
 
-func PostPetsHTTPRequest(r *http.Request) PostPetsRequestParser {
+func PostPetsHTTPRequest(r *http.Request) PostPetsRequest {
 	return postPetsHTTPRequest{r}
 }
 
@@ -29,19 +30,18 @@ type postPetsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r postPetsHTTPRequest) Parse() (PostPetsRequest, error) {
+func (r postPetsHTTPRequest) HTTP() *http.Request { return r.Request }
+
+func (r postPetsHTTPRequest) Parse() (PostPetsParams, error) {
 	return newPostPetsParams(r.Request)
 }
 
-type PostPetsRequest struct {
-	HTTPRequest *http.Request
-
+type PostPetsParams struct {
 	Body NewPet
 }
 
-func newPostPetsParams(r *http.Request) (zero PostPetsRequest, _ error) {
-	var params PostPetsRequest
-	params.HTTPRequest = r
+func newPostPetsParams(r *http.Request) (zero PostPetsParams, _ error) {
+	var params PostPetsParams
 
 	defer r.Body.Close()
 	err := json.NewDecoder(r.Body).Decode(&params.Body)
@@ -52,7 +52,9 @@ func newPostPetsParams(r *http.Request) (zero PostPetsRequest, _ error) {
 	return params, nil
 }
 
-func (r PostPetsRequest) Parse() (PostPetsRequest, error) { return r, nil }
+func (r PostPetsParams) HTTP() *http.Request { return nil }
+
+func (r PostPetsParams) Parse() (PostPetsParams, error) { return r, nil }
 
 type PostPetsResponse interface {
 	postPets()

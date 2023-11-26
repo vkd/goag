@@ -25,7 +25,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 }
 
 // Get - GET /
-func (c *Client) Get(ctx context.Context, request GetRequest) (GetResponse, error) {
+func (c *Client) Get(ctx context.Context, request GetParams) (GetResponse, error) {
 	var requestURL = c.BaseURL + "/"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
@@ -52,7 +52,7 @@ func (c *Client) Get(ctx context.Context, request GetRequest) (GetResponse, erro
 }
 
 // GetShops - GET /shops
-func (c *Client) GetShops(ctx context.Context, request GetShopsRequest) (GetShopsResponse, error) {
+func (c *Client) GetShops(ctx context.Context, request GetShopsParams) (GetShopsResponse, error) {
 	var requestURL = c.BaseURL + "/shops"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
@@ -79,7 +79,7 @@ func (c *Client) GetShops(ctx context.Context, request GetShopsRequest) (GetShop
 }
 
 // GetShopsRT - GET /shops/
-func (c *Client) GetShopsRT(ctx context.Context, request GetShopsRTRequest) (GetShopsRTResponse, error) {
+func (c *Client) GetShopsRT(ctx context.Context, request GetShopsRTParams) (GetShopsRTResponse, error) {
 	var requestURL = c.BaseURL + "/shops/"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
@@ -106,7 +106,7 @@ func (c *Client) GetShopsRT(ctx context.Context, request GetShopsRTRequest) (Get
 }
 
 // GetShopsActivate - GET /shops/activate
-func (c *Client) GetShopsActivate(ctx context.Context, request GetShopsActivateRequest) (GetShopsActivateResponse, error) {
+func (c *Client) GetShopsActivate(ctx context.Context, request GetShopsActivateParams) (GetShopsActivateResponse, error) {
 	var requestURL = c.BaseURL + "/shops/activate"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
@@ -133,7 +133,7 @@ func (c *Client) GetShopsActivate(ctx context.Context, request GetShopsActivateR
 }
 
 // GetShopsActivateRT - GET /shops/activate/
-func (c *Client) GetShopsActivateRT(ctx context.Context, request GetShopsActivateRTRequest) (GetShopsActivateRTResponse, error) {
+func (c *Client) GetShopsActivateRT(ctx context.Context, request GetShopsActivateRTParams) (GetShopsActivateRTResponse, error) {
 	var requestURL = c.BaseURL + "/shops/activate/"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
@@ -160,7 +160,7 @@ func (c *Client) GetShopsActivateRT(ctx context.Context, request GetShopsActivat
 }
 
 // GetShopsActivateTag - GET /shops/activate/tag
-func (c *Client) GetShopsActivateTag(ctx context.Context, request GetShopsActivateTagRequest) (GetShopsActivateTagResponse, error) {
+func (c *Client) GetShopsActivateTag(ctx context.Context, request GetShopsActivateTagParams) (GetShopsActivateTagResponse, error) {
 	var requestURL = c.BaseURL + "/shops/activate/tag"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
@@ -187,7 +187,7 @@ func (c *Client) GetShopsActivateTag(ctx context.Context, request GetShopsActiva
 }
 
 // GetShopsShop - GET /shops/{shop}
-func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopRequest) (GetShopsShopResponse, error) {
+func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
@@ -214,7 +214,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopRequest) 
 }
 
 // GetShopsShopRT - GET /shops/{shop}/
-func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTRequest) (GetShopsShopRTResponse, error) {
+func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParams) (GetShopsShopRTResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
@@ -241,7 +241,7 @@ func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTReque
 }
 
 // GetShopsShopPets - GET /shops/{shop}/pets
-func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsRequest) (GetShopsShopPetsResponse, error) {
+func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsParams) (GetShopsShopPetsResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/pets"
 
 	query := make(url.Values, 2)
@@ -288,7 +288,7 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsR
 }
 
 // PostShopsShopReview - POST /shops/{shop}/review
-func (c *Client) PostShopsShopReview(ctx context.Context, request PostShopsShopReviewRequest) (PostShopsShopReviewResponse, error) {
+func (c *Client) PostShopsShopReview(ctx context.Context, request PostShopsShopReviewParams) (PostShopsShopReviewResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/review"
 
 	query := make(url.Values, 4)

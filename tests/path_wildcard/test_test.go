@@ -12,7 +12,7 @@ import (
 
 func TestGetRequest_Names(t *testing.T) {
 	api := API{
-		GetPetsPetIDHandler: func(r GetPetsPetIDRequestParser) GetPetsPetIDResponse {
+		GetPetsPetIDHandler: func(r GetPetsPetIDRequest) GetPetsPetIDResponse {
 			params, err := r.Parse()
 			require.NoError(t, err)
 
@@ -26,7 +26,7 @@ func TestGetRequest_Names(t *testing.T) {
 	ctx := context.Background()
 
 	{
-		var req GetPetsPetIDRequest
+		var req GetPetsPetIDParams
 		req.Path.PetID = 103
 		resp, err := client.GetPetsPetID(ctx, req)
 		require.NoError(t, err)

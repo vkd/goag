@@ -11,17 +11,18 @@ import (
 // GetPetsPetIDNames -
 // ---------------------------------------------
 
-type GetPetsPetIDNamesHandlerFunc func(r GetPetsPetIDNamesRequestParser) GetPetsPetIDNamesResponse
+type GetPetsPetIDNamesHandlerFunc func(r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse
 
 func (f GetPetsPetIDNamesHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(GetPetsPetIDNamesHTTPRequest(r)).Write(w)
 }
 
-type GetPetsPetIDNamesRequestParser interface {
-	Parse() (GetPetsPetIDNamesRequest, error)
+type GetPetsPetIDNamesRequest interface {
+	HTTP() *http.Request
+	Parse() (GetPetsPetIDNamesParams, error)
 }
 
-func GetPetsPetIDNamesHTTPRequest(r *http.Request) GetPetsPetIDNamesRequestParser {
+func GetPetsPetIDNamesHTTPRequest(r *http.Request) GetPetsPetIDNamesRequest {
 	return getPetsPetIDNamesHTTPRequest{r}
 }
 
@@ -29,21 +30,20 @@ type getPetsPetIDNamesHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r getPetsPetIDNamesHTTPRequest) Parse() (GetPetsPetIDNamesRequest, error) {
+func (r getPetsPetIDNamesHTTPRequest) HTTP() *http.Request { return r.Request }
+
+func (r getPetsPetIDNamesHTTPRequest) Parse() (GetPetsPetIDNamesParams, error) {
 	return newGetPetsPetIDNamesParams(r.Request)
 }
 
-type GetPetsPetIDNamesRequest struct {
-	HTTPRequest *http.Request
-
+type GetPetsPetIDNamesParams struct {
 	Path struct {
 		PetID string
 	}
 }
 
-func newGetPetsPetIDNamesParams(r *http.Request) (zero GetPetsPetIDNamesRequest, _ error) {
-	var params GetPetsPetIDNamesRequest
-	params.HTTPRequest = r
+func newGetPetsPetIDNamesParams(r *http.Request) (zero GetPetsPetIDNamesParams, _ error) {
+	var params GetPetsPetIDNamesParams
 
 	// Path parameters
 	{
@@ -79,7 +79,9 @@ func newGetPetsPetIDNamesParams(r *http.Request) (zero GetPetsPetIDNamesRequest,
 	return params, nil
 }
 
-func (r GetPetsPetIDNamesRequest) Parse() (GetPetsPetIDNamesRequest, error) { return r, nil }
+func (r GetPetsPetIDNamesParams) HTTP() *http.Request { return nil }
+
+func (r GetPetsPetIDNamesParams) Parse() (GetPetsPetIDNamesParams, error) { return r, nil }
 
 type GetPetsPetIDNamesResponse interface {
 	getPetsPetIDNames()
@@ -103,17 +105,18 @@ func (r GetPetsPetIDNamesResponse200) Write(w http.ResponseWriter) {
 // GetPetsPetIDShops -
 // ---------------------------------------------
 
-type GetPetsPetIDShopsHandlerFunc func(r GetPetsPetIDShopsRequestParser) GetPetsPetIDShopsResponse
+type GetPetsPetIDShopsHandlerFunc func(r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse
 
 func (f GetPetsPetIDShopsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(GetPetsPetIDShopsHTTPRequest(r)).Write(w)
 }
 
-type GetPetsPetIDShopsRequestParser interface {
-	Parse() (GetPetsPetIDShopsRequest, error)
+type GetPetsPetIDShopsRequest interface {
+	HTTP() *http.Request
+	Parse() (GetPetsPetIDShopsParams, error)
 }
 
-func GetPetsPetIDShopsHTTPRequest(r *http.Request) GetPetsPetIDShopsRequestParser {
+func GetPetsPetIDShopsHTTPRequest(r *http.Request) GetPetsPetIDShopsRequest {
 	return getPetsPetIDShopsHTTPRequest{r}
 }
 
@@ -121,21 +124,20 @@ type getPetsPetIDShopsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r getPetsPetIDShopsHTTPRequest) Parse() (GetPetsPetIDShopsRequest, error) {
+func (r getPetsPetIDShopsHTTPRequest) HTTP() *http.Request { return r.Request }
+
+func (r getPetsPetIDShopsHTTPRequest) Parse() (GetPetsPetIDShopsParams, error) {
 	return newGetPetsPetIDShopsParams(r.Request)
 }
 
-type GetPetsPetIDShopsRequest struct {
-	HTTPRequest *http.Request
-
+type GetPetsPetIDShopsParams struct {
 	Path struct {
 		PetID string
 	}
 }
 
-func newGetPetsPetIDShopsParams(r *http.Request) (zero GetPetsPetIDShopsRequest, _ error) {
-	var params GetPetsPetIDShopsRequest
-	params.HTTPRequest = r
+func newGetPetsPetIDShopsParams(r *http.Request) (zero GetPetsPetIDShopsParams, _ error) {
+	var params GetPetsPetIDShopsParams
 
 	// Path parameters
 	{
@@ -171,7 +173,9 @@ func newGetPetsPetIDShopsParams(r *http.Request) (zero GetPetsPetIDShopsRequest,
 	return params, nil
 }
 
-func (r GetPetsPetIDShopsRequest) Parse() (GetPetsPetIDShopsRequest, error) { return r, nil }
+func (r GetPetsPetIDShopsParams) HTTP() *http.Request { return nil }
+
+func (r GetPetsPetIDShopsParams) Parse() (GetPetsPetIDShopsParams, error) { return r, nil }
 
 type GetPetsPetIDShopsResponse interface {
 	getPetsPetIDShops()

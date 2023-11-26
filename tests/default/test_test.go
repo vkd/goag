@@ -14,16 +14,16 @@ func TestDefault(t *testing.T) {
 	ctx := context.Background()
 
 	api := API{
-		GetHandler:        func(r GetRequestParser) GetResponse { return GetResponseDefault{Code: 201} },
-		GetShopsHandler:   func(r GetShopsRequestParser) GetShopsResponse { return GetShopsResponseDefault{Code: 202} },
-		GetShopsRTHandler: func(r GetShopsRTRequestParser) GetShopsRTResponse { return GetShopsRTResponseDefault{Code: 203} },
-		GetShopsActivateHandler: func(r GetShopsActivateRequestParser) GetShopsActivateResponse {
+		GetHandler:        func(r GetRequest) GetResponse { return GetResponseDefault{Code: 201} },
+		GetShopsHandler:   func(r GetShopsRequest) GetShopsResponse { return GetShopsResponseDefault{Code: 202} },
+		GetShopsRTHandler: func(r GetShopsRTRequest) GetShopsRTResponse { return GetShopsRTResponseDefault{Code: 203} },
+		GetShopsActivateHandler: func(r GetShopsActivateRequest) GetShopsActivateResponse {
 			return GetShopsActivateResponseDefault{Code: 204}
 		},
-		GetShopsActivateRTHandler: func(r GetShopsActivateRTRequestParser) GetShopsActivateRTResponse {
+		GetShopsActivateRTHandler: func(r GetShopsActivateRTRequest) GetShopsActivateRTResponse {
 			return GetShopsActivateRTResponseDefault{Code: 205}
 		},
-		GetShopsShopPetsHandler: func(r GetShopsShopPetsRequestParser) GetShopsShopPetsResponse {
+		GetShopsShopPetsHandler: func(r GetShopsShopPetsRequest) GetShopsShopPetsResponse {
 			return GetShopsShopPetsResponse200JSON{Headers: struct {
 				Body  GetShopsShopPetsResponse200JSONBody
 				XNext string
@@ -32,32 +32,32 @@ func TestDefault(t *testing.T) {
 	}
 
 	{
-		resp, err := api.Client().Get(ctx, GetRequest{})
+		resp, err := api.Client().Get(ctx, GetParams{})
 		require.NoError(t, err)
 		assert.Equal(t, 201, resp.(GetResponseDefault).Code)
 	}
 	{
-		resp, err := api.Client().GetShops(ctx, GetShopsRequest{})
+		resp, err := api.Client().GetShops(ctx, GetShopsParams{})
 		require.NoError(t, err)
 		assert.Equal(t, 202, resp.(GetShopsResponseDefault).Code)
 	}
 	{
-		resp, err := api.Client().GetShopsRT(ctx, GetShopsRTRequest{})
+		resp, err := api.Client().GetShopsRT(ctx, GetShopsRTParams{})
 		require.NoError(t, err)
 		assert.Equal(t, 203, resp.(GetShopsRTResponseDefault).Code)
 	}
 	{
-		resp, err := api.Client().GetShopsActivate(ctx, GetShopsActivateRequest{})
+		resp, err := api.Client().GetShopsActivate(ctx, GetShopsActivateParams{})
 		require.NoError(t, err)
 		assert.Equal(t, 204, resp.(GetShopsActivateResponseDefault).Code)
 	}
 	{
-		resp, err := api.Client().GetShopsActivateRT(ctx, GetShopsActivateRTRequest{})
+		resp, err := api.Client().GetShopsActivateRT(ctx, GetShopsActivateRTParams{})
 		require.NoError(t, err)
 		assert.Equal(t, 205, resp.(GetShopsActivateRTResponseDefault).Code)
 	}
 	{
-		resp, err := api.Client().GetShopsShopPets(ctx, GetShopsShopPetsRequest{})
+		resp, err := api.Client().GetShopsShopPets(ctx, GetShopsShopPetsParams{})
 		require.NoError(t, err)
 		require.IsType(t, GetShopsShopPetsResponse200JSON{}, resp, resp)
 		assert.Equal(t, "test-next-value", resp.(GetShopsShopPetsResponse200JSON).Headers.XNext)
@@ -74,12 +74,12 @@ func (a API) Client() *Client {
 	return NewClient("", a)
 }
 
-var testFunc = GetHandlerFunc(func(r GetRequestParser) GetResponse {
+var testFunc = GetHandlerFunc(func(r GetRequest) GetResponse {
 	return GetResponseDefault{Code: 101}
 })
 
 func TestCustom(t *testing.T) {
-	resp := testFunc(GetRequest{}).(GetResponseDefault)
+	resp := testFunc(GetParams{}).(GetResponseDefault)
 	assert.Equal(t, 101, resp.Code)
 }
 

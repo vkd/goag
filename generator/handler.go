@@ -43,7 +43,7 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 
 	h.HandlerTypeName = h.Name + "HandlerFunc"
 	h.HandlerInputTypeName = h.Name + "Parser"
-	h.RequestTypeName = h.Name + "Request"
+	h.RequestTypeName = h.Name + "Params"
 	h.RequestVarName = "request"
 
 	h.ResponseTypeName = h.Name + "Response"

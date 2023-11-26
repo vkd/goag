@@ -13,7 +13,7 @@ func TestComponentsParams(t *testing.T) {
 	testPage := int32(2)
 
 	api := API{
-		GetShopsShopHandler: func(r GetShopsShopRequestParser) GetShopsShopResponse {
+		GetShopsShopHandler: func(r GetShopsShopRequest) GetShopsShopResponse {
 			req, err := r.Parse()
 			if err != nil {
 				return NewGetShopsShopResponseDefault(400)
@@ -33,7 +33,7 @@ func TestComponentsParams(t *testing.T) {
 
 func TestComponentsParams_Optional(t *testing.T) {
 	api := API{
-		GetShopsShopHandler: func(r GetShopsShopRequestParser) GetShopsShopResponse {
+		GetShopsShopHandler: func(r GetShopsShopRequest) GetShopsShopResponse {
 			req, err := r.Parse()
 			if err != nil {
 				return NewGetShopsShopResponseDefault(400)
@@ -51,7 +51,7 @@ func TestComponentsParams_Optional(t *testing.T) {
 
 func TestComponentsParams_BadRequest(t *testing.T) {
 	api := API{
-		GetShopsShopHandler: func(r GetShopsShopRequestParser) GetShopsShopResponse {
+		GetShopsShopHandler: func(r GetShopsShopRequest) GetShopsShopResponse {
 			_, err := r.Parse()
 			if err != nil {
 				return NewGetShopsShopResponseDefault(400)

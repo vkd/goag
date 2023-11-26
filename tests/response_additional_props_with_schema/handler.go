@@ -12,17 +12,18 @@ import (
 // GetPet -
 // ---------------------------------------------
 
-type GetPetHandlerFunc func(r GetPetRequestParser) GetPetResponse
+type GetPetHandlerFunc func(r GetPetRequest) GetPetResponse
 
 func (f GetPetHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(GetPetHTTPRequest(r)).Write(w)
 }
 
-type GetPetRequestParser interface {
-	Parse() GetPetRequest
+type GetPetRequest interface {
+	HTTP() *http.Request
+	Parse() GetPetParams
 }
 
-func GetPetHTTPRequest(r *http.Request) GetPetRequestParser {
+func GetPetHTTPRequest(r *http.Request) GetPetRequest {
 	return getPetHTTPRequest{r}
 }
 
@@ -30,22 +31,24 @@ type getPetHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r getPetHTTPRequest) Parse() GetPetRequest {
+func (r getPetHTTPRequest) HTTP() *http.Request { return r.Request }
+
+func (r getPetHTTPRequest) Parse() GetPetParams {
 	return newGetPetParams(r.Request)
 }
 
-type GetPetRequest struct {
-	HTTPRequest *http.Request
+type GetPetParams struct {
 }
 
-func newGetPetParams(r *http.Request) (zero GetPetRequest) {
-	var params GetPetRequest
-	params.HTTPRequest = r
+func newGetPetParams(r *http.Request) (zero GetPetParams) {
+	var params GetPetParams
 
 	return params
 }
 
-func (r GetPetRequest) Parse() GetPetRequest { return r }
+func (r GetPetParams) HTTP() *http.Request { return nil }
+
+func (r GetPetParams) Parse() GetPetParams { return r }
 
 type GetPetResponse interface {
 	getPet()

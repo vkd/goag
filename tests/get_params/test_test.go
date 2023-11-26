@@ -14,7 +14,7 @@ func TestGetMultiParams(t *testing.T) {
 	testRequestID := "abcdef"
 
 	api := API{
-		GetShopsShopHandler: func(r GetShopsShopRequestParser) GetShopsShopResponse {
+		GetShopsShopHandler: func(r GetShopsShopRequest) GetShopsShopResponse {
 			req, err := r.Parse()
 			if err != nil {
 				return NewGetShopsShopResponseDefault(400)
@@ -37,7 +37,7 @@ func TestGetMultiParams(t *testing.T) {
 
 func TestGetMultiParams_Optional(t *testing.T) {
 	api := API{
-		GetShopsShopHandler: func(r GetShopsShopRequestParser) GetShopsShopResponse {
+		GetShopsShopHandler: func(r GetShopsShopRequest) GetShopsShopResponse {
 			req, err := r.Parse()
 			if err != nil {
 				return NewGetShopsShopResponseDefault(400)
@@ -55,7 +55,7 @@ func TestGetMultiParams_Optional(t *testing.T) {
 
 func TestGetMultiParams_BadRequest(t *testing.T) {
 	api := API{
-		GetShopsShopHandler: func(r GetShopsShopRequestParser) GetShopsShopResponse {
+		GetShopsShopHandler: func(r GetShopsShopRequest) GetShopsShopResponse {
 			_, err := r.Parse()
 			if err != nil {
 				return NewGetShopsShopResponseDefault(400)

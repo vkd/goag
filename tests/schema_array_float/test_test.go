@@ -10,7 +10,7 @@ import (
 )
 
 func TestSchemaArrayFloat(t *testing.T) {
-	h := GetPetsIDsHandlerFunc(func(_ GetPetsIDsRequestParser) GetPetsIDsResponse {
+	h := GetPetsIDsHandlerFunc(func(_ GetPetsIDsRequest) GetPetsIDsResponse {
 		return NewGetPetsIDsResponse200JSON([]float64{0.8})
 	})
 

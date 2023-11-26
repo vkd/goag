@@ -95,9 +95,9 @@ var tmHandler = InitTemplate("Handler", `
 {{- $h := . }}
 {{- $name := $h.Name}}
 {{- $handlerFunc := $h.HandlerFuncName }}
-{{- $requestParser := print $name "RequestParser" }}
+{{- $requestParser := print $name "Request" }}
 {{- $httpRequestParser := print "" $name "HTTPRequest" }}
-{{- $request := print $name "Request" }}
+{{- $request := print $name "Params" }}
 {{- $newParams := print "new" $name "Params" }}
 {{- $responseWriter := print $name "Response" }}
 {{- $responseIface := $h.ResponserInterfaceName }}
@@ -113,6 +113,7 @@ func (f {{$handlerFunc}}) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type {{$requestParser}} interface {
+	HTTP() *http.Request
 	Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}}
 }
 
@@ -124,13 +125,13 @@ type {{ private $httpRequestParser }} struct {
 	Request *http.Request
 }
 
+func (r {{ private $httpRequestParser }}) HTTP() *http.Request { return r.Request }
+
 func (r {{ private $httpRequestParser }}) Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}} {
 	return {{$newParams}}(r.Request)
 }
 
 type {{$request}} struct {
-	HTTPRequest *http.Request
-
 	{{ if $h.Parameters.Query }}
 	Query struct{
 		{{ range $_, $p := .Parameters.Query }}
@@ -162,7 +163,6 @@ type {{$request}} struct {
 
 func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseError }}, _ error{{ end }}) {
 	var params {{ $request }}
-	params.HTTPRequest = r
 
 	{{ if $h.Parameters.Query }}
 	// Query parameters
@@ -223,6 +223,8 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 
 	return params{{ if $h.CanParseError }}, nil{{ end }}
 }
+
+func (r {{ $request }}) HTTP() *http.Request { return nil }
 
 func (r {{ $request }}) Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}} {	return r{{if $h.CanParseError}}, nil{{end}} }
 

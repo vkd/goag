@@ -22,7 +22,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 }
 
 // GetPetsPetIDNames - GET /pets/{pet_id}/names
-func (c *Client) GetPetsPetIDNames(ctx context.Context, request GetPetsPetIDNamesRequest) (GetPetsPetIDNamesResponse, error) {
+func (c *Client) GetPetsPetIDNames(ctx context.Context, request GetPetsPetIDNamesParams) (GetPetsPetIDNamesResponse, error) {
 	var requestURL = c.BaseURL + "/pets/" + request.Path.PetID + "/names"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
@@ -50,7 +50,7 @@ func (c *Client) GetPetsPetIDNames(ctx context.Context, request GetPetsPetIDName
 }
 
 // GetPetsPetIDShops - GET /pets/{pet_id}/shops
-func (c *Client) GetPetsPetIDShops(ctx context.Context, request GetPetsPetIDShopsRequest) (GetPetsPetIDShopsResponse, error) {
+func (c *Client) GetPetsPetIDShops(ctx context.Context, request GetPetsPetIDShopsParams) (GetPetsPetIDShopsResponse, error) {
 	var requestURL = c.BaseURL + "/pets/" + request.Path.PetID + "/shops"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)

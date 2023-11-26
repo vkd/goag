@@ -23,7 +23,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 }
 
 // GetPet - GET /pet
-func (c *Client) GetPet(ctx context.Context, request GetPetRequest) (GetPetResponse, error) {
+func (c *Client) GetPet(ctx context.Context, request GetPetParams) (GetPetResponse, error) {
 	var requestURL = c.BaseURL + "/pet"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)

@@ -9,7 +9,7 @@ import (
 
 func TestGetQueryArray_Strings(t *testing.T) {
 	handler := GetPetsHandlerFunc(
-		func(r GetPetsRequestParser) GetPetsResponse {
+		func(r GetPetsRequest) GetPetsResponse {
 			req, err := r.Parse()
 			if err != nil {
 				return NewGetPetsResponseDefault(400)
@@ -27,7 +27,7 @@ func TestGetQueryArray_Strings(t *testing.T) {
 
 func TestGetQueryArray_Ints(t *testing.T) {
 	handler := GetPetsHandlerFunc(
-		func(r GetPetsRequestParser) GetPetsResponse {
+		func(r GetPetsRequest) GetPetsResponse {
 			req, err := r.Parse()
 			if err != nil {
 				return NewGetPetsResponseDefault(400)

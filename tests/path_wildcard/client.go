@@ -24,7 +24,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 }
 
 // GetPetsPetID - GET /pets/{pet_id}
-func (c *Client) GetPetsPetID(ctx context.Context, request GetPetsPetIDRequest) (GetPetsPetIDResponse, error) {
+func (c *Client) GetPetsPetID(ctx context.Context, request GetPetsPetIDParams) (GetPetsPetIDResponse, error) {
 	var requestURL = c.BaseURL + "/pets/" + strconv.FormatInt(int64(request.Path.PetID), 10)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)

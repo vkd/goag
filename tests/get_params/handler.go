@@ -12,17 +12,18 @@ import (
 // GetShopsShop -
 // ---------------------------------------------
 
-type GetShopsShopHandlerFunc func(r GetShopsShopRequestParser) GetShopsShopResponse
+type GetShopsShopHandlerFunc func(r GetShopsShopRequest) GetShopsShopResponse
 
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(GetShopsShopHTTPRequest(r)).Write(w)
 }
 
-type GetShopsShopRequestParser interface {
-	Parse() (GetShopsShopRequest, error)
+type GetShopsShopRequest interface {
+	HTTP() *http.Request
+	Parse() (GetShopsShopParams, error)
 }
 
-func GetShopsShopHTTPRequest(r *http.Request) GetShopsShopRequestParser {
+func GetShopsShopHTTPRequest(r *http.Request) GetShopsShopRequest {
 	return getShopsShopHTTPRequest{r}
 }
 
@@ -30,13 +31,13 @@ type getShopsShopHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r getShopsShopHTTPRequest) Parse() (GetShopsShopRequest, error) {
+func (r getShopsShopHTTPRequest) HTTP() *http.Request { return r.Request }
+
+func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 	return newGetShopsShopParams(r.Request)
 }
 
-type GetShopsShopRequest struct {
-	HTTPRequest *http.Request
-
+type GetShopsShopParams struct {
 	Query struct {
 		Page *int32
 	}
@@ -50,9 +51,8 @@ type GetShopsShopRequest struct {
 	}
 }
 
-func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) {
-	var params GetShopsShopRequest
-	params.HTTPRequest = r
+func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
+	var params GetShopsShopParams
 
 	// Query parameters
 	{
@@ -111,7 +111,9 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopRequest, _ error) 
 	return params, nil
 }
 
-func (r GetShopsShopRequest) Parse() (GetShopsShopRequest, error) { return r, nil }
+func (r GetShopsShopParams) HTTP() *http.Request { return nil }
+
+func (r GetShopsShopParams) Parse() (GetShopsShopParams, error) { return r, nil }
 
 type GetShopsShopResponse interface {
 	getShopsShop()

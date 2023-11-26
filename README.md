@@ -8,6 +8,7 @@ It makes impossible to return undocumented type/response by endpoint.
 Example
 -
 
+[petstore-example_test]: # (PRINT START)
 ```golang
 var db interface {
     GetPet(_ context.Context, id string) (Pet, error)
@@ -15,7 +16,7 @@ var db interface {
 
 func ExampleAPI_petsStore() {
     api := &API{
-        GetPetsPetIDHandler: func(r GetPetsPetIDRequestParser) GetPetsPetIDResponse {
+        GetPetsPetIDHandler: func(r GetPetsPetIDRequest) GetPetsPetIDResponse {
             req, err := r.Parse()
             if err != nil {
                 return NewGetPetsPetIDResponseDefaultJSON(http.StatusBadRequest, Error{
@@ -24,7 +25,7 @@ func ExampleAPI_petsStore() {
                 })
             }
 
-            out, err := db.GetPet(req.HTTPRequest.Context(), req.Path.PetID)
+            out, err := db.GetPet(r.HTTP().Context(), req.Path.PetID)
             if err != nil {
                 return NewGetPetsPetIDResponseDefaultJSON(http.StatusInternalServerError, Error{
                     Code:    500,
@@ -40,6 +41,7 @@ func ExampleAPI_petsStore() {
     _ = http.ListenAndServe(":8080", api)
 }
 ```
+[petstore-example_test]: # (END)
 
 ```yaml
 openapi: "3.0.0"

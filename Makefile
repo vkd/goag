@@ -23,7 +23,8 @@ examples-gen:
 test-only:
 	go test $(if ${RUN},-run=${RUN},) ./...
 
-test: test-gen test-only
+test-local: test-gen test-only
+test: test-gen test-only examples-gen update-readme
 
 # clean:
 # 	rm -rf ${INTEGRATION_DIR}
@@ -37,3 +38,23 @@ cover-web: test-gen
 
 build:
 	go build ./cmd/goag/main.go
+
+
+README_ANCHOR?=petstore-example_test
+README_LANG?=golang
+
+update-readme: TMP_FILE=readme_new.md
+update-readme: START_LINE=\[${README_ANCHOR}\]: \# \(PRINT START\)
+update-readme: END_LINE=\[${README_ANCHOR}\]: \# \(END\)
+update-readme: START_LINE_TEXT=$(shell echo "${START_LINE}" | sed -r 's/\\//g')
+update-readme: END_LINE_TEXT=$(shell echo "${END_LINE}" | sed -r 's/\\//g')
+update-readme:
+	@ grep -F -q "${START_LINE_TEXT}" README.md || (echo "README.md should contain line: ${START_LINE_TEXT}" && exit 1)
+	@ grep -F -q "${END_LINE_TEXT}" README.md || (echo "README.md should contain line: ${END_LINE_TEXT}" && exit 1)
+	cat README.md | sed -r '/${START_LINE}$$/q' > ${TMP_FILE}
+	@ echo "\`\`\`${README_LANG}" >> ${TMP_FILE}
+	cat examples/petstore/example_test.go | sed 1,8d | sed 's/\t/    /g' >> ${TMP_FILE}
+	@ echo "\`\`\`" >> ${TMP_FILE}
+	cat README.md | sed -r -n '/${END_LINE}$$/,$$ p' >> ${TMP_FILE}
+	@ cp -f ${TMP_FILE} README.md
+	@ rm ${TMP_FILE}
