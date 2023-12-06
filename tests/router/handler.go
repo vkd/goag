@@ -569,6 +569,113 @@ func (r GetShopsShopPetsResponseDefault) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
 }
 
+// ---------------------------------------------
+// GetShopsShopPetsMikePaws -
+// ---------------------------------------------
+
+type GetShopsShopPetsMikePawsHandlerFunc func(r GetShopsShopPetsMikePawsRequest) GetShopsShopPetsMikePawsResponse
+
+func (f GetShopsShopPetsMikePawsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(GetShopsShopPetsMikePawsHTTPRequest(r)).Write(w)
+}
+
+type GetShopsShopPetsMikePawsRequest interface {
+	HTTP() *http.Request
+	Parse() (GetShopsShopPetsMikePawsParams, error)
+}
+
+func GetShopsShopPetsMikePawsHTTPRequest(r *http.Request) GetShopsShopPetsMikePawsRequest {
+	return getShopsShopPetsMikePawsHTTPRequest{r}
+}
+
+type getShopsShopPetsMikePawsHTTPRequest struct {
+	Request *http.Request
+}
+
+func (r getShopsShopPetsMikePawsHTTPRequest) HTTP() *http.Request { return r.Request }
+
+func (r getShopsShopPetsMikePawsHTTPRequest) Parse() (GetShopsShopPetsMikePawsParams, error) {
+	return newGetShopsShopPetsMikePawsParams(r.Request)
+}
+
+type GetShopsShopPetsMikePawsParams struct {
+	Path struct {
+		Shop string
+	}
+}
+
+func newGetShopsShopPetsMikePawsParams(r *http.Request) (zero GetShopsShopPetsMikePawsParams, _ error) {
+	var params GetShopsShopPetsMikePawsParams
+
+	// Path parameters
+	{
+		p := r.URL.Path
+		if !strings.HasPrefix(p, "/api/v1") {
+			return zero, fmt.Errorf("wrong path: expected '/api/v1...'")
+		}
+		p = p[7:] // "/api/v1"
+
+		if !strings.HasPrefix(p, "/") {
+			return zero, fmt.Errorf("wrong path: expected '/api/v1/...'")
+		}
+
+		if !strings.HasPrefix(p, "/shops/") {
+			return zero, fmt.Errorf("wrong path: expected '/shops/{shop}/pets/mike/paws'")
+		}
+		p = p[7:] // "/shops/"
+
+		{
+			idx := strings.Index(p, "/")
+			if idx == -1 {
+				idx = len(p)
+			}
+			vPath := p[:idx]
+			p = p[idx:]
+
+			if len(vPath) == 0 {
+				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
+			}
+
+			v := vPath
+			params.Path.Shop = v
+		}
+
+		if !strings.HasPrefix(p, "/pets/mike/paws") {
+			return zero, fmt.Errorf("wrong path: expected '/shops/{shop}/pets/mike/paws'")
+		}
+		p = p[15:] // "/pets/mike/paws"
+	}
+
+	return params, nil
+}
+
+func (r GetShopsShopPetsMikePawsParams) HTTP() *http.Request { return nil }
+
+func (r GetShopsShopPetsMikePawsParams) Parse() (GetShopsShopPetsMikePawsParams, error) {
+	return r, nil
+}
+
+type GetShopsShopPetsMikePawsResponse interface {
+	getShopsShopPetsMikePaws()
+	Write(w http.ResponseWriter)
+}
+
+func NewGetShopsShopPetsMikePawsResponseDefault(code int) GetShopsShopPetsMikePawsResponse {
+	var out GetShopsShopPetsMikePawsResponseDefault
+	out.Code = code
+	return out
+}
+
+type GetShopsShopPetsMikePawsResponseDefault struct {
+	Code int
+}
+
+func (r GetShopsShopPetsMikePawsResponseDefault) getShopsShopPetsMikePaws() {}
+
+func (r GetShopsShopPetsMikePawsResponseDefault) Write(w http.ResponseWriter) {
+	w.WriteHeader(r.Code)
+}
+
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
 }

@@ -44,6 +44,10 @@ func TestRouter(t *testing.T) {
 		GetShopsActivateHandler: GetShopsActivateHandlerFunc(func(_ GetShopsActivateRequest) GetShopsActivateResponse {
 			return NewGetShopsActivateResponseDefault(207)
 		}),
+
+		GetShopsShopPetsMikePawsHandler: func(r GetShopsShopPetsMikePawsRequest) GetShopsShopPetsMikePawsResponse {
+			return NewGetShopsShopPetsMikePawsResponseDefault(208)
+		},
 	}
 
 	for _, tt := range []struct {
@@ -62,6 +66,8 @@ func TestRouter(t *testing.T) {
 		{"/shops/my_shop/pets", 206, "/shops/{shop}/pets"},
 
 		{"/shops/activate", 207, "/shops/activate"},
+
+		{"/shops/my_shop/pets/mike/paws", 208, "/shops/{shop}/pets/mike/paws"},
 
 		{"/not_found", 404, "/this_is_not_gonna_be_checked"},
 	} {

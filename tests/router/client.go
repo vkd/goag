@@ -209,3 +209,30 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 		return response, nil
 	}
 }
+
+// GetShopsShopPetsMikePaws - GET /shops/{shop}/pets/mike/paws
+func (c *Client) GetShopsShopPetsMikePaws(ctx context.Context, request GetShopsShopPetsMikePawsParams) (GetShopsShopPetsMikePawsResponse, error) {
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/pets/mike/paws"
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("new request: %w", err)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http client Do(): %w", err)
+	}
+
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	switch resp.StatusCode {
+	default:
+		var response GetShopsShopPetsMikePawsResponseDefault
+		response.Code = resp.StatusCode
+
+		return response, nil
+	}
+}

@@ -294,7 +294,7 @@ func (r *routeMethod) routes() []routeMethod {
 		// log.Printf("routes state: %v", out)
 	}
 	if r.VariableRoute != nil {
-		out = append(out, *r.VariableRoute)
+		out = append(out, r.VariableRoute.routes()...)
 		// log.Printf("routes vtate: %v", out)
 	}
 	return out

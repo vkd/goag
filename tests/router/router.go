@@ -8,13 +8,14 @@ import (
 )
 
 type API struct {
-	GetHandler              GetHandlerFunc
-	GetShopsHandler         GetShopsHandlerFunc
-	GetShopsRTHandler       GetShopsRTHandlerFunc
-	GetShopsActivateHandler GetShopsActivateHandlerFunc
-	GetShopsShopHandler     GetShopsShopHandlerFunc
-	GetShopsShopRTHandler   GetShopsShopRTHandlerFunc
-	GetShopsShopPetsHandler GetShopsShopPetsHandlerFunc
+	GetHandler                      GetHandlerFunc
+	GetShopsHandler                 GetShopsHandlerFunc
+	GetShopsRTHandler               GetShopsRTHandlerFunc
+	GetShopsActivateHandler         GetShopsActivateHandlerFunc
+	GetShopsShopHandler             GetShopsShopHandlerFunc
+	GetShopsShopRTHandler           GetShopsShopRTHandlerFunc
+	GetShopsShopPetsHandler         GetShopsShopPetsHandlerFunc
+	GetShopsShopPetsMikePawsHandler GetShopsShopPetsMikePawsHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
@@ -130,6 +131,42 @@ func (rt *API) routeShopsShop(path, method string) (http.Handler, string) {
 			switch method {
 			case http.MethodGet:
 				return rt.GetShopsShopPetsHandler, "/shops/{shop}/pets"
+			}
+		}
+	}
+
+	if path != "" {
+		switch prefix {
+		case "/pets":
+			return rt.routeShopsShopPets(path, method)
+		}
+	}
+
+	return nil, ""
+}
+
+func (rt *API) routeShopsShopPets(path, method string) (http.Handler, string) {
+	prefix, path := splitPath(path)
+
+	if path != "" {
+		switch prefix {
+		case "/mike":
+			return rt.routeShopsShopPetsMike(path, method)
+		}
+	}
+
+	return nil, ""
+}
+
+func (rt *API) routeShopsShopPetsMike(path, method string) (http.Handler, string) {
+	prefix, path := splitPath(path)
+
+	if path == "" {
+		switch prefix {
+		case "/paws":
+			switch method {
+			case http.MethodGet:
+				return rt.GetShopsShopPetsMikePawsHandler, "/shops/{shop}/pets/mike/paws"
 			}
 		}
 	}
