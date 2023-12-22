@@ -753,35 +753,35 @@ func (r GetShopsShopPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 }
 
 // ---------------------------------------------
-// PostShopsShopReview -
+// ReviewShop -
 // ---------------------------------------------
 
-type PostShopsShopReviewHandlerFunc func(r PostShopsShopReviewRequest) PostShopsShopReviewResponse
+type ReviewShopHandlerFunc func(r ReviewShopRequest) ReviewShopResponse
 
-func (f PostShopsShopReviewHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(PostShopsShopReviewHTTPRequest(r)).Write(w)
+func (f ReviewShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(ReviewShopHTTPRequest(r)).Write(w)
 }
 
-type PostShopsShopReviewRequest interface {
+type ReviewShopRequest interface {
 	HTTP() *http.Request
-	Parse() (PostShopsShopReviewParams, error)
+	Parse() (ReviewShopParams, error)
 }
 
-func PostShopsShopReviewHTTPRequest(r *http.Request) PostShopsShopReviewRequest {
-	return postShopsShopReviewHTTPRequest{r}
+func ReviewShopHTTPRequest(r *http.Request) ReviewShopRequest {
+	return reviewShopHTTPRequest{r}
 }
 
-type postShopsShopReviewHTTPRequest struct {
+type reviewShopHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r postShopsShopReviewHTTPRequest) HTTP() *http.Request { return r.Request }
+func (r reviewShopHTTPRequest) HTTP() *http.Request { return r.Request }
 
-func (r postShopsShopReviewHTTPRequest) Parse() (PostShopsShopReviewParams, error) {
-	return newPostShopsShopReviewParams(r.Request)
+func (r reviewShopHTTPRequest) Parse() (ReviewShopParams, error) {
+	return newReviewShopParams(r.Request)
 }
 
-type PostShopsShopReviewParams struct {
+type ReviewShopParams struct {
 	Query struct {
 		Page *int32
 
@@ -805,8 +805,8 @@ type PostShopsShopReviewParams struct {
 	Body NewPet
 }
 
-func newPostShopsShopReviewParams(r *http.Request) (zero PostShopsShopReviewParams, _ error) {
-	var params PostShopsShopReviewParams
+func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
+	var params ReviewShopParams
 
 	// Query parameters
 	{
@@ -924,23 +924,23 @@ func newPostShopsShopReviewParams(r *http.Request) (zero PostShopsShopReviewPara
 	return params, nil
 }
 
-func (r PostShopsShopReviewParams) HTTP() *http.Request { return nil }
+func (r ReviewShopParams) HTTP() *http.Request { return nil }
 
-func (r PostShopsShopReviewParams) Parse() (PostShopsShopReviewParams, error) { return r, nil }
+func (r ReviewShopParams) Parse() (ReviewShopParams, error) { return r, nil }
 
-type PostShopsShopReviewResponse interface {
-	postShopsShopReview()
+type ReviewShopResponse interface {
+	reviewShop()
 	Write(w http.ResponseWriter)
 }
 
-func NewPostShopsShopReviewResponse200JSON(body Pet, xNext string) PostShopsShopReviewResponse {
-	var out PostShopsShopReviewResponse200JSON
+func NewReviewShopResponse200JSON(body Pet, xNext string) ReviewShopResponse {
+	var out ReviewShopResponse200JSON
 	out.Body = body
 	out.Headers.XNext = xNext
 	return out
 }
 
-type PostShopsShopReviewResponse200JSON struct {
+type ReviewShopResponse200JSON struct {
 	Body    Pet
 	Headers struct {
 		Body  Pet
@@ -948,31 +948,31 @@ type PostShopsShopReviewResponse200JSON struct {
 	}
 }
 
-func (r PostShopsShopReviewResponse200JSON) postShopsShopReview() {}
+func (r ReviewShopResponse200JSON) reviewShop() {}
 
-func (r PostShopsShopReviewResponse200JSON) Write(w http.ResponseWriter) {
+func (r ReviewShopResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("x-next", r.Headers.XNext)
 	w.WriteHeader(200)
-	writeJSON(w, r.Body, "PostShopsShopReviewResponse200JSON")
+	writeJSON(w, r.Body, "ReviewShopResponse200JSON")
 }
 
-func NewPostShopsShopReviewResponseDefaultJSON(code int, body Error) PostShopsShopReviewResponse {
-	var out PostShopsShopReviewResponseDefaultJSON
+func NewReviewShopResponseDefaultJSON(code int, body Error) ReviewShopResponse {
+	var out ReviewShopResponseDefaultJSON
 	out.Code = code
 	out.Body = body
 	return out
 }
 
-type PostShopsShopReviewResponseDefaultJSON struct {
+type ReviewShopResponseDefaultJSON struct {
 	Code int
 	Body Error
 }
 
-func (r PostShopsShopReviewResponseDefaultJSON) postShopsShopReview() {}
+func (r ReviewShopResponseDefaultJSON) reviewShop() {}
 
-func (r PostShopsShopReviewResponseDefaultJSON) Write(w http.ResponseWriter) {
+func (r ReviewShopResponseDefaultJSON) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
-	writeJSON(w, r.Body, "PostShopsShopReviewResponseDefaultJSON")
+	writeJSON(w, r.Body, "ReviewShopResponseDefaultJSON")
 }
 
 var LogError = func(err error) {

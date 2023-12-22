@@ -39,7 +39,7 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 	h.Method = o.Method
 	h.HTTPMethod = o.HTTPMethod
 	h.Path = o.PathItem.Path
-	h.Name = OperationName(o.PathItem.Path, h.Method)
+	h.Name = OperationName(o.OperationID, o.PathItem.Path, h.Method)
 
 	h.HandlerTypeName = h.Name + "HandlerFunc"
 	h.HandlerInputTypeName = h.Name + "Parser"

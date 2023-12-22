@@ -8,9 +8,9 @@ import (
 )
 
 type API struct {
-	GetPetsHandler      GetPetsHandlerFunc
-	PostPetsHandler     PostPetsHandlerFunc
-	GetPetsPetIDHandler GetPetsPetIDHandlerFunc
+	ListPetsHandler    ListPetsHandlerFunc
+	CreatePetsHandler  CreatePetsHandlerFunc
+	ShowPetByIDHandler ShowPetByIDHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
@@ -62,9 +62,9 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 		case "/pets":
 			switch method {
 			case http.MethodGet:
-				return rt.GetPetsHandler, "/pets"
+				return rt.ListPetsHandler, "/pets"
 			case http.MethodPost:
-				return rt.PostPetsHandler, "/pets"
+				return rt.CreatePetsHandler, "/pets"
 			}
 		}
 	}
@@ -86,7 +86,7 @@ func (rt *API) routePets(path, method string) (http.Handler, string) {
 
 		switch method {
 		case http.MethodGet:
-			return rt.GetPetsPetIDHandler, "/pets/{petId}"
+			return rt.ShowPetByIDHandler, "/pets/{petId}"
 		}
 	}
 

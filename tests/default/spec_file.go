@@ -66,6 +66,7 @@ const SpecFile string = `paths:
                 $ref: "#/components/schemas/Error"
   /shops/{shop}/review:
     post:
+      operationId: reviewShop
       parameters:
         - $ref: '#/components/parameters/ShopPathRequired'
         - $ref: '#/components/parameters/PageQuery'

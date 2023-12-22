@@ -11,36 +11,36 @@ import (
 )
 
 // ---------------------------------------------
-// GetPets -
+// ListPets -
 // ---------------------------------------------
 
-// GetPetsHandlerFunc - List all pets
-type GetPetsHandlerFunc func(r GetPetsRequest) GetPetsResponse
+// ListPetsHandlerFunc - List all pets
+type ListPetsHandlerFunc func(r ListPetsRequest) ListPetsResponse
 
-func (f GetPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetPetsHTTPRequest(r)).Write(w)
+func (f ListPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(ListPetsHTTPRequest(r)).Write(w)
 }
 
-type GetPetsRequest interface {
+type ListPetsRequest interface {
 	HTTP() *http.Request
-	Parse() (GetPetsParams, error)
+	Parse() (ListPetsParams, error)
 }
 
-func GetPetsHTTPRequest(r *http.Request) GetPetsRequest {
-	return getPetsHTTPRequest{r}
+func ListPetsHTTPRequest(r *http.Request) ListPetsRequest {
+	return listPetsHTTPRequest{r}
 }
 
-type getPetsHTTPRequest struct {
+type listPetsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r getPetsHTTPRequest) HTTP() *http.Request { return r.Request }
+func (r listPetsHTTPRequest) HTTP() *http.Request { return r.Request }
 
-func (r getPetsHTTPRequest) Parse() (GetPetsParams, error) {
-	return newGetPetsParams(r.Request)
+func (r listPetsHTTPRequest) Parse() (ListPetsParams, error) {
+	return newListPetsParams(r.Request)
 }
 
-type GetPetsParams struct {
+type ListPetsParams struct {
 	Query struct {
 
 		// Limit - How many items to return at one time (max 100)
@@ -48,8 +48,8 @@ type GetPetsParams struct {
 	}
 }
 
-func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
-	var params GetPetsParams
+func newListPetsParams(r *http.Request) (zero ListPetsParams, _ error) {
+	var params ListPetsParams
 
 	// Query parameters
 	{
@@ -70,24 +70,24 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 	return params, nil
 }
 
-func (r GetPetsParams) HTTP() *http.Request { return nil }
+func (r ListPetsParams) HTTP() *http.Request { return nil }
 
-func (r GetPetsParams) Parse() (GetPetsParams, error) { return r, nil }
+func (r ListPetsParams) Parse() (ListPetsParams, error) { return r, nil }
 
-type GetPetsResponse interface {
-	getPets()
+type ListPetsResponse interface {
+	listPets()
 	Write(w http.ResponseWriter)
 }
 
-func NewGetPetsResponse200JSON(body Pets, xNext string) GetPetsResponse {
-	var out GetPetsResponse200JSON
+func NewListPetsResponse200JSON(body Pets, xNext string) ListPetsResponse {
+	var out ListPetsResponse200JSON
 	out.Body = body
 	out.Headers.XNext = xNext
 	return out
 }
 
-// GetPetsResponse200JSON - A paged array of pets
-type GetPetsResponse200JSON struct {
+// ListPetsResponse200JSON - A paged array of pets
+type ListPetsResponse200JSON struct {
 	Body    Pets
 	Headers struct {
 		Body  Pets
@@ -95,147 +95,147 @@ type GetPetsResponse200JSON struct {
 	}
 }
 
-func (r GetPetsResponse200JSON) getPets() {}
+func (r ListPetsResponse200JSON) listPets() {}
 
-func (r GetPetsResponse200JSON) Write(w http.ResponseWriter) {
+func (r ListPetsResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("x-next", r.Headers.XNext)
 	w.WriteHeader(200)
-	writeJSON(w, r.Body, "GetPetsResponse200JSON")
+	writeJSON(w, r.Body, "ListPetsResponse200JSON")
 }
 
-func NewGetPetsResponseDefaultJSON(code int, body Error) GetPetsResponse {
-	var out GetPetsResponseDefaultJSON
+func NewListPetsResponseDefaultJSON(code int, body Error) ListPetsResponse {
+	var out ListPetsResponseDefaultJSON
 	out.Code = code
 	out.Body = body
 	return out
 }
 
-// GetPetsResponseDefaultJSON - unexpected error
-type GetPetsResponseDefaultJSON struct {
+// ListPetsResponseDefaultJSON - unexpected error
+type ListPetsResponseDefaultJSON struct {
 	Code int
 	Body Error
 }
 
-func (r GetPetsResponseDefaultJSON) getPets() {}
+func (r ListPetsResponseDefaultJSON) listPets() {}
 
-func (r GetPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
+func (r ListPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
-	writeJSON(w, r.Body, "GetPetsResponseDefaultJSON")
+	writeJSON(w, r.Body, "ListPetsResponseDefaultJSON")
 }
 
 // ---------------------------------------------
-// PostPets -
+// CreatePets -
 // ---------------------------------------------
 
-// PostPetsHandlerFunc - Create a pet
-type PostPetsHandlerFunc func(r PostPetsRequest) PostPetsResponse
+// CreatePetsHandlerFunc - Create a pet
+type CreatePetsHandlerFunc func(r CreatePetsRequest) CreatePetsResponse
 
-func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(PostPetsHTTPRequest(r)).Write(w)
+func (f CreatePetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(CreatePetsHTTPRequest(r)).Write(w)
 }
 
-type PostPetsRequest interface {
+type CreatePetsRequest interface {
 	HTTP() *http.Request
-	Parse() PostPetsParams
+	Parse() CreatePetsParams
 }
 
-func PostPetsHTTPRequest(r *http.Request) PostPetsRequest {
-	return postPetsHTTPRequest{r}
+func CreatePetsHTTPRequest(r *http.Request) CreatePetsRequest {
+	return createPetsHTTPRequest{r}
 }
 
-type postPetsHTTPRequest struct {
+type createPetsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r postPetsHTTPRequest) HTTP() *http.Request { return r.Request }
+func (r createPetsHTTPRequest) HTTP() *http.Request { return r.Request }
 
-func (r postPetsHTTPRequest) Parse() PostPetsParams {
-	return newPostPetsParams(r.Request)
+func (r createPetsHTTPRequest) Parse() CreatePetsParams {
+	return newCreatePetsParams(r.Request)
 }
 
-type PostPetsParams struct {
+type CreatePetsParams struct {
 }
 
-func newPostPetsParams(r *http.Request) (zero PostPetsParams) {
-	var params PostPetsParams
+func newCreatePetsParams(r *http.Request) (zero CreatePetsParams) {
+	var params CreatePetsParams
 
 	return params
 }
 
-func (r PostPetsParams) HTTP() *http.Request { return nil }
+func (r CreatePetsParams) HTTP() *http.Request { return nil }
 
-func (r PostPetsParams) Parse() PostPetsParams { return r }
+func (r CreatePetsParams) Parse() CreatePetsParams { return r }
 
-type PostPetsResponse interface {
-	postPets()
+type CreatePetsResponse interface {
+	createPets()
 	Write(w http.ResponseWriter)
 }
 
-func NewPostPetsResponse201() PostPetsResponse {
-	var out PostPetsResponse201
+func NewCreatePetsResponse201() CreatePetsResponse {
+	var out CreatePetsResponse201
 	return out
 }
 
-// PostPetsResponse201 - Null response
-type PostPetsResponse201 struct{}
+// CreatePetsResponse201 - Null response
+type CreatePetsResponse201 struct{}
 
-func (r PostPetsResponse201) postPets() {}
+func (r CreatePetsResponse201) createPets() {}
 
-func (r PostPetsResponse201) Write(w http.ResponseWriter) {
+func (r CreatePetsResponse201) Write(w http.ResponseWriter) {
 	w.WriteHeader(201)
 }
 
-func NewPostPetsResponseDefaultJSON(code int, body Error) PostPetsResponse {
-	var out PostPetsResponseDefaultJSON
+func NewCreatePetsResponseDefaultJSON(code int, body Error) CreatePetsResponse {
+	var out CreatePetsResponseDefaultJSON
 	out.Code = code
 	out.Body = body
 	return out
 }
 
-// PostPetsResponseDefaultJSON - unexpected error
-type PostPetsResponseDefaultJSON struct {
+// CreatePetsResponseDefaultJSON - unexpected error
+type CreatePetsResponseDefaultJSON struct {
 	Code int
 	Body Error
 }
 
-func (r PostPetsResponseDefaultJSON) postPets() {}
+func (r CreatePetsResponseDefaultJSON) createPets() {}
 
-func (r PostPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
+func (r CreatePetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
-	writeJSON(w, r.Body, "PostPetsResponseDefaultJSON")
+	writeJSON(w, r.Body, "CreatePetsResponseDefaultJSON")
 }
 
 // ---------------------------------------------
-// GetPetsPetID -
+// ShowPetByID -
 // ---------------------------------------------
 
-// GetPetsPetIDHandlerFunc - Info for a specific pet
-type GetPetsPetIDHandlerFunc func(r GetPetsPetIDRequest) GetPetsPetIDResponse
+// ShowPetByIDHandlerFunc - Info for a specific pet
+type ShowPetByIDHandlerFunc func(r ShowPetByIDRequest) ShowPetByIDResponse
 
-func (f GetPetsPetIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetPetsPetIDHTTPRequest(r)).Write(w)
+func (f ShowPetByIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(ShowPetByIDHTTPRequest(r)).Write(w)
 }
 
-type GetPetsPetIDRequest interface {
+type ShowPetByIDRequest interface {
 	HTTP() *http.Request
-	Parse() (GetPetsPetIDParams, error)
+	Parse() (ShowPetByIDParams, error)
 }
 
-func GetPetsPetIDHTTPRequest(r *http.Request) GetPetsPetIDRequest {
-	return getPetsPetIDHTTPRequest{r}
+func ShowPetByIDHTTPRequest(r *http.Request) ShowPetByIDRequest {
+	return showPetByIDHTTPRequest{r}
 }
 
-type getPetsPetIDHTTPRequest struct {
+type showPetByIDHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r getPetsPetIDHTTPRequest) HTTP() *http.Request { return r.Request }
+func (r showPetByIDHTTPRequest) HTTP() *http.Request { return r.Request }
 
-func (r getPetsPetIDHTTPRequest) Parse() (GetPetsPetIDParams, error) {
-	return newGetPetsPetIDParams(r.Request)
+func (r showPetByIDHTTPRequest) Parse() (ShowPetByIDParams, error) {
+	return newShowPetByIDParams(r.Request)
 }
 
-type GetPetsPetIDParams struct {
+type ShowPetByIDParams struct {
 	Path struct {
 
 		// PetID - The id of the pet to retrieve
@@ -243,8 +243,8 @@ type GetPetsPetIDParams struct {
 	}
 }
 
-func newGetPetsPetIDParams(r *http.Request) (zero GetPetsPetIDParams, _ error) {
-	var params GetPetsPetIDParams
+func newShowPetByIDParams(r *http.Request) (zero ShowPetByIDParams, _ error) {
+	var params ShowPetByIDParams
 
 	// Path parameters
 	{
@@ -283,51 +283,51 @@ func newGetPetsPetIDParams(r *http.Request) (zero GetPetsPetIDParams, _ error) {
 	return params, nil
 }
 
-func (r GetPetsPetIDParams) HTTP() *http.Request { return nil }
+func (r ShowPetByIDParams) HTTP() *http.Request { return nil }
 
-func (r GetPetsPetIDParams) Parse() (GetPetsPetIDParams, error) { return r, nil }
+func (r ShowPetByIDParams) Parse() (ShowPetByIDParams, error) { return r, nil }
 
-type GetPetsPetIDResponse interface {
-	getPetsPetID()
+type ShowPetByIDResponse interface {
+	showPetByID()
 	Write(w http.ResponseWriter)
 }
 
-func NewGetPetsPetIDResponse200JSON(body Pet) GetPetsPetIDResponse {
-	var out GetPetsPetIDResponse200JSON
+func NewShowPetByIDResponse200JSON(body Pet) ShowPetByIDResponse {
+	var out ShowPetByIDResponse200JSON
 	out.Body = body
 	return out
 }
 
-// GetPetsPetIDResponse200JSON - Expected response to a valid request
-type GetPetsPetIDResponse200JSON struct {
+// ShowPetByIDResponse200JSON - Expected response to a valid request
+type ShowPetByIDResponse200JSON struct {
 	Body Pet
 }
 
-func (r GetPetsPetIDResponse200JSON) getPetsPetID() {}
+func (r ShowPetByIDResponse200JSON) showPetByID() {}
 
-func (r GetPetsPetIDResponse200JSON) Write(w http.ResponseWriter) {
+func (r ShowPetByIDResponse200JSON) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
-	writeJSON(w, r.Body, "GetPetsPetIDResponse200JSON")
+	writeJSON(w, r.Body, "ShowPetByIDResponse200JSON")
 }
 
-func NewGetPetsPetIDResponseDefaultJSON(code int, body Error) GetPetsPetIDResponse {
-	var out GetPetsPetIDResponseDefaultJSON
+func NewShowPetByIDResponseDefaultJSON(code int, body Error) ShowPetByIDResponse {
+	var out ShowPetByIDResponseDefaultJSON
 	out.Code = code
 	out.Body = body
 	return out
 }
 
-// GetPetsPetIDResponseDefaultJSON - unexpected error
-type GetPetsPetIDResponseDefaultJSON struct {
+// ShowPetByIDResponseDefaultJSON - unexpected error
+type ShowPetByIDResponseDefaultJSON struct {
 	Code int
 	Body Error
 }
 
-func (r GetPetsPetIDResponseDefaultJSON) getPetsPetID() {}
+func (r ShowPetByIDResponseDefaultJSON) showPetByID() {}
 
-func (r GetPetsPetIDResponseDefaultJSON) Write(w http.ResponseWriter) {
+func (r ShowPetByIDResponseDefaultJSON) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
-	writeJSON(w, r.Body, "GetPetsPetIDResponseDefaultJSON")
+	writeJSON(w, r.Body, "ShowPetByIDResponseDefaultJSON")
 }
 
 var LogError = func(err error) {

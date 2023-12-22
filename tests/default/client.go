@@ -287,8 +287,8 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 	}
 }
 
-// PostShopsShopReview - POST /shops/{shop}/review
-func (c *Client) PostShopsShopReview(ctx context.Context, request PostShopsShopReviewParams) (PostShopsShopReviewResponse, error) {
+// ReviewShop - POST /shops/{shop}/review
+func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (ReviewShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/review"
 
 	query := make(url.Values, 4)
@@ -326,21 +326,21 @@ func (c *Client) PostShopsShopReview(ctx context.Context, request PostShopsShopR
 
 	switch resp.StatusCode {
 	case 200:
-		var response PostShopsShopReviewResponse200JSON
+		var response ReviewShopResponse200JSON
 		response.Headers.XNext = resp.Header.Get("x-next")
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
-			return nil, fmt.Errorf("decode 'PostShopsShopReviewResponse200JSON' response body: %w", err)
+			return nil, fmt.Errorf("decode 'ReviewShopResponse200JSON' response body: %w", err)
 		}
 		return response, nil
 	default:
-		var response PostShopsShopReviewResponseDefaultJSON
+		var response ReviewShopResponseDefaultJSON
 		response.Code = resp.StatusCode
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
-			return nil, fmt.Errorf("decode 'PostShopsShopReviewResponseDefaultJSON' response body: %w", err)
+			return nil, fmt.Errorf("decode 'ReviewShopResponseDefaultJSON' response body: %w", err)
 		}
 		return response, nil
 	}

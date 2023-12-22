@@ -53,7 +53,7 @@ type Handler struct {
 
 func NewHandler(p *openapi3.Operation, path specification.Path, method string, params openapi3.Parameters) (zero Handler, _ error) {
 	var out Handler
-	out.Name = HandlerName(path, method)
+	out.Name = HandlerName(p.OperationID, path, method)
 	out.Path = path.Spec
 	out.Method = method
 	out.Description = strings.ReplaceAll(strings.TrimSpace(p.Description), "\n", "\n// ")

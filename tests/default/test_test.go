@@ -29,6 +29,9 @@ func TestDefault(t *testing.T) {
 				XNext string
 			}{XNext: "test-next-value"}}
 		},
+		ReviewShopHandler: func(r ReviewShopRequest) ReviewShopResponse {
+			return NewReviewShopResponseDefaultJSON(206, Error{Message: "206"})
+		},
 	}
 
 	{
@@ -61,6 +64,13 @@ func TestDefault(t *testing.T) {
 		require.NoError(t, err)
 		require.IsType(t, GetShopsShopPetsResponse200JSON{}, resp, resp)
 		assert.Equal(t, "test-next-value", resp.(GetShopsShopPetsResponse200JSON).Headers.XNext)
+	}
+	{
+		resp, err := api.Client().ReviewShop(ctx, ReviewShopParams{})
+		require.NoError(t, err)
+		require.IsType(t, ReviewShopResponseDefaultJSON{}, resp, resp)
+		assert.Equal(t, 206, resp.(ReviewShopResponseDefaultJSON).Code)
+		assert.Equal(t, "206", resp.(ReviewShopResponseDefaultJSON).Body.Message)
 	}
 }
 

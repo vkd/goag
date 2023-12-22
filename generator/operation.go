@@ -24,7 +24,7 @@ func NewOperation(operation *specification.Operation) *Operation {
 	o := &Operation{
 		Operation: operation,
 	}
-	o.Name = OperationName(operation.PathItem.Path, operation.Method)
+	o.Name = OperationName(operation.OperationID, operation.PathItem.Path, operation.Method)
 	o.HandlerTypeName = o.Name + "HandlerFunc"
 
 	for _, pathParam := range operation.Parameters.Path {
@@ -52,7 +52,11 @@ func NewOperation(operation *specification.Operation) *Operation {
 	return o
 }
 
-func OperationName(path specification.Path, method string) string {
+func OperationName(operationID string, path specification.Path, method string) string {
+	if operationID != "" {
+		return PublicFieldName(operationID)
+	}
+
 	var out string
 	for _, dir := range path.Dirs {
 		out += PrefixTitle(dir.Raw)

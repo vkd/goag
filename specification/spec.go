@@ -56,9 +56,11 @@ type PathItem struct {
 type Operation struct {
 	PathItem *PathItem
 
-	HTTPMethod string
-	Method     string
-	Operation  *openapi3.Operation
+	HTTPMethod  string
+	Method      string
+	OperationID string
+
+	Operation *openapi3.Operation
 
 	Parameters struct {
 		Path    PathParameters
@@ -72,10 +74,12 @@ type Operation struct {
 
 func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation) *Operation {
 	o := &Operation{
-		PathItem:   pi,
-		HTTPMethod: method.HTTP,
-		Method:     method.Title,
-		Operation:  operation,
+		PathItem:    pi,
+		HTTPMethod:  method.HTTP,
+		Method:      method.Title,
+		OperationID: operation.OperationID,
+
+		Operation: operation,
 	}
 
 	for _, param := range append(append(openapi3.Parameters{}, pi.PathItem.Parameters...), operation.Parameters...) {

@@ -17,7 +17,7 @@ type API struct {
 	GetShopsShopHandler        GetShopsShopHandlerFunc
 	GetShopsShopRTHandler      GetShopsShopRTHandlerFunc
 	GetShopsShopPetsHandler    GetShopsShopPetsHandlerFunc
-	PostShopsShopReviewHandler PostShopsShopReviewHandlerFunc
+	ReviewShopHandler          ReviewShopHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
@@ -153,7 +153,7 @@ func (rt *API) routeShopsShop(path, method string) (http.Handler, string) {
 		case "/review":
 			switch method {
 			case http.MethodPost:
-				return rt.PostShopsShopReviewHandler, "/shops/{shop}/review"
+				return rt.ReviewShopHandler, "/shops/{shop}/review"
 			}
 		}
 	}
