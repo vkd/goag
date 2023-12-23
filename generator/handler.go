@@ -27,6 +27,8 @@ type Handler struct {
 		Headers []HeaderParameter
 	}
 
+	IsRequestBody bool
+
 	ResponseTypeName        string
 	ResponsePrivateFuncName string
 
@@ -45,6 +47,8 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 	h.HandlerInputTypeName = h.Name + "Parser"
 	h.RequestTypeName = h.Name + "Params"
 	h.RequestVarName = "request"
+
+	h.IsRequestBody = o.Operation.RequestBody != nil
 
 	h.ResponseTypeName = h.Name + "Response"
 	h.ResponsePrivateFuncName = PrivateFieldName(h.Name)

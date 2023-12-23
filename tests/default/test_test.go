@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -30,7 +31,11 @@ func TestDefault(t *testing.T) {
 			}{XNext: "test-next-value"}}
 		},
 		ReviewShopHandler: func(r ReviewShopRequest) ReviewShopResponse {
-			return NewReviewShopResponseDefaultJSON(206, Error{Message: "206"})
+			params, err := r.Parse()
+			if err != nil {
+				return NewReviewShopResponseDefaultJSON(500, Error{Message: fmt.Errorf("parse request: %w", err).Error()})
+			}
+			return NewReviewShopResponseDefaultJSON(206, Error{Message: params.Body.Name})
 		},
 	}
 
@@ -66,11 +71,11 @@ func TestDefault(t *testing.T) {
 		assert.Equal(t, "test-next-value", resp.(GetShopsShopPetsResponse200JSON).Headers.XNext)
 	}
 	{
-		resp, err := api.Client().ReviewShop(ctx, ReviewShopParams{})
+		resp, err := api.Client().ReviewShop(ctx, ReviewShopParams{Body: NewPet{Name: "207"}})
 		require.NoError(t, err)
 		require.IsType(t, ReviewShopResponseDefaultJSON{}, resp, resp)
 		assert.Equal(t, 206, resp.(ReviewShopResponseDefaultJSON).Code)
-		assert.Equal(t, "206", resp.(ReviewShopResponseDefaultJSON).Body.Message)
+		assert.Equal(t, "207", resp.(ReviewShopResponseDefaultJSON).Body.Message)
 	}
 }
 

@@ -44,7 +44,14 @@ func (c *Client) {{ .Name }}(ctx context.Context, {{ .RequestVarName }} {{ .Requ
 	requestURL += "?" + query.Encode()
 	{{ end }}
 
-	req, err := http.NewRequestWithContext(ctx, http.Method{{ .Method }}, requestURL, nil)
+	{{ if .IsRequestBody -}}
+	bs, err := json.Marshal(request.Body)
+	if err != nil {
+		return nil, fmt.Errorf("marshal request body: %w", err)
+	}
+	{{- end }}
+
+	req, err := http.NewRequestWithContext(ctx, http.Method{{ .Method }}, requestURL, {{ if .IsRequestBody }}bytes.NewReader(bs){{ else }}nil{{ end }})
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}

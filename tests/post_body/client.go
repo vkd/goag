@@ -1,7 +1,9 @@
 package test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -25,7 +27,12 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 func (c *Client) PostPets(ctx context.Context, request PostPetsParams) (PostPetsResponse, error) {
 	var requestURL = c.BaseURL + "/pets"
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, nil)
+	bs, err := json.Marshal(request.Body)
+	if err != nil {
+		return nil, fmt.Errorf("marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, bytes.NewReader(bs))
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}

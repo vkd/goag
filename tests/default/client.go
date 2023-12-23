@@ -1,6 +1,7 @@
 package test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -306,7 +307,12 @@ func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (Revi
 	}
 	requestURL += "?" + query.Encode()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, nil)
+	bs, err := json.Marshal(request.Body)
+	if err != nil {
+		return nil, fmt.Errorf("marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, bytes.NewReader(bs))
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
