@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -35,6 +36,16 @@ func NewSchema(spec *openapi3.Schema) SchemaRender {
 			fields = append(fields, sfs...)
 		}
 		return GoStruct{Fields: fields}
+	}
+
+	if v, ok := spec.ExtensionProps.Extensions["x-go-type"]; ok {
+		if raw, ok := v.(json.RawMessage); ok {
+			s := string(raw)
+			if len(s) > 2 {
+				s = s[1 : len(s)-1]
+			}
+			return Ref(s)
+		}
 	}
 
 	switch spec.Type {
