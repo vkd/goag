@@ -8,6 +8,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"github.com/vkd/goag/generator"
 	"github.com/vkd/goag/generator-v0/source"
 )
 
@@ -44,7 +45,7 @@ func NewSchema(spec *openapi3.Schema) SchemaRender {
 			if len(s) > 2 {
 				s = s[1 : len(s)-1]
 			}
-			return Ref(s)
+			return generator.CustomType(s)
 		}
 	}
 

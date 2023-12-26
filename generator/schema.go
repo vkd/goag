@@ -1,8 +1,11 @@
 package generator
 
 import (
+	"encoding/json"
 	"fmt"
+	"text/template"
 
+	"github.com/vkd/goag/generator-v0/source"
 	"github.com/vkd/goag/specification"
 )
 
@@ -27,6 +30,16 @@ func NewSchema(spec specification.Schema) Schema {
 	// 	}
 	// 	return GoStruct{Fields: fields}
 	// }
+
+	if v, ok := spec.Schema.ExtensionProps.Extensions["x-go-type"]; ok {
+		if raw, ok := v.(json.RawMessage); ok {
+			s := string(raw)
+			if len(s) > 2 {
+				s = s[1 : len(s)-1]
+			}
+			return StringerType{}
+		}
+	}
 
 	switch spec.Schema.Type {
 	// case "object":
@@ -124,3 +137,33 @@ func (s StringConst) String() (string, error)  { return s.Execute() }
 // 	// Int64Type{}.ToString(varName)
 // 	// return RawTemplate("str->int(" + varName + ")")
 // }
+
+type CustomType string
+
+func (c CustomType) String() (string, error) {
+	return string(c), nil
+}
+
+func (c CustomType) Parser(from, to string, mkErr source.ErrorWrapper) source.Render {
+	return CustomTypeParser{string(c), from, to, mkErr}
+}
+
+func (c CustomType) Format(s string) source.Templater {
+	panic("not implemented")
+}
+
+type CustomTypeParser struct {
+	Type  string
+	From  string
+	To    string
+	Error source.ErrorWrapper
+}
+
+var tmCustomTypeParser = template.Must(template.New("CustomTypeParser").Parse(`
+var v {{ .Type }}
+err := v.UnmarshalText({{.From}})
+if err != nil {
+	return zero, {{.Error.Wrap (print "unmarshal text")}}
+}`))
+
+func (c CustomTypeParser) String() (string, error) { return source.String(tmCustomTypeParser, c) }

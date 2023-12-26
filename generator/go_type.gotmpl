@@ -1,3 +1,4 @@
+{{ define "StringerType" }}{{ exec . }}.String(){{ end }}
 {{ define "Int64ToString" }}strconv.FormatInt({{ exec . }}, 10){{ end }}
 {{ define "Int32ToInt64" }}int64({{ exec . }}){{ end }}
 {{ define "IntToInt64" }}int64({{ exec . }}){{ end }}

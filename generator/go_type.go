@@ -10,6 +10,14 @@ func (_ StringType) FormatAssignTemplater(from, to Templater, isNew bool) Templa
 	return AssignTemplate(from, to, isNew)
 }
 
+type StringerType struct {
+	T Templater
+}
+
+func (_ StringerType) TemplateToString(t Templater) Templater {
+	return TemplateData("StringerType", t)
+}
+
 type AssignData struct {
 	From, To Templater
 	IsNew    bool
