@@ -3,6 +3,7 @@ package generator
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/vkd/goag/generator-v0/source"
@@ -39,7 +40,7 @@ func NewSchema(spec specification.Schema) Schema {
 			if len(s) > 2 {
 				s = s[1 : len(s)-1]
 			}
-			return StringerType{}
+			return NewCustomType(s)
 		}
 	}
 
@@ -140,7 +141,26 @@ func (s StringConst) String() (string, error)  { return s.Execute() }
 // 	// return RawTemplate("str->int(" + varName + ")")
 // }
 
+var CustomImports []string
+
 type CustomType string
+
+func NewCustomType(s string) CustomType {
+	var customImport, customType string = "", s
+	slIdx := strings.LastIndex(s, "/")
+	if slIdx >= 0 {
+		customImport = s[:slIdx]
+		customType = s[slIdx+1:]
+
+		dotIdx := strings.LastIndex(s, ".")
+		if dotIdx >= 0 {
+			customImport = s[:dotIdx]
+		}
+	}
+
+	CustomImports = append(CustomImports, customImport)
+	return CustomType(customType)
+}
 
 func (c CustomType) String() (string, error) {
 	return string(c), nil
@@ -152,6 +172,10 @@ func (c CustomType) Parser(from, to string, mkErr source.ErrorWrapper) source.Re
 
 func (c CustomType) Format(s string) source.Templater {
 	panic("not implemented")
+}
+
+func (c CustomType) TemplateToString(t Templater) Templater {
+	return StringerType{}.TemplateToString(t)
 }
 
 type CustomTypeParser struct {

@@ -12,7 +12,7 @@ func (g *Generator) HandlersFile(hs []HandlerOld, isJSON bool) (Templater, error
 		IsWriteJSONFunc: isJSON,
 	}
 
-	return g.goFile([]string{
+	return g.goFile(append([]string{
 		"encoding/json",
 		"fmt",
 		"io",
@@ -20,7 +20,7 @@ func (g *Generator) HandlersFile(hs []HandlerOld, isJSON bool) (Templater, error
 		"net/http",
 		"strconv",
 		"strings",
-	}, file), nil
+	}, CustomImports...), file), nil
 }
 
 var tmHandlersFile = InitTemplate("HandlersFile", `

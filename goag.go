@@ -85,6 +85,9 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 			PackageName: packageName,
 			Renders:     []generator.Render{components},
 		}
+		for _, imp := range generatorv2.CustomImports {
+			goFile.Imports = append(goFile.Imports, generator.GoFileImport{Package: imp})
+		}
 		err := RenderToFile(componentsFile, goFile)
 		if err != nil {
 			return fmt.Errorf("generate components: %w", err)

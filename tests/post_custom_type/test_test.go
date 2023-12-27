@@ -8,6 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/vkd/goag/tests/post_custom_type/pkg"
 )
 
 func TestPostBody(t *testing.T) {
@@ -29,7 +31,7 @@ func TestPostBody(t *testing.T) {
 
 	cli := NewClient("", api)
 
-	resp, err := cli.PostShopsShopPets(ctx, PostShopsShopPetsParams{Path: struct{ Shop ShopType }{Shop: ShopType{V: "testshop"}}, Body: NewPet{Tag: PetTag{V: "tiger"}}})
+	resp, err := cli.PostShopsShopPets(ctx, PostShopsShopPetsParams{Path: struct{ Shop pkg.ShopType }{Shop: pkg.ShopType{V: "testshop"}}, Body: NewPet{Tag: pkg.PetTag{V: "tiger"}}})
 	require.NoError(t, err)
 	_, ok := resp.(PostShopsShopPetsResponse201)
 	assert.True(t, ok)

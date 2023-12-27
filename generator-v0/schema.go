@@ -45,7 +45,7 @@ func NewSchema(spec *openapi3.Schema) SchemaRender {
 			if len(s) > 2 {
 				s = s[1 : len(s)-1]
 			}
-			return generator.CustomType(s)
+			return generator.NewCustomType(s)
 		}
 	}
 

@@ -8,7 +8,7 @@ const SpecFile string = `paths:
           in: path
           required: true
           schema:
-            x-goag-go-type: ShopType
+            x-goag-go-type: github.com/vkd/goag/tests/post_custom_type/pkg.ShopType
       requestBody:
         content:
           application/json:
@@ -28,5 +28,5 @@ components:
         name:
           type: string
         tag:
-          x-goag-go-type: PetTag
+          x-goag-go-type: github.com/vkd/goag/tests/post_custom_type/pkg.PetTag
 `

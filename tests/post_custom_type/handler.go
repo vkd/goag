@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/vkd/goag/tests/post_custom_type/pkg"
 )
 
 // ---------------------------------------------
@@ -39,7 +41,7 @@ func (r postShopsShopPetsHTTPRequest) Parse() (PostShopsShopPetsParams, error) {
 
 type PostShopsShopPetsParams struct {
 	Path struct {
-		Shop ShopType
+		Shop pkg.ShopType
 	}
 
 	Body NewPet
@@ -69,7 +71,7 @@ func newPostShopsShopPetsParams(r *http.Request) (zero PostShopsShopPetsParams, 
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			var v ShopType
+			var v pkg.ShopType
 			err := v.UnmarshalText([]byte(vPath))
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "unmarshal text", Err: err}

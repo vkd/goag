@@ -5,5 +5,5 @@ func (g *Generator) ClientFile() (Templater, error) {
 	// for _, o := range g.Operations {
 	// 	client.ClientHandlers = append(client.ClientHandlers, NewClientHandlerOld(o))
 	// }
-	return g.goFile([]string{}, g.Client), nil
+	return g.goFile(CustomImports, g.Client), nil
 }
