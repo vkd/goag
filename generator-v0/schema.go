@@ -39,7 +39,7 @@ func NewSchema(spec *openapi3.Schema) SchemaRender {
 		return GoStruct{Fields: fields}
 	}
 
-	if v, ok := spec.ExtensionProps.Extensions["x-go-type"]; ok {
+	if v, ok := spec.ExtensionProps.Extensions[generator.ExtTagGoType]; ok {
 		if raw, ok := v.(json.RawMessage); ok {
 			s := string(raw)
 			if len(s) > 2 {

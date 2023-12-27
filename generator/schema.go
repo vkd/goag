@@ -9,6 +9,8 @@ import (
 	"github.com/vkd/goag/specification"
 )
 
+const ExtTagGoType = "x-goag-go-type"
+
 type Schema interface {
 	// FormatQuery()
 	TemplateToString(Templater) Templater
@@ -31,7 +33,7 @@ func NewSchema(spec specification.Schema) Schema {
 	// 	return GoStruct{Fields: fields}
 	// }
 
-	if v, ok := spec.Schema.ExtensionProps.Extensions["x-go-type"]; ok {
+	if v, ok := spec.Schema.ExtensionProps.Extensions[ExtTagGoType]; ok {
 		if raw, ok := v.(json.RawMessage); ok {
 			s := string(raw)
 			if len(s) > 2 {

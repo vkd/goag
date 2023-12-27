@@ -13,5 +13,5 @@ components:
   schemas:
     RawResponse:
       type: object
-      x-go-type: any
+      x-goag-go-type: any
 `
