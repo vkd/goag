@@ -1,15 +1,19 @@
 package test
 
+import "encoding"
+
 type ShopType struct {
 	V string
 }
 
 func (s ShopType) String() string { return s.V }
 
-func (s *ShopType) UnmarshalText(v string) error {
-	s.V = v
+func (s *ShopType) UnmarshalText(v []byte) error {
+	s.V = string(v)
 	return nil
 }
+
+var _ encoding.TextUnmarshaler = (*ShopType)(nil)
 
 type PetTag struct {
 	V string

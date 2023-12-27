@@ -70,7 +70,7 @@ func newPostShopsShopPetsParams(r *http.Request) (zero PostShopsShopPetsParams, 
 			}
 
 			var v ShopType
-			err := v.UnmarshalText(vPath)
+			err := v.UnmarshalText([]byte(vPath))
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "unmarshal text", Err: err}
 			}
