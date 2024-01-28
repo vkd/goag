@@ -16,7 +16,9 @@ func TestPublicFieldName(t *testing.T) {
 		{"AaBbCc", "AaBbCc"},
 		{"A-aB_bC c", "AABBCC"},
 		{"A-_ c", "AC"},
-		{"-,A-_ c3", "AC"},
+		{"-,A-_ c3", "AC3"},
+		{"c3", "C3"},
+		{"3c", "C"},
 	}
 	for _, tt := range tests {
 		tt := tt

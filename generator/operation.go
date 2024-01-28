@@ -83,7 +83,7 @@ func PublicFieldName(name string) string {
 			if isWord { // if currently is building a word
 				names = append(names, string(runes[li:ri+1]))
 			}
-			isWord = unicode.IsLetter(r) // if start a new word
+			isWord = unicode.IsLetter(r) || (isWord && unicode.IsDigit(r)) // if start a new word
 			if isWord {
 				li = i
 				ri = i
