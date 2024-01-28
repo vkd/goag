@@ -58,11 +58,3 @@ func String(tm *template.Template, data interface{}) (string, error) {
 	}
 	return bs.String(), nil
 }
-
-func Executor(e interface{ Execute() (string, error) }) Render { return executor{e} }
-
-type executor struct {
-	r interface{ Execute() (string, error) }
-}
-
-func (e executor) String() (string, error) { return e.r.Execute() }

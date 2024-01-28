@@ -101,18 +101,8 @@ func (t Templaters) ExecuteArgs(args ...any) (string, error) {
 }
 
 func TemplateData(name string, data interface{}) Templater {
-	return templateData{name, data}
+	return TemplaterFunc(func() (string, error) { return ExecuteTemplate(name, data) })
 }
-
-type templateData struct {
-	name string
-	data interface{}
-}
-
-func (t templateData) Execute() (string, error) {
-	return templates.ExecuteTemplate(t.name, t.data)
-}
-func (t templateData) String() (string, error) { return t.Execute() }
 
 type RawTemplate string
 
