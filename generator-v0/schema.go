@@ -73,19 +73,22 @@ func NewSchema(spec *openapi3.Schema) SchemaRender {
 		return StringType
 	case "integer":
 		switch spec.Format {
+		case "":
+			return Int
 		case "int32":
 			return Int32
 		case "int64":
 			return Int64
 		default:
-			return Int
+			panic(fmt.Errorf("unsupported 'integer' format %q", spec.Format))
 		}
 	case "number":
 		switch spec.Format {
 		case "float":
 			return Float32
-		case "double":
-			return Float64
+		case "double", "":
+		default:
+			panic(fmt.Errorf("unsupported 'number' format %q", spec.Format))
 		}
 		return Float64
 	case "boolean":

@@ -223,9 +223,12 @@ func (g GoType) Parser(from, to string, mkErr ErrorWrapper) Render {
 	case StringType:
 		return source.AssignNew(to, GoValue(from))
 	case Int:
-		return RenderFunc(func() (string, error) {
-			return generator.IntType{}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
-		})
+		return source.Renders{
+			RenderFunc(func() (string, error) {
+				return generator.IntType{}.RenderParser(generator.StringRender(from), generator.StringRender("vInt"), mkErr)
+			}),
+			source.AssignNew(to, source.TypeConversion("int", "vInt")),
+		}
 	case Int32:
 		return source.Renders{
 			RenderFunc(func() (string, error) {
@@ -238,9 +241,16 @@ func (g GoType) Parser(from, to string, mkErr ErrorWrapper) Render {
 			return generator.IntType{BitSize: 64}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
 		})
 	case Float32:
-		return ConvertToFloat32(from, to, mkErr)
+		return source.Renders{
+			RenderFunc(func() (string, error) {
+				return generator.FloatType{BitSize: 32}.RenderParser(generator.StringRender(from), generator.StringRender("vFloat"), mkErr)
+			}),
+			source.AssignNew(to, source.TypeConversion("float32", "vFloat")),
+		}
 	case Float64:
-		return ConvertToFloat64(from, to, mkErr)
+		return RenderFunc(func() (string, error) {
+			return generator.FloatType{BitSize: 64}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
+		})
 	case BooleanType:
 		return RenderFunc(func() (string, error) {
 			return generator.BoolType{}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)

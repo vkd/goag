@@ -85,14 +85,19 @@ func NewSchema(spec specification.Schema) Schema {
 				return TemplaterFunc(func() (string, error) { return IntType{}.RenderFormat(RenderFunc(t.String)) })
 			})
 		}
-		// case "number":
-		// 	switch spec.Format {
-		// 	case "float":
-		// 		return Float32
-		// 	case "double":
-		// 		return Float64
-		// 	}
-		// 	return Float64
+	case "number":
+		switch spec.Schema.Format {
+		case "float":
+			return SchemaFunc(func(t Templater) Templater {
+				return TemplaterFunc(func() (string, error) { return FloatType{BitSize: 32}.RenderFormat(RenderFunc(t.String)) })
+			})
+		case "double", "":
+		default:
+			panic(fmt.Errorf("unsupported 'number' format %q", spec.Schema.Format))
+		}
+		return SchemaFunc(func(t Templater) Templater {
+			return TemplaterFunc(func() (string, error) { return FloatType{BitSize: 64}.RenderFormat(RenderFunc(t.String)) })
+		})
 	case "boolean":
 		return SchemaFunc(func(t Templater) Templater {
 			return TemplaterFunc(func() (string, error) { return BoolType{}.RenderFormat(RenderFunc(t.String)) })

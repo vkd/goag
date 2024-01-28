@@ -41,3 +41,25 @@ if err != nil {
 {{- end }}
 
 {{ define "Int64Format" }}strconv.FormatInt({{ .From.Render }}, 10){{ end }}
+
+{{/* ----------------------------- Float32 ------------------------------------- */}}
+
+{{ define "Float32Parser" -}}
+{{ .To.Render }}, err := strconv.ParseFloat({{ .From.Render }}, 32)
+if err != nil {
+	return zero, {{ .MkErr.Wrap "parse float32"}}
+}
+{{- end }}
+
+{{ define "Float32Format" }}strconv.FormatFloat(float64({{ .From.Render }}), 'e', -1, 32){{ end }}
+
+{{/* ----------------------------- Float64 ------------------------------------- */}}
+
+{{ define "Float64Parser" -}}
+{{ .To.Render }}, err := strconv.ParseFloat({{ .From.Render }}, 64)
+if err != nil {
+	return zero, {{ .MkErr.Wrap "parse float64"}}
+}
+{{- end }}
+
+{{ define "Float64Format" }}strconv.FormatFloat({{ .From.Render }}, 'e', -1, 64){{ end }}
