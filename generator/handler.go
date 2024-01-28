@@ -48,7 +48,11 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 	h.RequestTypeName = h.Name + "Params"
 	h.RequestVarName = "request"
 
-	h.IsRequestBody = o.Operation.RequestBody != nil
+	if o.Operation.RequestBody != nil {
+		if _, ok := o.Operation.RequestBody.Value.Content["application/json"]; ok {
+			h.IsRequestBody = true
+		}
+	}
 
 	h.ResponseTypeName = h.Name + "Response"
 	h.ResponsePrivateFuncName = PrivateFieldName(h.Name)

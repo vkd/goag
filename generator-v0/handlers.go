@@ -100,8 +100,10 @@ func NewHandler(p *openapi3.Operation, path specification.Path, method string, p
 	}
 
 	if p.RequestBody != nil {
-		br := NewBodyRef(p.RequestBody)
-		out.Body.TypeName = br
+		br, ok := NewBodyRef(p.RequestBody)
+		if ok {
+			out.Body.TypeName = br
+		}
 	}
 
 	out.ResponserInterfaceName = PrivateFieldName(out.Name)
@@ -313,11 +315,15 @@ func (i HeaderParser) String() (string, error) {
 	return String(tmHeaderParser, i)
 }
 
-func NewBodyRef(spec *openapi3.RequestBodyRef) Render {
+func NewBodyRef(spec *openapi3.RequestBodyRef) (_ Render, ok bool) {
 	if spec.Ref != "" {
-		return NewRef(spec.Ref)
+		return NewRef(spec.Ref), true
 	}
-	return NewSchemaRef(spec.Value.Content.Get("application/json").Schema)
+	jsonContent := spec.Value.Content.Get("application/json")
+	if jsonContent == nil {
+		return nil, false
+	}
+	return NewSchemaRef(jsonContent.Schema), true
 }
 
 // --------------- Helpers: map -> slice ---------------
