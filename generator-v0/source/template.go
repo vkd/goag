@@ -11,6 +11,10 @@ type Templater interface {
 	String() (string, error)
 }
 
+type TemplaterFunc func() (string, error)
+
+func (t TemplaterFunc) String() (string, error) { return t() }
+
 func InitTemplate(name, text string) *Template {
 	return &Template{
 		tm: template.Must(template.New(name).Funcs(template.FuncMap{
@@ -43,6 +47,8 @@ func execTemplateFunc(t reflect.Value) (string, error) {
 // --- deprecated ---
 
 type Render = Templater
+
+type RenderFunc = TemplaterFunc
 
 func String(tm *template.Template, data interface{}) (string, error) {
 	var bs bytes.Buffer

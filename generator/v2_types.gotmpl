@@ -1,0 +1,43 @@
+{{/* ----------------------------- Bool ------------------------------------- */}}
+
+{{ define "BoolParser" -}}
+{{ .To.Render }}, err := strconv.ParseBool({{ .From.Render }})
+if err != nil {
+	return zero, {{ .MkErr.Wrap "parse bool"}}
+}
+{{- end }}
+
+{{ define "BoolFormat" }}strconv.FormatBool({{ .From.Render }}){{ end }}
+
+{{/* ----------------------------- Int ------------------------------------- */}}
+
+{{ define "IntParser" -}}
+{{ .To.Render }}, err := strconv.ParseInt({{ .From.Render }}, 10, 0)
+if err != nil {
+	return zero, {{ .MkErr.Wrap "parse int"}}
+}
+{{- end }}
+
+{{ define "IntFormat" }}strconv.FormatInt(int64({{ .From.Render }}), 10){{ end }}
+
+{{/* ----------------------------- Int32 ------------------------------------- */}}
+
+{{ define "Int32Parser" -}}
+{{ .To.Render }}, err := strconv.ParseInt({{ .From.Render }}, 10, 32)
+if err != nil {
+	return zero, {{ .MkErr.Wrap "parse int32"}}
+}
+{{- end }}
+
+{{ define "Int32Format" }}strconv.FormatInt(int64({{ .From.Render }}), 10){{ end }}
+
+{{/* ----------------------------- Int64 ------------------------------------- */}}
+
+{{ define "Int64Parser" -}}
+{{ .To.Render }}, err := strconv.ParseInt({{ .From.Render }}, 10, 64)
+if err != nil {
+	return zero, {{ .MkErr.Wrap "parse int64"}}
+}
+{{- end }}
+
+{{ define "Int64Format" }}strconv.FormatInt({{ .From.Render }}, 10){{ end }}

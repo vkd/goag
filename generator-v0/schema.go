@@ -74,9 +74,9 @@ func NewSchema(spec *openapi3.Schema) SchemaRender {
 	case "integer":
 		switch spec.Format {
 		case "int32":
-			return source.GoIntXXVar(32)
+			return Int32
 		case "int64":
-			return source.GoIntXXVar(64)
+			return Int64
 		default:
 			return Int
 		}

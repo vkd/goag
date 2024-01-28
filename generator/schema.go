@@ -20,6 +20,10 @@ type Schema interface {
 	// Format() (Templater, error)
 }
 
+type SchemaFunc func(Templater) Templater
+
+func (s SchemaFunc) TemplateToString(t Templater) Templater { return s(t) }
+
 func NewSchema(spec specification.Schema) Schema {
 	// if spec.AllOf != nil {
 	// 	var fields []GoStructField
@@ -69,13 +73,17 @@ func NewSchema(spec specification.Schema) Schema {
 	case "integer":
 		switch spec.Schema.Format {
 		case "int32":
-			return Int32Type{}
-			// return source.GoIntXXVar(32)
+			return SchemaFunc(func(t Templater) Templater {
+				return TemplaterFunc(func() (string, error) { return IntType{32}.RenderFormat(RenderFunc(t.String)) })
+			})
 		case "int64":
-			return Int64Type{}
-			// return source.GoIntXXVar(64)
+			return SchemaFunc(func(t Templater) Templater {
+				return TemplaterFunc(func() (string, error) { return IntType{64}.RenderFormat(RenderFunc(t.String)) })
+			})
 		default:
-			return IntType{}
+			return SchemaFunc(func(t Templater) Templater {
+				return TemplaterFunc(func() (string, error) { return IntType{}.RenderFormat(RenderFunc(t.String)) })
+			})
 		}
 		// case "number":
 		// 	switch spec.Format {
@@ -85,8 +93,10 @@ func NewSchema(spec specification.Schema) Schema {
 		// 		return Float64
 		// 	}
 		// 	return Float64
-		// case "boolean":
-		// 	return BooleanType
+	case "boolean":
+		return SchemaFunc(func(t Templater) Templater {
+			return TemplaterFunc(func() (string, error) { return BoolType{}.RenderFormat(RenderFunc(t.String)) })
+		})
 	}
 
 	panic(fmt.Errorf("unknown schema type: %q", spec.Schema.Type))

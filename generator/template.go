@@ -32,6 +32,10 @@ type Templater interface {
 	String() (string, error)
 }
 
+type TemplaterFunc func() (string, error)
+
+func (t TemplaterFunc) String() (string, error) { return t() }
+
 type ExecTemplater interface {
 	Execute() (string, error)
 	// String() (string, error)
@@ -60,6 +64,15 @@ func InitTemplate(name, text string) *Template {
 	}
 }
 
+func ExecuteTemplate(name string, data any) (string, error) {
+	var bs bytes.Buffer
+	err := templates.tm.ExecuteTemplate(&bs, name, data)
+	if err != nil {
+		return "", fmt.Errorf("execute template (%s): %w", name, err)
+	}
+	return bs.String(), nil
+}
+
 type Template struct {
 	tm *template.Template
 }
@@ -74,12 +87,7 @@ func (t *Template) Execute(data interface{}) (string, error) {
 }
 
 func (t *Template) ExecuteTemplate(name string, data interface{}) (string, error) {
-	var bs bytes.Buffer
-	err := t.tm.ExecuteTemplate(&bs, name, data)
-	if err != nil {
-		return "", fmt.Errorf("execute template (%s): %w", name, err)
-	}
-	return bs.String(), nil
+	return ExecuteTemplate(name, data)
 }
 
 type Templaters []Templater

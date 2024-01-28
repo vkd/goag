@@ -27,36 +27,6 @@ func AssignTemplate(from, to Templater, isNew bool) Templater {
 	return TemplateData("Assign", AssignData{From: from, To: to, IsNew: isNew})
 }
 
-type Int64Type struct{}
-
-func (_ Int64Type) TemplateToString(t Templater) Templater {
-	return TemplateData("Int64ToString", t)
-}
-
-func (_ Int64Type) FormatAssignTemplater(from, to Templater, isNew bool) Templater {
-	return AssignTemplate(from, to, isNew)
-}
-
-type Int32Type struct{}
-
-func (_ Int32Type) TemplateToString(t Templater) Templater {
-	return Int64Type{}.TemplateToString(TemplateData("Int32ToInt64", t))
-}
-
-func (_ Int32Type) FormatAssignTemplater(from, to Templater, isNew bool) Templater {
-	return AssignTemplate(from, to, isNew)
-}
-
-type IntType struct{}
-
-func (_ IntType) TemplateToString(t Templater) Templater {
-	return Int64Type{}.TemplateToString(TemplateData("IntToInt64", t))
-}
-
-func (_ IntType) FormatAssignTemplater(from, to Templater, isNew bool) Templater {
-	return AssignTemplate(from, to, isNew)
-}
-
 type PointerType struct {
 	From, T Templater
 }

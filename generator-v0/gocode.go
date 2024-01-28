@@ -6,6 +6,7 @@ import (
 	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/vkd/goag/generator"
 	"github.com/vkd/goag/generator-v0/source"
 )
 
@@ -222,17 +223,28 @@ func (g GoType) Parser(from, to string, mkErr ErrorWrapper) Render {
 	case StringType:
 		return source.AssignNew(to, GoValue(from))
 	case Int:
-		return source.ParseInt(to, from, mkErr)
+		return RenderFunc(func() (string, error) {
+			return generator.IntType{}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
+		})
 	case Int32:
-		return source.ParseInt32(to, from, mkErr)
+		return source.Renders{
+			RenderFunc(func() (string, error) {
+				return generator.IntType{BitSize: 32}.RenderParser(generator.StringRender(from), generator.StringRender("vInt"), mkErr)
+			}),
+			source.AssignNew(to, source.TypeConversion("int32", "vInt")),
+		}
 	case Int64:
-		return source.ParseInt64(to, from, mkErr)
+		return RenderFunc(func() (string, error) {
+			return generator.IntType{BitSize: 64}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
+		})
 	case Float32:
 		return ConvertToFloat32(from, to, mkErr)
 	case Float64:
 		return ConvertToFloat64(from, to, mkErr)
 	case BooleanType:
-		return source.ConvertToBool(from, to, mkErr)
+		return RenderFunc(func() (string, error) {
+			return generator.BoolType{}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
+		})
 	default:
 		panic(fmt.Errorf("unsupported GoType: %q", g))
 	}
