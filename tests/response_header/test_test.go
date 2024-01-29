@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 func TestResponseHeader(t *testing.T) {
 	testHeader := "test_header"
 
-	handler := GetPetsHandlerFunc(func(_ GetPetsRequest) GetPetsResponse {
+	handler := GetPetsHandlerFunc(func(_ context.Context, _ GetPetsRequest) GetPetsResponse {
 		return NewGetPetsResponse200(testHeader)
 	})
 

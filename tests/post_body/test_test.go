@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -9,7 +10,7 @@ import (
 )
 
 func TestPostBody(t *testing.T) {
-	handler := PostPetsHandlerFunc(func(r PostPetsRequest) PostPetsResponse {
+	handler := PostPetsHandlerFunc(func(ctx context.Context, r PostPetsRequest) PostPetsResponse {
 		req, err := r.Parse()
 		if err != nil {
 			assert.NoError(t, err)

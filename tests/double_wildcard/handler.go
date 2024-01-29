@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,10 +12,10 @@ import (
 // GetPetsPetIDNames -
 // ---------------------------------------------
 
-type GetPetsPetIDNamesHandlerFunc func(r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse
+type GetPetsPetIDNamesHandlerFunc func(ctx context.Context, r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse
 
 func (f GetPetsPetIDNamesHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetPetsPetIDNamesHTTPRequest(r)).Write(w)
+	f(r.Context(), GetPetsPetIDNamesHTTPRequest(r)).Write(w)
 }
 
 type GetPetsPetIDNamesRequest interface {
@@ -105,10 +106,10 @@ func (r GetPetsPetIDNamesResponse200) Write(w http.ResponseWriter) {
 // GetPetsPetIDShops -
 // ---------------------------------------------
 
-type GetPetsPetIDShopsHandlerFunc func(r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse
+type GetPetsPetIDShopsHandlerFunc func(ctx context.Context, r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse
 
 func (f GetPetsPetIDShopsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetPetsPetIDShopsHTTPRequest(r)).Write(w)
+	f(r.Context(), GetPetsPetIDShopsHTTPRequest(r)).Write(w)
 }
 
 type GetPetsPetIDShopsRequest interface {

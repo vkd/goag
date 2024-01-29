@@ -12,7 +12,7 @@ import (
 
 func TestGetRequest_Names(t *testing.T) {
 	api := API{
-		GetPetsPetIDHandler: func(r GetPetsPetIDRequest) GetPetsPetIDResponse {
+		GetPetsPetIDHandler: func(ctx context.Context, r GetPetsPetIDRequest) GetPetsPetIDResponse {
 			params, err := r.Parse()
 			require.NoError(t, err)
 

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 
 func TestGetQueryArray_Strings(t *testing.T) {
 	handler := GetPetsHandlerFunc(
-		func(r GetPetsRequest) GetPetsResponse {
+		func(ctx context.Context, r GetPetsRequest) GetPetsResponse {
 			req, err := r.Parse()
 			if err != nil {
 				return NewGetPetsResponseDefault(400)
@@ -27,7 +28,7 @@ func TestGetQueryArray_Strings(t *testing.T) {
 
 func TestGetQueryArray_Ints(t *testing.T) {
 	handler := GetPetsHandlerFunc(
-		func(r GetPetsRequest) GetPetsResponse {
+		func(ctx context.Context, r GetPetsRequest) GetPetsResponse {
 			req, err := r.Parse()
 			if err != nil {
 				return NewGetPetsResponseDefault(400)

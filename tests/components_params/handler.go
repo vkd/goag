@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,10 +13,10 @@ import (
 // PostShopsNew -
 // ---------------------------------------------
 
-type PostShopsNewHandlerFunc func(r PostShopsNewRequest) PostShopsNewResponse
+type PostShopsNewHandlerFunc func(ctx context.Context, r PostShopsNewRequest) PostShopsNewResponse
 
 func (f PostShopsNewHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(PostShopsNewHTTPRequest(r)).Write(w)
+	f(r.Context(), PostShopsNewHTTPRequest(r)).Write(w)
 }
 
 type PostShopsNewRequest interface {
@@ -107,10 +108,10 @@ func (r PostShopsNewResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsShop -
 // ---------------------------------------------
 
-type GetShopsShopHandlerFunc func(r GetShopsShopRequest) GetShopsShopResponse
+type GetShopsShopHandlerFunc func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse
 
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetShopsShopHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsShopHTTPRequest(r)).Write(w)
 }
 
 type GetShopsShopRequest interface {
@@ -232,10 +233,10 @@ func (r GetShopsShopResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsShopReviews -
 // ---------------------------------------------
 
-type GetShopsShopReviewsHandlerFunc func(r GetShopsShopReviewsRequest) GetShopsShopReviewsResponse
+type GetShopsShopReviewsHandlerFunc func(ctx context.Context, r GetShopsShopReviewsRequest) GetShopsShopReviewsResponse
 
 func (f GetShopsShopReviewsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetShopsShopReviewsHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsShopReviewsHTTPRequest(r)).Write(w)
 }
 
 type GetShopsShopReviewsRequest interface {

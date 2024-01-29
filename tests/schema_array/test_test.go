@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http/httptest"
 	"testing"
@@ -10,7 +11,7 @@ import (
 )
 
 func TestSchemaArray(t *testing.T) {
-	h := GetPetsHandlerFunc(func(_ GetPetsRequest) GetPetsResponse {
+	h := GetPetsHandlerFunc(func(_ context.Context, _ GetPetsRequest) GetPetsResponse {
 		return NewGetPetsResponse200JSON([]Pet{{ID: 1, Name: "mike"}})
 	})
 
@@ -27,7 +28,7 @@ func TestSchemaArray(t *testing.T) {
 }
 
 func TestSchemaArray_Names(t *testing.T) {
-	h := GetPetsNamesHandlerFunc(func(_ GetPetsNamesRequest) GetPetsNamesResponse {
+	h := GetPetsNamesHandlerFunc(func(_ context.Context, _ GetPetsNamesRequest) GetPetsNamesResponse {
 		return NewGetPetsNamesResponse200JSON([]string{"mike"})
 	})
 

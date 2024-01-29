@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -9,10 +10,12 @@ import (
 
 func TestGetRequest_Names(t *testing.T) {
 	api := API{
-		GetPetsPetIDNamesHandler: func(r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse {
+		GetPetsPetIDNamesHandler: func(ctx context.Context, r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse {
 			return NewGetPetsPetIDNamesResponse200()
 		},
-		GetPetsPetIDShopsHandler: func(r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse { panic("wrong handler") },
+		GetPetsPetIDShopsHandler: func(ctx context.Context, r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse {
+			panic("wrong handler")
+		},
 	}
 
 	w := httptest.NewRecorder()
@@ -23,10 +26,12 @@ func TestGetRequest_Names(t *testing.T) {
 
 func TestGetRequest_Shops(t *testing.T) {
 	api := API{
-		GetPetsPetIDShopsHandler: func(r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse {
+		GetPetsPetIDShopsHandler: func(ctx context.Context, r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse {
 			return NewGetPetsPetIDShopsResponse200()
 		},
-		GetPetsPetIDNamesHandler: func(r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse { panic("wrong handler") },
+		GetPetsPetIDNamesHandler: func(ctx context.Context, r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse {
+			panic("wrong handler")
+		},
 	}
 
 	w := httptest.NewRecorder()
@@ -37,10 +42,10 @@ func TestGetRequest_Shops(t *testing.T) {
 
 func TestGetRequest_NotFound(t *testing.T) {
 	api := API{
-		GetPetsPetIDNamesHandler: func(r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse {
+		GetPetsPetIDNamesHandler: func(ctx context.Context, r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse {
 			return NewGetPetsPetIDNamesResponse200()
 		},
-		GetPetsPetIDShopsHandler: func(r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse {
+		GetPetsPetIDShopsHandler: func(ctx context.Context, r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse {
 			return NewGetPetsPetIDShopsResponse200()
 		},
 	}

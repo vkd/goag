@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -8,7 +9,7 @@ import (
 )
 
 func TestResponseSchema(t *testing.T) {
-	handler := GetPetHandlerFunc(func(_ GetPetRequest) GetPetResponse {
+	handler := GetPetHandlerFunc(func(_ context.Context, _ GetPetRequest) GetPetResponse {
 		return NewGetPetResponse200JSON(GetPetResponse200JSONBody{
 			Groups: map[string]Pets{
 				"cats": {Pet{Name: "mike"}, Pet{Name: "alex"}},

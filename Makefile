@@ -24,7 +24,8 @@ test-only:
 	go test $(if ${RUN},-run=${RUN},) ./...
 
 test-local: test-gen test-only
-test: test-gen test-only examples-gen update-readme
+test: test-gen examples-gen update-readme
+	go test $(if ${RUN},-run=${RUN},) ./...
 
 # clean:
 # 	rm -rf ${INTEGRATION_DIR}

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,10 +15,10 @@ import (
 // Get -
 // ---------------------------------------------
 
-type GetHandlerFunc func(r GetRequest) GetResponse
+type GetHandlerFunc func(ctx context.Context, r GetRequest) GetResponse
 
 func (f GetHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetHTTPRequest(r)).Write(w)
+	f(r.Context(), GetHTTPRequest(r)).Write(w)
 }
 
 type GetRequest interface {
@@ -77,10 +78,10 @@ func (r GetResponseDefault) Write(w http.ResponseWriter) {
 // GetShops -
 // ---------------------------------------------
 
-type GetShopsHandlerFunc func(r GetShopsRequest) GetShopsResponse
+type GetShopsHandlerFunc func(ctx context.Context, r GetShopsRequest) GetShopsResponse
 
 func (f GetShopsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetShopsHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsHTTPRequest(r)).Write(w)
 }
 
 type GetShopsRequest interface {
@@ -140,10 +141,10 @@ func (r GetShopsResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsRT -
 // ---------------------------------------------
 
-type GetShopsRTHandlerFunc func(r GetShopsRTRequest) GetShopsRTResponse
+type GetShopsRTHandlerFunc func(ctx context.Context, r GetShopsRTRequest) GetShopsRTResponse
 
 func (f GetShopsRTHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetShopsRTHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsRTHTTPRequest(r)).Write(w)
 }
 
 type GetShopsRTRequest interface {
@@ -203,10 +204,10 @@ func (r GetShopsRTResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsActivate -
 // ---------------------------------------------
 
-type GetShopsActivateHandlerFunc func(r GetShopsActivateRequest) GetShopsActivateResponse
+type GetShopsActivateHandlerFunc func(ctx context.Context, r GetShopsActivateRequest) GetShopsActivateResponse
 
 func (f GetShopsActivateHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetShopsActivateHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsActivateHTTPRequest(r)).Write(w)
 }
 
 type GetShopsActivateRequest interface {
@@ -266,10 +267,10 @@ func (r GetShopsActivateResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsActivateRT -
 // ---------------------------------------------
 
-type GetShopsActivateRTHandlerFunc func(r GetShopsActivateRTRequest) GetShopsActivateRTResponse
+type GetShopsActivateRTHandlerFunc func(ctx context.Context, r GetShopsActivateRTRequest) GetShopsActivateRTResponse
 
 func (f GetShopsActivateRTHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetShopsActivateRTHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsActivateRTHTTPRequest(r)).Write(w)
 }
 
 type GetShopsActivateRTRequest interface {
@@ -329,10 +330,10 @@ func (r GetShopsActivateRTResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsActivateTag -
 // ---------------------------------------------
 
-type GetShopsActivateTagHandlerFunc func(r GetShopsActivateTagRequest) GetShopsActivateTagResponse
+type GetShopsActivateTagHandlerFunc func(ctx context.Context, r GetShopsActivateTagRequest) GetShopsActivateTagResponse
 
 func (f GetShopsActivateTagHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetShopsActivateTagHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsActivateTagHTTPRequest(r)).Write(w)
 }
 
 type GetShopsActivateTagRequest interface {
@@ -392,10 +393,10 @@ func (r GetShopsActivateTagResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsShop -
 // ---------------------------------------------
 
-type GetShopsShopHandlerFunc func(r GetShopsShopRequest) GetShopsShopResponse
+type GetShopsShopHandlerFunc func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse
 
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetShopsShopHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsShopHTTPRequest(r)).Write(w)
 }
 
 type GetShopsShopRequest interface {
@@ -488,10 +489,10 @@ func (r GetShopsShopResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsShopRT -
 // ---------------------------------------------
 
-type GetShopsShopRTHandlerFunc func(r GetShopsShopRTRequest) GetShopsShopRTResponse
+type GetShopsShopRTHandlerFunc func(ctx context.Context, r GetShopsShopRTRequest) GetShopsShopRTResponse
 
 func (f GetShopsShopRTHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetShopsShopRTHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsShopRTHTTPRequest(r)).Write(w)
 }
 
 type GetShopsShopRTRequest interface {
@@ -589,10 +590,10 @@ func (r GetShopsShopRTResponseDefault) Write(w http.ResponseWriter) {
 // GetShopsShopPets -
 // ---------------------------------------------
 
-type GetShopsShopPetsHandlerFunc func(r GetShopsShopPetsRequest) GetShopsShopPetsResponse
+type GetShopsShopPetsHandlerFunc func(ctx context.Context, r GetShopsShopPetsRequest) GetShopsShopPetsResponse
 
 func (f GetShopsShopPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetShopsShopPetsHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsShopPetsHTTPRequest(r)).Write(w)
 }
 
 type GetShopsShopPetsRequest interface {
@@ -756,10 +757,10 @@ func (r GetShopsShopPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 // ReviewShop -
 // ---------------------------------------------
 
-type ReviewShopHandlerFunc func(r ReviewShopRequest) ReviewShopResponse
+type ReviewShopHandlerFunc func(ctx context.Context, r ReviewShopRequest) ReviewShopResponse
 
 func (f ReviewShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(ReviewShopHTTPRequest(r)).Write(w)
+	f(r.Context(), ReviewShopHTTPRequest(r)).Write(w)
 }
 
 type ReviewShopRequest interface {

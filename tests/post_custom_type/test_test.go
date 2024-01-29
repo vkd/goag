@@ -15,7 +15,7 @@ import (
 func TestPostBody(t *testing.T) {
 	ctx := context.Background()
 	api := API{
-		PostShopsShopPetsHandler: func(r PostShopsShopPetsRequest) PostShopsShopPetsResponse {
+		PostShopsShopPetsHandler: func(ctx context.Context, r PostShopsShopPetsRequest) PostShopsShopPetsResponse {
 			req, err := r.Parse()
 			if err != nil {
 				assert.NoError(t, err)

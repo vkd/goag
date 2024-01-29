@@ -13,7 +13,7 @@ import (
 func TestResponseSchema(t *testing.T) {
 	ctx := context.Background()
 	api := API{
-		GetPetHandler: func(_ GetPetRequest) GetPetResponse {
+		GetPetHandler: func(_ context.Context, _ GetPetRequest) GetPetResponse {
 			return NewGetPetResponse200JSON(RawResponse("hello"))
 		},
 	}

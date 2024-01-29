@@ -15,22 +15,26 @@ func TestDefault(t *testing.T) {
 	ctx := context.Background()
 
 	api := API{
-		GetHandler:        func(r GetRequest) GetResponse { return GetResponseDefault{Code: 201} },
-		GetShopsHandler:   func(r GetShopsRequest) GetShopsResponse { return GetShopsResponseDefault{Code: 202} },
-		GetShopsRTHandler: func(r GetShopsRTRequest) GetShopsRTResponse { return GetShopsRTResponseDefault{Code: 203} },
-		GetShopsActivateHandler: func(r GetShopsActivateRequest) GetShopsActivateResponse {
+		GetHandler: func(ctx context.Context, r GetRequest) GetResponse { return GetResponseDefault{Code: 201} },
+		GetShopsHandler: func(ctx context.Context, r GetShopsRequest) GetShopsResponse {
+			return GetShopsResponseDefault{Code: 202}
+		},
+		GetShopsRTHandler: func(ctx context.Context, r GetShopsRTRequest) GetShopsRTResponse {
+			return GetShopsRTResponseDefault{Code: 203}
+		},
+		GetShopsActivateHandler: func(ctx context.Context, r GetShopsActivateRequest) GetShopsActivateResponse {
 			return GetShopsActivateResponseDefault{Code: 204}
 		},
-		GetShopsActivateRTHandler: func(r GetShopsActivateRTRequest) GetShopsActivateRTResponse {
+		GetShopsActivateRTHandler: func(ctx context.Context, r GetShopsActivateRTRequest) GetShopsActivateRTResponse {
 			return GetShopsActivateRTResponseDefault{Code: 205}
 		},
-		GetShopsShopPetsHandler: func(r GetShopsShopPetsRequest) GetShopsShopPetsResponse {
+		GetShopsShopPetsHandler: func(ctx context.Context, r GetShopsShopPetsRequest) GetShopsShopPetsResponse {
 			return GetShopsShopPetsResponse200JSON{Headers: struct {
 				Body  GetShopsShopPetsResponse200JSONBody
 				XNext string
 			}{XNext: "test-next-value"}}
 		},
-		ReviewShopHandler: func(r ReviewShopRequest) ReviewShopResponse {
+		ReviewShopHandler: func(ctx context.Context, r ReviewShopRequest) ReviewShopResponse {
 			params, err := r.Parse()
 			if err != nil {
 				return NewReviewShopResponseDefaultJSON(500, Error{Message: fmt.Errorf("parse request: %w", err).Error()})
@@ -89,16 +93,16 @@ func (a API) Client() *Client {
 	return NewClient("", a)
 }
 
-var testFunc = GetHandlerFunc(func(r GetRequest) GetResponse {
+var testFunc = GetHandlerFunc(func(ctx context.Context, r GetRequest) GetResponse {
 	return GetResponseDefault{Code: 101}
 })
 
 func TestCustom(t *testing.T) {
-	resp := testFunc(GetParams{}).(GetResponseDefault)
+	resp := testFunc(context.Background(), GetParams{}).(GetResponseDefault)
 	assert.Equal(t, 101, resp.Code)
 }
 
 func TestCustom2(t *testing.T) {
-	resp := testFunc(GetHTTPRequest(httptest.NewRequest("GET", "/", nil))).(GetResponseDefault)
+	resp := testFunc(context.Background(), GetHTTPRequest(httptest.NewRequest("GET", "/", nil))).(GetResponseDefault)
 	assert.Equal(t, 101, resp.Code)
 }

@@ -11,7 +11,7 @@ import (
 )
 
 func TestResponseDefault(t *testing.T) {
-	handler := GetPetsHandlerFunc(func(_ GetPetsRequest) GetPetsResponse {
+	handler := GetPetsHandlerFunc(func(_ context.Context, _ GetPetsRequest) GetPetsResponse {
 		return NewGetPetsResponseDefaultJSON(400, Error{Message: "test default response"})
 	})
 
@@ -44,9 +44,7 @@ func TestResponse_Canceled(t *testing.T) {
 	clientStart := make(chan struct{})
 
 	api := &API{
-		GetPetsHandler: func(r GetPetsRequest) GetPetsResponse {
-			ctx := r.HTTP().Context()
-
+		GetPetsHandler: func(ctx context.Context, r GetPetsRequest) GetPetsResponse {
 			close(clientStart)
 			<-ctx.Done()
 			return NewGetPetsResponseDefaultJSON(500, Error{Message: "test default response"})

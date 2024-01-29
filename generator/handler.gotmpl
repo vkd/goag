@@ -14,10 +14,10 @@
 // ---------------------------------------------
 
 {{if $h.Summary}}// {{$handlerFunc}} - {{$h.Summary}}{{end}}
-type {{ $handlerFunc }} func(r {{$requestParser}}) {{$responseWriter}}
+type {{ $handlerFunc }} func(ctx context.Context, r {{$requestParser}}) {{$responseWriter}}
 
 func (f {{$handlerFunc}}) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f({{$httpRequestParser}}(r)).Write(w)
+	f(r.Context(), {{$httpRequestParser}}(r)).Write(w)
 }
 
 type {{$requestParser}} interface {

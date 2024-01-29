@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http/httptest"
 	"testing"
@@ -10,7 +11,7 @@ import (
 )
 
 func TestSchemaArrayFloat(t *testing.T) {
-	h := GetPetsIDsHandlerFunc(func(_ GetPetsIDsRequest) GetPetsIDsResponse {
+	h := GetPetsIDsHandlerFunc(func(_ context.Context, _ GetPetsIDsRequest) GetPetsIDsResponse {
 		return NewGetPetsIDsResponse200JSON([]float64{0.8})
 	})
 

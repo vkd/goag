@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,10 +15,10 @@ import (
 // GetPetsPetID -
 // ---------------------------------------------
 
-type GetPetsPetIDHandlerFunc func(r GetPetsPetIDRequest) GetPetsPetIDResponse
+type GetPetsPetIDHandlerFunc func(ctx context.Context, r GetPetsPetIDRequest) GetPetsPetIDResponse
 
 func (f GetPetsPetIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetPetsPetIDHTTPRequest(r)).Write(w)
+	f(r.Context(), GetPetsPetIDHTTPRequest(r)).Write(w)
 }
 
 type GetPetsPetIDRequest interface {

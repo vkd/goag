@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,10 +16,10 @@ import (
 // ---------------------------------------------
 
 // ListPetsHandlerFunc - List all pets
-type ListPetsHandlerFunc func(r ListPetsRequest) ListPetsResponse
+type ListPetsHandlerFunc func(ctx context.Context, r ListPetsRequest) ListPetsResponse
 
 func (f ListPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(ListPetsHTTPRequest(r)).Write(w)
+	f(r.Context(), ListPetsHTTPRequest(r)).Write(w)
 }
 
 type ListPetsRequest interface {
@@ -128,10 +129,10 @@ func (r ListPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 // ---------------------------------------------
 
 // CreatePetsHandlerFunc - Create a pet
-type CreatePetsHandlerFunc func(r CreatePetsRequest) CreatePetsResponse
+type CreatePetsHandlerFunc func(ctx context.Context, r CreatePetsRequest) CreatePetsResponse
 
 func (f CreatePetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(CreatePetsHTTPRequest(r)).Write(w)
+	f(r.Context(), CreatePetsHTTPRequest(r)).Write(w)
 }
 
 type CreatePetsRequest interface {
@@ -210,10 +211,10 @@ func (r CreatePetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 // ---------------------------------------------
 
 // ShowPetByIDHandlerFunc - Info for a specific pet
-type ShowPetByIDHandlerFunc func(r ShowPetByIDRequest) ShowPetByIDResponse
+type ShowPetByIDHandlerFunc func(ctx context.Context, r ShowPetByIDRequest) ShowPetByIDResponse
 
 func (f ShowPetByIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(ShowPetByIDHTTPRequest(r)).Write(w)
+	f(r.Context(), ShowPetByIDHTTPRequest(r)).Write(w)
 }
 
 type ShowPetByIDRequest interface {

@@ -16,7 +16,7 @@ var db interface {
 
 func ExampleAPI_petsStore() {
     api := &API{
-        ShowPetByIDHandler: func(r ShowPetByIDRequest) ShowPetByIDResponse {
+        ShowPetByIDHandler: func(ctx context.Context, r ShowPetByIDRequest) ShowPetByIDResponse {
             req, err := r.Parse()
             if err != nil {
                 return NewShowPetByIDResponseDefaultJSON(http.StatusBadRequest, Error{

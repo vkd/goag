@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,10 +13,10 @@ import (
 // GetReviews -
 // ---------------------------------------------
 
-type GetReviewsHandlerFunc func(r GetReviewsRequest) GetReviewsResponse
+type GetReviewsHandlerFunc func(ctx context.Context, r GetReviewsRequest) GetReviewsResponse
 
 func (f GetReviewsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(GetReviewsHTTPRequest(r)).Write(w)
+	f(r.Context(), GetReviewsHTTPRequest(r)).Write(w)
 }
 
 type GetReviewsRequest interface {

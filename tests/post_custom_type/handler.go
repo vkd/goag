@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,10 +15,10 @@ import (
 // PostShopsShopPets -
 // ---------------------------------------------
 
-type PostShopsShopPetsHandlerFunc func(r PostShopsShopPetsRequest) PostShopsShopPetsResponse
+type PostShopsShopPetsHandlerFunc func(ctx context.Context, r PostShopsShopPetsRequest) PostShopsShopPetsResponse
 
 func (f PostShopsShopPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(PostShopsShopPetsHTTPRequest(r)).Write(w)
+	f(r.Context(), PostShopsShopPetsHTTPRequest(r)).Write(w)
 }
 
 type PostShopsShopPetsRequest interface {

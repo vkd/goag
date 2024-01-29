@@ -39,7 +39,7 @@ func TestDefault(t *testing.T) {
 	params.Headers.RequestID = ptr("2000")
 	params.Headers.UserID = "2001"
 
-	api := API{GetReviewsHandler: func(r GetReviewsRequest) GetReviewsResponse {
+	api := API{GetReviewsHandler: func(ctx context.Context, r GetReviewsRequest) GetReviewsResponse {
 		p, err := r.Parse()
 		require.NoError(t, err)
 		// Path
