@@ -11,12 +11,18 @@ import (
 type Spec struct {
 	Swagger *openapi3.Swagger
 
+	OpenAPI string
+	Info    Info
+
 	Paths      []*PathItem
 	Operations []*Operation
 }
 
 func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
-	s := &Spec{}
+	s := &Spec{
+		OpenAPI: spec.OpenAPI,
+		Info:    NewInfo(spec.Info),
+	}
 
 	for _, path := range sortedKeys(spec.Paths) {
 		p, err := NewPath(path)

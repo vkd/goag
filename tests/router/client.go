@@ -15,6 +15,12 @@ type HTTPClient interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
+type HTTPClientFunc func(*http.Request) (*http.Response, error)
+
+var _ HTTPClient = HTTPClientFunc(nil)
+
+func (f HTTPClientFunc) Do(r *http.Request) (*http.Response, error) { return f(r) }
+
 var _ HTTPClient = (*http.Client)(nil)
 
 func NewClient(baseURL string, httpClient HTTPClient) *Client {
