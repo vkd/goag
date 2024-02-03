@@ -149,3 +149,11 @@ func (c CustomType) RenderFormat(from Render) (string, error) {
 		From Render
 	}{From: from})
 }
+
+type SliceType struct {
+	Items Schema
+}
+
+func (s SliceType) RenderFormat(from Render) (string, error) {
+	return "", fmt.Errorf("SliceType doesn't implement Formatter interface")
+}

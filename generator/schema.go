@@ -97,48 +97,4 @@ type StringConst string
 func (s StringConst) Execute() (string, error) { return "\"" + string(s) + "\"", nil }
 func (s StringConst) String() (string, error)  { return s.Execute() }
 
-// ---
-
-// type Formatter struct{}
-
-// type StringVar struct{}
-
-// type StringType struct{}
-
-// func (_ StringType) FormatTemplate(t Templater) Templater {
-// 	return t
-// }
-
-// func (_ StringType) ToString(varName string) (string, error) { return varName, nil }
-
-// func Int64ToString(t Templater) Templater {
-// 	return Int64Type{t}
-// }
-
-// type Int64Type struct {
-// 	t Templater
-// 	a Int64ToString
-// }
-
-// func (t Int64Type) String() (string, error) {
-// 	return templates.ExecuteTemplate("Int64ToString", t.t)
-// }
-
-// func (_ Int64Type) FormatTemplate(t Templater) Templater {
-// 	return templates.ExecuteTemplate("Int64ToString", t)
-// 	// return RawTemplate("strconv.FormatInt(" + varName + ", 10)")
-// }
-
-// type IntType struct{}
-
-// //	func (_ IntType) ExecuteArgs(args ...any) (string, error) {
-// //		log.Printf("args: %+v", args)
-// //		return "IntType{}", nil
-// //	}
-// func (_ IntType) ToInt64(varName string) Templater {
-// 	return InitTemplate("int->int64", "int64({{ exec . }})").Execute(Int64Type{})
-// 	// Int64Type{}.ToString(varName)
-// 	// return RawTemplate("str->int(" + varName + ")")
-// }
-
 var CustomImports []string
