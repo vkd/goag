@@ -12,16 +12,3 @@ type assign struct {
 }
 
 func (c assign) String() (string, error) { return tmAssign.String(c) }
-
-func AssignNew(to string, from Render) Render {
-	return assignNew{to, from}
-}
-
-var tmAssignNew = InitTemplate("AssignNew", `{{.To}} := {{.From.String}}`)
-
-type assignNew struct {
-	To   string
-	From Render
-}
-
-func (c assignNew) String() (string, error) { return tmAssignNew.String(c) }

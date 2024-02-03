@@ -17,6 +17,7 @@ type ErrorRender interface {
 	New(message string) string
 }
 
+// Parser parses 'string' to '<type>'.
 type Parser interface {
 	RenderParser(from, to Render, mkErr ErrorRender) (string, error)
 }
@@ -27,6 +28,7 @@ func (p ParserFunc) RenderParser(from, to Render, mkErr ErrorRender) (string, er
 	return p(from, to, mkErr)
 }
 
+// Formatter formats 'string' from '<type>'.
 type Formatter interface {
 	RenderFormat(from Render) (string, error)
 }

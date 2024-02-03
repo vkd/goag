@@ -12,10 +12,11 @@ if err != nil {
 {{/* ----------------------------- Int ------------------------------------- */}}
 
 {{ define "IntParser" -}}
-{{ .To.Render }}, err := strconv.ParseInt({{ .From.Render }}, 10, 0)
+vInt, err := strconv.ParseInt({{ .From.Render }}, 10, 0)
 if err != nil {
 	return zero, {{ .MkErr.Wrap "parse int"}}
 }
+{{ .To.Render }} := int(vInt)
 {{- end }}
 
 {{ define "IntFormat" }}strconv.FormatInt(int64({{ .From.Render }}), 10){{ end }}
@@ -23,10 +24,11 @@ if err != nil {
 {{/* ----------------------------- Int32 ------------------------------------- */}}
 
 {{ define "Int32Parser" -}}
-{{ .To.Render }}, err := strconv.ParseInt({{ .From.Render }}, 10, 32)
+vInt, err := strconv.ParseInt({{ .From.Render }}, 10, 32)
 if err != nil {
 	return zero, {{ .MkErr.Wrap "parse int32"}}
 }
+{{ .To.Render }} := int32(vInt)
 {{- end }}
 
 {{ define "Int32Format" }}strconv.FormatInt(int64({{ .From.Render }}), 10){{ end }}
@@ -45,10 +47,11 @@ if err != nil {
 {{/* ----------------------------- Float32 ------------------------------------- */}}
 
 {{ define "Float32Parser" -}}
-{{ .To.Render }}, err := strconv.ParseFloat({{ .From.Render }}, 32)
+vFloat, err := strconv.ParseFloat({{ .From.Render }}, 32)
 if err != nil {
 	return zero, {{ .MkErr.Wrap "parse float32"}}
 }
+{{ .To.Render }} := float32(vFloat)
 {{- end }}
 
 {{ define "Float32Format" }}strconv.FormatFloat(float64({{ .From.Render }}), 'e', -1, 32){{ end }}
