@@ -21,6 +21,7 @@ func init() {
 					"exec":    execTemplateFunc,
 					"private": privateTemplateFunc,
 					"raw":     rawTemplateFunc,
+					"render":  renderTemplateFunc,
 				}).
 				ParseFS(templatesFS, "*.gotmpl"),
 		),
@@ -127,6 +128,8 @@ func execTemplateFunc(t reflect.Value, args ...any) (string, error) {
 		ExecuteArgs(...any) (string, error)
 	}:
 		return t.ExecuteArgs(args...)
+	case string:
+		return t, nil
 	}
 
 	return "", fmt.Errorf("%T does not implement Templater: missing method Execute() (string, error)", t.Interface())
@@ -145,6 +148,15 @@ func rawTemplateFunc(t reflect.Value) (Templater, error) {
 	switch t := t.Interface().(type) {
 	case string:
 		return RawTemplate(t), nil
+	}
+
+	return nil, fmt.Errorf("%T is not string", t.Interface())
+}
+
+func renderTemplateFunc(t reflect.Value) (Render, error) {
+	switch t := t.Interface().(type) {
+	case string:
+		return StringRender(t), nil
 	}
 
 	return nil, fmt.Errorf("%T is not string", t.Interface())

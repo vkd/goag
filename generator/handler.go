@@ -110,7 +110,11 @@ type PathDir struct {
 
 func (p PathDir) FormatTemplater(varName string) Templater {
 	if p.Param != nil {
-		return p.Param.Type.TemplateToString(RawTemplate(varName + ".Path." + p.Param.FieldName))
+		return TemplaterFunc(func() (string, error) {
+			return p.Param.Type.RenderFormat(RenderFunc(func() (string, error) {
+				return RawTemplate(varName + ".Path." + p.Param.FieldName).String()
+			}))
+		})
 		// p.Param.Type
 		// return fieldRef
 		// panic("not implemented")
@@ -174,9 +178,9 @@ func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
 	}
 
 	tm := AssignTemplate(
-		ToSliceStrings(
-			p.Type.TemplateToString(fromTm),
-		),
+		ToSliceStrings(TemplaterFunc(func() (string, error) {
+			return p.Type.RenderFormat(RenderFunc(fromTm.String))
+		})),
 		toTm,
 		false,
 	)
@@ -185,9 +189,9 @@ func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
 		tm = TemplateData("OptionalAssign", TData{
 			"From": fromTm,
 			"T": AssignTemplate(
-				ToSliceStrings(
-					p.Type.TemplateToString(RawTemplate("*"+fromTxt)),
-				),
+				ToSliceStrings(TemplaterFunc(func() (string, error) {
+					return p.Type.RenderFormat(RenderFunc(RawTemplate("*" + fromTxt).String))
+				})),
 				toTm,
 				false,
 			),

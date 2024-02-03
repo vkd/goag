@@ -8,7 +8,7 @@
 {
     query_values := make([]string, 0, {{ .Len }})
     for _, v := range {{ exec .From }} {
-        query_values = append(query_values, {{ exec (.Items.TemplateToString (raw "v")) }})
+        query_values = append(query_values, {{ exec (.Items.RenderFormat (render "v")) }})
     }
     {{ exec .To }} = query_values
 }

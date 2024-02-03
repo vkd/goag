@@ -1,6 +1,9 @@
 package generator
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type BoolType struct{}
 
@@ -114,4 +117,35 @@ func (i FloatType) RenderFormat(from Render) (string, error) {
 	default:
 		return "", fmt.Errorf("unsupported float bit size %d", i.BitSize)
 	}
+}
+
+type StringType struct{}
+
+func (_ StringType) RenderFormat(from Render) (string, error) {
+	return from.Render()
+}
+
+type CustomType string
+
+func NewCustomType(s string) CustomType {
+	var customImport, customType string = "", s
+	slIdx := strings.LastIndex(s, "/")
+	if slIdx >= 0 {
+		customImport = s[:slIdx]
+		customType = s[slIdx+1:]
+
+		dotIdx := strings.LastIndex(s, ".")
+		if dotIdx >= 0 {
+			customImport = s[:dotIdx]
+		}
+	}
+
+	CustomImports = append(CustomImports, customImport)
+	return CustomType(customType)
+}
+
+func (c CustomType) RenderFormat(from Render) (string, error) {
+	return ExecuteTemplate("CustomTypeFormat", struct {
+		From Render
+	}{From: from})
 }

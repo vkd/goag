@@ -66,3 +66,14 @@ if err != nil {
 {{- end }}
 
 {{ define "Float64Format" }}strconv.FormatFloat({{ .From.Render }}, 'e', -1, 64){{ end }}
+
+{{/* ----------------------------- CustomType ------------------------------------- */}}
+
+{{ define "CustomTypeParser" -}}
+{{ .To.Render }}, err := strconv.ParseFloat({{ .From.Render }}, 64)
+if err != nil {
+	return zero, {{ .MkErr.Wrap "parse float64"}}
+}
+{{- end }}
+
+{{ define "CustomTypeFormat" }}{{ .From.Render }}.String(){{ end }}

@@ -3,10 +3,7 @@ package generator
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-	"text/template"
 
-	"github.com/vkd/goag/generator-v0/source"
 	"github.com/vkd/goag/specification"
 )
 
@@ -14,15 +11,15 @@ const ExtTagGoType = "x-goag-go-type"
 
 type Schema interface {
 	// FormatQuery()
-	TemplateToString(Templater) Templater
+	RenderFormat(from Render) (string, error)
 	// FormatAssignTemplater(from, to Templater, isNew bool) Templater
 	// ExecuteParse() (string, error)
 	// Format() (Templater, error)
 }
 
-type SchemaFunc func(Templater) Templater
+type SchemaFunc func(from Render) (string, error)
 
-func (s SchemaFunc) TemplateToString(t Templater) Templater { return s(t) }
+func (s SchemaFunc) RenderFormat(from Render) (string, error) { return s(from) }
 
 func NewSchema(spec specification.Schema) Schema {
 	// if spec.AllOf != nil {
@@ -73,35 +70,23 @@ func NewSchema(spec specification.Schema) Schema {
 	case "integer":
 		switch spec.Schema.Format {
 		case "int32":
-			return SchemaFunc(func(t Templater) Templater {
-				return TemplaterFunc(func() (string, error) { return IntType{32}.RenderFormat(RenderFunc(t.String)) })
-			})
+			return IntType{32}
 		case "int64":
-			return SchemaFunc(func(t Templater) Templater {
-				return TemplaterFunc(func() (string, error) { return IntType{64}.RenderFormat(RenderFunc(t.String)) })
-			})
+			return IntType{64}
 		default:
-			return SchemaFunc(func(t Templater) Templater {
-				return TemplaterFunc(func() (string, error) { return IntType{}.RenderFormat(RenderFunc(t.String)) })
-			})
+			return IntType{}
 		}
 	case "number":
 		switch spec.Schema.Format {
 		case "float":
-			return SchemaFunc(func(t Templater) Templater {
-				return TemplaterFunc(func() (string, error) { return FloatType{BitSize: 32}.RenderFormat(RenderFunc(t.String)) })
-			})
+			return FloatType{BitSize: 32}
 		case "double", "":
 		default:
 			panic(fmt.Errorf("unsupported 'number' format %q", spec.Schema.Format))
 		}
-		return SchemaFunc(func(t Templater) Templater {
-			return TemplaterFunc(func() (string, error) { return FloatType{BitSize: 64}.RenderFormat(RenderFunc(t.String)) })
-		})
+		return FloatType{BitSize: 64}
 	case "boolean":
-		return SchemaFunc(func(t Templater) Templater {
-			return TemplaterFunc(func() (string, error) { return BoolType{}.RenderFormat(RenderFunc(t.String)) })
-		})
+		return BoolType{}
 	}
 
 	panic(fmt.Errorf("unknown schema type: %q", spec.Schema.Type))
@@ -157,54 +142,3 @@ func (s StringConst) String() (string, error)  { return s.Execute() }
 // }
 
 var CustomImports []string
-
-type CustomType string
-
-func NewCustomType(s string) CustomType {
-	var customImport, customType string = "", s
-	slIdx := strings.LastIndex(s, "/")
-	if slIdx >= 0 {
-		customImport = s[:slIdx]
-		customType = s[slIdx+1:]
-
-		dotIdx := strings.LastIndex(s, ".")
-		if dotIdx >= 0 {
-			customImport = s[:dotIdx]
-		}
-	}
-
-	CustomImports = append(CustomImports, customImport)
-	return CustomType(customType)
-}
-
-func (c CustomType) String() (string, error) {
-	return string(c), nil
-}
-
-func (c CustomType) Parser(from, to string, mkErr source.ErrorWrapper) source.Render {
-	return CustomTypeParser{string(c), from, to, mkErr}
-}
-
-func (c CustomType) Format(s string) source.Templater {
-	panic("not implemented")
-}
-
-func (c CustomType) TemplateToString(t Templater) Templater {
-	return StringerType{}.TemplateToString(t)
-}
-
-type CustomTypeParser struct {
-	Type  string
-	From  string
-	To    string
-	Error source.ErrorWrapper
-}
-
-var tmCustomTypeParser = template.Must(template.New("CustomTypeParser").Parse(`
-var v {{ .Type }}
-err := v.UnmarshalText([]byte({{.From}}))
-if err != nil {
-	return zero, {{.Error.Wrap (print "unmarshal text")}}
-}`))
-
-func (c CustomTypeParser) String() (string, error) { return source.String(tmCustomTypeParser, c) }

@@ -1,15 +1,5 @@
 package generator
 
-type StringType struct{}
-
-func (_ StringType) TemplateToString(t Templater) Templater {
-	return t
-}
-
-func (_ StringType) FormatAssignTemplater(from, to Templater, isNew bool) Templater {
-	return AssignTemplate(from, to, isNew)
-}
-
 type StringerType struct {
 	T Templater
 }
@@ -44,7 +34,7 @@ type SliceType struct {
 	Items Schema
 }
 
-func (s SliceType) TemplateToString(t Templater) Templater {
+func (s SliceType) RenderFormat(from Render) (string, error) {
 	// return TemplateData("SliceToSliceStrings", TData{"From": from, "Items": s.Items})
 	// return t
 	panic("not implemented")

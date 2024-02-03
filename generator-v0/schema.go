@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
 
@@ -45,7 +46,7 @@ func NewSchema(spec *openapi3.Schema) SchemaRender {
 			if len(s) > 2 {
 				s = s[1 : len(s)-1]
 			}
-			return generator.NewCustomType(s)
+			return NewCustomType(s)
 		}
 	}
 
@@ -136,3 +137,43 @@ func NewSchemas(ss openapi3.Schemas) SchemasItems {
 
 	return fields
 }
+
+type CustomType string
+
+func NewCustomType(s string) CustomType {
+	var customType string = s
+	slIdx := strings.LastIndex(s, "/")
+	if slIdx >= 0 {
+		customType = s[slIdx+1:]
+	}
+
+	return CustomType(customType)
+}
+
+func (c CustomType) String() (string, error) {
+	return string(c), nil
+}
+
+func (c CustomType) Parser(from, to string, mkErr source.ErrorWrapper) source.Render {
+	return CustomTypeParser{string(c), from, to, mkErr}
+}
+
+func (c CustomType) Format(s string) source.Templater {
+	panic("not implemented, customType format")
+}
+
+type CustomTypeParser struct {
+	Type  string
+	From  string
+	To    string
+	Error source.ErrorWrapper
+}
+
+var tmCustomTypeParser = template.Must(template.New("CustomTypeParser").Parse(`
+var v {{ .Type }}
+err := v.UnmarshalText([]byte({{.From}}))
+if err != nil {
+	return zero, {{.Error.Wrap (print "unmarshal text")}}
+}`))
+
+func (c CustomTypeParser) String() (string, error) { return source.String(tmCustomTypeParser, c) }
