@@ -65,13 +65,25 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 	}
 
 	for _, qp := range o.Parameters.Query {
-		h.Params.Query = append(h.Params.Query, NewQueryParameter(qp))
+		p, err := NewQueryParameter(qp)
+		if err != nil {
+			return zero, fmt.Errorf("schema for query parameter %q: %w", qp.Name, err)
+		}
+		h.Params.Query = append(h.Params.Query, p)
 	}
 	for _, qp := range o.Parameters.Path {
-		h.Params.Path = append(h.Params.Path, NewPathParameter(qp))
+		p, err := NewPathParameter(qp)
+		if err != nil {
+			return zero, fmt.Errorf("schema for path parameter %q: %w", qp.Name, err)
+		}
+		h.Params.Path = append(h.Params.Path, p)
 	}
 	for _, qp := range o.Parameters.Headers {
-		h.Params.Headers = append(h.Params.Headers, NewHeaderParameter(qp))
+		p, err := NewHeaderParameter(qp)
+		if err != nil {
+			return zero, fmt.Errorf("schema for header parameter %q: %w", qp.Name, err)
+		}
+		h.Params.Headers = append(h.Params.Headers, p)
 	}
 
 	{
@@ -115,11 +127,10 @@ func (p PathDir) FormatTemplater(varName string) Templater {
 				return RawTemplate(varName + ".Path." + p.Param.FieldName).String()
 			}))
 		})
-		// p.Param.Type
-		// return fieldRef
-		// panic("not implemented")
 	} else {
-		return StringConst(p.V)
+		return TemplaterFunc(func() (string, error) {
+			return "\"" + p.V + "\"", nil
+		})
 	}
 }
 
@@ -147,16 +158,20 @@ type QueryParameter struct {
 	Name      string
 	FieldName string
 	Required  bool
-	Type      Schema
+	Type      Formatter
 }
 
-func NewQueryParameter(s specification.QueryParameter) QueryParameter {
+func NewQueryParameter(s specification.QueryParameter) (zero QueryParameter, _ error) {
 	out := QueryParameter{s: s}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 	out.Required = s.Required
-	out.Type = NewSchema(s.Schema)
-	return out
+	var err error
+	out.Type, err = NewParameterSchema(s.Schema)
+	if err != nil {
+		return zero, fmt.Errorf("schema: %w", err)
+	}
+	return out, nil
 }
 
 func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
@@ -224,18 +239,22 @@ type PathParameter struct {
 	Name          string
 	FieldName     string
 	FieldTypeName string
-	Type          Schema
+	Type          Formatter
 }
 
-func NewPathParameter(s *specification.PathParameter) PathParameter {
+func NewPathParameter(s *specification.PathParameter) (zero PathParameter, _ error) {
 	out := PathParameter{s: s}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 	if s.RefName != "" {
 		out.FieldTypeName = s.RefName
 	}
-	out.Type = NewSchema(s.Schema)
-	return out
+	var err error
+	out.Type, err = NewParameterSchema(s.Schema)
+	if err != nil {
+		return zero, fmt.Errorf("schema: %w", err)
+	}
+	return out, nil
 }
 
 type HeaderParameter struct {
@@ -244,18 +263,22 @@ type HeaderParameter struct {
 	Name          string
 	FieldName     string
 	FieldTypeName string
-	Type          Schema
+	Type          Formatter
 	Required      bool
 }
 
-func NewHeaderParameter(s *specification.HeaderParameter) HeaderParameter {
+func NewHeaderParameter(s *specification.HeaderParameter) (zero HeaderParameter, _ error) {
 	out := HeaderParameter{s: s}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 	if s.RefName != "" {
 		out.FieldTypeName = s.RefName
 	}
-	out.Type = NewSchema(s.Schema)
+	var err error
+	out.Type, err = NewParameterSchema(s.Schema)
+	if err != nil {
+		return zero, fmt.Errorf("schema: %w", err)
+	}
 	out.Required = s.Required
-	return out
+	return out, nil
 }

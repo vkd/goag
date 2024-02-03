@@ -151,7 +151,7 @@ func (c CustomType) RenderFormat(from Render) (string, error) {
 }
 
 type SliceType struct {
-	Items Schema
+	Items Formatter
 }
 
 func (s SliceType) RenderFormat(from Render) (string, error) {
