@@ -95,3 +95,12 @@ func IfOption(opt GenOption, ifCond ...bool) GenOption {
 	}
 	return opt
 }
+
+func (g *Generator) goFile(ims []string, body executor) Templater {
+	return TemplaterFunc(GoFile{
+		SkipDoNotEdit: !g.Options.DoNotEdit,
+		PackageName:   g.Options.PackageName,
+		Imports:       ims,
+		Body:          RenderFunc(body.Execute),
+	}.Render)
+}
