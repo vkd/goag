@@ -20,7 +20,7 @@ func (g *Generator) HandlersFile(hs []HandlerOld, isJSON bool) (Templater, error
 		"net/http",
 		"strconv",
 		"strings",
-	}, CustomImports...), file), nil
+	}, CustomImports()...), file), nil
 }
 
 func (h HandlersFile) Execute() (string, error) { return templates.ExecuteTemplate("HandlersFile", h) }

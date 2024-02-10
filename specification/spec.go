@@ -16,6 +16,8 @@ type Spec struct {
 
 	Paths      []*PathItem
 	Operations []*Operation
+
+	Components Components
 }
 
 func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
@@ -47,6 +49,9 @@ func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 		}
 		s.Paths = append(s.Paths, pi)
 	}
+
+	s.Components = NewComponents(spec.Components)
+
 	return s, nil
 }
 
@@ -195,21 +200,39 @@ func NewResponse(responseStatusCode string, o *Operation, r *openapi3.ResponseRe
 }
 
 type Schema struct {
-	Ref    string
+	Ref         string
+	Type        string
+	Items       *Schema
+	Properties  []SchemaProperty
+	AllOf       []Schema
+	Description string
+
 	Schema *openapi3.Schema
-	Items  *Schema
 }
 
 func NewSchema(schema *openapi3.SchemaRef) Schema {
 	out := Schema{
-		Ref:    schema.Ref,
-		Schema: schema.Value,
+		Ref:         schema.Ref,
+		Type:        schema.Value.Type,
+		Schema:      schema.Value,
+		Description: schema.Value.Description,
 	}
 	if schema.Value.Items != nil {
 		s := NewSchema(schema.Value.Items)
 		out.Items = &s
 	}
+	for _, name := range sortedKeys(schema.Value.Properties) {
+		out.Properties = append(out.Properties, SchemaProperty{Name: name, Schema: NewSchema(schema.Value.Properties[name])})
+	}
+	for _, a := range schema.Value.AllOf {
+		out.AllOf = append(out.AllOf, NewSchema(a))
+	}
 	return out
+}
+
+type SchemaProperty struct {
+	Name string
+	Schema
 }
 
 func sortedKeys[T any](m map[string]T) (out []string) {

@@ -75,26 +75,6 @@ type GoTypeDef struct {
 	Methods []Render
 }
 
-func NewGoTypeDef(i SchemasItem) GoTypeDef {
-	sr := NewSchemaRef(i.Schema)
-	comment := i.Schema.Value.Description
-	comment = strings.ReplaceAll(strings.TrimRight(comment, "\n "), "\n", "\n// ")
-	return GoTypeDef{
-		Name:    i.Name,
-		Comment: comment,
-		Type:    sr,
-	}
-}
-
-func NewGoTypeDefs(si SchemasItems) []GoTypeDef {
-	out := make([]GoTypeDef, 0, len(si))
-	for _, i := range si {
-		td := NewGoTypeDef(i)
-		out = append(out, td)
-	}
-	return out
-}
-
 var tmGoTypeDef = template.Must(template.New("GoTypeDef").Parse(`
 {{- if .Comment}}// {{.Name}} - {{.Comment}}
 {{end -}}

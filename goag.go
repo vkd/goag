@@ -20,6 +20,7 @@ import (
 type Generator struct {
 	GenClient bool
 	DeleteOld bool
+	DoNotEdit bool
 }
 
 func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath string) error {
@@ -72,23 +73,30 @@ func (g Generator) generateFile(outDir, packageName, specFilename, basePath stri
 }
 
 func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packageName string, specRaw []byte, baseFilename, basePath string) error {
+	s, err := specification.ParseSwagger(openapi3Spec)
+	if err != nil {
+		return fmt.Errorf("parse specification: %w", err)
+	}
+
 	componentsFile := path.Join(outDir, "components.go")
-	err := os.Remove(componentsFile)
+	err = os.Remove(componentsFile)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return fmt.Errorf("remove components file (%s): %w", componentsFile, err)
 		}
 	}
-	components := generator.NewComponents(openapi3Spec.Components)
+	components, err := generatorv2.NewComponents(s.Components)
+	if err != nil {
+		return fmt.Errorf("generate 'components' file: %w", err)
+	}
 	if len(components.Schemas) > 0 {
-		goFile := generator.GoFile{
-			PackageName: packageName,
-			Renders:     []generator.Render{components},
+		goFile := generatorv2.GoFile{
+			SkipDoNotEdit: !g.DoNotEdit,
+			PackageName:   packageName,
+			Body:          components,
 		}
-		for _, imp := range generatorv2.CustomImports {
-			goFile.Imports = append(goFile.Imports, generator.GoFileImport{Package: imp})
-		}
-		err := RenderToFile(componentsFile, goFile)
+		goFile.Imports = append(goFile.Imports, generatorv2.CustomImports()...)
+		err := RenderToFile(componentsFile, generator.RenderFunc(goFile.Render))
 		if err != nil {
 			return fmt.Errorf("generate components: %w", err)
 		}
@@ -107,11 +115,6 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 			return fmt.Errorf("parse servers.0.url: %w", err)
 		}
 		basePath = u.Path
-	}
-
-	s, err := specification.ParseSwagger(openapi3Spec)
-	if err != nil {
-		return fmt.Errorf("parse specification: %w", err)
 	}
 
 	hs, err := generator.NewHandlers(s, basePath)

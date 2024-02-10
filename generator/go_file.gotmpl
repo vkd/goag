@@ -3,12 +3,16 @@
 package {{ .PackageName }}
 
 {{ if .Imports -}}
+{{ if eq (len .Imports) 1 -}}
+import "{{ index .Imports 0 }}"
+{{ else -}}
 import (
 	{{ range $_, $i := .Imports }}
 	"{{ $i }}"
 	{{- end }}
 )
 {{- end }}
+{{- end }}
 
-{{ .Body.Render }}
+{{ if .Body }}{{ render .Body }}{{ end }}
 {{- end }}

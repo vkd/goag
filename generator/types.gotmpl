@@ -77,3 +77,28 @@ if err != nil {
 {{- end }}
 
 {{ define "CustomTypeFormat" }}{{ .From.Render }}.String(){{ end }}
+
+{{/* ----------------------------- SliceType ------------------------------------- */}}
+
+{{ define "SliceType" }}[]{{ render .Items }}{{ end }}
+
+{{/* ----------------------------- StructureType ------------------------------------- */}}
+
+{{ define "StructureType" }}struct{
+{{- range $_, $f := .Fields }}
+{{ render $f }}
+{{- end -}}
+}{{ end }}
+
+{{/* ----------------------------- StructureField ------------------------------------- */}}
+
+{{ define "StructureField" }}
+{{- if .Comment }}// {{ .Comment }}
+{{ end -}}
+{{ .Name }} {{ render .Type }} {{ if .Tags -}}
+`
+{{- range $ti, $t := .Tags }}{{ $t.Key }}:"
+{{- range $vi, $v := $t.Values }}{{ $v }}{{ if $vi }},{{ end }}{{ end -}}
+"{{ if $ti }} {{ end }}{{ end -}}
+`
+{{- end }}{{ end }}

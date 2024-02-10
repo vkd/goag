@@ -16,6 +16,7 @@ var (
 	basePath     = flag.String("basepath", "", "Base path prefix")
 	genClient    = flag.Bool("client", false, "Generate client code")
 	deleteOld    = flag.Bool("delete", false, "Delete old files")
+	doNotEdit    = flag.Bool("donotedit", true, "Add 'DO NOT EDIT' headers")
 )
 
 func main() {
@@ -25,6 +26,7 @@ func main() {
 	var g goag.Generator
 	g.GenClient = *genClient
 	g.DeleteOld = *deleteOld
+	g.DoNotEdit = *doNotEdit
 
 	var err error
 	if dir != nil && *dir != "" {

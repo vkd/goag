@@ -2,12 +2,17 @@ package generator
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+
+	"github.com/vkd/goag/specification"
 )
 
 type BoolType struct{}
 
 var _ Parser = BoolType{}
+
+func (b BoolType) Render() (string, error) { return "bool", nil }
 
 func (b BoolType) RenderParser(from, to Render, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("BoolParser", struct {
@@ -27,6 +32,19 @@ func (b BoolType) RenderFormat(from Render) (string, error) {
 
 type IntType struct {
 	BitSize int
+}
+
+func (i IntType) Render() (string, error) {
+	switch i.BitSize {
+	case 0:
+		return "int", nil
+	case 32:
+		return "int32", nil
+	case 64:
+		return "int64", nil
+	default:
+		return "int" + strconv.Itoa(i.BitSize), nil
+	}
 }
 
 var _ Parser = IntType{}
@@ -81,6 +99,17 @@ type FloatType struct {
 	BitSize int
 }
 
+func (f FloatType) Render() (string, error) {
+	switch f.BitSize {
+	case 32:
+		return "float32", nil
+	case 64:
+		return "float64", nil
+	default:
+		return "float" + strconv.Itoa(f.BitSize), nil
+	}
+}
+
 var _ Parser = FloatType{}
 
 func (i FloatType) RenderParser(from, to Render, mkErr ErrorRender) (string, error) {
@@ -121,6 +150,8 @@ func (i FloatType) RenderFormat(from Render) (string, error) {
 
 type StringType struct{}
 
+func (s StringType) Render() (string, error) { return "string", nil }
+
 func (_ StringType) RenderFormat(from Render) (string, error) {
 	return from.Render()
 }
@@ -140,8 +171,12 @@ func NewCustomType(s string) CustomType {
 		}
 	}
 
-	CustomImports = append(CustomImports, customImport)
+	AddImport(customImport)
 	return CustomType(customType)
+}
+
+func (c CustomType) Render() (string, error) {
+	return string(c), nil
 }
 
 func (c CustomType) RenderFormat(from Render) (string, error) {
@@ -151,9 +186,64 @@ func (c CustomType) RenderFormat(from Render) (string, error) {
 }
 
 type SliceType struct {
-	Items Formatter
+	Items Render
 }
+
+func (s SliceType) Render() (string, error) { return ExecuteTemplate("SliceType", s) }
 
 func (s SliceType) RenderFormat(from Render) (string, error) {
 	return "", fmt.Errorf("SliceType doesn't implement Formatter interface")
 }
+
+type StructureType struct {
+	Fields []StructureField
+}
+
+func NewStructureType(s specification.Schema) (zero StructureType, _ error) {
+	var stype StructureType
+	for _, p := range s.Properties {
+		f, err := NewStructureField(p)
+		if err != nil {
+			return zero, fmt.Errorf("field %q: %w", p.Name, err)
+		}
+		stype.Fields = append(stype.Fields, f)
+	}
+	return stype, nil
+}
+
+func (s StructureType) Render() (string, error) { return ExecuteTemplate("StructureType", s) }
+
+type StructureField struct {
+	Comment string
+	Name    string
+	Type    Render
+	Tags    []StructureFieldTag
+}
+
+func NewStructureField(s specification.SchemaProperty) (zero StructureField, _ error) {
+	t, err := NewSchema(s.Schema)
+	if err != nil {
+		return zero, fmt.Errorf(": %w", err)
+	}
+	return StructureField{
+		Comment: s.Description,
+		Name:    PublicFieldName(s.Name),
+		Type:    t,
+		Tags:    []StructureFieldTag{{Key: "json", Values: []string{s.Name}}},
+	}, nil
+}
+
+type StructureFieldTag struct {
+	Key    string
+	Values []string
+}
+
+type Ref string
+
+func NewRef(ref string) Ref {
+	ref = ref[strings.LastIndex(ref, "/"):]
+	ref = strings.TrimPrefix(ref, "/")
+	return Ref(ref)
+}
+
+func (r Ref) Render() (string, error) { return string(r), nil }

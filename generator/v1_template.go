@@ -117,19 +117,21 @@ type TData map[string]any
 // --- Functions ---
 
 func execTemplateFunc(t reflect.Value, args ...any) (string, error) {
-	switch t := t.Interface().(type) {
+	v := t.Interface()
+	switch t := v.(type) {
 	case Templater:
 		return t.String()
-	case interface {
-		Execute() (string, error)
-	}:
-		return t.Execute()
-	case interface {
-		ExecuteArgs(...any) (string, error)
-	}:
-		return t.ExecuteArgs(args...)
 	case string:
 		return t, nil
+	}
+
+	if r, ok := v.(interface{ Render() (string, error) }); ok {
+		return r.Render()
+	}
+	if t, ok := v.(interface {
+		Execute() (string, error)
+	}); ok {
+		return t.Execute()
 	}
 
 	return "", fmt.Errorf("%T does not implement Templater: missing method Execute() (string, error)", t.Interface())
@@ -144,20 +146,34 @@ func privateTemplateFunc(t reflect.Value) (string, error) {
 	return "", fmt.Errorf("%T is not string", t.Interface())
 }
 
-func rawTemplateFunc(t reflect.Value) (Templater, error) {
-	switch t := t.Interface().(type) {
-	case string:
-		return RawTemplate(t), nil
-	}
-
-	return nil, fmt.Errorf("%T is not string", t.Interface())
-}
-
-func renderTemplateFunc(t reflect.Value) (Render, error) {
+func rawTemplateFunc(t reflect.Value) (Render, error) {
 	switch t := t.Interface().(type) {
 	case string:
 		return StringRender(t), nil
 	}
 
 	return nil, fmt.Errorf("%T is not string", t.Interface())
+}
+
+func renderTemplateFunc(value reflect.Value) (string, error) {
+	return IfaceRender(value)
+}
+
+func IfaceRender(value reflect.Value) (string, error) {
+	for value.Kind() == reflect.Interface {
+		value = value.Elem()
+	}
+
+	v := value.Interface()
+
+	switch t := v.(type) {
+	case string:
+		return t, nil
+	case interface {
+		Render() (string, error)
+	}:
+		return t.Render()
+	}
+
+	return ExecuteTemplate(value.Type().Name(), v)
 }
