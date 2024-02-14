@@ -12,7 +12,7 @@ import (
 
 func MustHandler(method, path string) Handler {
 	specPath, _ := specification.NewPath(path)
-	h, err := NewHandler(&openapi3.Operation{}, specPath, method, nil)
+	h, err := NewHandler(&openapi3.Operation{}, specPath, method, nil, &specification.Operation{})
 	if err != nil {
 		panic(fmt.Errorf("new handler %q: %w", path, err))
 	}

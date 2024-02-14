@@ -3,6 +3,8 @@ package generator
 import (
 	"fmt"
 
+	"github.com/getkin/kin-openapi/openapi3"
+
 	"github.com/vkd/goag/specification"
 )
 
@@ -47,6 +49,36 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 	h.HandlerInputTypeName = h.Name + "Parser"
 	h.RequestTypeName = h.Name + "Params"
 	h.RequestVarName = "request"
+
+	if len(o.Security) > 0 {
+		for _, ss := range o.Security {
+			for _, s := range ss {
+				if s.Scheme.Type != "http" {
+					continue
+				}
+				if s.Scheme.Scheme != "bearer" {
+					continue
+				}
+				p, err := NewHeaderParameter(&specification.HeaderParameter{
+					Name:        "Authorization",
+					Description: s.Scheme.BearerFormat,
+					Required:    len(ss) == 1,
+					Schema: specification.Schema{
+						Type:        "string",
+						Description: s.Scheme.BearerFormat,
+						Schema: &openapi3.Schema{
+							Type:        "string",
+							Description: s.Scheme.BearerFormat,
+						},
+					},
+				})
+				if err != nil {
+					return zero, fmt.Errorf("schema for header parameter 'Authorization': %w", err)
+				}
+				h.Params.Headers = append(h.Params.Headers, p)
+			}
+		}
+	}
 
 	if o.Operation.RequestBody != nil {
 		if _, ok := o.Operation.RequestBody.Value.Content["application/json"]; ok {

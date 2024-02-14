@@ -24,7 +24,7 @@ func NewHandlers(s *specification.Spec, basePath string) (zero Handlers, _ error
 	var out Handlers
 	out.Handlers = make([]Handler, 0, len(s.Operations))
 	for _, o := range s.Operations {
-		h, err := NewHandler(o.Operation, o.PathItem.Path, o.Method, o.PathItem.PathItem.Parameters)
+		h, err := NewHandler(o.Operation, o.PathItem.Path, o.Method, o.PathItem.PathItem.Parameters, o)
 		if err != nil {
 			return zero, fmt.Errorf("new handler for [%s]%q: %w", o.Method, o.PathItem.Path.Spec, err)
 		}
@@ -51,13 +51,42 @@ type Handler struct {
 	}
 }
 
-func NewHandler(p *openapi3.Operation, path specification.Path, method string, params openapi3.Parameters) (zero Handler, _ error) {
+func NewHandler(p *openapi3.Operation, path specification.Path, method string, params openapi3.Parameters, o *specification.Operation) (zero Handler, _ error) {
 	var out Handler
 	out.Name = HandlerName(p.OperationID, path, method)
 	out.Path = path.Spec
 	out.Method = method
 	out.Description = strings.ReplaceAll(strings.TrimSpace(p.Description), "\n", "\n// ")
 	out.Summary = p.Summary
+
+	if len(o.Security) > 0 {
+		for _, ss := range o.Security {
+			for _, s := range ss {
+				if s.Scheme.Type != "http" {
+					continue
+				}
+				if s.Scheme.Scheme != "bearer" {
+					continue
+				}
+
+				pp := NewHeaderParam(&openapi3.Parameter{
+					Name:        "Authorization",
+					Description: s.Scheme.BearerFormat,
+					Required:    len(ss) == 1,
+					Schema: &openapi3.SchemaRef{
+						Value: &openapi3.Schema{
+							Type:        "string",
+							Description: s.Scheme.BearerFormat,
+						},
+					},
+				})
+				out.Parameters.Headers = append(out.Parameters.Headers, generator.Param{
+					Field:  pp.Field,
+					Parser: pp.Parser,
+				})
+			}
+		}
+	}
 
 	var allParams openapi3.Parameters
 	allParams = append(allParams, params...)

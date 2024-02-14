@@ -1,8 +1,6 @@
 package test
 
-const SpecFile string = `security:
-- api_key: []
-paths:
+const SpecFile string = `paths:
   /pets:
     get:
       responses:

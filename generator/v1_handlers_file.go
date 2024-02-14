@@ -39,6 +39,8 @@ type HandlerOld struct {
 
 	ResponserInterfaceName string
 
+	IsJWT bool
+
 	Parameters struct {
 		Query   []Param
 		Path    []Param

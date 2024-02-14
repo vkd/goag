@@ -26,6 +26,11 @@ func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 		Info:    NewInfo(spec.Info),
 	}
 
+	securityRequirements, err := GetSecurity(spec.Components.SecuritySchemes, spec.Security)
+	if err != nil {
+		return nil, fmt.Errorf("get top level security requirements: %w", err)
+	}
+
 	for _, path := range sortedKeys(spec.Paths) {
 		p, err := NewPath(path)
 		if err != nil {
@@ -43,9 +48,14 @@ func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 			if operation == nil {
 				continue
 			}
-			o := NewOperation(pi, method, operation)
+
+			o, err := NewOperation(pi, method, operation, securityRequirements, spec.Components)
+			if err != nil {
+				return nil, fmt.Errorf("new operation for path=%q method=%q: %w", pi.Path.Spec, method.HTTP, err)
+			}
 			pi.Operations = append(pi.Operations, o)
 			s.Operations = append(s.Operations, o)
+
 		}
 		s.Paths = append(s.Paths, pi)
 	}
@@ -79,11 +89,13 @@ type Operation struct {
 		Headers []*HeaderParameter
 	}
 
+	Security [][]Security
+
 	DefaultResponse *Response
 	Responses       []*Response
 }
 
-func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation) *Operation {
+func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation, specSecurityReqs [][]Security, components openapi3.Components) (*Operation, error) {
 	o := &Operation{
 		PathItem:    pi,
 		HTTPMethod:  method.HTTP,
@@ -91,6 +103,16 @@ func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation
 		OperationID: operation.OperationID,
 
 		Operation: operation,
+
+		Security: specSecurityReqs,
+	}
+
+	if operation.Security != nil {
+		var err error
+		o.Security, err = GetSecurity(components.SecuritySchemes, *operation.Security)
+		if err != nil {
+			return nil, fmt.Errorf("get security requirements: %w", err)
+		}
 	}
 
 	for _, param := range append(append(openapi3.Parameters{}, pi.PathItem.Parameters...), operation.Parameters...) {
@@ -134,7 +156,7 @@ func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation
 		}
 	}
 
-	return o
+	return o, nil
 }
 
 type PathParameters []*PathParameter
