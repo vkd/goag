@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/vkd/goag/specification"
 )
 
 type Router struct {
@@ -74,8 +75,8 @@ func NewRoutes(routePrefix string, handlers []Handler) ([]Route, error) {
 				}
 				for _, h := range hs {
 					route.WildcardHandler.Methods = append(route.WildcardHandler.Methods, RouteMethod{
-						Method:      strings.Title(strings.ToLower(h.Method)),
-						HandlerName: h.Name,
+						Method:      h.Method,
+						HandlerName: string(h.Name),
 						Path:        h.Path,
 					})
 				}
@@ -83,8 +84,8 @@ func NewRoutes(routePrefix string, handlers []Handler) ([]Route, error) {
 				rh := RouteHandler{Prefix: p.prefix}
 				for _, h := range hs {
 					rh.Methods = append(rh.Methods, RouteMethod{
-						Method:      strings.Title(strings.ToLower(h.Method)),
-						HandlerName: h.Name,
+						Method:      h.Method,
+						HandlerName: string(h.Name),
 						Path:        h.Path,
 					})
 				}
@@ -145,7 +146,7 @@ type ReRoute struct {
 }
 
 type RouteMethod struct {
-	Method      string
+	Method      specification.HTTPMethodTitle
 	HandlerName string
 	Path        string
 }

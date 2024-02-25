@@ -10,8 +10,8 @@ import (
 	"github.com/vkd/goag/specification"
 )
 
-func MustHandler(method, path string) Handler {
-	specPath, _ := specification.NewPath(path)
+func MustHandler(method specification.HTTPMethodTitle, path string) Handler {
+	specPath, _ := specification.NewPathOld2(path)
 	h, err := NewHandler(&openapi3.Operation{}, specPath, method, nil, &specification.Operation{})
 	if err != nil {
 		panic(fmt.Errorf("new handler %q: %w", path, err))

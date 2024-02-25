@@ -11,10 +11,12 @@ import (
 type Handler struct {
 	s *specification.Operation
 
-	Name       string
-	Method     string
+	Imports Imports
+
+	Name       OperationName
+	Method     specification.HTTPMethodTitle
 	HTTPMethod string
-	Path       specification.Path
+	Path       specification.PathOld2
 
 	PathBuilder []PathDir
 
@@ -24,9 +26,9 @@ type Handler struct {
 	RequestVarName       string
 
 	Params struct {
-		Query   []QueryParameter
+		Query   []*QueryParameter
 		Path    PathParameters
-		Headers []HeaderParameter
+		Headers []*HeaderParameter
 	}
 
 	IsRequestBody bool
@@ -43,40 +45,39 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 	h.Method = o.Method
 	h.HTTPMethod = o.HTTPMethod
 	h.Path = o.PathItem.Path
-	h.Name = OperationName(o.OperationID, o.PathItem.Path, h.Method)
+	h.Name = OperationNameOld(o.OperationID, o.PathItem.Path, h.Method)
 
-	h.HandlerTypeName = h.Name + "HandlerFunc"
-	h.HandlerInputTypeName = h.Name + "Parser"
-	h.RequestTypeName = h.Name + "Params"
+	h.HandlerTypeName = string(h.Name) + "HandlerFunc"
+	h.HandlerInputTypeName = string(h.Name) + "Parser"
+	h.RequestTypeName = string(h.Name) + "Params"
 	h.RequestVarName = "request"
 
 	if len(o.Security) > 0 {
 		for _, ss := range o.Security {
-			for _, s := range ss {
-				if s.Scheme.Type != "http" {
-					continue
-				}
-				if s.Scheme.Scheme != "bearer" {
-					continue
-				}
-				p, err := NewHeaderParameter(&specification.HeaderParameter{
-					Name:        "Authorization",
-					Description: s.Scheme.BearerFormat,
-					Required:    len(ss) == 1,
-					Schema: specification.Schema{
-						Type:        "string",
-						Description: s.Scheme.BearerFormat,
-						Schema: &openapi3.Schema{
-							Type:        "string",
-							Description: s.Scheme.BearerFormat,
-						},
-					},
-				})
-				if err != nil {
-					return zero, fmt.Errorf("schema for header parameter 'Authorization': %w", err)
-				}
-				h.Params.Headers = append(h.Params.Headers, p)
+			if ss.Scheme.Type != specification.SecuritySchemeTypeHTTP {
+				continue
 			}
+			if ss.Scheme.Scheme != "bearer" {
+				continue
+			}
+			p, ims, err := NewHeaderParameter(&specification.HeaderParameter{
+				Name:        "Authorization",
+				Description: ss.Scheme.BearerFormat,
+				Required:    len(o.Security) == 1,
+				Schema: &specification.Schema{
+					Type:        "string",
+					Description: ss.Scheme.BearerFormat,
+					Schema: &openapi3.Schema{
+						Type:        "string",
+						Description: ss.Scheme.BearerFormat,
+					},
+				},
+			})
+			if err != nil {
+				return zero, fmt.Errorf("schema for header parameter 'Authorization': %w", err)
+			}
+			h.Params.Headers = append(h.Params.Headers, p)
+			h.Imports = append(h.Imports, ims...)
 		}
 	}
 
@@ -86,8 +87,8 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 		}
 	}
 
-	h.ResponseTypeName = h.Name + "Response"
-	h.ResponsePrivateFuncName = PrivateFieldName(h.Name)
+	h.ResponseTypeName = string(h.Name) + "Response"
+	h.ResponsePrivateFuncName = PrivateFieldName(string(h.Name))
 
 	if o.DefaultResponse != nil {
 		h.DefaultResponse.Set(NewResponse(h.Name, o.DefaultResponse))
@@ -96,26 +97,32 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 		h.Responses = append(h.Responses, NewResponse(h.Name, response))
 	}
 
-	for _, qp := range o.Parameters.Query {
-		p, err := NewQueryParameter(qp)
+	for _, q := range o.Parameters.Query.List {
+		qp := q.V.Value()
+		p, ims, err := NewQueryParameter(qp)
 		if err != nil {
 			return zero, fmt.Errorf("schema for query parameter %q: %w", qp.Name, err)
 		}
 		h.Params.Query = append(h.Params.Query, p)
+		h.Imports = append(h.Imports, ims...)
 	}
-	for _, qp := range o.Parameters.Path {
-		p, err := NewPathParameter(qp)
+	for _, q := range o.Parameters.Path.List {
+		qp := q.V.Value()
+		p, ims, err := NewPathParameter(q.V)
 		if err != nil {
 			return zero, fmt.Errorf("schema for path parameter %q: %w", qp.Name, err)
 		}
 		h.Params.Path = append(h.Params.Path, p)
+		h.Imports = append(h.Imports, ims...)
 	}
-	for _, qp := range o.Parameters.Headers {
-		p, err := NewHeaderParameter(qp)
+	for _, q := range o.Parameters.Headers.List {
+		qp := q.V.Value()
+		p, ims, err := NewHeaderParameter(qp)
 		if err != nil {
 			return zero, fmt.Errorf("schema for header parameter %q: %w", qp.Name, err)
 		}
 		h.Params.Headers = append(h.Params.Headers, p)
+		h.Imports = append(h.Imports, ims...)
 	}
 
 	{
@@ -133,7 +140,7 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 				}
 				// varName := h.RequestVarName + ".Path." + pp.FieldName
 				// tmp := pp.Type
-				pathBuilder = append(pathBuilder, PathDir{Param: &pp})
+				pathBuilder = append(pathBuilder, PathDir{Param: pp})
 			} else {
 				last.V += string(dir.Raw)
 			}
@@ -185,7 +192,7 @@ func (p PathDir) FormatTemplater(varName string) Templater {
 // }
 
 type QueryParameter struct {
-	s specification.QueryParameter
+	s *specification.QueryParameter
 
 	Name      string
 	FieldName string
@@ -193,17 +200,18 @@ type QueryParameter struct {
 	Type      Formatter
 }
 
-func NewQueryParameter(s specification.QueryParameter) (zero QueryParameter, _ error) {
+func NewQueryParameter(s *specification.QueryParameter) (zero *QueryParameter, _ Imports, _ error) {
 	out := QueryParameter{s: s}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 	out.Required = s.Required
 	var err error
-	out.Type, err = NewParameterSchema(s.Schema)
+	var ims Imports
+	out.Type, ims, err = NewParameterSchema(s.Schema.Value())
 	if err != nil {
-		return zero, fmt.Errorf("schema: %w", err)
+		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
-	return out, nil
+	return &out, ims, nil
 }
 
 func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
@@ -254,9 +262,9 @@ func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
 	// return RawTemplate("/* <not implemented> */")
 }
 
-type PathParameters []PathParameter
+type PathParameters []*PathParameter
 
-func (s PathParameters) Get(name string) (zero PathParameter, _ error) {
+func (s PathParameters) Get(name string) (zero *PathParameter, _ error) {
 	for _, p := range s {
 		if p.s.Name == name {
 			return p, nil
@@ -274,19 +282,21 @@ type PathParameter struct {
 	Type          Formatter
 }
 
-func NewPathParameter(s *specification.PathParameter) (zero PathParameter, _ error) {
+func NewPathParameter(rs specification.Ref[specification.PathParameter]) (zero *PathParameter, _ Imports, _ error) {
+	s := rs.Value()
 	out := PathParameter{s: s}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
-	if s.RefName != "" {
-		out.FieldTypeName = s.RefName
+	if rs.Ref() != nil {
+		out.FieldTypeName = rs.Ref().Name
 	}
+	var ims Imports
 	var err error
-	out.Type, err = NewParameterSchema(s.Schema)
+	out.Type, ims, err = NewParameterSchema(s.Schema.Value())
 	if err != nil {
-		return zero, fmt.Errorf("schema: %w", err)
+		return nil, nil, fmt.Errorf("schema: %w", err)
 	}
-	return out, nil
+	return &out, ims, nil
 }
 
 type HeaderParameter struct {
@@ -299,18 +309,24 @@ type HeaderParameter struct {
 	Required      bool
 }
 
-func NewHeaderParameter(s *specification.HeaderParameter) (zero HeaderParameter, _ error) {
+func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter]) (zero *HeaderParameter, _ Imports, _ error) {
+	s := sr.Value()
 	out := HeaderParameter{s: s}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
-	if s.RefName != "" {
-		out.FieldTypeName = s.RefName
+	if sr.Ref() != nil {
+		out.FieldTypeName = sr.Ref().Name
 	}
+	var ims Imports
 	var err error
-	out.Type, err = NewParameterSchema(s.Schema)
+	out.Type, ims, err = NewParameterSchema(s.Schema.Value())
 	if err != nil {
-		return zero, fmt.Errorf("schema: %w", err)
+		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
 	out.Required = s.Required
-	return out, nil
+	return &out, ims, nil
+}
+
+type CookieParameter struct {
+	specification.CookieParameter
 }

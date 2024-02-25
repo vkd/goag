@@ -3,13 +3,13 @@ package generator
 import "github.com/vkd/goag/specification"
 
 type Header struct {
-	Spec specification.Header
+	Spec specification.HeaderOld
 
 	FieldName string
 	Key       string
 }
 
-func NewHeader(spec specification.Header) Header {
+func NewHeader(spec specification.HeaderOld) Header {
 	h := Header{
 		Spec: spec,
 

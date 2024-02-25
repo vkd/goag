@@ -9,159 +9,60 @@ import (
 )
 
 type Spec struct {
-	Swagger *openapi3.Swagger
-
 	OpenAPI string
 	Info    Info
+	Servers []Server
 
-	Paths      []*PathItem
+	PathItems  []*PathItem
 	Operations []*Operation
 
 	Components Components
+
+	Security []SecurityRequirement
 }
 
 func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 	s := &Spec{
-		OpenAPI: spec.OpenAPI,
-		Info:    NewInfo(spec.Info),
+		OpenAPI:    spec.OpenAPI,
+		Info:       NewInfo(spec.Info),
+		Servers:    NewServers(spec.Servers),
+		Components: NewComponents(spec.Components),
 	}
 
-	securityRequirements, err := GetSecurity(spec.Components.SecuritySchemes, spec.Security)
-	if err != nil {
-		return nil, fmt.Errorf("get top level security requirements: %w", err)
-	}
+	s.Security = NewSecurityRequirements(spec.Security, s.Components.SecuritySchemes)
 
-	for _, path := range sortedKeys(spec.Paths) {
-		p, err := NewPath(path)
+	for _, pathKey := range sortedKeys(spec.Paths) {
+		p, err := NewPathOld2(pathKey)
 		if err != nil {
-			return nil, fmt.Errorf("parse path %q: %w", path, err)
+			return nil, fmt.Errorf("parse path %q: %w", pathKey, err)
 		}
-		pathItem := spec.Paths[path]
-		pi := &PathItem{
-			Path:     p,
-			PathItem: pathItem,
-			Spec:     s,
-		}
-		pi.PathOld, _ = NewPathOld(path)
+		pathItem := spec.Paths[pathKey]
+		pi := NewPathItem(pathKey)
+		pi.Path = p
+		pi.PathItem = pathItem
+		pi.PathOld, _ = NewPathOld(pathKey)
 		for _, method := range httpMethods() {
 			operation := pathItem.GetOperation(method.HTTP)
 			if operation == nil {
 				continue
 			}
 
-			o, err := NewOperation(pi, method, operation, securityRequirements, spec.Components)
+			o, err := NewOperation(pi, pathKey, method, operation, s.Security, spec.Components, s.Components.SecuritySchemes, s.Components)
 			if err != nil {
 				return nil, fmt.Errorf("new operation for path=%q method=%q: %w", pi.Path.Spec, method.HTTP, err)
 			}
 			pi.Operations = append(pi.Operations, o)
 			s.Operations = append(s.Operations, o)
-
 		}
-		s.Paths = append(s.Paths, pi)
+		s.PathItems = append(s.PathItems, pi)
 	}
-
-	s.Components = NewComponents(spec.Components)
 
 	return s, nil
 }
 
-type PathItem struct {
-	Path     Path
-	PathOld  PathOld
-	PathItem *openapi3.PathItem
-	Spec     *Spec
+type PathParameters []*PathParameterOld
 
-	Operations []*Operation
-}
-
-type Operation struct {
-	PathItem *PathItem
-
-	HTTPMethod  string
-	Method      string
-	OperationID string
-
-	Operation *openapi3.Operation
-
-	Parameters struct {
-		Path    PathParameters
-		Query   []QueryParameter
-		Headers []*HeaderParameter
-	}
-
-	Security [][]Security
-
-	DefaultResponse *Response
-	Responses       []*Response
-}
-
-func NewOperation(pi *PathItem, method httpMethod, operation *openapi3.Operation, specSecurityReqs [][]Security, components openapi3.Components) (*Operation, error) {
-	o := &Operation{
-		PathItem:    pi,
-		HTTPMethod:  method.HTTP,
-		Method:      method.Title,
-		OperationID: operation.OperationID,
-
-		Operation: operation,
-
-		Security: specSecurityReqs,
-	}
-
-	if operation.Security != nil {
-		var err error
-		o.Security, err = GetSecurity(components.SecuritySchemes, *operation.Security)
-		if err != nil {
-			return nil, fmt.Errorf("get security requirements: %w", err)
-		}
-	}
-
-	for _, param := range append(append(openapi3.Parameters{}, pi.PathItem.Parameters...), operation.Parameters...) {
-		switch param.Value.In {
-		case openapi3.ParameterInPath:
-			p, ok := pi.Path.Params.Get(param.Value.Name)
-			if !ok {
-				p = &PathParameter{Name: param.Value.Name}
-			}
-			p.RefName = param.Ref
-			p.Description = param.Value.Description
-			p.Schema = NewSchema(param.Value.Schema)
-
-			o.Parameters.Path = append(o.Parameters.Path, p)
-		case openapi3.ParameterInQuery:
-			o.Parameters.Query = append(o.Parameters.Query, QueryParameter{
-				RefName:     param.Ref,
-				Name:        param.Value.Name,
-				Description: param.Value.Description,
-				Required:    param.Value.Required,
-				Schema:      NewSchema(param.Value.Schema),
-			})
-		case openapi3.ParameterInHeader:
-			o.Parameters.Headers = append(o.Parameters.Headers, &HeaderParameter{
-				RefName:     param.Ref,
-				Name:        param.Value.Name,
-				Description: param.Value.Description,
-				Required:    param.Value.Required,
-				Schema:      NewSchema(param.Value.Schema),
-			})
-		}
-	}
-
-	for _, responseStatusCode := range sortedKeys(operation.Responses) {
-		response := operation.Responses[responseStatusCode]
-		if responseStatusCode == "default" {
-			defaultResponse := NewResponse(responseStatusCode, o, response)
-			o.DefaultResponse = defaultResponse
-		} else {
-			o.Responses = append(o.Responses, NewResponse(responseStatusCode, o, response))
-		}
-	}
-
-	return o, nil
-}
-
-type PathParameters []*PathParameter
-
-func (ps PathParameters) Get(name string) (*PathParameter, bool) {
+func (ps PathParameters) Get(name string) (*PathParameterOld, bool) {
 	for _, p := range ps {
 		if p.Name == name {
 			return p, true
@@ -170,27 +71,27 @@ func (ps PathParameters) Get(name string) (*PathParameter, bool) {
 	return nil, false
 }
 
-type PathParameter struct {
+type PathParameterOld struct {
 	RefName     string
 	Name        string
 	Description string
-	Schema      Schema
+	Schema      Ref[Schema]
 }
 
-type QueryParameter struct {
+type QueryParameterOld struct {
 	RefName     string
 	Name        string
 	Description string
 	Required    bool
-	Schema      Schema
+	Schema      Ref[Schema]
 }
 
-type HeaderParameter struct {
+type HeaderParameterOld struct {
 	RefName     string
 	Name        string
 	Description string
 	Required    bool
-	Schema      Schema
+	Schema      Ref[Schema]
 }
 
 // type Parameter struct {
@@ -200,17 +101,17 @@ type HeaderParameter struct {
 // 	Required    bool
 // }
 
-type Response struct {
+type ResponseOld struct {
 	StatusCode string
 	Operation  *Operation
 	Spec       *openapi3.Response
 
 	RefName string
-	Headers []Header
+	Headers []HeaderOld
 }
 
-func NewResponse(responseStatusCode string, o *Operation, r *openapi3.ResponseRef) *Response {
-	out := &Response{
+func NewResponseOld(responseStatusCode string, o *Operation, r *openapi3.ResponseRef) *ResponseOld {
+	out := &ResponseOld{
 		StatusCode: responseStatusCode,
 		Operation:  o,
 		Spec:       r.Value,
@@ -222,39 +123,71 @@ func NewResponse(responseStatusCode string, o *Operation, r *openapi3.ResponseRe
 }
 
 type Schema struct {
-	Ref         string
+	NoRef[Schema]
+	// Ref         string
 	Type        string
-	Items       *Schema
+	Items       Ref[Schema]
 	Properties  []SchemaProperty
-	AllOf       []Schema
+	AllOf       []Ref[Schema]
 	Description string
 
 	Schema *openapi3.Schema
 }
 
-func NewSchema(schema *openapi3.SchemaRef) Schema {
-	out := Schema{
-		Ref:         schema.Ref,
-		Type:        schema.Value.Type,
-		Schema:      schema.Value,
-		Description: schema.Value.Description,
+func NewSchemaRef(schema *openapi3.SchemaRef, components ComponentsSchemas) Ref[Schema] {
+	if schema.Ref != "" {
+		v, ok := components.Get(schema.Ref)
+		if !ok {
+			panic(fmt.Sprintf("%q: not found in components", schema.Ref))
+		}
+		return NewRefObject[Schema](v)
 	}
-	if schema.Value.Items != nil {
-		s := NewSchema(schema.Value.Items)
-		out.Items = &s
-	}
-	for _, name := range sortedKeys(schema.Value.Properties) {
-		out.Properties = append(out.Properties, SchemaProperty{Name: name, Schema: NewSchema(schema.Value.Properties[name])})
-	}
-	for _, a := range schema.Value.AllOf {
-		out.AllOf = append(out.AllOf, NewSchema(a))
-	}
-	return out
+	return NewSchema(schema.Value, components)
+	// out := Schema{
+	// 	// Ref:         schema.Ref,
+	// 	Type:        schema.Type,
+	// 	Schema:      schema,
+	// 	Description: schema.Description,
+	// }
+	// if schema.Items != nil {
+	// 	s := NewSchema(schema.Items)
+	// 	out.Items = &s
+	// }
+	// for _, name := range sortedKeys(schema.Properties) {
+	// 	out.Properties = append(out.Properties, SchemaProperty{Name: name, Schema: NewSchema(schema.Properties[name])})
+	// }
+	// for _, a := range schema.AllOf {
+	// 	out.AllOf = append(out.AllOf, NewSchema(a))
+	// }
+	// return out
 }
 
+func NewSchema(schema *openapi3.Schema, components ComponentsSchemas) *Schema {
+	out := Schema{
+		// Ref:         schema.Ref,
+		Type:        schema.Type,
+		Schema:      schema,
+		Description: schema.Description,
+	}
+	if schema.Items != nil {
+		out.Items = NewSchemaRef(schema.Items, components)
+	}
+	for _, name := range sortedKeys(schema.Properties) {
+		out.Properties = append(out.Properties, SchemaProperty{Name: name, Schema: NewSchemaRef(schema.Properties[name], components)})
+	}
+	for _, a := range schema.AllOf {
+		out.AllOf = append(out.AllOf, NewSchemaRef(a, components))
+	}
+	return &out
+}
+
+var _ Ref[Schema] = (*Schema)(nil)
+
+func (s *Schema) Value() *Schema { return s }
+
 type SchemaProperty struct {
-	Name string
-	Schema
+	Name   string
+	Schema Ref[Schema]
 }
 
 func sortedKeys[T any](m map[string]T) (out []string) {
@@ -281,5 +214,7 @@ func httpMethods() []httpMethod {
 
 type httpMethod struct {
 	HTTP  string
-	Title string
+	Title HTTPMethodTitle
 }
+
+type HTTPMethodTitle string

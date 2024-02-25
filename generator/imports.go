@@ -1,17 +1,13 @@
 package generator
 
-var customImports []string
+type Imports []Import
 
-func AddImport(i string) {
-	if i == "" {
-		return
+func NewImportsS(ss ...string) Imports {
+	out := make(Imports, 0, len(ss))
+	for _, s := range ss {
+		out = append(out, Import(s))
 	}
-	for _, imp := range customImports {
-		if imp == i {
-			return
-		}
-	}
-	customImports = append(customImports, i)
+	return out
 }
 
-func CustomImports() []string { return customImports }
+func (i Imports) AppendS(s string) Imports { return append(i, Import(s)) }

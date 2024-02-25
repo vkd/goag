@@ -12,7 +12,7 @@ func (g *Generator) HandlersFile(hs []HandlerOld, isJSON bool) (Templater, error
 		IsWriteJSONFunc: isJSON,
 	}
 
-	return g.goFile(append([]string{
+	return g.goFile([]Import{
 		"encoding/json",
 		"fmt",
 		"io",
@@ -20,7 +20,7 @@ func (g *Generator) HandlersFile(hs []HandlerOld, isJSON bool) (Templater, error
 		"net/http",
 		"strconv",
 		"strings",
-	}, CustomImports()...), file), nil
+	}, file), nil
 }
 
 func (h HandlersFile) Execute() (string, error) { return templates.ExecuteTemplate("HandlersFile", h) }
@@ -29,7 +29,7 @@ type HandlerOld struct {
 	// client
 
 	// deprecated
-	Name        string
+	Name        OperationName
 	Description string
 	Summary     string
 
@@ -58,7 +58,7 @@ type HandlerOld struct {
 	Responses []Templater
 }
 
-func (h HandlerOld) HandlerFuncName() string { return h.Name + "HandlerFunc" }
+func (h HandlerOld) HandlerFuncName() string { return string(h.Name) + "HandlerFunc" }
 
 func (h HandlerOld) Execute() (string, error) { return templates.ExecuteTemplate("Handler", h) }
 

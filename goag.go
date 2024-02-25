@@ -95,7 +95,6 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 			PackageName:   packageName,
 			Body:          components,
 		}
-		goFile.Imports = append(goFile.Imports, generatorv2.CustomImports()...)
 		err := RenderToFile(componentsFile, generator.RenderFunc(goFile.Render))
 		if err != nil {
 			return fmt.Errorf("generate components: %w", err)
@@ -172,25 +171,9 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		}
 	}
 	if g.GenClient {
-		// clientBuilder, err := generator.NewClientBuilder(openapi3Spec, hs.Handlers)
-		// if err != nil {
-		// 	return fmt.Errorf("build client structure: %w", err)
-		// }
+		clientFile := gen.ClientFile()
 
-		// clientGoContent, err := clientBuilder.Build()
-		// if err != nil {
-		// 	return fmt.Errorf("generate client file structure: %w", err)
-		// }
-		clientFile, err := gen.ClientFile()
-		if err != nil {
-			return fmt.Errorf("generate client file: %w", err)
-		}
-		// err = RenderToFile(clientFile, generator.GoFile{
-		// 	PackageName: packageName,
-		// 	DoNotEdit:   true,
-		// 	Renders:     []generator.Render{clientGoContent},
-		// })
-		err = RenderToFile(path.Join(outDir, "client.go"), clientFile)
+		err = RenderToFile(path.Join(outDir, "client.go"), generatorv2.TemplaterFunc(clientFile.Render))
 		if err != nil {
 			return fmt.Errorf("generate client source: %w", err)
 		}

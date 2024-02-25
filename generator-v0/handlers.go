@@ -42,7 +42,7 @@ type Handler struct {
 	generator.HandlerOld
 
 	Path   string
-	Method string
+	Method specification.HTTPMethodTitle
 
 	Responses []Response
 
@@ -51,7 +51,7 @@ type Handler struct {
 	}
 }
 
-func NewHandler(p *openapi3.Operation, path specification.Path, method string, params openapi3.Parameters, o *specification.Operation) (zero Handler, _ error) {
+func NewHandler(p *openapi3.Operation, path specification.PathOld2, method specification.HTTPMethodTitle, params openapi3.Parameters, o *specification.Operation) (zero Handler, _ error) {
 	var out Handler
 	out.Name = HandlerName(p.OperationID, path, method)
 	out.Path = path.Spec
@@ -61,30 +61,28 @@ func NewHandler(p *openapi3.Operation, path specification.Path, method string, p
 
 	if len(o.Security) > 0 {
 		for _, ss := range o.Security {
-			for _, s := range ss {
-				if s.Scheme.Type != "http" {
-					continue
-				}
-				if s.Scheme.Scheme != "bearer" {
-					continue
-				}
-
-				pp := NewHeaderParam(&openapi3.Parameter{
-					Name:        "Authorization",
-					Description: s.Scheme.BearerFormat,
-					Required:    len(ss) == 1,
-					Schema: &openapi3.SchemaRef{
-						Value: &openapi3.Schema{
-							Type:        "string",
-							Description: s.Scheme.BearerFormat,
-						},
-					},
-				})
-				out.Parameters.Headers = append(out.Parameters.Headers, generator.Param{
-					Field:  pp.Field,
-					Parser: pp.Parser,
-				})
+			if ss.Scheme.Type != specification.SecuritySchemeTypeHTTP {
+				continue
 			}
+			if ss.Scheme.Scheme != "bearer" {
+				continue
+			}
+
+			pp := NewHeaderParam(&openapi3.Parameter{
+				Name:        "Authorization",
+				Description: ss.Scheme.BearerFormat,
+				Required:    len(o.Security) == 1,
+				Schema: &openapi3.SchemaRef{
+					Value: &openapi3.Schema{
+						Type:        "string",
+						Description: ss.Scheme.BearerFormat,
+					},
+				},
+			})
+			out.Parameters.Headers = append(out.Parameters.Headers, generator.Param{
+				Field:  pp.Field,
+				Parser: pp.Parser,
+			})
 		}
 	}
 
@@ -135,20 +133,20 @@ func NewHandler(p *openapi3.Operation, path specification.Path, method string, p
 		}
 	}
 
-	out.ResponserInterfaceName = PrivateFieldName(out.Name)
+	out.ResponserInterfaceName = PrivateFieldName(string(out.Name))
 
 	var responses []Response
 
 	for _, r := range PathResponses(p.Responses) {
 		if len(r.Response.Value.Content) == 0 {
-			resp := NewResponse(nil, out.Name, out.ResponserInterfaceName, r.Code, "", r.Response.Value, "|", r.Code, r.Response)
+			resp := NewResponse(nil, string(out.Name), out.ResponserInterfaceName, r.Code, "", r.Response.Value, "|", r.Code, r.Response)
 			responses = append(responses, resp)
 			if resp.IsBody {
 				out.IsWriteJSONFunc = true
 			}
 		} else {
 			for mtype, ct := range r.Response.Value.Content {
-				resp := NewResponse(ct.Schema, out.Name, out.ResponserInterfaceName, r.Code, mtype, r.Response.Value, "|", r.Code, r.Response)
+				resp := NewResponse(ct.Schema, string(out.Name), out.ResponserInterfaceName, r.Code, mtype, r.Response.Value, "|", r.Code, r.Response)
 				responses = append(responses, resp)
 				if resp.IsBody {
 					out.IsWriteJSONFunc = true
@@ -166,7 +164,7 @@ func NewHandler(p *openapi3.Operation, path specification.Path, method string, p
 	return out, nil
 }
 
-var HandlerName = generator.OperationName
+var HandlerName = generator.OperationNameOld
 
 // func HandlerName(path, method string) string {
 // 	var suffix string

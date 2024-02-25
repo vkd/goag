@@ -1,4 +1,7 @@
+{{/* ----------------------------- Client ------------------------------------- */}}
 {{ define "Client" }}
+{{- template "Imports" .Imports }}
+
 type Client struct {
 	BaseURL    string
 	HTTPClient HTTPClient
@@ -20,8 +23,8 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-{{ range $_, $handler := .Handlers }}
-	{{ template "ClientHandler" $handler }}
+{{ range $_, $o := .Operations }}
+	{{ template "ClientOperation" $o }}
 {{- end }}
 
 {{ if .IsDecodeJSONFunc -}}
@@ -32,20 +35,19 @@ func decodeJSON(r io.Reader, v interface{}, name string) {
 	}
 }
 {{- end }}
-{{ end }}
+{{- end }}
 
-{{/* ------------------------------------------------------------------ */}}
-
-{{ define "ClientHandler" }}
+{{/* ----------------------------- ClientOperation ------------------------------------- */}}
+{{ define "ClientOperation" }}
 {{ $handler := . }}
 // {{ .Name }} - {{ .HTTPMethod }} {{ .Path.Spec }}
 func (c *Client) {{ .Name }}(ctx context.Context, {{ .RequestVarName }} {{ .RequestTypeName }}) ({{ .ResponseTypeName }}, error) {
-	var requestURL = c.BaseURL {{ range $_, $pb := .PathBuilder }} + {{ exec ($pb.FormatTemplater "request") }}{{ end }}
+	var requestURL = c.BaseURL {{ range $_, $pr := .PathFormat }} + {{ render $pr }}{{ end }}
 
-	{{ if .Params.Query }}
-	query := make(url.Values, {{ len .Params.Query }})
-	{{- range $_, $q := .Params.Query }}
-	{{ $q.ExecuteFormat "request" "query" }}
+	{{ if .Params.Query.List }}
+	query := make(url.Values, {{ len .Params.Query.List }})
+	{{- range $_, $q := .Params.Query.List }}
+	{{ $q.V.ExecuteFormat "request" "query" }}
 	{{- end }}
 	requestURL += "?" + query.Encode()
 	{{ end }}
@@ -62,7 +64,7 @@ func (c *Client) {{ .Name }}(ctx context.Context, {{ .RequestVarName }} {{ .Requ
 		return nil, fmt.Errorf("new request: %w", err)
 	}
 
-	{{- range $_, $h := .Params.Headers }}
+	{{- range $_, $h := .Headers }}
 	{{- if not $h.Required }}
 	if request.Headers.{{ $h.FieldName }} != nil {
 	{{- end }}
@@ -95,11 +97,7 @@ func (c *Client) {{ .Name }}(ctx context.Context, {{ .RequestVarName }} {{ .Requ
 }
 {{ end }}
 
-{{/* ------------------------------------------------------------------ */}}
-{{ define "xxx" -}}
-{{- end }}
-{{/* ------------------------------------------------------------------ */}}
-
+{{/* ----------------------------- ClientResponse ------------------------------------- */}}
 {{ define "ClientResponse" -}}
 var response {{ .Name }}
 

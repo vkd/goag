@@ -9,20 +9,23 @@ import (
 type Generator struct {
 	Options Options
 
+	Imports Imports
+
 	Spec *specification.Spec
 
-	Handlers []Handler
-	Client   Client
+	Handlers   []Handler
+	Client     Client
+	Operations []Operation
 
 	// deprecated
 
-	Paths      []*PathItem
-	Operations []*Operation
+	Paths         []*PathItem
+	OperationsOld []*OperationOld
 }
 
 type PathItem struct {
 	PathItem   *specification.PathItem
-	Operations []*Operation
+	Operations []*OperationOld
 }
 
 var defaultOptions = Options{
@@ -44,13 +47,22 @@ func NewGenerator(spec *specification.Spec, opts ...GenOption) (*Generator, erro
 		opt.apply(&g.Options)
 	}
 
-	for _, pi := range spec.Paths {
+	for _, o := range spec.Operations {
+		op, ims, err := NewOperation(o, spec.Components)
+		if err != nil {
+			return nil, fmt.Errorf("new operation: %w", err)
+		}
+		g.Operations = append(g.Operations, op)
+		g.Imports = append(g.Imports, ims...)
+	}
+
+	for _, pi := range spec.PathItems {
 		pathItem := &PathItem{
 			PathItem: pi,
 		}
 		for _, o := range pi.Operations {
-			operation := NewOperation(o)
-			g.Operations = append(g.Operations, operation)
+			operation := NewOperationOld(o)
+			g.OperationsOld = append(g.OperationsOld, operation)
 			pathItem.Operations = append(pathItem.Operations, operation)
 
 			h, err := NewHandler(o)
@@ -62,7 +74,7 @@ func NewGenerator(spec *specification.Spec, opts ...GenOption) (*Generator, erro
 		g.Paths = append(g.Paths, pathItem)
 	}
 
-	g.Client = NewClient(g.Handlers)
+	g.Client = NewClient(spec, g.Operations)
 
 	return g, nil
 }
@@ -96,7 +108,7 @@ func IfOption(opt GenOption, ifCond ...bool) GenOption {
 	return opt
 }
 
-func (g *Generator) goFile(ims []string, body executor) Templater {
+func (g *Generator) goFile(ims []Import, body executor) Templater {
 	return TemplaterFunc(GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,

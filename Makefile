@@ -12,18 +12,21 @@ simple-example:
 # 		rm -rf ${INTEGRATION_DIR}; mkdir ${INTEGRATION_DIR}; cp $$DIR/h_test.go ${INTEGRATION_DIR}; go run cmd/goag/main.go --file $$DIR/openapi.yml --out ${INTEGRATION_DIR} --package tests; go test -v ${INTEGRATION_DIR}; \
 # 	done
 
+TEST_CLIENT?=true
+
 test-gen:
 # go run cmd/goag/main.go --dir ./${TESTS_DIR} --package test
 	go run cmd/goag/main.go $(if ${RUN_TEST},--file ./${TESTS_DIR}/${RUN_TEST}/openapi.yaml --out ./${TESTS_DIR}/${RUN_TEST}/,--dir ./${TESTS_DIR})  --package test $(if ${TEST_CLIENT},--client=true,) --donotedit=false
 
 EXAMPLES_DIR?=examples
 examples-gen:
-	go run cmd/goag/main.go $(if ${RUN_EXAMPLE},--file ./${EXAMPLES_DIR}/${RUN_EXAMPLE}/openapi.yaml --out ./${EXAMPLES_DIR}/${RUN_EXAMPLE}/,--dir ./${EXAMPLES_DIR})  --package test $(if ${CLIENT},--client=true,)
+	go run cmd/goag/main.go $(if ${RUN_EXAMPLE},--file ./${EXAMPLES_DIR}/${RUN_EXAMPLE}/openapi.yaml --out ./${EXAMPLES_DIR}/${RUN_EXAMPLE}/,--dir ./${EXAMPLES_DIR}) --package test $(if ${CLIENT},--client=true,)
 
 test-only:
 	go test $(if ${RUN},-run=${RUN},) ./...
 
 test-local: test-gen test-only
+test: CLIENT=${TEST_CLIENT}
 test: test-gen examples-gen update-readme
 	go test $(if ${RUN},-run=${RUN},) ./...
 

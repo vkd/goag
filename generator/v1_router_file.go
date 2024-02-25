@@ -31,21 +31,19 @@ func (g *Generator) RouterFile(basePath, baseFilename string, hs []HandlerOld, o
 		SpecFileExt:      strings.TrimPrefix(filepath.Ext(baseFilename), "."),
 		// Data:             oldRouter,
 	}
-	if len(hs) != len(g.Operations) {
+	if len(hs) != len(g.OperationsOld) {
 		panic("wrong Operations")
 	}
-	for i, o := range g.Operations {
+	for i, o := range g.OperationsOld {
 		o.Handler = &hs[i]
 		for _, s := range o.Operation.Security {
-			for _, sec := range s {
-				if sec.Scheme.Type == "http" && sec.Scheme.Scheme == "bearer" {
-					o.Handler.IsJWT = true
-					file.JWT = true
-				}
+			if s.Scheme.Type == specification.SecuritySchemeTypeHTTP && s.Scheme.Scheme == "bearer" {
+				o.Handler.IsJWT = true
+				file.JWT = true
 			}
 		}
 		file.Handlers = append(file.Handlers, routerHandler{
-			Name: o.Name + "Handler",
+			Name: string(o.Name) + "Handler",
 			Type: o.HandlerTypeName,
 		})
 	}
@@ -63,7 +61,7 @@ func (g *Generator) RouterFile(basePath, baseFilename string, hs []HandlerOld, o
 	// 	}
 	// }
 
-	return g.goFile([]string{
+	return g.goFile([]Import{
 		"net/http",
 		"strings",
 	}, file), nil

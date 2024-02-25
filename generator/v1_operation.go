@@ -6,54 +6,54 @@ import (
 	"github.com/vkd/goag/specification"
 )
 
-type Operation struct {
+type OperationOld struct {
 	Operation *specification.Operation
 
-	Name            string
+	Name            OperationName
 	HandlerTypeName string
 
 	PathParameters   []Parameter[*specification.PathParameter]
-	QueryParameters  []Parameter[specification.QueryParameter]
+	QueryParameters  []Parameter[*specification.QueryParameter]
 	HeaderParameters []Parameter[*specification.HeaderParameter]
 
 	Handler *HandlerOld // Deprecated
 }
 
-func NewOperation(operation *specification.Operation) *Operation {
-	o := &Operation{
+func NewOperationOld(operation *specification.Operation) *OperationOld {
+	o := &OperationOld{
 		Operation: operation,
 	}
-	o.Name = OperationName(operation.OperationID, operation.PathItem.Path, operation.Method)
-	o.HandlerTypeName = o.Name + "HandlerFunc"
+	o.Name = OperationNameOld(operation.OperationID, operation.PathItem.Path, operation.Method)
+	o.HandlerTypeName = string(o.Name) + "HandlerFunc"
 
-	for _, pathParam := range operation.Parameters.Path {
+	for _, pathParam := range operation.Parameters.Path.List {
 		o.PathParameters = append(o.PathParameters, Parameter[*specification.PathParameter]{
-			Spec: pathParam,
+			Spec: pathParam.V.Value(),
 
-			FieldName: PublicFieldName(pathParam.Name),
+			FieldName: PublicFieldName(pathParam.V.Value().Name),
 		})
 	}
-	for _, query := range operation.Parameters.Query {
-		o.QueryParameters = append(o.QueryParameters, Parameter[specification.QueryParameter]{
-			Spec: query,
+	for _, query := range operation.Parameters.Query.List {
+		o.QueryParameters = append(o.QueryParameters, Parameter[*specification.QueryParameter]{
+			Spec: query.V.Value(),
 
-			FieldName: PublicFieldName(query.Name),
+			FieldName: PublicFieldName(query.V.Value().Name),
 		})
 	}
-	for _, header := range operation.Parameters.Headers {
+	for _, header := range operation.Parameters.Headers.List {
 		o.HeaderParameters = append(o.HeaderParameters, Parameter[*specification.HeaderParameter]{
-			Spec: header,
+			Spec: header.V.Value(),
 
-			FieldName: PublicFieldName(header.Name),
+			FieldName: PublicFieldName(header.V.Value().Name),
 		})
 	}
 
 	return o
 }
 
-func OperationName(operationID string, path specification.Path, method string) string {
+func OperationNameOld(operationID string, path specification.PathOld2, method specification.HTTPMethodTitle) OperationName {
 	if operationID != "" {
-		return PublicFieldName(operationID)
+		return OperationName(PublicFieldName(operationID))
 	}
 
 	var out string
@@ -66,11 +66,11 @@ func OperationName(operationID string, path specification.Path, method string) s
 		suffix = "RT"
 	}
 
-	return method + out + suffix
+	return OperationName(string(method) + out + suffix)
 }
 
 type Parameter[T interface {
-	*specification.PathParameter | specification.QueryParameter | *specification.HeaderParameter
+	*specification.PathParameter | *specification.QueryParameter | *specification.HeaderParameter
 }] struct {
 	Spec T
 

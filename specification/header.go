@@ -2,14 +2,38 @@ package specification
 
 import "github.com/getkin/kin-openapi/openapi3"
 
-func Headers(hs openapi3.Headers) (out []Header) {
+type Header struct {
+	NoRef[Header]
+
+	Description string
+	Required    bool
+	Deprecated  bool
+
+	Schema Ref[Schema]
+}
+
+func NewHeader(s *openapi3.Header, schemas ComponentsSchemas) *Header {
+	return &Header{
+		Description: s.Description,
+		Required:    s.Required,
+		Deprecated:  s.Deprecated,
+
+		Schema: NewSchemaRef(s.Schema, schemas),
+	}
+}
+
+var _ Ref[Header] = (*Header)(nil)
+
+func (h *Header) Value() *Header { return h }
+
+func Headers(hs openapi3.Headers) (out []HeaderOld) {
 	for _, h := range sortedKeys(hs) {
-		out = append(out, NewHeader(h, hs[h]))
+		out = append(out, NewHeaderOld(h, hs[h]))
 	}
 	return
 }
 
-type Header struct {
+type HeaderOld struct {
 	Spec *openapi3.Header
 	Ref  string
 
@@ -21,8 +45,8 @@ type Header struct {
 	Deprecated  bool
 }
 
-func NewHeader(name string, h *openapi3.HeaderRef) Header {
-	header := Header{
+func NewHeaderOld(name string, h *openapi3.HeaderRef) HeaderOld {
+	header := HeaderOld{
 		Spec: h.Value,
 		Ref:  h.Ref,
 

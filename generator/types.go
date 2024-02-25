@@ -158,7 +158,7 @@ func (_ StringType) RenderFormat(from Render) (string, error) {
 
 type CustomType string
 
-func NewCustomType(s string) CustomType {
+func NewCustomType(s string) (CustomType, Imports) {
 	var customImport, customType string = "", s
 	slIdx := strings.LastIndex(s, "/")
 	if slIdx >= 0 {
@@ -171,8 +171,7 @@ func NewCustomType(s string) CustomType {
 		}
 	}
 
-	AddImport(customImport)
-	return CustomType(customType)
+	return CustomType(customType), NewImportsS(customImport)
 }
 
 func (c CustomType) Render() (string, error) {
@@ -199,16 +198,18 @@ type StructureType struct {
 	Fields []StructureField
 }
 
-func NewStructureType(s specification.Schema) (zero StructureType, _ error) {
+func NewStructureType(s *specification.Schema) (zero StructureType, _ Imports, _ error) {
 	var stype StructureType
+	var imports Imports
 	for _, p := range s.Properties {
-		f, err := NewStructureField(p)
+		f, ims, err := NewStructureField(p)
 		if err != nil {
-			return zero, fmt.Errorf("field %q: %w", p.Name, err)
+			return zero, nil, fmt.Errorf("field %q: %w", p.Name, err)
 		}
 		stype.Fields = append(stype.Fields, f)
+		imports = append(imports, ims...)
 	}
-	return stype, nil
+	return stype, imports, nil
 }
 
 func (s StructureType) Render() (string, error) { return ExecuteTemplate("StructureType", s) }
@@ -220,17 +221,17 @@ type StructureField struct {
 	Tags    []StructureFieldTag
 }
 
-func NewStructureField(s specification.SchemaProperty) (zero StructureField, _ error) {
-	t, err := NewSchema(s.Schema)
+func NewStructureField(s specification.SchemaProperty) (zero StructureField, _ Imports, _ error) {
+	t, ims, err := NewSchema(s.Schema)
 	if err != nil {
-		return zero, fmt.Errorf(": %w", err)
+		return zero, nil, fmt.Errorf(": %w", err)
 	}
 	return StructureField{
-		Comment: s.Description,
+		Comment: s.Schema.Value().Description,
 		Name:    PublicFieldName(s.Name),
 		Type:    t,
 		Tags:    []StructureFieldTag{{Key: "json", Values: []string{s.Name}}},
-	}, nil
+	}, ims, nil
 }
 
 type StructureFieldTag struct {
@@ -241,8 +242,8 @@ type StructureFieldTag struct {
 type Ref string
 
 func NewRef(ref string) Ref {
-	ref = ref[strings.LastIndex(ref, "/"):]
-	ref = strings.TrimPrefix(ref, "/")
+	// ref = ref[strings.LastIndex(ref, "/"):]
+	// ref = strings.TrimPrefix(ref, "/")
 	return Ref(ref)
 }
 

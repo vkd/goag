@@ -7,7 +7,7 @@ import (
 )
 
 type Response struct {
-	s *specification.Response
+	s *specification.ResponseOld
 
 	Name       string
 	StatusCode string
@@ -17,9 +17,9 @@ type Response struct {
 	Body Optional[any]
 }
 
-func NewResponse(handlerName string, response *specification.Response) *Response {
+func NewResponse(handlerName OperationName, response *specification.ResponseOld) *Response {
 	r := &Response{s: response}
-	r.Name = handlerName + "Response" + strings.Title(response.StatusCode)
+	r.Name = string(handlerName) + "Response" + strings.Title(response.StatusCode)
 	if len(response.Spec.Content) > 0 {
 		r.Name += "JSON"
 		r.Body.OK = true
