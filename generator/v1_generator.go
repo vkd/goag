@@ -7,35 +7,33 @@ import (
 )
 
 type Generator struct {
-	Options Options
-
-	Imports Imports
+	Options GeneratorOptions
 
 	Spec *specification.Spec
 
-	Handlers   []Handler
-	Client     Client
-	Operations []Operation
+	Imports    Imports
+	Operations []*Operation
+	Paths      []*PathItem
 
-	// deprecated
-
-	Paths         []*PathItem
-	OperationsOld []*OperationOld
+	Router Router
+	Client Client
 }
 
 type PathItem struct {
-	PathItem   *specification.PathItem
-	Operations []*OperationOld
+	*specification.PathItem
+	Operations []*Operation
 }
 
-var defaultOptions = Options{
+var defaultOptions = GeneratorOptions{
 	DoNotEdit:   true,
 	PackageName: "goag",
 }
 
-type Options struct {
-	DoNotEdit   bool
-	PackageName string
+type GeneratorOptions struct {
+	DoNotEdit    bool
+	PackageName  string
+	BasePath     string
+	SpecFilename string
 }
 
 func NewGenerator(spec *specification.Spec, opts ...GenOption) (*Generator, error) {
@@ -47,72 +45,75 @@ func NewGenerator(spec *specification.Spec, opts ...GenOption) (*Generator, erro
 		opt.apply(&g.Options)
 	}
 
-	for _, o := range spec.Operations {
-		op, ims, err := NewOperation(o, spec.Components)
-		if err != nil {
-			return nil, fmt.Errorf("new operation: %w", err)
-		}
-		g.Operations = append(g.Operations, op)
-		g.Imports = append(g.Imports, ims...)
-	}
-
 	for _, pi := range spec.PathItems {
 		pathItem := &PathItem{
 			PathItem: pi,
 		}
 		for _, o := range pi.Operations {
-			operation := NewOperationOld(o)
-			g.OperationsOld = append(g.OperationsOld, operation)
-			pathItem.Operations = append(pathItem.Operations, operation)
-
-			h, err := NewHandler(o)
+			operation, ims, err := NewOperation(o, spec.Components)
 			if err != nil {
-				return nil, fmt.Errorf("new handler %q: %w", operation.Name, err)
+				return nil, fmt.Errorf(": %w", err)
 			}
-			g.Handlers = append(g.Handlers, h)
+			g.Imports = append(g.Imports, ims...)
+
+			g.Operations = append(g.Operations, operation)
+			pathItem.Operations = append(pathItem.Operations, operation)
 		}
 		g.Paths = append(g.Paths, pathItem)
 	}
 
 	g.Client = NewClient(spec, g.Operations)
+	g.Router = NewRouter(spec, g.Paths, g.Operations, g.Options)
 
 	return g, nil
 }
 
 func SkipDoNotEdit() GenOption {
-	return genOptionFunc(func(o *Options) {
+	return genOptionFunc(func(o *GeneratorOptions) {
 		o.DoNotEdit = false
 	})
 }
 
 func PackageName(packageName string) GenOption {
-	return genOptionFunc(func(o *Options) {
+	return genOptionFunc(func(o *GeneratorOptions) {
 		o.PackageName = packageName
 	})
 }
 
-type GenOption interface {
-	apply(*Options)
+func BasePath(basePath string) GenOption {
+	return genOptionFunc(func(o *GeneratorOptions) {
+		o.BasePath = basePath
+	})
 }
 
-type genOptionFunc func(*Options)
+func SpecFilename(specFilename string) GenOption {
+	return genOptionFunc(func(o *GeneratorOptions) {
+		o.SpecFilename = specFilename
+	})
+}
 
-func (f genOptionFunc) apply(o *Options) { f(o) }
+type GenOption interface {
+	apply(*GeneratorOptions)
+}
+
+type genOptionFunc func(*GeneratorOptions)
+
+func (f genOptionFunc) apply(o *GeneratorOptions) { f(o) }
 
 func IfOption(opt GenOption, ifCond ...bool) GenOption {
 	for _, cnd := range ifCond {
 		if !cnd {
-			return genOptionFunc(func(g *Options) {})
+			return genOptionFunc(func(g *GeneratorOptions) {})
 		}
 	}
 	return opt
 }
 
-func (g *Generator) goFile(ims []Import, body executor) Templater {
+func (g *Generator) goFile(ims []Import, body any) Templater {
 	return TemplaterFunc(GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,
 		Imports:       ims,
-		Body:          RenderFunc(body.Execute),
+		Body:          body,
 	}.Render)
 }

@@ -126,7 +126,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		handlers = append(handlers, h.HandlerOld)
 	}
 
-	gen, err := generatorv2.NewGenerator(s, generatorv2.PackageName(packageName), generatorv2.SkipDoNotEdit())
+	gen, err := generatorv2.NewGenerator(s, generatorv2.PackageName(packageName), generatorv2.SkipDoNotEdit(), generatorv2.BasePath(basePath), generatorv2.SpecFilename(baseFilename))
 	if err != nil {
 		return fmt.Errorf("create new generator from spec file: %w", err)
 	}

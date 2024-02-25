@@ -42,7 +42,7 @@ func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 		pi.PathItem = pathItem
 		pi.PathOld, _ = NewPathOld(pathKey)
 		for _, method := range httpMethods() {
-			operation := pathItem.GetOperation(method.HTTP)
+			operation := pathItem.GetOperation(string(method.HTTP))
 			if operation == nil {
 				continue
 			}
@@ -213,8 +213,12 @@ func httpMethods() []httpMethod {
 }
 
 type httpMethod struct {
-	HTTP  string
+	HTTP  HTTPMethod
 	Title HTTPMethodTitle
 }
 
+// HTTPMethod - http.MethodGet, http.MethodPost, ...
+type HTTPMethod string
+
+// HTTPMethodTitle - Get, Post, ...
 type HTTPMethodTitle string

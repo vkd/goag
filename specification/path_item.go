@@ -5,7 +5,7 @@ import "github.com/getkin/kin-openapi/openapi3"
 type PathItem struct {
 	NoRef[PathItem]
 
-	// PathV2     Path // TODO
+	RawPath    string // TODO
 	Operations []*Operation
 
 	// Deprecated // TODO
@@ -15,5 +15,7 @@ type PathItem struct {
 }
 
 func NewPathItem(path string) *PathItem {
-	return &PathItem{}
+	return &PathItem{
+		RawPath: path,
+	}
 }

@@ -15,7 +15,7 @@ type Handler struct {
 
 	Name       OperationName
 	Method     specification.HTTPMethodTitle
-	HTTPMethod string
+	HTTPMethod specification.HTTPMethod
 	Path       specification.PathOld2
 
 	PathBuilder []PathDir

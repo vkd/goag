@@ -7,3 +7,7 @@ func (g *Generator) ClientFile() GoFile {
 		Body:          g.Client,
 	}
 }
+
+func (g *Generator) RouterFile(basePath, baseFilename string, hs []HandlerOld, oldRouter any) (Templater, error) {
+	return g.goFile(nil, g.Router), nil
+}

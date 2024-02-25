@@ -14,11 +14,11 @@ type Client struct {
 	IsDecodeJSONFunc bool
 }
 
-func NewClient(s *specification.Spec, ops []Operation) Client {
+func NewClient(s *specification.Spec, ops []*Operation) Client {
 	c := Client{}
 	c.Operations = make([]ClientOperation, 0, len(ops))
-	for i := range ops {
-		c.Operations = append(c.Operations, NewClientOperation(&ops[i]))
+	for _, o := range ops {
+		c.Operations = append(c.Operations, NewClientOperation(o))
 	}
 	return c
 }

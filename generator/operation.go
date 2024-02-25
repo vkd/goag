@@ -12,6 +12,9 @@ type Operation struct {
 	Name OperationName
 	Path specification.PathOld2
 
+	APIHandlerFieldName string
+	HandlerTypeName     string
+
 	RequestTypeName  string
 	ResponseTypeName string
 
@@ -21,12 +24,15 @@ type Operation struct {
 	Responses       []*Response
 }
 
-func NewOperation(s *specification.Operation, components specification.Components) (zero Operation, _ Imports, _ error) {
+func NewOperation(s *specification.Operation, components specification.Components) (zero *Operation, _ Imports, _ error) {
 	name := NewOperationName(s)
 	o := Operation{
 		Operation: s,
 		Name:      name,
 		Path:      s.PathItem.Path,
+
+		APIHandlerFieldName: string(name) + "Handler",
+		HandlerTypeName:     string(name) + "HandlerFunc",
 
 		RequestTypeName:  string(name) + "Params",
 		ResponseTypeName: string(name) + "Response",
@@ -46,7 +52,7 @@ func NewOperation(s *specification.Operation, components specification.Component
 		o.Responses = append(o.Responses, NewResponse(name, r))
 	}
 
-	return o, imports, nil
+	return &o, imports, nil
 }
 
 type OperationName string

@@ -22,7 +22,7 @@ type Operation struct {
 
 	// Deprecated // TODO
 
-	HTTPMethod string
+	HTTPMethod HTTPMethod
 	Method     HTTPMethodTitle
 
 	Operation *openapi3.Operation
