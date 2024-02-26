@@ -100,6 +100,7 @@ func (r ListPetsResponse200JSON) listPets() {}
 
 func (r ListPetsResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("x-next", r.Headers.XNext)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "ListPetsResponse200JSON")
 }
@@ -120,6 +121,7 @@ type ListPetsResponseDefaultJSON struct {
 func (r ListPetsResponseDefaultJSON) listPets() {}
 
 func (r ListPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(r.Code)
 	writeJSON(w, r.Body, "ListPetsResponseDefaultJSON")
 }
@@ -202,6 +204,7 @@ type CreatePetsResponseDefaultJSON struct {
 func (r CreatePetsResponseDefaultJSON) createPets() {}
 
 func (r CreatePetsResponseDefaultJSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(r.Code)
 	writeJSON(w, r.Body, "CreatePetsResponseDefaultJSON")
 }
@@ -307,6 +310,7 @@ type ShowPetByIDResponse200JSON struct {
 func (r ShowPetByIDResponse200JSON) showPetByID() {}
 
 func (r ShowPetByIDResponse200JSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "ShowPetByIDResponse200JSON")
 }
@@ -327,6 +331,7 @@ type ShowPetByIDResponseDefaultJSON struct {
 func (r ShowPetByIDResponseDefaultJSON) showPetByID() {}
 
 func (r ShowPetByIDResponseDefaultJSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(r.Code)
 	writeJSON(w, r.Body, "ShowPetByIDResponseDefaultJSON")
 }

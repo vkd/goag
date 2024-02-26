@@ -69,6 +69,7 @@ type GetPetsResponse200JSON struct {
 func (r GetPetsResponse200JSON) getPets() {}
 
 func (r GetPetsResponse200JSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "GetPetsResponse200JSON")
 }
@@ -133,6 +134,7 @@ type GetPetsNamesResponse200JSON struct {
 func (r GetPetsNamesResponse200JSON) getPetsNames() {}
 
 func (r GetPetsNamesResponse200JSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "GetPetsNamesResponse200JSON")
 }

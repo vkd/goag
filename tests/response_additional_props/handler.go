@@ -73,6 +73,7 @@ type GetPetResponse200JSON struct {
 func (r GetPetResponse200JSON) getPet() {}
 
 func (r GetPetResponse200JSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "GetPetResponse200JSON")
 }

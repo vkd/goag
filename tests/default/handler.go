@@ -730,6 +730,7 @@ func (r GetShopsShopPetsResponse200JSON) getShopsShopPets() {}
 
 func (r GetShopsShopPetsResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("x-next", r.Headers.XNext)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "GetShopsShopPetsResponse200JSON")
 }
@@ -749,6 +750,7 @@ type GetShopsShopPetsResponseDefaultJSON struct {
 func (r GetShopsShopPetsResponseDefaultJSON) getShopsShopPets() {}
 
 func (r GetShopsShopPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(r.Code)
 	writeJSON(w, r.Body, "GetShopsShopPetsResponseDefaultJSON")
 }
@@ -953,6 +955,7 @@ func (r ReviewShopResponse200JSON) reviewShop() {}
 
 func (r ReviewShopResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("x-next", r.Headers.XNext)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "ReviewShopResponse200JSON")
 }
@@ -972,6 +975,7 @@ type ReviewShopResponseDefaultJSON struct {
 func (r ReviewShopResponseDefaultJSON) reviewShop() {}
 
 func (r ReviewShopResponseDefaultJSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(r.Code)
 	writeJSON(w, r.Body, "ReviewShopResponseDefaultJSON")
 }

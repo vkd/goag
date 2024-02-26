@@ -84,6 +84,7 @@ type GetPetsResponseDefaultJSON struct {
 func (r GetPetsResponseDefaultJSON) getPets() {}
 
 func (r GetPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(r.Code)
 	writeJSON(w, r.Body, "GetPetsResponseDefaultJSON")
 }

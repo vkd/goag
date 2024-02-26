@@ -20,9 +20,10 @@ type Response struct {
 
 	ResponserInterfaceName string
 
-	IsBody  bool
-	Body    Render
-	Headers []ResponseHeader
+	IsBody      bool
+	Body        Render
+	ContentType string
+	Headers     []ResponseHeader
 
 	Struct GoTypeDef
 
@@ -48,8 +49,12 @@ func New{{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.
 func (r {{.Name}}) {{.ResponserInterfaceName}}() {}
 
 func (r {{.Name}}) Write(w http.ResponseWriter) {
-	{{range $_, $h := .Headers}}w.Header().Set("{{$h.Name}}", r.Headers.{{$h.FieldName}})
-	{{end -}}
+	{{- range $_, $h := .Headers}}
+	w.Header().Set("{{$h.Name}}", r.Headers.{{$h.FieldName}})
+	{{- end }}
+	{{- if .ContentType }}
+	w.Header().Set("Content-Type", "{{ .ContentType }}")
+	{{- end }}
 	{{if .IsDefault}}w.WriteHeader(r.Code){{else}}w.WriteHeader({{.Status}}){{end}}
 	{{if .IsBody}}writeJSON(w, r.Body, "{{.Name}}")
 	{{end -}}
@@ -75,6 +80,7 @@ func NewResponse(s *openapi3.SchemaRef, handlerName string, responserName string
 	default:
 		out.Name += contentType
 	}
+	out.ContentType = contentType
 	out.PrivateName = out.Name
 	out.PrivateName = PrivateFieldName(out.Name)
 	// out.Status = status

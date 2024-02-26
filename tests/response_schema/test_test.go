@@ -18,4 +18,5 @@ func TestResponseSchema(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, "{\"id\":1,\"name\":\"mike\"}\n", w.Body.String())
+	assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 }
