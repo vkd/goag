@@ -170,8 +170,8 @@ type CustomTypeParser struct {
 }
 
 var tmCustomTypeParser = template.Must(template.New("CustomTypeParser").Parse(`
-var v {{ .Type }}
-err := v.UnmarshalText([]byte({{.From}}))
+var {{ .To }} {{ .Type }}
+err := {{ .To }}.UnmarshalText([]byte({{.From}}))
 if err != nil {
 	return zero, {{.Error.Wrap (print "unmarshal text")}}
 }`))

@@ -37,8 +37,9 @@ func NewClientOperation(o *Operation) ClientOperation {
 		Operation:      o,
 		RequestVarName: "request",
 		IsRequestBody:  o.Operation.RequestBody.IsSet && o.Operation.RequestBody.Value.Value().Content.Has("application/json"),
-		Headers:        make([]ClientHeader, 0, len(o.Params.Headers.List)),
 	}
+
+	c.Headers = make([]ClientHeader, 0, len(o.Params.Headers.List))
 	for _, h := range o.Params.Headers.List {
 		c.Headers = append(c.Headers, ClientHeader{
 			Name:      h.V.Name,

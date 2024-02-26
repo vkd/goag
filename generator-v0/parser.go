@@ -7,22 +7,22 @@ type StringsParser interface {
 }
 
 func NewStringsParser(s SchemaRender, from, toOrig string, isPointer bool, mkErr ErrorWrapper) Render {
-	to := toOrig
+
+	switch s := s.(type) {
+	case StringsParser:
+		return s.StringsParser(from, toOrig, mkErr)
+	}
 
 	var conv Render
-	if sp, ok := s.(StringsParser); ok {
-		conv = sp.StringsParser(from, to, mkErr)
-	} else {
-		to := "v"
-		conv = s.Parser(from+"[0]", to, mkErr)
+	to := "v"
+	conv = s.Parser(from+"[0]", to, mkErr)
 
-		_, optionable := s.(interface{ Optionable() })
+	_, optionable := s.(interface{ Optionable() })
 
-		if isPointer && !optionable {
-			to = "&" + to
-		}
-		conv = source.Renders{conv, source.Assign(toOrig, GoValue(to))}
+	if isPointer && !optionable {
+		to = "&" + to
 	}
+	conv = source.Renders{conv, source.Assign(toOrig, GoValue(to))}
 
 	return conv
 }

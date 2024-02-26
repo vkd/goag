@@ -220,9 +220,10 @@ func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
 	toTm := RawTemplate(to + "[\"" + p.Name + "\"]")
 
 	if sliceType, ok := p.Type.(SliceType); ok {
-		if _, ok := sliceType.Items.(StringType); ok {
+		switch sliceType.Items.(type) {
+		case StringType:
 			return AssignTemplate(fromTm, toTm, false).String()
-		} else {
+		default:
 			return TemplateData("SliceToSliceStrings", TData{
 				"Len":   RawTemplate("len(" + fromTxt + ")"),
 				"From":  fromTm,
@@ -230,6 +231,15 @@ func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
 				"To":    toTm,
 			}).String()
 		}
+	}
+	if customType, ok := p.Type.(CustomType); ok {
+		return AssignTemplate(
+			ToSliceStrings(TemplaterFunc(func() (string, error) {
+				return customType.RenderFormat(RenderFunc(fromTm.String))
+			})),
+			toTm,
+			false,
+		).String()
 	}
 
 	tm := AssignTemplate(
