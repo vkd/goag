@@ -47,7 +47,7 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 
 	root := &Route{
 		BasePath: r.BasePath,
-		Routes:   make(map[string]*Route),
+		mRoutes:  make(map[string]*Route),
 	}
 
 	for _, pi := range r.PathItems {
@@ -71,7 +71,8 @@ type Route struct {
 
 	PrefixPathItems []*RoutePathItem
 	Variable        *RoutePathItem
-	Routes          map[string]*Route
+	Routes          []*Route
+	mRoutes         map[string]*Route
 	VariableRoute   *Route
 }
 
@@ -120,23 +121,24 @@ func (r *Route) add(pi *RouterPathItem, dirs []string) {
 		variableRoute := r.VariableRoute
 		if variableRoute == nil {
 			variableRoute = &Route{
-				Name:   r.Name + PublicFieldName(d[1:len(d)-1]),
-				Prefix: "/" + d,
-				Routes: make(map[string]*Route),
+				Name:    r.Name + PublicFieldName(d[1:len(d)-1]),
+				Prefix:  "/" + d,
+				mRoutes: make(map[string]*Route),
 			}
 			r.VariableRoute = variableRoute
 		}
 		variableRoute.add(pi, dirs)
 	} else {
-		if next, ok := r.Routes[d]; ok {
+		if next, ok := r.mRoutes[d]; ok {
 			next.add(pi, dirs)
 		} else {
 			route := &Route{
-				Name:   r.Name + PublicFieldName(d),
-				Prefix: "/" + d,
-				Routes: make(map[string]*Route),
+				Name:    r.Name + PublicFieldName(d),
+				Prefix:  "/" + d,
+				mRoutes: make(map[string]*Route),
 			}
-			r.Routes[d] = route
+			r.Routes = append(r.Routes, route)
+			r.mRoutes[d] = route
 			route.add(pi, dirs)
 		}
 	}
