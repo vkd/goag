@@ -47,11 +47,11 @@ type GetShopsShopParams struct {
 	}
 
 	Path struct {
-		Shop string
+		Shop Shop
 	}
 
 	Headers struct {
-		RequestID *string
+		RequestID *RequestID
 	}
 }
 
@@ -111,7 +111,12 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
-				v := hs[0]
+
+				var v RequestID
+				err := v.UnmarshalText([]byte(hs[0]))
+				if err != nil {
+					return zero, ErrParseParam{In: "header", Parameter: "request-id", Reason: "unmarshal text", Err: err}
+				}
 				params.Headers.RequestID = &v
 			}
 		}
@@ -138,7 +143,11 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			v := vPath
+			var v Shop
+			err := v.UnmarshalText([]byte(vPath))
+			if err != nil {
+				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "unmarshal text", Err: err}
+			}
 			params.Path.Shop = v
 		}
 	}

@@ -68,7 +68,7 @@ func (c *Client) {{ .Name }}(ctx context.Context, {{ .RequestVarName }} {{ .Requ
 	{{- if not $h.Required }}
 	if request.Headers.{{ $h.FieldName }} != nil {
 	{{- end }}
-	req.Header.Set("{{ $h.Name }}", {{- if not $h.Required }}*{{end}}request.Headers.{{ $h.FieldName }})
+	req.Header.Set("{{ $h.Name }}", {{ $h.RenderFormat (print "request.Headers." $h.FieldName) }})
 	{{- if not $h.Required }}}{{- end }}
 	{{- end }}
 

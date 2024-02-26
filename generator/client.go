@@ -45,6 +45,7 @@ func NewClientOperation(o *Operation) ClientOperation {
 			Name:      h.V.Name,
 			FieldName: h.V.FieldName,
 			Required:  h.V.Required,
+			Type:      h.V.Type,
 		})
 	}
 
@@ -98,4 +99,16 @@ type ClientHeader struct {
 	Name      string
 	FieldName string
 	Required  bool
+	Type      Formatter
+}
+
+func (c *ClientHeader) RenderFormat(from string) (string, error) {
+	switch t := c.Type.(type) {
+	case CustomType:
+		return t.RenderFormat(StringRender(from))
+	}
+	if c.Required {
+		return from, nil
+	}
+	return "*" + from, nil
 }

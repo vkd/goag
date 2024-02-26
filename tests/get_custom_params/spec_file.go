@@ -9,6 +9,7 @@ const SpecFile string = `paths:
           required: true
           schema:
             type: string
+            x-goag-go-type: Shop
         - name: page
           in: query
           schema:
@@ -33,6 +34,7 @@ const SpecFile string = `paths:
           in: header
           schema:
             type: string
+            x-goag-go-type: RequestID
       responses:
         '200': {}
         default: {}

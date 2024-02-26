@@ -30,7 +30,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 
 // GetShopsShop - GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String()
 
 	query := make(url.Values, 3)
 	query["page"] = []string{request.Query.Page.String()}
@@ -49,7 +49,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 		return nil, fmt.Errorf("new request: %w", err)
 	}
 	if request.Headers.RequestID != nil {
-		req.Header.Set("request-id", *request.Headers.RequestID)
+		req.Header.Set("request-id", request.Headers.RequestID.String())
 	}
 
 	resp, err := c.HTTPClient.Do(req)

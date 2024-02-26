@@ -23,12 +23,30 @@ func (p *Page) UnmarshalText(data []byte) error {
 	return nil
 }
 
+type Shop string
+
+func (s Shop) String() string { return string(s) }
+
+func (s *Shop) UnmarshalText(data []byte) error {
+	*s = Shop(string(data))
+	return nil
+}
+
+type RequestID string
+
+func (s RequestID) String() string { return string(s) }
+
+func (s *RequestID) UnmarshalText(data []byte) error {
+	*s = RequestID(string(data))
+	return nil
+}
+
 func TestGetMultiParams(t *testing.T) {
-	testShop := "paw"
+	testShop := Shop("paw")
 	testPage := Page(2)
 	testPageReq := Page(3)
 	testPages := []Page{4}
-	testRequestID := "abcdef"
+	testRequestID := RequestID("abcdef")
 
 	api := API{
 		GetShopsShopHandler: func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse {
@@ -47,7 +65,7 @@ func TestGetMultiParams(t *testing.T) {
 
 	target := fmt.Sprintf("/shops/%s?page=%d&page_req=%d&pages=%d", testShop, testPage, testPageReq, testPages[0])
 	req := httptest.NewRequest("GET", target, nil)
-	req.Header.Set("request-id", testRequestID)
+	req.Header.Set("request-id", testRequestID.String())
 	w := httptest.NewRecorder()
 	api.ServeHTTP(w, req)
 
