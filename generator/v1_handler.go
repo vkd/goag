@@ -232,15 +232,15 @@ func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
 			}).String()
 		}
 	}
-	if customType, ok := p.Type.(CustomType); ok {
-		return AssignTemplate(
-			ToSliceStrings(TemplaterFunc(func() (string, error) {
-				return customType.RenderFormat(RenderFunc(fromTm.String))
-			})),
-			toTm,
-			false,
-		).String()
-	}
+	// if customType, ok := p.Type.(CustomType); ok {
+	// 	return AssignTemplate(
+	// 		ToSliceStrings(TemplaterFunc(func() (string, error) {
+	// 			return customType.RenderFormat(RenderFunc(fromTm.String))
+	// 		})),
+	// 		toTm,
+	// 		false,
+	// 	).String()
+	// }
 
 	tm := AssignTemplate(
 		ToSliceStrings(TemplaterFunc(func() (string, error) {
@@ -251,11 +251,15 @@ func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
 	)
 
 	if !p.Required {
+		pointer := "*"
+		if _, ok := p.Type.(CustomType); ok {
+			pointer = ""
+		}
 		tm = TemplateData("OptionalAssign", TData{
 			"From": fromTm,
 			"T": AssignTemplate(
 				ToSliceStrings(TemplaterFunc(func() (string, error) {
-					return p.Type.RenderFormat(RenderFunc(RawTemplate("*" + fromTxt).String))
+					return p.Type.RenderFormat(RenderFunc(RawTemplate(pointer + fromTxt).String))
 				})),
 				toTm,
 				false,

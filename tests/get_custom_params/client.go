@@ -33,7 +33,9 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String()
 
 	query := make(url.Values, 3)
-	query["page"] = []string{request.Query.Page.String()}
+	if request.Query.Page != nil {
+		query["page"] = []string{request.Query.Page.String()}
+	}
 	query["page_req"] = []string{request.Query.PageReq.String()}
 	{
 		query_values := make([]string, 0, len(request.Query.Pages))
