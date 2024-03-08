@@ -41,7 +41,7 @@ func NewHandler(o *Operation, basePathPrefix string) (zero *Handler, _ Imports, 
 
 	var pathRenders []Parser
 	for _, pe := range o.PathBuilder {
-		if pe.Param.OK {
+		if pe.Param.IsSet {
 			rendParam := pe.Param.Value
 			pathRenders = append(pathRenders, PathParserVariable{
 				Variable: rendParam.FieldName,
@@ -346,7 +346,7 @@ func NewHandlerResponse(r *Response, h *Handler) HandlerResponse {
 	}
 
 	out.Name = string(h.Name) + "Response" + strings.Title(r.StatusCode)
-	if r.ContentJSON.OK {
+	if r.ContentJSON.IsSet {
 		out.Name += "JSON"
 		out.ContentType = "application/json"
 	}
@@ -363,7 +363,7 @@ func NewHandlerResponse(r *Response, h *Handler) HandlerResponse {
 		})
 	}
 
-	if r.ContentJSON.OK {
+	if r.ContentJSON.IsSet {
 		out.IsBody = true
 		switch contentType := r.ContentJSON.Value.Type.(type) {
 		case Ref, SliceType, CustomType:
@@ -431,120 +431,7 @@ func NewHandlerResponse(r *Response, h *Handler) HandlerResponse {
 		})
 	}
 
-	// out.ContentType = contentType
-	// out.PrivateName = out.Name
-	// out.PrivateName = PrivateFieldName(out.Name)
-	// // out.Status = status
-
-	// var fields []GoStructField
-	// if strings.EqualFold(status, "default") {
-	// 	out.IsDefault = true
-	// 	fields = append(fields, GoStructField{
-	// 		Name: "Code",
-	// 		Type: Int,
-	// 	})
-	// 	out.Args = append(out.Args, ResponseArg{
-	// 		FieldName: "Code",
-	// 		ArgName:   "code",
-	// 		Type:      Int,
-	// 	})
-	// } else {
-	// 	var err error
-	// 	out.Status, err = strconv.Atoi(status)
-	// 	if err != nil {
-	// 		panic(fmt.Errorf("convert response status: %w", err))
-	// 	}
-	// }
-
-	// if response.Value != nil && response.Value.Description != nil {
-	// 	out.Description = *response.Value.Description
-	// }
-	// if resp.Description != nil {
-	// 	out.Description = *resp.Description
-	// }
-
 	out.ResponserInterfaceName = h.ResponserInterfaceName
-
-	// if s != nil {
-	// 	out.IsBody = true
-
-	// 	sr := NewSchemaRef(s)
-
-	// 	fieldType := sr
-
-	// 	if s.Ref == "" {
-	// 		switch sr := sr.(type) {
-	// 		case GoStruct:
-	// 			bodyType := GoTypeDef{
-	// 				Name: out.Name + "Body",
-	// 				Type: sr,
-	// 			}
-	// 			if s.Value.AdditionalProperties != nil {
-	// 				bodyType.Methods = append(bodyType.Methods,
-	// 					GoVarDef{
-	// 						Name:  "_",
-	// 						Type:  GoType("json.Marshaler"),
-	// 						Value: GoValue(`(*` + bodyType.Name + `)` + `(nil)`),
-	// 					},
-	// 					MarshalJSONFunc(bodyType.GoTypeRef(), sr),
-	// 				)
-	// 			}
-	// 			out.Body = bodyType
-	// 			fieldType = GoType(bodyType.Name)
-	// 		}
-	// 	}
-
-	// 	fields = append(fields, GoStructField{
-	// 		Name: "Body",
-	// 		Type: fieldType,
-	// 	})
-	// 	out.Args = append(out.Args, ResponseArg{
-	// 		FieldName: "Body",
-	// 		ArgName:   "body",
-	// 		Type:      fieldType,
-	// 	})
-	// }
-
-	// pathHeaders := PathHeaders(resp.Headers)
-	// fieldHeaders := make([]GoStructField, 0, len(pathHeaders))
-	// for _, h := range pathHeaders {
-	// 	sr := NewSchemaRef(h.Header.Value.Schema)
-
-	// 	header := ResponseHeader{
-	// 		Name:      h.Name,
-	// 		FieldName: PublicFieldName(h.Name),
-	// 		Type:      sr,
-	// 	}
-
-	// 	out.Headers = append(out.Headers, header)
-
-	// 	fieldHeaders = append(fields, GoStructField{
-	// 		Name: header.FieldName,
-	// 		Type: header.Type,
-	// 	})
-	// 	out.Args = append(out.Args, ResponseArg{
-	// 		FieldName: header.FieldName,
-	// 		ArgName:   PrivateFieldName(header.FieldName),
-	// 		IsHeader:  true,
-	// 		Type:      header.Type,
-	// 	})
-	// }
-	// if len(fieldHeaders) > 0 {
-	// 	fields = append(fields, GoStructField{
-	// 		Name: "Headers",
-	// 		Type: GoStruct{
-	// 			Fields: fieldHeaders,
-	// 		},
-	// 	})
-	// }
-
-	// out.Struct = GoTypeDef{
-	// 	Comment: out.Description,
-	// 	Name:    out.Name,
-	// 	Type: GoStruct{
-	// 		Fields: fields,
-	// 	},
-	// }
 
 	return out
 }

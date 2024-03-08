@@ -1,18 +1,13 @@
 package generator
 
 type Optional[T any] struct {
+	IsSet bool
 	Value T
-	OK    bool
 }
 
 func NewOptional[T any](v T) Optional[T] {
 	return Optional[T]{
 		Value: v,
-		OK:    true,
+		IsSet: true,
 	}
-}
-
-func (o *Optional[T]) Set(v T) {
-	o.Value = v
-	o.OK = true
 }

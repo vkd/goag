@@ -8,7 +8,7 @@
 // ------------------------
 
 {{range $_, $s := .Schemas}}
-{{ render $s}}
+{{ $s.Render }}
 {{end}}
 {{- end}}
 
@@ -16,5 +16,5 @@
 
 {{/* ----------------------------- SchemaComponent ------------------------------------- */}}
 {{ define "SchemaComponent" -}}
-type {{ .Name }} {{ render .Type }}
+type {{ .Name }} {{ .Type.Render }}
 {{- end }}

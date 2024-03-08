@@ -2,7 +2,7 @@
 {{- template "Imports" .Imports }}
 
 {{ range $_, $h := .Handlers }}
-{{ exec $h }}
+{{ $h.Render }}
 {{ end -}}
 
 var LogError = func(err error) {

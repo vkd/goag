@@ -27,7 +27,15 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 	return cs, nil
 }
 
+func (c Components) Render() (string, error) {
+	return ExecuteTemplate("Components", c)
+}
+
 type SchemaComponent struct {
 	Name string
 	Type Render
+}
+
+func (s SchemaComponent) Render() (string, error) {
+	return ExecuteTemplate("SchemaComponent", s)
 }

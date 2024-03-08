@@ -12,8 +12,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/tools/imports"
 
-	generatorv2 "github.com/vkd/goag/generator"
-	"github.com/vkd/goag/generator-v0"
+	"github.com/vkd/goag/generator"
 	"github.com/vkd/goag/specification"
 )
 
@@ -85,21 +84,6 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 			return fmt.Errorf("remove components file (%s): %w", componentsFile, err)
 		}
 	}
-	components, err := generatorv2.NewComponents(s.Components)
-	if err != nil {
-		return fmt.Errorf("generate 'components' file: %w", err)
-	}
-	if len(components.Schemas) > 0 {
-		goFile := generatorv2.GoFile{
-			SkipDoNotEdit: !g.DoNotEdit,
-			PackageName:   packageName,
-			Body:          components,
-		}
-		err := RenderToFile(componentsFile, generator.RenderFunc(goFile.Render))
-		if err != nil {
-			return fmt.Errorf("generate components: %w", err)
-		}
-	}
 
 	if basePath == "" && len(openapi3Spec.Servers) > 0 {
 		s := openapi3Spec.Servers[0]
@@ -116,22 +100,24 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		basePath = u.Path
 	}
 
-	hs, err := generator.NewHandlers(s, basePath)
-	if err != nil {
-		return fmt.Errorf("generate handlers: %w", err)
-	}
-
-	var handlers []generatorv2.Render
-	for _, h := range hs.Handlers {
-		handlers = append(handlers, h.HandlerOld)
-	}
-
-	gen, err := generatorv2.NewGenerator(s, generatorv2.PackageName(packageName), generatorv2.SkipDoNotEdit(), generatorv2.BasePath(basePath), generatorv2.SpecFilename(baseFilename))
+	gen, err := generator.NewGenerator(s,
+		generator.PackageName(packageName),
+		generator.IfOption(generator.SkipDoNotEdit(), !g.DoNotEdit),
+		generator.BasePath(basePath),
+		generator.SpecFilename(baseFilename),
+	)
 	if err != nil {
 		return fmt.Errorf("create new generator from spec file: %w", err)
 	}
 
-	hFile, err := gen.FileHandlerTemplater(handlers, hs.IsWriteJSONFunc)
+	if len(gen.Components.Schemas) > 0 {
+		err := RenderToFile(componentsFile, gen.ComponentsFile())
+		if err != nil {
+			return fmt.Errorf("generate components: %w", err)
+		}
+	}
+
+	hFile, err := gen.HandlerFile()
 	if err != nil {
 		return fmt.Errorf("generate handlers file: %w", err)
 	}
@@ -141,12 +127,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		return fmt.Errorf("generate handler: %w", err)
 	}
 
-	r, err := generator.NewRouter(packageName, hs.Handlers, openapi3Spec, specRaw, baseFilename, basePath)
-	if err != nil {
-		return fmt.Errorf("generate router: %w", err)
-	}
-
-	rFile, err := gen.RouterFile(basePath, baseFilename, r)
+	rFile, err := gen.RouterFile(basePath, baseFilename)
 	if err != nil {
 		return fmt.Errorf("generate router file: %w", err)
 	}
@@ -156,7 +137,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		return fmt.Errorf("generate router.go: %w", err)
 	}
 
-	specFile := generator.SpecFile(packageName, specRaw)
+	specFile := gen.SpecFile(specRaw)
 
 	err = RenderToFile(path.Join(outDir, "spec_file.go"), specFile)
 	if err != nil {
@@ -173,7 +154,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 	if g.GenClient {
 		clientFile := gen.ClientFile()
 
-		err = RenderToFile(path.Join(outDir, "client.go"), generatorv2.TemplaterFunc(clientFile.Render))
+		err = RenderToFile(path.Join(outDir, "client.go"), clientFile)
 		if err != nil {
 			return fmt.Errorf("generate client source: %w", err)
 		}
@@ -182,8 +163,8 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 	return nil
 }
 
-func RenderToFile(filepath string, f generator.Render) error {
-	s, err := f.String()
+func RenderToFile(filepath string, f generator.GoFile) error {
+	s, err := f.Render()
 	if err != nil {
 		return fmt.Errorf("to bytes: %w", err)
 	}

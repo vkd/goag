@@ -15,14 +15,11 @@ type Generator struct {
 	Operations []*Operation
 	Paths      []*PathItem
 
-	FileHandler FileHandler
-	Router      Router
-	Client      Client
-}
+	Client     Client
+	Components Components
 
-type PathItem struct {
-	*specification.PathItem
-	Operations []*Operation
+	Router      Router
+	FileHandler FileHandler
 }
 
 var defaultOptions = GeneratorOptions{
@@ -65,6 +62,10 @@ func NewGenerator(spec *specification.Spec, opts ...GenOption) (*Generator, erro
 
 	var err error
 
+	g.Components, err = NewComponents(spec.Components)
+	if err != nil {
+		return nil, fmt.Errorf("file components: %w", err)
+	}
 	g.FileHandler, err = NewFileHandler(g.Operations, g.Options.BasePath)
 	if err != nil {
 		return nil, fmt.Errorf("file handler: %w", err)
@@ -114,17 +115,4 @@ func IfOption(opt GenOption, ifCond ...bool) GenOption {
 		}
 	}
 	return opt
-}
-
-func (g *Generator) goFile(ims []Import, body any) Templater {
-	return TemplaterFunc(GoFile{
-		SkipDoNotEdit: !g.Options.DoNotEdit,
-		PackageName:   g.Options.PackageName,
-		Imports:       ims,
-		Body:          body,
-	}.Render)
-}
-
-func (g *Generator) FileHandlerTemplater(hs []Render, isJSON bool) (Templater, error) {
-	return g.goFile(nil, g.FileHandler), nil
 }

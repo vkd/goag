@@ -23,6 +23,10 @@ func NewClient(s *specification.Spec, ops []*Operation) Client {
 	return c
 }
 
+func (c Client) Render() (string, error) {
+	return ExecuteTemplate("Client", c)
+}
+
 type ClientOperation struct {
 	*Operation
 
@@ -34,9 +38,8 @@ type ClientOperation struct {
 
 func NewClientOperation(o *Operation) ClientOperation {
 	c := ClientOperation{
-		Operation:      o,
-		RequestVarName: "request",
-		IsRequestBody:  o.Operation.RequestBody.IsSet && o.Operation.RequestBody.Value.Value().Content.Has("application/json"),
+		Operation:     o,
+		IsRequestBody: o.Operation.RequestBody.IsSet && o.Operation.RequestBody.Value.Value().Content.Has("application/json"),
 	}
 
 	c.Headers = make([]ClientHeader, 0, len(o.Params.Headers.List))
@@ -86,7 +89,7 @@ func (c ClientOperation) PathFormat() (Renders, error) {
 			return nil, fmt.Errorf("%q path parameter: not found in %q operation", param.Name, c.Operation.Name)
 		}
 		out = append(out, RenderFunc(func() (string, error) {
-			return gp.V.Type.RenderFormat(c.RequestVarName + ".Path." + gp.V.FieldName)
+			return gp.V.Type.RenderFormat("request.Path." + gp.V.FieldName)
 		}))
 	}
 	if v != "" {

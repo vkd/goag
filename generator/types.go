@@ -208,10 +208,7 @@ func (c CustomType) ParseString(to string, from string, isNew bool, mkErr ErrorR
 }
 
 type SliceType struct {
-	Items interface {
-		Render
-		Parser
-	}
+	Items SchemaType
 }
 
 func (s SliceType) Render() (string, error) { return ExecuteTemplate("SliceType", s) }
@@ -323,6 +320,8 @@ func NewStructureField(s specification.SchemaProperty) (zero StructureField, _ I
 		Tags:    []StructureFieldTag{{Key: "json", Values: []string{s.Name}}},
 	}, ims, nil
 }
+
+func (s StructureField) Render() (string, error) { return ExecuteTemplate("StructureField", s) }
 
 func (sf StructureField) GetTag(k string) (zero StructureFieldTag, _ bool) {
 	for _, t := range sf.Tags {

@@ -58,6 +58,10 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 	return r
 }
 
+func (r Router) Render() (string, error) {
+	return ExecuteTemplate("Router", r)
+}
+
 type RouterPathItem struct {
 	*PathItem
 

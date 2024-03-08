@@ -65,7 +65,7 @@ type {{$request}} struct {
 	{{ end }}
 
 	{{ if $h.Body.TypeName }}
-	Body {{ exec $h.Body.TypeName }}
+	Body {{ $h.Body.TypeName.Render }}
 	{{ end }}
 }
 

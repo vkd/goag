@@ -33,3 +33,10 @@ func Title(s string) string {
 func PrefixTitle(s specification.Prefix) string {
 	return Title(s.Name())
 }
+
+func PrivateFieldName(name string) string {
+	if len(name) == 0 {
+		return ""
+	}
+	return strings.ToLower(name[:1]) + name[1:]
+}

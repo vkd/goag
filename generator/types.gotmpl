@@ -90,7 +90,7 @@ if err != nil {
 
 {{/* ----------------------------- SliceType ------------------------------------- */}}
 
-{{ define "SliceType" }}[]{{ render .Items }}{{ end }}
+{{ define "SliceType" }}[]{{ .Items.Render }}{{ end }}
 
 {{ define "SliceTypeParseString" }}
 {{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ .Items.Render }}, 1)
@@ -109,7 +109,7 @@ for i := range {{.From}} {
 {{ define "StructureType" }}
 {{- if.Fields }}struct{
 {{- range $_, $f := .Fields }}
-{{ render $f }}
+{{ $f.Render }}
 {{- end }}
 }
 {{- else }}struct{}
@@ -122,7 +122,7 @@ for i := range {{.From}} {
 {{ define "StructureField" }}
 {{- if .Comment }}// {{ .Comment }}
 {{ end -}}
-{{ .Name }} {{ render .Type }} {{ if .Tags -}}
+{{ .Name }} {{ .Type.Render }} {{ if .Tags -}}
 `
 {{- range $ti, $t := .Tags }}{{ $t.Key }}:"
 {{- range $vi, $v := $t.Values }}{{ $v }}{{ if $vi }},{{ end }}{{ end -}}

@@ -6,6 +6,11 @@ import (
 	"github.com/vkd/goag/specification"
 )
 
+type PathItem struct {
+	*specification.PathItem
+	Operations []*Operation
+}
+
 type Operation struct {
 	*specification.Operation
 

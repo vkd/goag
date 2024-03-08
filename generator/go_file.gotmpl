@@ -7,7 +7,7 @@ package {{ .PackageName }}
 {{ template "Imports" .Imports }}
 {{- end }}
 
-{{ if .Body }}{{ render .Body }}{{ end }}
+{{ if .Body }}{{ .Body.Render }}{{ end }}
 {{- end }}
 
 {{/* ----------------------------- Imports ------------------------------------- */}}

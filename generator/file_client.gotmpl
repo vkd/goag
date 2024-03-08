@@ -41,13 +41,13 @@ func decodeJSON(r io.Reader, v interface{}, name string) {
 {{ define "ClientOperation" }}
 {{ $handler := . }}
 // {{ .Name }} - {{ .HTTPMethod }} {{ .Path.Raw }}
-func (c *Client) {{ .Name }}(ctx context.Context, {{ .RequestVarName }} {{ .RequestTypeName }}) ({{ .ResponseTypeName }}, error) {
-	var requestURL = c.BaseURL {{ range $_, $pr := .PathFormat }} + {{ render $pr }}{{ end }}
+func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}) ({{ .ResponseTypeName }}, error) {
+	var requestURL = c.BaseURL {{ range $_, $pr := .PathFormat }} + {{ $pr.Render }}{{ end }}
 
 	{{ if .Params.Query.List }}
 	query := make(url.Values, {{ len .Params.Query.List }})
 	{{- range $_, $q := .Params.Query.List }}
-	{{ $q.V.ExecuteFormat "request" "query" }}
+	{{ $q.V.ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." $q.V.FieldName) }}
 	{{- end }}
 	requestURL += "?" + query.Encode()
 	{{ end }}
@@ -97,6 +97,29 @@ func (c *Client) {{ .Name }}(ctx context.Context, {{ .RequestVarName }} {{ .Requ
 }
 {{ end }}
 
+{{/* ----------------------------- ClientQueryParameterFormatOptional ------------------------------------- */}}
+{{ define "ClientQueryParameterFormatOptional" -}}
+if {{ .From }} != nil {
+    {{ .To }} = []string{ {{ .Formatter.RenderFormat .FromPtr }} }
+}
+{{- end }}
+
+{{/* ----------------------------- ClientQueryParameterFormatRequired ------------------------------------- */}}
+{{ define "ClientQueryParameterFormatRequired" -}}
+{{ .To }} = []string{ {{ .Formatter.RenderFormat .From }} }
+{{- end }}
+
+{{/* ----------------------------- ClientQueryParameterFormatToSliceStrings ------------------------------------- */}}
+{{ define "ClientQueryParameterFormatToSliceStrings" -}}
+{
+    query_values := make([]string, 0, len({{ .From }}))
+    for _, v := range {{ .From }} {
+        query_values = append(query_values, {{ .Items.RenderFormat "v" }})
+    }
+    {{ .To }} = query_values
+}
+{{- end }}
+
 {{/* ----------------------------- ClientResponse ------------------------------------- */}}
 {{ define "ClientResponse" -}}
 var response {{ .Name }}
@@ -109,7 +132,7 @@ var response {{ .Name }}
 	response.Headers.{{ $h.FieldName }} = resp.Header.Get("{{ $h.Key }}")
 {{ end }}
 
-{{- if .ContentJSON.OK }}
+{{- if .ContentJSON.IsSet }}
 err := json.NewDecoder(resp.Body).Decode(&response.Body)
 if err != nil {
 	return nil, fmt.Errorf("decode '{{ .Name }}' response body: %w", err)

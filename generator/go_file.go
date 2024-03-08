@@ -4,7 +4,7 @@ type GoFile struct {
 	SkipDoNotEdit bool
 	PackageName   string
 	Imports       []Import
-	Body          any
+	Body          Render
 }
 
 func (g GoFile) Render() (string, error) {
