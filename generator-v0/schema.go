@@ -15,7 +15,7 @@ import (
 
 type SchemaRender interface {
 	Render
-	Parser(from, to string, _ ErrorWrapper) Render
+	Parser(to string, from string, isNew bool, _ ErrorWrapper) Render
 	Format(s string) source.Templater
 }
 
@@ -113,7 +113,7 @@ func (r Ref) String() (string, error) {
 	return string(r), nil
 }
 
-func (r Ref) Parser(from, to string, mkErr ErrorWrapper) Render {
+func (r Ref) Parser(to string, from string, isNew bool, mkErr ErrorWrapper) Render {
 	panic("not implemented")
 }
 
@@ -154,7 +154,7 @@ func (c CustomType) String() (string, error) {
 	return string(c), nil
 }
 
-func (c CustomType) Parser(from, to string, mkErr source.ErrorWrapper) source.Render {
+func (c CustomType) Parser(to string, from string, isNew bool, mkErr source.ErrorWrapper) source.Render {
 	return CustomTypeParser{string(c), from, to, mkErr}
 }
 

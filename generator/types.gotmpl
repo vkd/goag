@@ -1,94 +1,121 @@
 {{/* ----------------------------- Bool ------------------------------------- */}}
 
-{{ define "BoolParser" -}}
-{{ .To.Render }}, err := strconv.ParseBool({{ .From.Render }})
+{{ define "BoolParseString" -}}
+{{- if not .IsNew }}
+var err error
+{{- end }}
+{{ .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseBool({{ .From }})
 if err != nil {
 	return zero, {{ .MkErr.Wrap "parse bool"}}
 }
 {{- end }}
 
-{{ define "BoolFormat" }}strconv.FormatBool({{ .From.Render }}){{ end }}
+{{ define "BoolFormat" }}strconv.FormatBool({{ .From }}){{ end }}
 
 {{/* ----------------------------- Int ------------------------------------- */}}
 
 {{ define "IntParser" -}}
-vInt, err := strconv.ParseInt({{ .From.Render }}, 10, 0)
+vInt, err := strconv.ParseInt({{ .From }}, 10, 0)
 if err != nil {
 	return zero, {{ .MkErr.Wrap "parse int"}}
 }
-{{ .To.Render }} := int(vInt)
+{{ .To }} {{ if .IsNew }}:{{ end }}= int(vInt)
 {{- end }}
 
-{{ define "IntFormat" }}strconv.FormatInt(int64({{ .From.Render }}), 10){{ end }}
+{{ define "IntFormat" }}strconv.FormatInt(int64({{ .From }}), 10){{ end }}
 
 {{/* ----------------------------- Int32 ------------------------------------- */}}
 
 {{ define "Int32Parser" -}}
-vInt, err := strconv.ParseInt({{ .From.Render }}, 10, 32)
+vInt, err := strconv.ParseInt({{ .From }}, 10, 32)
 if err != nil {
 	return zero, {{ .MkErr.Wrap "parse int32"}}
 }
-{{ .To.Render }} := int32(vInt)
+{{ .To }} {{ if .IsNew }}:{{ end }}= int32(vInt)
 {{- end }}
 
-{{ define "Int32Format" }}strconv.FormatInt(int64({{ .From.Render }}), 10){{ end }}
+{{ define "Int32Format" }}strconv.FormatInt(int64({{ .From }}), 10){{ end }}
 
 {{/* ----------------------------- Int64 ------------------------------------- */}}
 
 {{ define "Int64Parser" -}}
-{{ .To.Render }}, err := strconv.ParseInt({{ .From.Render }}, 10, 64)
+{{- if not .IsNew }}
+var err error
+{{- end }}
+{{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseInt({{ .From }}, 10, 64)
 if err != nil {
 	return zero, {{ .MkErr.Wrap "parse int64"}}
 }
 {{- end }}
 
-{{ define "Int64Format" }}strconv.FormatInt({{ .From.Render }}, 10){{ end }}
+{{ define "Int64Format" }}strconv.FormatInt({{ .From }}, 10){{ end }}
 
 {{/* ----------------------------- Float32 ------------------------------------- */}}
 
 {{ define "Float32Parser" -}}
-vFloat, err := strconv.ParseFloat({{ .From.Render }}, 32)
+vFloat, err := strconv.ParseFloat({{ .From }}, 32)
 if err != nil {
 	return zero, {{ .MkErr.Wrap "parse float32"}}
 }
-{{ .To.Render }} := float32(vFloat)
+{{ .To }} {{ if .IsNew }}:{{ end }}= float32(vFloat)
 {{- end }}
 
-{{ define "Float32Format" }}strconv.FormatFloat(float64({{ .From.Render }}), 'e', -1, 32){{ end }}
+{{ define "Float32Format" }}strconv.FormatFloat(float64({{ .From }}), 'e', -1, 32){{ end }}
 
 {{/* ----------------------------- Float64 ------------------------------------- */}}
 
 {{ define "Float64Parser" -}}
-{{ .To.Render }}, err := strconv.ParseFloat({{ .From.Render }}, 64)
+{{- if not .IsNew }}
+var err error
+{{- end }}
+{{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseFloat({{ .From }}, 64)
 if err != nil {
 	return zero, {{ .MkErr.Wrap "parse float64"}}
 }
 {{- end }}
 
-{{ define "Float64Format" }}strconv.FormatFloat({{ .From.Render }}, 'e', -1, 64){{ end }}
+{{ define "Float64Format" }}strconv.FormatFloat({{ .From }}, 'e', -1, 64){{ end }}
 
 {{/* ----------------------------- CustomType ------------------------------------- */}}
 
-{{ define "CustomTypeParser" -}}
-{{ .To.Render }}, err := strconv.ParseFloat({{ .From.Render }}, 64)
+{{ define "CustomTypeParser" }}
+var {{ .To }} {{ .Type }}
+err := {{ .To }}.UnmarshalText([]byte({{.From}}))
 if err != nil {
-	return zero, {{ .MkErr.Wrap "parse float64"}}
+	return zero, {{.MkErr.Wrap (print "unmarshal text")}}
 }
 {{- end }}
 
-{{ define "CustomTypeFormat" }}{{ .From.Render }}.String(){{ end }}
+{{ define "CustomTypeFormat" }}{{ .From }}.String(){{ end }}
 
 {{/* ----------------------------- SliceType ------------------------------------- */}}
 
 {{ define "SliceType" }}[]{{ render .Items }}{{ end }}
 
+{{ define "SliceTypeParseString" }}
+{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ .Items.Render }}, 1)
+{{ .Items.ParseString (print .To "[0]") .From  .IsNew .MkErr }}
+{{- end }}
+
+{{ define "SliceTypeParseStrings" }}
+{{- .To}} = make([]{{ .ItemsRender.Render }}, len({{.From}}))
+for i := range {{.From}} {
+	{{ .Items.ParseString (print .To "[i]") (print .From "[i]") .IsNew .MkErr }}
+}
+{{- end }}
+
 {{/* ----------------------------- StructureType ------------------------------------- */}}
 
-{{ define "StructureType" }}struct{
+{{ define "StructureType" }}
+{{- if.Fields }}struct{
 {{- range $_, $f := .Fields }}
 {{ render $f }}
-{{- end -}}
-}{{ end }}
+{{- end }}
+}
+{{- else }}struct{}
+{{- end }}
+{{- end }}
+
 
 {{/* ----------------------------- StructureField ------------------------------------- */}}
 
@@ -102,3 +129,18 @@ if err != nil {
 "{{ if $ti }} {{ end }}{{ end -}}
 `
 {{- end }}{{ end }}
+
+
+{{/* ----------------------------- PointerType ------------------------------------- */}}
+
+{{ define "PointerTypeParseString" -}}
+{{ .From.Render }}
+{{ .To }} {{ if .IsNew }}:{{ end }}= &v
+{{- end }}
+
+
+{{/* ----------------------------- MapType ------------------------------------- */}}
+
+{{ define "MapType" -}}
+map[{{ .Key.Render }}]{{ .Value.Render }}
+{{- end }}

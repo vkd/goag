@@ -1,11 +1,11 @@
 package specification
 
-import "github.com/getkin/kin-openapi/openapi3"
+import (
+	"github.com/getkin/kin-openapi/openapi3"
+)
 
 type Response struct {
 	NoRef[Response]
-
-	s *openapi3.Response
 
 	Description string
 	Headers     Map[Ref[Header]]
@@ -14,11 +14,7 @@ type Response struct {
 }
 
 func NewResponse(s *openapi3.Response, components Components) *Response {
-	return &Response{
-		s: s,
-
-		Description: *s.Description,
-
+	out := &Response{
 		Headers: NewMapRefSource[Header, *openapi3.HeaderRef](s.Headers, func(h *openapi3.HeaderRef) (ref string, _ Ref[Header]) {
 			if h.Ref != "" {
 				return h.Ref, nil
@@ -37,6 +33,11 @@ func NewResponse(s *openapi3.Response, components Components) *Response {
 			return "", NewLink(lr.Value)
 		}, components.Links, ""),
 	}
+	if s.Description != nil {
+		out.Description = *s.Description
+	}
+
+	return out
 }
 
 var _ Ref[Response] = (*Response)(nil)

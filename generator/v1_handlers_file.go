@@ -1,30 +1,5 @@
 package generator
 
-type HandlersFile struct {
-	Handlers []HandlerOld
-
-	IsWriteJSONFunc bool
-}
-
-func (g *Generator) HandlersFile(hs []HandlerOld, isJSON bool) (Templater, error) {
-	file := HandlersFile{
-		Handlers:        hs,
-		IsWriteJSONFunc: isJSON,
-	}
-
-	return g.goFile([]Import{
-		"encoding/json",
-		"fmt",
-		"io",
-		"log",
-		"net/http",
-		"strconv",
-		"strings",
-	}, RenderFunc(OldTemplater(file).String)), nil
-}
-
-func (h HandlersFile) Execute() (string, error) { return templates.ExecuteTemplate("HandlersFile", h) }
-
 type HandlerOld struct {
 	// client
 
@@ -56,6 +31,10 @@ type HandlerOld struct {
 	IsWriteJSONFunc bool
 
 	Responses []Templater
+}
+
+func (h HandlerOld) Render() (string, error) {
+	return h.Execute()
 }
 
 func (h HandlerOld) HandlerFuncName() string { return string(h.Name) + "HandlerFunc" }

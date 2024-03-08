@@ -30,9 +30,8 @@ func TestDefault(t *testing.T) {
 		},
 		GetShopsShopPetsHandler: func(ctx context.Context, r GetShopsShopPetsRequest) GetShopsShopPetsResponse {
 			return GetShopsShopPetsResponse200JSON{Headers: struct {
-				Body  GetShopsShopPetsResponse200JSONBody
 				XNext string
-			}{XNext: "test-next-value"}}
+			}{"test-next-value"}}
 		},
 		ReviewShopHandler: func(ctx context.Context, r ReviewShopRequest) ReviewShopResponse {
 			params, err := r.Parse()

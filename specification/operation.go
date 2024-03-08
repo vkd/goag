@@ -29,19 +29,27 @@ type Operation struct {
 
 	Security SecurityRequirements
 
-	DefaultResponse *ResponseOld
-	Responses       []*ResponseOld
+	// DefaultResponse Optional[Ref[Response]]
+	// Responses       []*ResponseOld
+
+	Responses Map[Ref[Response]]
 }
 
 func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *openapi3.Operation, specSecurityReqs SecurityRequirements, legacyComponents openapi3.Components, securitySchemes SecuritySchemes, components Components) (*Operation, error) {
 	o := &Operation{
-		PathItem:    pi,
-		Path:        NewPath(rawPath),
-		HTTPMethod:  method.HTTP,
-		Method:      method.Title,
+		PathItem: pi,
+
+		Path: NewPath(rawPath),
+
+		Tags:        operation.Tags,
+		Summary:     operation.Summary,
+		Description: operation.Description,
 		OperationID: operation.OperationID,
 
 		Parameters: NewOperationParameters(pi.PathItem.Parameters, operation.Parameters, components),
+
+		HTTPMethod: method.HTTP,
+		Method:     method.Title,
 
 		Operation: operation,
 
@@ -65,15 +73,22 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 		}
 	}
 
-	for _, responseStatusCode := range sortedKeys(operation.Responses) {
-		response := operation.Responses[responseStatusCode]
-		if responseStatusCode == "default" {
-			defaultResponse := NewResponseOld(responseStatusCode, o, response)
-			o.DefaultResponse = defaultResponse
-		} else {
-			o.Responses = append(o.Responses, NewResponseOld(responseStatusCode, o, response))
+	o.Responses = NewMapRefSource[Response, *openapi3.ResponseRef](operation.Responses, func(rr *openapi3.ResponseRef) (ref string, _ Ref[Response]) {
+		if rr.Ref != "" {
+			return rr.Ref, nil
 		}
-	}
+		return "", NewResponse(rr.Value, components)
+	}, components.Responses, "")
+
+	// for _, responseStatusCode := range sortedKeys(operation.Responses) {
+	// 	response := operation.Responses[responseStatusCode]
+	// 	if responseStatusCode == "default" {
+	// 		defaultResponse := NewResponse(response, responseStatusCode, o)
+	// 		o.DefaultResponse = NewOptional[Ref[Response]](defaultResponse)
+	// 	} else {
+	// 		o.Responses = append(o.Responses, NewResponseOld(responseStatusCode, o, response))
+	// 	}
+	// }
 
 	return o, nil
 }

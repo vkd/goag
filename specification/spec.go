@@ -131,6 +131,8 @@ type Schema struct {
 	AllOf       []Ref[Schema]
 	Description string
 
+	AdditionalProperties Optional[Ref[Schema]]
+
 	Schema *openapi3.Schema
 }
 
@@ -177,6 +179,9 @@ func NewSchema(schema *openapi3.Schema, components ComponentsSchemas) *Schema {
 	}
 	for _, a := range schema.AllOf {
 		out.AllOf = append(out.AllOf, NewSchemaRef(a, components))
+	}
+	if schema.AdditionalProperties != nil {
+		out.AdditionalProperties = NewOptional(NewSchemaRef(schema.AdditionalProperties, components))
 	}
 	return &out
 }

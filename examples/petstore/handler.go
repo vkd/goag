@@ -91,7 +91,6 @@ func NewListPetsResponse200JSON(body Pets, xNext string) ListPetsResponse {
 type ListPetsResponse200JSON struct {
 	Body    Pets
 	Headers struct {
-		Body  Pets
 		XNext string
 	}
 }

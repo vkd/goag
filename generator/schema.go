@@ -7,7 +7,18 @@ import (
 	"github.com/vkd/goag/specification"
 )
 
-func NewSchema(s specification.Ref[specification.Schema]) (Render, Imports, error) {
+type Schema struct {
+	Spec specification.Ref[specification.Schema]
+	Type SchemaType
+}
+
+type SchemaType interface {
+	Render
+	Parser
+	Formatter
+}
+
+func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, error) {
 	if s.Ref() != nil {
 		return NewRef(s.Ref().Name), nil, nil
 	}
@@ -49,6 +60,13 @@ func NewSchema(s specification.Ref[specification.Schema]) (Render, Imports, erro
 
 	switch spec.Type {
 	case "object":
+		if spec.AdditionalProperties.IsSet && len(spec.Properties) == 0 {
+			additional, ims, err := NewSchema(spec.AdditionalProperties.Value)
+			if err != nil {
+				return nil, nil, fmt.Errorf("additional properties: %w", err)
+			}
+			return NewMapType(StringType{}, additional), ims, nil
+		}
 		r, ims, err := NewStructureType(spec)
 		if err != nil {
 			return nil, nil, fmt.Errorf("'object' type: %w", err)
@@ -87,10 +105,7 @@ func NewSchema(s specification.Ref[specification.Schema]) (Render, Imports, erro
 	return nil, nil, fmt.Errorf("unknown schema type: %q", spec.Schema.Type)
 }
 
-func NewParameterSchema(spec *specification.Schema) (interface {
-	Render
-	Formatter
-}, Imports, error) {
+func NewParameterSchema(spec *specification.Schema) (SchemaType, Imports, error) {
 	if v, ok := spec.Schema.ExtensionProps.Extensions[ExtTagGoType]; ok {
 		if raw, ok := v.(json.RawMessage); ok {
 			s := string(raw)

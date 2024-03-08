@@ -46,6 +46,7 @@ const SpecFile string = `paths:
         - $ref: '#/components/parameters/PageSizeQuery'
       responses:
         '200':
+          description: List of pets
           headers:
             x-next:
               schema:

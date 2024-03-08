@@ -1,0 +1,34 @@
+{{ define "FileHandler" }}
+{{- template "Imports" .Imports }}
+
+{{ range $_, $h := .Handlers }}
+{{ exec $h }}
+{{ end -}}
+
+var LogError = func(err error) {
+	log.Println(fmt.Sprintf("Error: %v", err))
+}
+
+{{ if .IsWriteJSONFunc -}}
+func writeJSON(w io.Writer, v interface{}, name string) {
+	err := json.NewEncoder(w).Encode(v)
+	if err != nil {
+		LogError(fmt.Errorf("write json response %q: %w", name, err))
+	}
+}
+
+{{ end -}}
+
+type ErrParseParam struct {
+	In        string
+	Parameter string
+	Reason    string
+	Err       error
+}
+
+func (e ErrParseParam) Error() string {
+	return fmt.Sprintf("%s parameter '%s': %s: %v", e.In, e.Parameter, e.Reason, e.Err)
+}
+
+func (e ErrParseParam) Unwrap() error { return e.Err }
+{{ end }}

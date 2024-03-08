@@ -121,7 +121,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		return fmt.Errorf("generate handlers: %w", err)
 	}
 
-	var handlers []generatorv2.HandlerOld
+	var handlers []generatorv2.Render
 	for _, h := range hs.Handlers {
 		handlers = append(handlers, h.HandlerOld)
 	}
@@ -131,7 +131,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		return fmt.Errorf("create new generator from spec file: %w", err)
 	}
 
-	hFile, err := gen.HandlersFile(handlers, hs.IsWriteJSONFunc)
+	hFile, err := gen.FileHandlerTemplater(handlers, hs.IsWriteJSONFunc)
 	if err != nil {
 		return fmt.Errorf("generate handlers file: %w", err)
 	}
@@ -146,7 +146,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		return fmt.Errorf("generate router: %w", err)
 	}
 
-	rFile, err := gen.RouterFile(basePath, baseFilename, handlers, r)
+	rFile, err := gen.RouterFile(basePath, baseFilename, r)
 	if err != nil {
 		return fmt.Errorf("generate router file: %w", err)
 	}

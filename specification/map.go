@@ -6,19 +6,19 @@ import (
 )
 
 type Map[T any] struct {
-	List    []*Object[T]
-	indexes map[RefKey]*Object[T]
+	List    []*Object[string, T]
+	indexes map[RefKey]*Object[string, T]
 }
 
-type Object[T any] struct {
-	Name string
+type Object[K, T any] struct {
+	Name K
 	V    T
 }
 
 func NewMapEmpty[T any](size int) Map[T] {
 	return Map[T]{
-		List:    make([]*Object[T], 0, size),
-		indexes: make(map[RefKey]*Object[T], size),
+		List:    make([]*Object[string, T], 0, size),
+		indexes: make(map[RefKey]*Object[string, T], size),
 	}
 }
 
@@ -30,7 +30,7 @@ func NewMapPrefix[T any, U any](m map[string]U, fn func(U) T, prefix RefKey) Map
 	out := NewMapEmpty[T](len(m))
 
 	for k, v := range m {
-		out.List = append(out.List, &Object[T]{Name: k, V: fn(v)})
+		out.List = append(out.List, &Object[string, T]{Name: k, V: fn(v)})
 	}
 	for i, v := range out.List {
 		refKey := prefix + RefKey(v.Name)
@@ -41,7 +41,7 @@ func NewMapPrefix[T any, U any](m map[string]U, fn func(U) T, prefix RefKey) Map
 }
 
 func NewMapRefSelfSource[T any, U any](m map[string]U, fn func(U, Map[Ref[T]]) (ref string, _ Ref[T]), source interface {
-	Get(string) (*Object[Ref[T]], bool)
+	Get(string) (*Object[string, Ref[T]], bool)
 }, prefix RefKey) Map[Ref[T]] {
 	out := NewMapPrefix[Ref[T], U](m, func(u U) Ref[T] { return nil }, prefix)
 	if source == nil {
@@ -70,12 +70,12 @@ func NewMapRefSelf[T any, U any](m map[string]U, fn func(U) (ref string, _ Ref[T
 }
 
 func NewMapRefSource[T any, U any](m map[string]U, fn func(U) (ref string, _ Ref[T]), source interface {
-	Get(string) (*Object[Ref[T]], bool)
+	Get(string) (*Object[string, Ref[T]], bool)
 }, prefix RefKey) Map[Ref[T]] {
 	return NewMapRefSelfSource[T, U](m, func(u U, m Map[Ref[T]]) (ref string, _ Ref[T]) { return fn(u) }, source, prefix)
 }
 
-func (m Map[T]) Get(k string) (*Object[T], bool) {
+func (m Map[T]) Get(k string) (*Object[string, T], bool) {
 	if m.indexes == nil {
 		return nil, false
 	}
@@ -88,9 +88,9 @@ func (m Map[T]) Get(k string) (*Object[T], bool) {
 
 func (m *Map[T]) Add(name string, v T) {
 	if m.indexes == nil {
-		m.indexes = make(map[RefKey]*Object[T])
+		m.indexes = make(map[RefKey]*Object[string, T])
 	}
-	obj := &Object[T]{
+	obj := &Object[string, T]{
 		Name: name,
 		V:    v,
 	}

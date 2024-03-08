@@ -8,7 +8,7 @@ import (
 	"github.com/vkd/goag/specification"
 )
 
-type Handler struct {
+type HandlerOld2 struct {
 	s *specification.Operation
 
 	Imports Imports
@@ -40,8 +40,8 @@ type Handler struct {
 	Responses       []*Response
 }
 
-func NewHandler(o *specification.Operation) (zero Handler, _ error) {
-	h := Handler{s: o}
+func NewHandlerOld2(o *specification.Operation) (zero HandlerOld2, _ error) {
+	h := HandlerOld2{s: o}
 	h.Method = o.Method
 	h.HTTPMethod = o.HTTPMethod
 	h.Path = o.PathItem.Path
@@ -90,12 +90,14 @@ func NewHandler(o *specification.Operation) (zero Handler, _ error) {
 	h.ResponseTypeName = string(h.Name) + "Response"
 	h.ResponsePrivateFuncName = PrivateFieldName(string(h.Name))
 
-	if o.DefaultResponse != nil {
-		h.DefaultResponse.Set(NewResponse(h.Name, o.DefaultResponse))
-	}
-	for _, response := range o.Responses {
-		h.Responses = append(h.Responses, NewResponse(h.Name, response))
-	}
+	// for _, response := range o.Responses.List {
+	// 	resp := NewResponse(h.Name, response.Name, response.V.Value())
+	// 	if response.Name == "default" {
+	// 		h.DefaultResponse.Set(resp)
+	// 	} else {
+	// 		h.Responses = append(h.Responses, resp)
+	// 	}
+	// }
 
 	for _, q := range o.Parameters.Query.List {
 		qp := q.V.Value()
@@ -162,9 +164,7 @@ type PathDir struct {
 func (p PathDir) FormatTemplater(varName string) Templater {
 	if p.Param != nil {
 		return TemplaterFunc(func() (string, error) {
-			return p.Param.Type.RenderFormat(RenderFunc(func() (string, error) {
-				return RawTemplate(varName + ".Path." + p.Param.FieldName).String()
-			}))
+			return p.Param.Type.RenderFormat(varName + ".Path." + p.Param.FieldName)
 		})
 	} else {
 		return TemplaterFunc(func() (string, error) {
@@ -194,16 +194,14 @@ func (p PathDir) FormatTemplater(varName string) Templater {
 type QueryParameter struct {
 	s *specification.QueryParameter
 
-	Name      string
-	FieldName string
-	Required  bool
-	Type      Formatter
+	Name     string
+	Required bool
+	Type     Formatter
 }
 
 func NewQueryParameter(s *specification.QueryParameter) (zero *QueryParameter, _ Imports, _ error) {
 	out := QueryParameter{s: s}
 	out.Name = s.Name
-	out.FieldName = PublicFieldName(s.Name)
 	out.Required = s.Required
 	var err error
 	var ims Imports
@@ -215,7 +213,7 @@ func NewQueryParameter(s *specification.QueryParameter) (zero *QueryParameter, _
 }
 
 func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
-	fromTxt := from + ".Query." + p.FieldName
+	fromTxt := from + ".Query." + PublicFieldName(p.Name)
 	fromTm := RawTemplate(fromTxt)
 	toTm := RawTemplate(to + "[\"" + p.Name + "\"]")
 
@@ -244,7 +242,7 @@ func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
 
 	tm := AssignTemplate(
 		ToSliceStrings(TemplaterFunc(func() (string, error) {
-			return p.Type.RenderFormat(RenderFunc(fromTm.String))
+			return p.Type.RenderFormat(fromTxt)
 		})),
 		toTm,
 		false,
@@ -259,7 +257,7 @@ func (p QueryParameter) ExecuteFormat(from, to string) (string, error) {
 			"From": fromTm,
 			"T": AssignTemplate(
 				ToSliceStrings(TemplaterFunc(func() (string, error) {
-					return p.Type.RenderFormat(RenderFunc(RawTemplate(pointer + fromTxt).String))
+					return p.Type.RenderFormat(pointer + fromTxt)
 				})),
 				toTm,
 				false,
@@ -293,7 +291,7 @@ type PathParameter struct {
 	Name          string
 	FieldName     string
 	FieldTypeName string
-	Type          Formatter
+	Type          SchemaType
 }
 
 func NewPathParameter(rs specification.Ref[specification.PathParameter]) (zero *PathParameter, _ Imports, _ error) {

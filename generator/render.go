@@ -23,18 +23,18 @@ type ErrorRender interface {
 
 // Parser parses 'string' to '<type>'.
 type Parser interface {
-	RenderParser(from, to Render, mkErr ErrorRender) (string, error)
+	ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
 
-type ParserFunc func(from, to Render, mkErr ErrorRender) (string, error)
+type ParserFunc func(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 
-func (p ParserFunc) RenderParser(from, to Render, mkErr ErrorRender) (string, error) {
-	return p(from, to, mkErr)
+func (p ParserFunc) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return p(to, from, isNew, mkErr)
 }
 
 // Formatter formats 'string' from '<type>'.
 type Formatter interface {
-	RenderFormat(from Render) (string, error)
+	RenderFormat(from string) (string, error)
 }
 
 type FormatterFunc func(from Render) (string, error)
@@ -45,4 +45,11 @@ type Renders []Render
 
 func (r Renders) Render() (string, error) {
 	return ExecuteTemplate("Renders", r)
+}
+
+func Assign(to, from string, isNew bool) string {
+	if isNew {
+		return to + " := " + from
+	}
+	return to + " = " + from
 }

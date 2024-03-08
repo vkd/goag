@@ -3,19 +3,19 @@ package generator
 import "github.com/vkd/goag/generator-v0/source"
 
 type StringsParser interface {
-	StringsParser(from, to string, _ ErrorWrapper) Render
+	StringsParser(to, from string, isNew bool, _ ErrorWrapper) Render
 }
 
 func NewStringsParser(s SchemaRender, from, toOrig string, isPointer bool, mkErr ErrorWrapper) Render {
 
 	switch s := s.(type) {
 	case StringsParser:
-		return s.StringsParser(from, toOrig, mkErr)
+		return s.StringsParser(toOrig, from, false, mkErr)
 	}
 
 	var conv Render
 	to := "v"
-	conv = s.Parser(from+"[0]", to, mkErr)
+	conv = s.Parser(to, from+"[0]", false, mkErr)
 
 	_, optionable := s.(interface{ Optionable() })
 

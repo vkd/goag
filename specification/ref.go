@@ -8,21 +8,21 @@ import "fmt"
 // }
 
 type Ref[T any] interface {
-	Ref() *Object[Ref[T]]
+	Ref() *Object[string, Ref[T]]
 	Value() *T
 }
 
 type RefObject[T any] struct {
-	V *Object[Ref[T]]
+	V *Object[string, Ref[T]]
 }
 
-func NewRefObject[T any](v *Object[Ref[T]]) *RefObject[T] {
+func NewRefObject[T any](v *Object[string, Ref[T]]) *RefObject[T] {
 	return &RefObject[T]{
 		V: v,
 	}
 }
 func NewRefObjectSource[T any](key string, source interface {
-	Get(string) (*Object[Ref[T]], bool)
+	Get(string) (*Object[string, Ref[T]], bool)
 }) *RefObject[T] {
 	v, ok := source.Get(key)
 	if !ok {
@@ -33,12 +33,12 @@ func NewRefObjectSource[T any](key string, source interface {
 	}
 }
 
-func (r *RefObject[T]) Ref() *Object[Ref[T]] { return r.V }
-func (r *RefObject[T]) Value() *T            { return r.V.V.Value() }
+func (r *RefObject[T]) Ref() *Object[string, Ref[T]] { return r.V }
+func (r *RefObject[T]) Value() *T                    { return r.V.V.Value() }
 
 type NoRef[T any] struct{}
 
-func (NoRef[T]) Ref() *Object[Ref[T]] { return nil }
+func (NoRef[T]) Ref() *Object[string, Ref[T]] { return nil }
 
 // func NewRef[T any](r R, fn func(*U) T) Ref[T] {
 // 	if r.Ref != "" {

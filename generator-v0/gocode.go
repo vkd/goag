@@ -107,7 +107,7 @@ struct{}
 
 func (g GoStruct) String() (string, error) { return String(tmGoStruct, g) }
 
-func (g GoStruct) Parser(from, to string, mkErr ErrorWrapper) Render {
+func (g GoStruct) Parser(to string, from string, isNew bool, mkErr ErrorWrapper) Render {
 	return StructParser{from, to, mkErr}
 }
 
@@ -198,7 +198,7 @@ const (
 	BooleanType GoType = "bool"
 )
 
-func (g GoType) Parser(from, to string, mkErr ErrorWrapper) Render {
+func (g GoType) Parser(to string, from string, isNew bool, mkErr ErrorWrapper) Render {
 	switch g {
 	case StringType:
 		return RenderFunc(func() (string, error) {
@@ -206,27 +206,27 @@ func (g GoType) Parser(from, to string, mkErr ErrorWrapper) Render {
 		})
 	case Int:
 		return RenderFunc(func() (string, error) {
-			return generator.IntType{}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
+			return generator.IntType{}.ParseString(to, from, isNew, mkErr)
 		})
 	case Int32:
 		return RenderFunc(func() (string, error) {
-			return generator.IntType{BitSize: 32}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
+			return generator.IntType{BitSize: 32}.ParseString(to, from, isNew, mkErr)
 		})
 	case Int64:
 		return RenderFunc(func() (string, error) {
-			return generator.IntType{BitSize: 64}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
+			return generator.IntType{BitSize: 64}.ParseString(to, from, isNew, mkErr)
 		})
 	case Float32:
 		return RenderFunc(func() (string, error) {
-			return generator.FloatType{BitSize: 32}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
+			return generator.FloatType{BitSize: 32}.ParseString(to, from, isNew, mkErr)
 		})
 	case Float64:
 		return RenderFunc(func() (string, error) {
-			return generator.FloatType{BitSize: 64}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
+			return generator.FloatType{BitSize: 64}.ParseString(to, from, isNew, mkErr)
 		})
 	case BooleanType:
 		return RenderFunc(func() (string, error) {
-			return generator.BoolType{}.RenderParser(generator.StringRender(from), generator.StringRender(to), mkErr)
+			return generator.BoolType{}.ParseString(to, from, isNew, mkErr)
 		})
 	default:
 		panic(fmt.Errorf("unsupported GoType: %q", g))
@@ -258,7 +258,7 @@ var tmGoSlice = template.Must(template.New("GoSlice").Parse(`[]{{ .Items.String 
 
 func (s GoSlice) String() (string, error) { return String(tmGoSlice, s) }
 
-func (s GoSlice) Parser(from, to string, mkErr ErrorWrapper) Render {
+func (s GoSlice) Parser(to string, from string, isNew bool, mkErr ErrorWrapper) Render {
 	switch t := s.Items.(type) {
 	case GoType:
 		switch t {
@@ -275,7 +275,7 @@ func (s GoSlice) Format(v string) source.Templater {
 
 func (GoSlice) Optionable() {}
 
-func (s GoSlice) StringsParser(from, to string, mkErr ErrorWrapper) Render {
+func (s GoSlice) StringsParser(to string, from string, isNew bool, mkErr ErrorWrapper) Render {
 	switch t := s.Items.(type) {
 	case GoType:
 		switch t {
@@ -294,7 +294,7 @@ var tmGoMap = template.Must(template.New("GoMap").Parse(`map[{{ .Key.String }}]{
 
 func (s GoMap) String() (string, error) { return String(tmGoMap, s) }
 
-func (s GoMap) Parser(from, to string, mkErr ErrorWrapper) Render {
+func (s GoMap) Parser(to string, from string, isNew bool, mkErr ErrorWrapper) Render {
 	panic("not implemented")
 }
 
@@ -318,7 +318,7 @@ for i := range {{.From}} {
 
 func (c ConvertStrings) ItemRender(from, toOrig string) (string, error) {
 	to := "v1"
-	r := c.ItemType.Parser(from, to, c.MkErr)
+	r := c.ItemType.Parser(to, from, true, c.MkErr)
 	r = source.Renders{r, source.Assign(toOrig, GoValue(to))}
 	return r.String()
 }

@@ -718,10 +718,10 @@ type GetShopsShopPetsResponse200JSONBody struct {
 	Groups map[string]Pets `json:"groups"`
 }
 
+// GetShopsShopPetsResponse200JSON - List of pets
 type GetShopsShopPetsResponse200JSON struct {
 	Body    GetShopsShopPetsResponse200JSONBody
 	Headers struct {
-		Body  GetShopsShopPetsResponse200JSONBody
 		XNext string
 	}
 }
@@ -946,7 +946,6 @@ func NewReviewShopResponse200JSON(body Pet, xNext string) ReviewShopResponse {
 type ReviewShopResponse200JSON struct {
 	Body    Pet
 	Headers struct {
-		Body  Pet
 		XNext string
 	}
 }

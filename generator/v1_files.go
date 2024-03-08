@@ -8,6 +8,6 @@ func (g *Generator) ClientFile() GoFile {
 	}
 }
 
-func (g *Generator) RouterFile(basePath, baseFilename string, hs []HandlerOld, oldRouter any) (Templater, error) {
+func (g *Generator) RouterFile(basePath, baseFilename string, oldRouter any) (Templater, error) {
 	return g.goFile(nil, g.Router), nil
 }

@@ -86,7 +86,7 @@ func (c ClientOperation) PathFormat() (Renders, error) {
 			return nil, fmt.Errorf("%q path parameter: not found in %q operation", param.Name, c.Operation.Name)
 		}
 		out = append(out, RenderFunc(func() (string, error) {
-			return gp.V.Type.RenderFormat(StringRender(c.RequestVarName + ".Path." + gp.V.FieldName))
+			return gp.V.Type.RenderFormat(c.RequestVarName + ".Path." + gp.V.FieldName)
 		}))
 	}
 	if v != "" {
@@ -105,7 +105,7 @@ type ClientHeader struct {
 func (c *ClientHeader) RenderFormat(from string) (string, error) {
 	switch t := c.Type.(type) {
 	case CustomType:
-		return t.RenderFormat(StringRender(from))
+		return t.RenderFormat(from)
 	}
 	if c.Required {
 		return from, nil
