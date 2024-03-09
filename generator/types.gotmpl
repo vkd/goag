@@ -79,7 +79,7 @@ if err != nil {
 {{/* ----------------------------- CustomType ------------------------------------- */}}
 
 {{ define "CustomTypeParser" }}
-var {{ .To }} {{ .Type }}
+{{- if .IsNew }}var {{ .To }} {{ .Type }}{{ end }}
 err := {{ .To }}.UnmarshalText([]byte({{.From}}))
 if err != nil {
 	return zero, {{.MkErr.Wrap (print "unmarshal text")}}

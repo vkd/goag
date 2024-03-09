@@ -67,8 +67,7 @@ func newGetPetsPetIDNamesParams(r *http.Request) (zero GetPetsPetIDNamesParams, 
 				return zero, ErrParseParam{In: "path", Parameter: "pet_id", Reason: "required"}
 			}
 
-			v := vPath
-			params.Path.PetID = v
+			params.Path.PetID = vPath
 		}
 
 		if !strings.HasPrefix(p, "/names") {
@@ -161,8 +160,7 @@ func newGetPetsPetIDShopsParams(r *http.Request) (zero GetPetsPetIDShopsParams, 
 				return zero, ErrParseParam{In: "path", Parameter: "pet_id", Reason: "required"}
 			}
 
-			v := vPath
-			params.Path.PetID = v
+			params.Path.PetID = vPath
 		}
 
 		if !strings.HasPrefix(p, "/shops") {

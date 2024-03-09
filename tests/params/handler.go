@@ -262,8 +262,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("header parameter 'user-id': is required")
 			}
 			if len(hs) > 0 {
-				v := hs[0]
-				params.Headers.UserID = v
+				params.Headers.UserID = hs[0]
 			}
 		}
 	}
@@ -293,8 +292,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
 			}
-			v := int32(vInt)
-			params.Path.Shop = v
+			params.Path.Shop = int32(vInt)
 		}
 
 		if !strings.HasPrefix(p, "/reviews") {

@@ -279,8 +279,7 @@ func newShowPetByIDParams(r *http.Request) (zero ShowPetByIDParams, _ error) {
 				return zero, ErrParseParam{In: "path", Parameter: "petId", Reason: "required"}
 			}
 
-			v := vPath
-			params.Path.PetID = v
+			params.Path.PetID = vPath
 		}
 	}
 

@@ -327,8 +327,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			v := vPath
-			params.Path.Shop = v
+			params.Path.Shop = vPath
 		}
 	}
 
@@ -427,8 +426,7 @@ func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTParams, _ erro
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			v := vPath
-			params.Path.Shop = v
+			params.Path.Shop = vPath
 		}
 
 		if !strings.HasPrefix(p, "/") {
@@ -532,8 +530,7 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			v := vPath
-			params.Path.Shop = v
+			params.Path.Shop = vPath
 		}
 
 		if !strings.HasPrefix(p, "/pets") {
@@ -637,8 +634,7 @@ func newGetShopsShopPetsMikePawsParams(r *http.Request) (zero GetShopsShopPetsMi
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			v := vPath
-			params.Path.Shop = v
+			params.Path.Shop = vPath
 		}
 
 		if !strings.HasPrefix(p, "/pets/mike/paws") {

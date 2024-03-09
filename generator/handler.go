@@ -42,19 +42,10 @@ func NewHandler(o *Operation, basePathPrefix string) (zero *Handler, _ Imports, 
 	var pathRenders []Parser
 	for _, pe := range o.PathBuilder {
 		if pe.Param.IsSet {
-			rendParam := pe.Param.Value
 			pathRenders = append(pathRenders, PathParserVariable{
-				Variable: rendParam.FieldName,
-				Error:    PathParseError(rendParam.Name),
-				Convert: ParserFunc(func(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-					rs := Renders{
-						RenderFunc(func() (string, error) { return rendParam.Type.ParseString("v", from, true, mkErr) }),
-						RenderFunc(func() (string, error) {
-							return to + " = v", nil
-						}),
-					}
-					return rs.Render()
-				}),
+				FieldName: pe.Param.Value.FieldName,
+				Name:      pe.Param.Value.Name,
+				Convert:   pe.Param.Value.Type,
 			})
 		} else if pe.Raw != "" {
 			pathRenders = append(pathRenders, PathParserConstant{
@@ -77,14 +68,7 @@ func NewHandler(o *Operation, basePathPrefix string) (zero *Handler, _ Imports, 
 				},
 				ParameterName: "Authorization",
 				Required:      true,
-				Parser: ParserFunc(func(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-					return Renders{
-						StringRender("v := " + from),
-						RenderFunc(func() (string, error) {
-							return StringType{}.ParseString(to+"Authorization", "v", isNew, HeaderParseError("Authorization"))
-						}),
-					}.Render()
-				}),
+				Parser:        StringType{},
 			})
 			out.CanParseError = true
 		}
@@ -218,18 +202,24 @@ type PathParserConstant struct {
 	FullPath string
 }
 
-func (p PathParserConstant) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+func (p PathParserConstant) ParseString(_, _ string, _ bool, _ ErrorRender) (string, error) {
 	return ExecuteTemplate("PathParserConstant", p)
 }
 
 type PathParserVariable struct {
-	Variable string
-	Error    ErrorRender
-	Convert  Parser
+	FieldName string
+	Name      string
+	Convert   Parser
 }
 
-func (p PathParserVariable) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("PathParserVariable", p)
+func (p PathParserVariable) ParseString(to, from string, isNew bool, _ ErrorRender) (string, error) {
+	return ExecuteTemplate("PathParserVariable", TData{
+		"From":    from,
+		"To":      to + p.FieldName,
+		"IsNew":   isNew,
+		"Error":   parseError{"path", p.Name},
+		"Convert": p.Convert,
+	})
 }
 
 type HandlerPathParameter struct {
@@ -292,15 +282,7 @@ func NewHandlerHeaderParameter(p *HeaderParameter) (zero HandlerHeaderParameter,
 
 		ParameterName: p.Name,
 		Required:      p.Required,
-		Parser: ParserFunc(func(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-			if _, ok := tp.(StringType); ok {
-				return Renders{
-					StringRender("v := " + from),
-					RenderFunc(func() (string, error) { return tp.ParseString(to+fieldName, "v", isNew, HeaderParseError(p.Name)) }),
-				}.Render()
-			}
-			return tp.ParseString(to+fieldName, from, isNew, HeaderParseError(p.Name))
-		}),
+		Parser:        tp,
 	}
 
 	return out, imports, nil

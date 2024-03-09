@@ -452,8 +452,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
 			}
-			v := int32(vInt)
-			params.Path.Shop = v
+			params.Path.Shop = int32(vInt)
 		}
 	}
 
@@ -548,8 +547,7 @@ func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTParams, _ erro
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
 			}
-			v := int32(vInt)
-			params.Path.Shop = v
+			params.Path.Shop = int32(vInt)
 		}
 
 		if !strings.HasPrefix(p, "/") {
@@ -685,8 +683,7 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
 			}
-			v := int32(vInt)
-			params.Path.Shop = v
+			params.Path.Shop = int32(vInt)
 		}
 
 		if !strings.HasPrefix(p, "/pets") {
@@ -877,8 +874,7 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 				return zero, fmt.Errorf("header parameter 'user-id': is required")
 			}
 			if len(hs) > 0 {
-				v := hs[0]
-				params.Headers.UserID = v
+				params.Headers.UserID = hs[0]
 			}
 		}
 	}
@@ -908,8 +904,7 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
 			}
-			v := int32(vInt)
-			params.Path.Shop = v
+			params.Path.Shop = int32(vInt)
 		}
 
 		if !strings.HasPrefix(p, "/review") {

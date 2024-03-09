@@ -72,12 +72,10 @@ func newPostShopsShopPetsParams(r *http.Request) (zero PostShopsShopPetsParams, 
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			var v pkg.ShopType
-			err := v.UnmarshalText([]byte(vPath))
+			err := params.Path.Shop.UnmarshalText([]byte(vPath))
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "unmarshal text", Err: err}
 			}
-			params.Path.Shop = v
 		}
 
 		if !strings.HasPrefix(p, "/pets") {

@@ -129,8 +129,7 @@ func newPostShopsParams(r *http.Request) (zero PostShopsParams, _ error) {
 				return zero, fmt.Errorf("header parameter 'Authorization': is required")
 			}
 			if len(hs) > 0 {
-				v := hs[0]
-				params.Headers.Authorization = v
+				params.Headers.Authorization = hs[0]
 			}
 		}
 	}

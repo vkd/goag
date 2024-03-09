@@ -74,8 +74,7 @@ func newGetPetsPetIDParams(r *http.Request) (zero GetPetsPetIDParams, _ error) {
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "pet_id", Reason: "parse int32", Err: err}
 			}
-			v := int32(vInt)
-			params.Path.PetID = v
+			params.Path.PetID = int32(vInt)
 		}
 	}
 

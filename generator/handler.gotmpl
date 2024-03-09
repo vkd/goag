@@ -84,7 +84,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
             }
             {{end -}}
             if ok && len(q) > 0 {
-                {{ .ParseStrings (print "params.Query." .FieldName) "q" false nil}}
+                {{ .ParseStrings (print "params.Query." .FieldName) "q" false (parseError "query" .ParameterName)}}
             }
 		}
 		{{- end }}
@@ -104,7 +104,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 			}
             {{- end }}
 			if len(hs) > 0 {
-			    {{ $h.Parser.ParseString "params.Headers." "hs[0]" false nil }}
+			    {{ $h.Parser.ParseString (print "params.Headers." .FieldName) "hs[0]" false (parseError "header" .ParameterName) }}
 			}
 		}
 		{{- end}}
@@ -130,7 +130,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 
 		{{- range $_, $p := $h.PathParsers }}
 
-		{{ $p.ParseString (print "params.Path." "$p.FieldName") "p" false nil }}
+		{{ $p.ParseString "params.Path." "p" false nil }}
 		{{- end }}
 	}
 	{{ end }}
@@ -185,18 +185,18 @@ p = p[{{len .Prefix}}:] // "{{.Prefix}}"
 {{/* ----------------------------- PathParserVariable ------------------------------------- */}}
 {{ define "PathParserVariable" }}
 {
-	idx := strings.Index(p, "/")
+	idx := strings.Index({{ .From }}, "/")
 	if idx == -1 {
-		idx = len(p)
+		idx = len({{ .From }})
 	}
-	vPath := p[:idx]
-	p = p[idx:]
+	vPath := {{ .From }}[:idx]
+	{{ .From }} = {{ .From }}[idx:]
 
 	if len(vPath) == 0 {
 		return zero, {{.Error.New "required"}}
 	}
 
-	{{ .Convert.ParseString (print "params.Path." .Variable) "vPath" false .Error }}
+	{{ .Convert.ParseString .To "vPath" .IsNew .Error }}
 }
 {{- end }}
 

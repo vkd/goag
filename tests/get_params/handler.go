@@ -104,8 +104,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			v := vPath
-			params.Path.Shop = v
+			params.Path.Shop = vPath
 		}
 	}
 
