@@ -37,9 +37,9 @@ type Formatter interface {
 	RenderFormat(from string) (string, error)
 }
 
-type FormatterFunc func(from Render) (string, error)
+type FormatterFunc func(from string) (string, error)
 
-func (f FormatterFunc) RenderFormat(from Render) (string, error) { return f(from) }
+func (f FormatterFunc) RenderFormat(from string) (string, error) { return f(from) }
 
 type Renders []Render
 

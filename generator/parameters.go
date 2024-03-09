@@ -22,7 +22,7 @@ func NewQueryParameter(s *specification.QueryParameter) (zero *QueryParameter, _
 	out.Required = s.Required
 	var err error
 	var ims Imports
-	out.Type, ims, err = NewParameterSchema(s.Schema.Value())
+	out.Type, ims, err = NewSchema(s.Schema.Value())
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -94,7 +94,7 @@ func NewPathParameter(rs specification.Ref[specification.PathParameter]) (zero *
 	}
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewParameterSchema(s.Schema.Value())
+	out.Type, ims, err = NewSchema(s.Schema.Value())
 	if err != nil {
 		return nil, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -121,7 +121,7 @@ func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter]) (ze
 	}
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewParameterSchema(s.Schema.Value())
+	out.Type, ims, err = NewSchema(s.Schema.Value())
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
