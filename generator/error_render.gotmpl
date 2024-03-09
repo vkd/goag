@@ -1,0 +1,14 @@
+{{ define "ErrParseParam" }}
+type ErrParseParam struct {
+	In        string
+	Parameter string
+	Reason    string
+	Err       error
+}
+
+func (e ErrParseParam) Error() string {
+	return fmt.Sprintf("%s parameter '%s': %s: %v", e.In, e.Parameter, e.Reason, e.Err)
+}
+
+func (e ErrParseParam) Unwrap() error { return e.Err }
+{{ end }}
