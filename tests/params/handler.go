@@ -40,29 +40,29 @@ func (r getReviewsHTTPRequest) Parse() (GetReviewsParams, error) {
 
 type GetReviewsParams struct {
 	Query struct {
-		IntReq int
+		IntReq IntRequired
 
-		Int *int
+		Int *Int
 
-		Int32Req int32
+		Int32Req Int32Required
 
-		Int32 *int32
+		Int32 *Int32
 
-		Int64Req int64
+		Int64Req Int64Required
 
-		Int64 *int64
+		Int64 *Int64
 
-		Float32Req float32
+		Float32Req Float32Required
 
-		Float32 *float32
+		Float32 *Float32
 
-		Float64Req float64
+		Float64Req Float64Required
 
-		Float64 *float64
+		Float64 *Float64
 
-		StringReq string
+		StringReq StringRequired
 
-		String *string
+		String *String
 
 		Tag []string
 
@@ -70,7 +70,7 @@ type GetReviewsParams struct {
 	}
 
 	Path struct {
-		Shop int32
+		Shop ShopPathRequired
 	}
 
 	Headers struct {
@@ -92,22 +92,20 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'int_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 0)
+				err := params.Query.IntReq.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int_req", Reason: "parse int", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "int_req", Reason: "parse IntRequired", Err: err}
 				}
-				v := int(vInt)
-				params.Query.IntReq = v
 			}
 		}
 		{
 			q, ok := query["int"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 0)
+				var v Int
+				err := v.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int", Reason: "parse int", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "int", Reason: "parse Int", Err: err}
 				}
-				v := int(vInt)
 				params.Query.Int = &v
 			}
 		}
@@ -117,22 +115,20 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'int32_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				err := params.Query.Int32Req.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int32_req", Reason: "parse int32", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "int32_req", Reason: "parse Int32Required", Err: err}
 				}
-				v := int32(vInt)
-				params.Query.Int32Req = v
 			}
 		}
 		{
 			q, ok := query["int32"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				var v Int32
+				err := v.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int32", Reason: "parse int32", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "int32", Reason: "parse Int32", Err: err}
 				}
-				v := int32(vInt)
 				params.Query.Int32 = &v
 			}
 		}
@@ -142,19 +138,19 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'int64_req': is required")
 			}
 			if ok && len(q) > 0 {
-				v, err := strconv.ParseInt(q[0], 10, 64)
+				err := params.Query.Int64Req.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int64_req", Reason: "parse int64", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "int64_req", Reason: "parse Int64Required", Err: err}
 				}
-				params.Query.Int64Req = v
 			}
 		}
 		{
 			q, ok := query["int64"]
 			if ok && len(q) > 0 {
-				v, err := strconv.ParseInt(q[0], 10, 64)
+				var v Int64
+				err := v.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int64", Reason: "parse int64", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "int64", Reason: "parse Int64", Err: err}
 				}
 				params.Query.Int64 = &v
 			}
@@ -165,22 +161,20 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'float32_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vFloat, err := strconv.ParseFloat(q[0], 32)
+				err := params.Query.Float32Req.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "float32_req", Reason: "parse float32", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "float32_req", Reason: "parse Float32Required", Err: err}
 				}
-				v := float32(vFloat)
-				params.Query.Float32Req = v
 			}
 		}
 		{
 			q, ok := query["float32"]
 			if ok && len(q) > 0 {
-				vFloat, err := strconv.ParseFloat(q[0], 32)
+				var v Float32
+				err := v.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "float32", Reason: "parse float32", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "float32", Reason: "parse Float32", Err: err}
 				}
-				v := float32(vFloat)
 				params.Query.Float32 = &v
 			}
 		}
@@ -190,19 +184,19 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'float64_req': is required")
 			}
 			if ok && len(q) > 0 {
-				v, err := strconv.ParseFloat(q[0], 64)
+				err := params.Query.Float64Req.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "float64_req", Reason: "parse float64", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "float64_req", Reason: "parse Float64Required", Err: err}
 				}
-				params.Query.Float64Req = v
 			}
 		}
 		{
 			q, ok := query["float64"]
 			if ok && len(q) > 0 {
-				v, err := strconv.ParseFloat(q[0], 64)
+				var v Float64
+				err := v.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "float64", Reason: "parse float64", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "float64", Reason: "parse Float64", Err: err}
 				}
 				params.Query.Float64 = &v
 			}
@@ -213,14 +207,20 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'string_req': is required")
 			}
 			if ok && len(q) > 0 {
-				v := q[0]
-				params.Query.StringReq = v
+				err := params.Query.StringReq.ParseQuery(q)
+				if err != nil {
+					return zero, ErrParseParam{In: "query", Parameter: "string_req", Reason: "parse StringRequired", Err: err}
+				}
 			}
 		}
 		{
 			q, ok := query["string"]
 			if ok && len(q) > 0 {
-				v := q[0]
+				var v String
+				err := v.ParseQuery(q)
+				if err != nil {
+					return zero, ErrParseParam{In: "query", Parameter: "string", Reason: "parse String", Err: err}
+				}
 				params.Query.String = &v
 			}
 		}
@@ -239,8 +239,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse int32", Err: err}
 					}
-					v1 := int32(vInt)
-					params.Query.Filter[i] = v1
+					params.Query.Filter[i] = int32(vInt)
 				}
 			}
 		}
@@ -288,11 +287,10 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			vInt, err := strconv.ParseInt(vPath, 10, 32)
+			err := params.Path.Shop.Parse(vPath)
 			if err != nil {
-				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
+				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse ShopPathRequired", Err: err}
 			}
-			params.Path.Shop = int32(vInt)
 		}
 
 		if !strings.HasPrefix(p, "/reviews") {

@@ -54,15 +54,17 @@ type GetPetsResponse interface {
 	Write(w http.ResponseWriter)
 }
 
-func NewGetPetsResponse200(xNext string) GetPetsResponse {
+func NewGetPetsResponse200(xNext string, xNextTwo string) GetPetsResponse {
 	var out GetPetsResponse200
 	out.Headers.XNext = xNext
+	out.Headers.XNextTwo = xNextTwo
 	return out
 }
 
 type GetPetsResponse200 struct {
 	Headers struct {
-		XNext string
+		XNext    string
+		XNextTwo string
 	}
 }
 
@@ -70,6 +72,7 @@ func (r GetPetsResponse200) getPets() {}
 
 func (r GetPetsResponse200) Write(w http.ResponseWriter) {
 	w.Header().Set("x-next", r.Headers.XNext)
+	w.Header().Set("x-next-two", r.Headers.XNextTwo)
 	w.WriteHeader(200)
 }
 

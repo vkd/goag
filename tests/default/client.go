@@ -195,7 +195,7 @@ func (c *Client) GetShopsActivateTag(ctx context.Context, request GetShopsActiva
 
 // GetShopsShop - GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10)
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -222,7 +222,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 
 // GetShopsShopRT - GET /shops/{shop}/
 func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParams) (GetShopsShopRTResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/"
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String() + "/"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -249,13 +249,13 @@ func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParam
 
 // GetShopsShopPets - GET /shops/{shop}/pets
 func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsParams) (GetShopsShopPetsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/pets"
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String() + "/pets"
 
 	query := make(url.Values, 2)
 	if request.Query.Page != nil {
-		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+		query["page"] = []string{request.Query.Page.String()}
 	}
-	query["page_size"] = []string{strconv.FormatInt(int64(request.Query.PageSize), 10)}
+	query["page_size"] = []string{request.Query.PageSize.String()}
 	requestURL += "?" + query.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
@@ -275,7 +275,11 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 	switch resp.StatusCode {
 	case 200:
 		var response GetShopsShopPetsResponse200JSON
-		response.Headers.XNext = resp.Header.Get("x-next")
+		var hs []string
+		hs = resp.Header.Values("x-next")
+		if len(hs) > 0 {
+			response.Headers.XNext = hs[0]
+		}
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -296,13 +300,13 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 
 // ReviewShop - POST /shops/{shop}/review
 func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (ReviewShopResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/review"
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String() + "/review"
 
 	query := make(url.Values, 4)
 	if request.Query.Page != nil {
-		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+		query["page"] = []string{request.Query.Page.String()}
 	}
-	query["page_size"] = []string{strconv.FormatInt(int64(request.Query.PageSize), 10)}
+	query["page_size"] = []string{request.Query.PageSize.String()}
 	query["tag"] = request.Query.Tag
 	{
 		query_values := make([]string, 0, len(request.Query.Filter))
@@ -339,7 +343,11 @@ func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (Revi
 	switch resp.StatusCode {
 	case 200:
 		var response ReviewShopResponse200JSON
-		response.Headers.XNext = resp.Header.Get("x-next")
+		var hs []string
+		hs = resp.Header.Values("x-next")
+		if len(hs) > 0 {
+			response.Headers.XNext = hs[0]
+		}
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {

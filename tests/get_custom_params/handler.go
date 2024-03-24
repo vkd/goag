@@ -78,12 +78,10 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'page_req': is required")
 			}
 			if ok && len(q) > 0 {
-				var v Page
-				err := v.UnmarshalText([]byte(q[0]))
+				err := params.Query.PageReq.UnmarshalText([]byte(q[0]))
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_req", Reason: "unmarshal text", Err: err}
 				}
-				params.Query.PageReq = v
 			}
 		}
 		{
@@ -91,12 +89,10 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 			if ok && len(q) > 0 {
 				params.Query.Pages = make([]Page, len(q))
 				for i := range q {
-					var v1 Page
-					err := v1.UnmarshalText([]byte(q[i]))
+					err := params.Query.Pages[i].UnmarshalText([]byte(q[i]))
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "pages", Reason: "unmarshal text", Err: err}
 					}
-					params.Query.Pages[i] = v1
 				}
 			}
 		}

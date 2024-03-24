@@ -141,36 +141,27 @@ type HandlerQueryParameter struct {
 	ParameterName string
 	Required      bool
 	Parser        Parser
+	IsPointer     bool
+	IsCustom      bool
 }
 
 func NewHandlerQueryParameter(p *QueryParameter) (zero HandlerQueryParameter, _ Imports, _ error) {
-	tp, imports, err := NewSchema(p.s.Schema)
-	if err != nil {
-		return zero, nil, fmt.Errorf("new schema: %w", err)
-	}
+	tp := p.Type
 
 	var tpRender Render = tp
+	var isPointer bool
 	if _, ok := tp.(SliceType); !p.Required && !ok {
 		tpRender = NewPointerType(tp)
+		isPointer = true
+	}
+
+	var isCustom bool
+	switch tp.(type) {
+	case CustomType, Ref:
+		isCustom = true
 	}
 
 	var parser Parser = tp
-	if _, ok := tp.(SliceType); !ok {
-		parser = ParserFunc(func(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-			return Renders{
-				RenderFunc(func() (string, error) {
-					return tp.ParseString("v", from, true, mkErr)
-				}),
-				RenderFunc(func() (string, error) {
-					from := "v"
-					if !p.Required {
-						from = "&v"
-					}
-					return Assign(to, from, isNew), nil
-				}),
-			}.Render()
-		})
-	}
 
 	out := HandlerQueryParameter{
 		HandlerParameter: HandlerParameter{
@@ -182,17 +173,19 @@ func NewHandlerQueryParameter(p *QueryParameter) (zero HandlerQueryParameter, _ 
 		ParameterName: p.Name,
 		Required:      p.Required,
 		Parser:        parser,
+		IsPointer:     isPointer,
+		IsCustom:      isCustom,
 	}
 
-	return out, imports, nil
+	return out, nil, nil
 }
 
-func (p HandlerQueryParameter) ParseStrings(to, from string, isNew bool, _ ErrorRender) (string, error) {
-	mkErr := QueryParseError(p.ParameterName)
-
+func (p HandlerQueryParameter) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	switch parser := p.Parser.(type) {
 	case SliceType:
 		return parser.ParseStrings(to, from, isNew, mkErr)
+	case Ref:
+		return parser.ParseQuery(to, from, isNew, mkErr)
 	}
 	return p.Parser.ParseString(to, from+"[0]", isNew, mkErr)
 }
@@ -212,12 +205,12 @@ type PathParserVariable struct {
 	Convert   Parser
 }
 
-func (p PathParserVariable) ParseString(to, from string, isNew bool, _ ErrorRender) (string, error) {
+func (p PathParserVariable) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("PathParserVariable", TData{
 		"From":    from,
 		"To":      to + p.FieldName,
 		"IsNew":   isNew,
-		"Error":   parseError{"path", p.Name},
+		"Error":   wrappedError{mkErr, parseParamError{"path", p.Name}},
 		"Convert": p.Convert,
 	})
 }
@@ -230,27 +223,18 @@ type HandlerPathParameter struct {
 }
 
 func NewHandlerPathParameter(p *PathParameter) (zero HandlerPathParameter, _ Imports, _ error) {
-	tp, imports, err := NewSchema(p.s.Schema)
-	if err != nil {
-		return zero, nil, fmt.Errorf("new schema: %w", err)
-	}
-
 	out := HandlerPathParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
-			FieldType:    tp,
+			FieldType:    p.Type,
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.s.Description, "\n "), "\n", "\n// "),
 		},
 
 		ParameterName: p.Name,
-		Parser:        tp,
+		Parser:        p.Type,
 	}
 
-	return out, imports, nil
-}
-
-func (p HandlerPathParameter) ParseString(from, to string) (string, error) {
-	return p.Parser.ParseString(to, from, true, PathParseError(p.ParameterName))
+	return out, nil, nil
 }
 
 type HandlerHeaderParameter struct {
@@ -259,16 +243,16 @@ type HandlerHeaderParameter struct {
 	ParameterName string
 	Required      bool
 	Parser        Parser
+	IsPointer     bool
 }
 
 func NewHandlerHeaderParameter(p *HeaderParameter) (zero HandlerHeaderParameter, _ Imports, _ error) {
-	tp, imports, err := NewSchema(p.s.Schema)
-	if err != nil {
-		return zero, nil, fmt.Errorf("new schema: %w", err)
-	}
+	tp := p.Type
 
+	var isPointer bool
 	if !p.Required {
 		tp = NewPointerType(tp)
+		isPointer = true
 	}
 
 	fieldName := PublicFieldName(p.Name)
@@ -283,14 +267,10 @@ func NewHandlerHeaderParameter(p *HeaderParameter) (zero HandlerHeaderParameter,
 		ParameterName: p.Name,
 		Required:      p.Required,
 		Parser:        tp,
+		IsPointer:     isPointer,
 	}
 
-	return out, imports, nil
-}
-
-func (p HandlerHeaderParameter) ParseString(from, to string) (string, error) {
-	mkErr := HeaderParseError(p.ParameterName)
-	return p.Parser.ParseString(to, from, true, mkErr)
+	return out, nil, nil
 }
 
 type HandlerResponse struct {

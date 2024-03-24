@@ -19,18 +19,18 @@ func TestDefault(t *testing.T) {
 
 	// Query
 	params.Query.IntReq = 1
-	params.Query.Int = ptr(int(2))
+	params.Query.Int = ptr(Int(2))
 	params.Query.Int32Req = 3
-	params.Query.Int32 = ptr(int32(4))
+	params.Query.Int32 = ptr(Int32(4))
 	params.Query.Int64Req = 5
-	params.Query.Int64 = ptr(int64(6))
+	params.Query.Int64 = ptr(Int64(6))
 	params.Query.Float32Req = 7
-	params.Query.Float32 = ptr(float32(8))
+	params.Query.Float32 = ptr(Float32(8))
 	params.Query.Float64Req = 9
-	params.Query.Float64 = ptr(float64(10))
+	params.Query.Float64 = ptr(Float64(10))
 
 	params.Query.StringReq = "11"
-	params.Query.String = ptr("12")
+	params.Query.String = ptr(String("12"))
 
 	params.Query.Tag = []string{"13", "14"}
 	params.Query.Filter = []int32{15, 16}

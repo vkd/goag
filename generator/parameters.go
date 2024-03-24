@@ -12,41 +12,50 @@ type QueryParameter struct {
 	Name      string
 	FieldName string
 	Required  bool
-	Type      Formatter
+	Type      SchemaType
 }
 
-func NewQueryParameter(s *specification.QueryParameter) (zero *QueryParameter, _ Imports, _ error) {
+func NewQueryParameter(refP specification.Ref[specification.QueryParameter]) (zero *QueryParameter, _ Imports, _ error) {
+	s := refP.Value()
 	out := QueryParameter{s: s}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 	out.Required = s.Required
 	var err error
 	var ims Imports
-	out.Type, ims, err = NewSchema(s.Schema.Value())
-	if err != nil {
-		return zero, nil, fmt.Errorf("schema: %w", err)
+	if ref := refP.Ref(); ref != nil {
+		out.Type = NewRef(ref.Name)
+	} else {
+		out.Type, ims, err = NewSchema(s.Schema.Value())
+		if err != nil {
+			return zero, nil, fmt.Errorf("schema: %w", err)
+		}
 	}
 	return &out, ims, nil
 }
 
 func (p QueryParameter) ExecuteFormat(to, from string) (string, error) {
-	if sliceType, ok := p.Type.(SliceType); ok {
-		switch sliceType.Items.(type) {
+	switch tp := p.Type.(type) {
+	case SliceType:
+		switch tp.Items.(type) {
 		case StringType:
 			return Assign(to, from, false), nil
 		default:
 			return ExecuteTemplate("ClientQueryParameterFormatToSliceStrings", TData{
 				"From":  from,
-				"Items": sliceType.Items,
+				"Items": tp.Items,
 				"To":    to,
 			})
 		}
 	}
 
 	if !p.Required {
-		pointer := "*"
-		if _, ok := p.Type.(CustomType); ok {
-			pointer = ""
+		var pointer string
+		switch p.Type.(type) {
+		case CustomType:
+		case Ref:
+		default:
+			pointer = "*"
 		}
 		return ExecuteTemplate("ClientQueryParameterFormatOptional", TData{
 			"From":    from,
@@ -89,14 +98,17 @@ func NewPathParameter(rs specification.Ref[specification.PathParameter]) (zero *
 	out := PathParameter{s: s}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
-	if rs.Ref() != nil {
-		out.FieldTypeName = rs.Ref().Name
-	}
+
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewSchema(s.Schema.Value())
-	if err != nil {
-		return nil, nil, fmt.Errorf("schema: %w", err)
+	if ref := rs.Ref(); ref != nil {
+		out.FieldTypeName = ref.Name
+		out.Type = NewRef(ref.Name)
+	} else {
+		out.Type, ims, err = NewSchema(s.Schema)
+		if err != nil {
+			return nil, nil, fmt.Errorf("schema: %w", err)
+		}
 	}
 	return &out, ims, nil
 }
@@ -107,8 +119,9 @@ type HeaderParameter struct {
 	Name          string
 	FieldName     string
 	FieldTypeName string
-	Type          Formatter
+	Type          SchemaType
 	Required      bool
+	IsPointer     bool
 }
 
 func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter]) (zero *HeaderParameter, _ Imports, _ error) {
@@ -116,14 +129,17 @@ func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter]) (ze
 	out := HeaderParameter{s: s}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
-	if sr.Ref() != nil {
-		out.FieldTypeName = sr.Ref().Name
-	}
+
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewSchema(s.Schema.Value())
-	if err != nil {
-		return zero, nil, fmt.Errorf("schema: %w", err)
+	if ref := sr.Ref(); ref != nil {
+		out.FieldTypeName = ref.Name
+		out.Type = NewRef(ref.Name)
+	} else {
+		out.Type, ims, err = NewSchema(s.Schema.Value())
+		if err != nil {
+			return zero, nil, fmt.Errorf("schema: %w", err)
+		}
 	}
 	out.Required = s.Required
 	return &out, ims, nil

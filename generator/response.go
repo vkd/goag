@@ -48,7 +48,7 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 	}
 
 	for _, header := range response.Headers.List {
-		h, ims, err := NewResponseHeader(header.Name, header.V.Value())
+		h, ims, err := NewResponseHeader(header.Name, header.V)
 		if err != nil {
 			return nil, nil, fmt.Errorf("new response %q: %w", header.Name, err)
 		}
@@ -63,19 +63,29 @@ type ResponseHeader struct {
 
 	FieldName string
 	Key       string
+	Required  bool
 	Schema    SchemaType
 }
 
-func NewResponseHeader(name string, spec *specification.Header) (zero ResponseHeader, _ Imports, _ error) {
-	s, ims, err := NewSchema(spec.Schema)
-	if err != nil {
-		return zero, nil, fmt.Errorf("new schema: %w", err)
+func NewResponseHeader(name string, ref specification.Ref[specification.Header]) (zero ResponseHeader, _ Imports, _ error) {
+	var s SchemaType
+	var ims Imports
+	if r := ref.Ref(); r != nil {
+		s = NewRef(r.Name)
+	} else {
+		spec := ref.Value()
+		var err error
+		s, ims, err = NewSchema(spec.Schema)
+		if err != nil {
+			return zero, nil, fmt.Errorf("new schema: %w", err)
+		}
 	}
 	h := ResponseHeader{
-		Spec: spec,
+		Spec: ref.Value(),
 
 		FieldName: PublicFieldName(name),
 		Key:       name,
+		Required:  ref.Value().Required,
 		Schema:    s,
 	}
 	return h, ims, nil

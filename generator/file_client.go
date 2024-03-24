@@ -64,6 +64,7 @@ func NewClientOperation(o *Operation) ClientOperation {
 				Name:      "Authorization",
 				FieldName: "Authorization",
 				Required:  len(o.Security) == 1,
+				Type:      StringType{},
 			})
 		}
 	}
@@ -106,12 +107,12 @@ type ClientHeader struct {
 }
 
 func (c *ClientHeader) RenderFormat(from string) (string, error) {
-	switch t := c.Type.(type) {
-	case CustomType:
-		return t.RenderFormat(from)
+	switch c.Type.(type) {
+	case CustomType, Ref:
+		return c.Type.RenderFormat(from)
 	}
 	if c.Required {
-		return from, nil
+		return c.Type.RenderFormat(from)
 	}
-	return "*" + from, nil
+	return c.Type.RenderFormat("*" + from)
 }

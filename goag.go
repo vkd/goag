@@ -110,7 +110,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		return fmt.Errorf("create new generator from spec file: %w", err)
 	}
 
-	if len(gen.Components.Schemas) > 0 {
+	if gen.Components.HasComponent {
 		err := RenderToFile(componentsFile, gen.ComponentsFile())
 		if err != nil {
 			return fmt.Errorf("generate components: %w", err)

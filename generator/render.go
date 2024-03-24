@@ -17,7 +17,7 @@ type QuotedRender string
 func (s QuotedRender) Render() (string, error) { return string(`"` + s + `"`), nil }
 
 type ErrorRender interface {
-	Wrap(message string) string
+	Wrap(reason string, errVar string) string
 	New(message string) string
 }
 

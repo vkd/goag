@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 type Client struct {
@@ -35,7 +34,7 @@ func (c *Client) PostShopsNew(ctx context.Context, request PostShopsNewParams) (
 
 	query := make(url.Values, 1)
 	if request.Query.Page != nil {
-		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+		query["page"] = []string{request.Query.Page.String()}
 	}
 	requestURL += "?" + query.Encode()
 
@@ -67,11 +66,11 @@ func (c *Client) PostShopsNew(ctx context.Context, request PostShopsNewParams) (
 
 // GetShopsShop - GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String()
 
 	query := make(url.Values, 1)
 	if request.Query.Page != nil {
-		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+		query["page"] = []string{request.Query.Page.String()}
 	}
 	requestURL += "?" + query.Encode()
 
@@ -103,11 +102,11 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 
 // GetShopsShopReviews - GET /shops/{shop}/reviews
 func (c *Client) GetShopsShopReviews(ctx context.Context, request GetShopsShopReviewsParams) (GetShopsShopReviewsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/reviews"
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String() + "/reviews"
 
 	query := make(url.Values, 1)
 	if request.Query.Page != nil {
-		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+		query["page"] = []string{request.Query.Page.String()}
 	}
 	requestURL += "?" + query.Encode()
 

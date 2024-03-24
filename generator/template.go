@@ -19,6 +19,8 @@ func init() {
 			Funcs(template.FuncMap{
 				"private":    privateTemplateFunc,
 				"parseError": parseErrorFunc,
+				"newError":   newErrorFunc,
+				"returns":    newReturnsFunc,
 			}).
 			ParseFS(templatesFS, "*.gotmpl"),
 	)
@@ -47,22 +49,14 @@ func privateTemplateFunc(t reflect.Value) (string, error) {
 	return "", fmt.Errorf("%T is not string", t.Interface())
 }
 
-func parseErrorFunc(k reflect.Value, p reflect.Value) (ErrorRender, error) {
-	var kindParam string
-	switch kind := k.Interface().(type) {
-	case string:
-		kindParam = kind
-	default:
-		return nil, fmt.Errorf("kind of params: %T is not string", k.Interface())
-	}
+func parseErrorFunc(k string, p string) (ErrorRender, error) {
+	return parseParamError{k, p}, nil
+}
 
-	var paramName string
-	switch par := p.Interface().(type) {
-	case string:
-		paramName = par
-	default:
-		return nil, fmt.Errorf("param name: %T is not string", p.Interface())
-	}
+func newErrorFunc() (ErrorRender, error) {
+	return newError{}, nil
+}
 
-	return parseError{kindParam, paramName}, nil
+func newReturnsFunc(returns string, e ErrorRender) (ErrorRender, error) {
+	return returnsArgs{returns, e}, nil
 }

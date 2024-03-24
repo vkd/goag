@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestComponentsParams(t *testing.T) {
@@ -16,11 +17,9 @@ func TestComponentsParams(t *testing.T) {
 	api := API{
 		GetShopsShopHandler: func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse {
 			req, err := r.Parse()
-			if err != nil {
-				return NewGetShopsShopResponseDefault(400)
-			}
-			assert.Equal(t, testShop, req.Path.Shop)
-			assert.Equal(t, testPage, *req.Query.Page)
+			require.NoError(t, err)
+			assert.Equal(t, testShop, string(req.Path.Shop))
+			assert.Equal(t, testPage, int32(*req.Query.Page))
 			return NewGetShopsShopResponse200()
 		},
 	}

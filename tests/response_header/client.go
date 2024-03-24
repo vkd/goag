@@ -48,7 +48,19 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 	switch resp.StatusCode {
 	case 200:
 		var response GetPetsResponse200
-		response.Headers.XNext = resp.Header.Get("x-next")
+		var hs []string
+		hs = resp.Header.Values("x-next")
+		if len(hs) > 0 {
+			response.Headers.XNext = hs[0]
+		}
+
+		hs = resp.Header.Values("x-next-two")
+		if len(hs) == 0 {
+			return nil, fmt.Errorf("header parameter 'x-next-two': is required")
+		}
+		if len(hs) > 0 {
+			response.Headers.XNextTwo = hs[0]
+		}
 
 		return response, nil
 

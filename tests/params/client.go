@@ -31,32 +31,32 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 
 // GetReviews - GET /shops/{shop}/reviews
 func (c *Client) GetReviews(ctx context.Context, request GetReviewsParams) (GetReviewsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/reviews"
+	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String() + "/reviews"
 
 	query := make(url.Values, 14)
-	query["int_req"] = []string{strconv.FormatInt(int64(request.Query.IntReq), 10)}
+	query["int_req"] = []string{request.Query.IntReq.String()}
 	if request.Query.Int != nil {
-		query["int"] = []string{strconv.FormatInt(int64(*request.Query.Int), 10)}
+		query["int"] = []string{request.Query.Int.String()}
 	}
-	query["int32_req"] = []string{strconv.FormatInt(int64(request.Query.Int32Req), 10)}
+	query["int32_req"] = []string{request.Query.Int32Req.String()}
 	if request.Query.Int32 != nil {
-		query["int32"] = []string{strconv.FormatInt(int64(*request.Query.Int32), 10)}
+		query["int32"] = []string{request.Query.Int32.String()}
 	}
-	query["int64_req"] = []string{strconv.FormatInt(request.Query.Int64Req, 10)}
+	query["int64_req"] = []string{request.Query.Int64Req.String()}
 	if request.Query.Int64 != nil {
-		query["int64"] = []string{strconv.FormatInt(*request.Query.Int64, 10)}
+		query["int64"] = []string{request.Query.Int64.String()}
 	}
-	query["float32_req"] = []string{strconv.FormatFloat(float64(request.Query.Float32Req), 'e', -1, 32)}
+	query["float32_req"] = []string{request.Query.Float32Req.String()}
 	if request.Query.Float32 != nil {
-		query["float32"] = []string{strconv.FormatFloat(float64(*request.Query.Float32), 'e', -1, 32)}
+		query["float32"] = []string{request.Query.Float32.String()}
 	}
-	query["float64_req"] = []string{strconv.FormatFloat(request.Query.Float64Req, 'e', -1, 64)}
+	query["float64_req"] = []string{request.Query.Float64Req.String()}
 	if request.Query.Float64 != nil {
-		query["float64"] = []string{strconv.FormatFloat(*request.Query.Float64, 'e', -1, 64)}
+		query["float64"] = []string{request.Query.Float64.String()}
 	}
-	query["string_req"] = []string{request.Query.StringReq}
+	query["string_req"] = []string{request.Query.StringReq.String()}
 	if request.Query.String != nil {
-		query["string"] = []string{*request.Query.String}
+		query["string"] = []string{request.Query.String.String()}
 	}
 	query["tag"] = request.Query.Tag
 	{

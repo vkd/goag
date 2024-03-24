@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -40,7 +39,7 @@ func (r postShopsNewHTTPRequest) Parse() (PostShopsNewParams, error) {
 
 type PostShopsNewParams struct {
 	Query struct {
-		Page *int32
+		Page *PageQuery
 	}
 }
 
@@ -53,11 +52,11 @@ func newPostShopsNewParams(r *http.Request) (zero PostShopsNewParams, _ error) {
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				var v PageQuery
+				err := v.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse PageQuery", Err: err}
 				}
-				v := int32(vInt)
 				params.Query.Page = &v
 			}
 		}
@@ -135,11 +134,11 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 
 type GetShopsShopParams struct {
 	Query struct {
-		Page *int32
+		Page *PageQuery
 	}
 
 	Path struct {
-		Shop string
+		Shop ShopPathRequired
 	}
 }
 
@@ -152,11 +151,11 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				var v PageQuery
+				err := v.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse PageQuery", Err: err}
 				}
-				v := int32(vInt)
 				params.Query.Page = &v
 			}
 		}
@@ -183,7 +182,10 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			params.Path.Shop = vPath
+			err := params.Path.Shop.Parse(vPath)
+			if err != nil {
+				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse ShopPathRequired", Err: err}
+			}
 		}
 	}
 
@@ -259,11 +261,11 @@ func (r getShopsShopReviewsHTTPRequest) Parse() (GetShopsShopReviewsParams, erro
 
 type GetShopsShopReviewsParams struct {
 	Query struct {
-		Page *int32
+		Page *PageQuery
 	}
 
 	Path struct {
-		Shop string
+		Shop ShopPathRequired
 	}
 }
 
@@ -276,11 +278,11 @@ func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsPara
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				var v PageQuery
+				err := v.ParseQuery(q)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse PageQuery", Err: err}
 				}
-				v := int32(vInt)
 				params.Query.Page = &v
 			}
 		}
@@ -307,7 +309,10 @@ func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsPara
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			params.Path.Shop = vPath
+			err := params.Path.Shop.Parse(vPath)
+			if err != nil {
+				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse ShopPathRequired", Err: err}
+			}
 		}
 
 		if !strings.HasPrefix(p, "/reviews") {

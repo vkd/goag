@@ -1,26 +1,68 @@
 package generator
 
-func QueryParseError(param string) ErrorRender {
-	return parseError{"query", param}
-}
-
-func HeaderParseError(param string) ErrorRender {
-	return parseError{"header", param}
-}
-
-func PathParseError(param string) ErrorRender {
-	return parseError{"path", param}
-}
-
-type parseError struct {
+type parseParamError struct {
 	InType    string
 	Parameter string
 }
 
-func (p parseError) Wrap(reason string) string {
-	return `ErrParseParam{In: "` + p.InType + `", Parameter: "` + p.Parameter + `", Reason: "` + reason + `", Err: err}`
+func (p parseParamError) Wrap(reason string, errVar string) string {
+	return `ErrParseParam{In: "` + p.InType + `", Parameter: "` + p.Parameter + `", Reason: "` + reason + `", Err: ` + errVar + `}`
 }
 
-func (p parseError) New(reason string) string {
+func (p parseParamError) New(reason string) string {
 	return `ErrParseParam{In: "` + p.InType + `", Parameter: "` + p.Parameter + `", Reason: "` + reason + `"}`
+}
+
+type newError struct{}
+
+func (p newError) Wrap(reason string, errVar string) string {
+	return `fmt.Errorf("` + reason + `: %w", ` + errVar + `)`
+}
+
+func (p newError) New(reason string) string {
+	return `errors.New("` + reason + `")`
+}
+
+type wrappedError struct {
+	Orig  ErrorRender
+	Inner ErrorRender
+}
+
+func (p wrappedError) Wrap(reason string, errVar string) string {
+	return p.Orig.Wrap(reason, p.Inner.Wrap(reason, errVar))
+}
+
+func (p wrappedError) New(reason string) string {
+	return p.Orig.Wrap(reason, p.Inner.New(reason))
+}
+
+type returnsArgs struct {
+	returns string
+	inner   ErrorRender
+}
+
+func (e returnsArgs) Wrap(reason string, errVar string) string {
+	var inner string
+	if e.inner != nil {
+		inner = e.inner.Wrap(reason, errVar)
+	} else {
+		inner = errVar
+	}
+	if e.returns != "" {
+		return e.returns + ", " + inner
+	}
+	return inner
+}
+
+func (e returnsArgs) New(reason string) string {
+	var inner string
+	if e.inner != nil {
+		inner = e.inner.New(reason)
+	} else {
+		inner = reason
+	}
+	if e.returns != "" {
+		return e.returns + ", " + inner
+	}
+	return inner
 }

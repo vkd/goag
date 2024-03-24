@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetMultiParams(t *testing.T) {
@@ -19,9 +20,8 @@ func TestGetMultiParams(t *testing.T) {
 	api := API{
 		GetShopsShopHandler: func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse {
 			req, err := r.Parse()
-			if err != nil {
-				return NewGetShopsShopResponseDefault(400)
-			}
+			require.NoError(t, err)
+
 			assert.Equal(t, testShop, req.Path.Shop)
 			assert.Equal(t, testPage, *req.Query.Page)
 			assert.Equal(t, testPageReq, req.Query.PageReq)

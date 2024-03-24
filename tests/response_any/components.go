@@ -1,7 +1,9 @@
 package test
 
+import "encoding/json"
+
 // ------------------------
 //         Schemas
 // ------------------------
 
-type RawResponse any
+type RawResponse json.RawMessage

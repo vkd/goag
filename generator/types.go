@@ -167,7 +167,10 @@ func (_ StringType) ParseString(to, from string, isNew bool, mkErr ErrorRender) 
 	return to + " = " + from, nil
 }
 
-type CustomType string
+type CustomType struct {
+	Type   string
+	Import string
+}
 
 func NewCustomType(s string) (CustomType, Imports) {
 	var customImport, customType string = "", s
@@ -182,23 +185,42 @@ func NewCustomType(s string) (CustomType, Imports) {
 		}
 	}
 
-	return CustomType(customType), NewImportsS(customImport)
+	return CustomType{
+		Type:   customType,
+		Import: customImport,
+	}, NewImportsS(customImport)
 }
 
-var _ SchemaType = CustomType("")
+var _ SchemaType = (*CustomType)(nil)
 
 func (c CustomType) Render() (string, error) {
-	return string(c), nil
+	return string(c.Type), nil
 }
 
 func (c CustomType) RenderFormat(from string) (string, error) {
-	return ExecuteTemplate("CustomTypeFormat", struct {
+	switch c.Type {
+	case "any", "json.RawMessage":
+		return ExecuteTemplate("CustomTypeFormatJSON", struct {
+			From string
+		}{From: from})
+	}
+	return ExecuteTemplate("CustomTypeFormatExternal", struct {
 		From string
 	}{From: from})
 }
 
 func (c CustomType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("CustomTypeParser", TData{
+	switch c.Type {
+	case "any", "json.RawMessage":
+		return ExecuteTemplate("CustomTypeParserJSON", TData{
+			"To":    to,
+			"Type":  c,
+			"From":  from,
+			"IsNew": isNew,
+			"MkErr": mkErr,
+		})
+	}
+	return ExecuteTemplate("CustomTypeParserExternal", TData{
 		"To":    to,
 		"Type":  c,
 		"From":  from,
@@ -214,23 +236,17 @@ type SliceType struct {
 func (s SliceType) Render() (string, error) { return ExecuteTemplate("SliceType", s) }
 
 func (s SliceType) RenderFormat(from string) (string, error) {
-	return "", fmt.Errorf("SliceType doesn't implement Formatter interface")
+	return ExecuteTemplate("SliceTypeRenderFormat", TData{
+		"From": from,
+		"Type": s,
+	})
 }
 
 func (s SliceType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("SliceTypeParseString", TData{
-		"From": from,
-		"To":   to,
-		"Items": ParserFunc(func(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-			return Renders{
-				RenderFunc(func() (string, error) {
-					return s.Items.ParseString("v1", from, true, mkErr)
-				}),
-				RenderFunc(func() (string, error) {
-					return Assign(to, "v1", isNew), nil
-				}),
-			}.Render()
-		}),
+		"From":  from,
+		"To":    to,
+		"Items": s.Items,
 		"MkErr": mkErr,
 		"IsNew": isNew,
 	})
@@ -243,19 +259,9 @@ func (s SliceType) ParseStrings(to string, from string, isNew bool, mkErr ErrorR
 	}
 
 	return ExecuteTemplate("SliceTypeParseStrings", TData{
-		"From":        from,
-		"To":          to,
-		"ItemsRender": s.Items,
-		"Items": ParserFunc(func(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-			return Renders{
-				RenderFunc(func() (string, error) {
-					return s.Items.ParseString("v1", from, true, mkErr)
-				}),
-				RenderFunc(func() (string, error) {
-					return Assign(to, "v1", isNew), nil
-				}),
-			}.Render()
-		}),
+		"From":  from,
+		"To":    to,
+		"Items": s.Items,
 		"MkErr": mkErr,
 		"IsNew": isNew,
 	})
@@ -295,10 +301,22 @@ var _ SchemaType = StructureType{}
 
 func (s StructureType) Render() (string, error) { return ExecuteTemplate("StructureType", s) }
 func (s StructureType) RenderFormat(from string) (string, error) {
-	return "", fmt.Errorf("not implemented")
+	return ExecuteTemplate("StructureTypeRenderFormat", TData{
+		"From":  from,
+		"Type":  s,
+		"MkErr": newError{},
+	})
 }
 func (s StructureType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return "", fmt.Errorf("not implemented")
+	if isNew {
+		return "/* isNew == true is not supported */", nil
+	}
+	return ExecuteTemplate("StructureTypeParseString", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
 }
 
 type StructureField struct {
@@ -350,11 +368,27 @@ var _ SchemaType = Ref("")
 func (r Ref) Render() (string, error) { return string(r), nil }
 
 func (r Ref) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return "", fmt.Errorf("not implemented")
+	return ExecuteTemplate("RefParseString", TData{
+		"To":    to,
+		"Type":  r,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
+}
+
+func (r Ref) ParseQuery(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("RefParseQuery", TData{
+		"To":    to,
+		"Type":  r,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
 }
 
 func (r Ref) RenderFormat(from string) (string, error) {
-	return "", fmt.Errorf("not implemented")
+	return string(from) + ".String()", nil
 }
 
 type PointerType struct {

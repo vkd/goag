@@ -9,4 +9,8 @@ const SpecFile string = `paths:
             x-next:
               schema:
                 type: string
+            x-next-two:
+              required: true
+              schema:
+                type: string
 `

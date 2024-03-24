@@ -58,7 +58,11 @@ func (c *Client) ListPets(ctx context.Context, request ListPetsParams) (ListPets
 	switch resp.StatusCode {
 	case 200:
 		var response ListPetsResponse200JSON
-		response.Headers.XNext = resp.Header.Get("x-next")
+		var hs []string
+		hs = resp.Header.Values("x-next")
+		if len(hs) > 0 {
+			response.Headers.XNext = hs[0]
+		}
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
