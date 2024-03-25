@@ -4,9 +4,9 @@
 {{- if not .IsNew -}}
 var err error
 {{ end }}
-{{ .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseBool({{ .From }})
+{{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseBool({{ .From }})
 if err != nil {
-	return {{ .MkErr.Wrap "parse bool"}}
+	return {{ .MkErr.Wrap "parse bool" "err" }}
 }
 {{- end }}
 
