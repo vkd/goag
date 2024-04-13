@@ -58,13 +58,17 @@ func (c *Client) GetReviews(ctx context.Context, request GetReviewsParams) (GetR
 	if request.Query.String != nil {
 		query["string"] = []string{*request.Query.String}
 	}
-	query["tag"] = request.Query.Tag
-	{
-		query_values := make([]string, 0, len(request.Query.Filter))
-		for _, v := range request.Query.Filter {
-			query_values = append(query_values, strconv.FormatInt(int64(v), 10))
+	if request.Query.Tag != nil {
+		query["tag"] = request.Query.Tag
+	}
+	if request.Query.Filter != nil {
+		{
+			query_values := make([]string, 0, len(request.Query.Filter))
+			for _, v := range request.Query.Filter {
+				query_values = append(query_values, strconv.FormatInt(int64(v), 10))
+			}
+			query["filter"] = query_values
 		}
-		query["filter"] = query_values
 	}
 	requestURL += "?" + query.Encode()
 

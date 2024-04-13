@@ -275,7 +275,11 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 	switch resp.StatusCode {
 	case 200:
 		var response GetShopsShopPetsResponse200JSON
-		response.Headers.XNext = resp.Header.Get("x-next")
+		var hs []string
+		hs = resp.Header.Values("x-next")
+		if len(hs) > 0 {
+			response.Headers.XNext = hs[0]
+		}
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -303,13 +307,17 @@ func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (Revi
 		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
 	}
 	query["page_size"] = []string{strconv.FormatInt(int64(request.Query.PageSize), 10)}
-	query["tag"] = request.Query.Tag
-	{
-		query_values := make([]string, 0, len(request.Query.Filter))
-		for _, v := range request.Query.Filter {
-			query_values = append(query_values, strconv.FormatInt(int64(v), 10))
+	if request.Query.Tag != nil {
+		query["tag"] = request.Query.Tag
+	}
+	if request.Query.Filter != nil {
+		{
+			query_values := make([]string, 0, len(request.Query.Filter))
+			for _, v := range request.Query.Filter {
+				query_values = append(query_values, strconv.FormatInt(int64(v), 10))
+			}
+			query["filter"] = query_values
 		}
-		query["filter"] = query_values
 	}
 	requestURL += "?" + query.Encode()
 
@@ -339,7 +347,11 @@ func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (Revi
 	switch resp.StatusCode {
 	case 200:
 		var response ReviewShopResponse200JSON
-		response.Headers.XNext = resp.Header.Get("x-next")
+		var hs []string
+		hs = resp.Header.Values("x-next")
+		if len(hs) > 0 {
+			response.Headers.XNext = hs[0]
+		}
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {

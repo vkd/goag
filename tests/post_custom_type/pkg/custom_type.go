@@ -1,6 +1,9 @@
 package pkg
 
-import "encoding"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type ShopType struct {
 	V string
@@ -8,18 +11,25 @@ type ShopType struct {
 
 func (s ShopType) String() string { return s.V }
 
-func (s *ShopType) UnmarshalText(v []byte) error {
-	s.V = string(v)
+func (s *ShopType) Parse(v string) error {
+	s.V = v
 	return nil
 }
-
-var _ encoding.TextUnmarshaler = (*ShopType)(nil)
 
 type PetTag struct {
 	V string
 }
 
-func (p *PetTag) UnmarshalText(s string) error {
+func (p PetTag) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p.V)
+}
+
+func (p *PetTag) UnmarshalJSON(v []byte) error {
+	var s string
+	err := json.Unmarshal(v, &s)
+	if err != nil {
+		return fmt.Errorf("unmarshal string field: %w", err)
+	}
 	p.V = s
 	return nil
 }

@@ -96,8 +96,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int_req", Reason: "parse int", Err: err}
 				}
-				v := int(vInt)
-				params.Query.IntReq = v
+				params.Query.IntReq = int(vInt)
 			}
 		}
 		{
@@ -121,8 +120,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int32_req", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt)
-				params.Query.Int32Req = v
+				params.Query.Int32Req = int32(vInt)
 			}
 		}
 		{
@@ -142,11 +140,11 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'int64_req': is required")
 			}
 			if ok && len(q) > 0 {
-				v, err := strconv.ParseInt(q[0], 10, 64)
+				var err error
+				params.Query.Int64Req, err = strconv.ParseInt(q[0], 10, 64)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int64_req", Reason: "parse int64", Err: err}
 				}
-				params.Query.Int64Req = v
 			}
 		}
 		{
@@ -169,8 +167,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "float32_req", Reason: "parse float32", Err: err}
 				}
-				v := float32(vFloat)
-				params.Query.Float32Req = v
+				params.Query.Float32Req = float32(vFloat)
 			}
 		}
 		{
@@ -190,11 +187,11 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'float64_req': is required")
 			}
 			if ok && len(q) > 0 {
-				v, err := strconv.ParseFloat(q[0], 64)
+				var err error
+				params.Query.Float64Req, err = strconv.ParseFloat(q[0], 64)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "float64_req", Reason: "parse float64", Err: err}
 				}
-				params.Query.Float64Req = v
 			}
 		}
 		{
@@ -213,8 +210,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'string_req': is required")
 			}
 			if ok && len(q) > 0 {
-				v := q[0]
-				params.Query.StringReq = v
+				params.Query.StringReq = q[0]
 			}
 		}
 		{
@@ -239,8 +235,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse int32", Err: err}
 					}
-					v1 := int32(vInt)
-					params.Query.Filter[i] = v1
+					params.Query.Filter[i] = int32(vInt)
 				}
 			}
 		}

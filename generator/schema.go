@@ -20,7 +20,7 @@ type SchemaType interface {
 
 func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, error) {
 	if s.Ref() != nil {
-		return NewRef(s.Ref().Name), nil, nil
+		return NewRef(s.Ref()), nil, nil
 	}
 
 	spec := s.Value()
@@ -42,8 +42,8 @@ func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, 
 		var s StructureType
 		var imports Imports
 		for i, a := range spec.AllOf {
-			if a.Ref() != nil {
-				s.Fields = append(s.Fields, StructureField{Type: NewRef(a.Ref().Name)})
+			if ref := a.Ref(); ref != nil {
+				s.Fields = append(s.Fields, StructureField{Type: NewRef(ref)})
 			} else {
 				for _, p := range a.Value().Properties {
 					sf, ims, err := NewStructureField(p)
@@ -83,9 +83,9 @@ func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, 
 	case "integer":
 		switch spec.Schema.Format {
 		case "int32":
-			return IntType{32}, nil, nil
+			return IntType{BitSize: 32}, nil, nil
 		case "int64":
-			return IntType{64}, nil, nil
+			return IntType{BitSize: 64}, nil, nil
 		default:
 			return IntType{}, nil, nil
 		}

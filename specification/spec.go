@@ -23,10 +23,14 @@ type Spec struct {
 
 func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 	s := &Spec{
-		OpenAPI:    spec.OpenAPI,
-		Info:       NewInfo(spec.Info),
-		Servers:    NewServers(spec.Servers),
-		Components: NewComponents(spec.Components),
+		OpenAPI: spec.OpenAPI,
+		Info:    NewInfo(spec.Info),
+		Servers: NewServers(spec.Servers),
+	}
+	var err error
+	s.Components, err = NewComponents(spec.Components)
+	if err != nil {
+		return nil, fmt.Errorf("new components: %w", err)
 	}
 
 	s.Security = NewSecurityRequirements(spec.Security, s.Components.SecuritySchemes)

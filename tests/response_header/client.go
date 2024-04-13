@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 type Client struct {
@@ -48,7 +49,26 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 	switch resp.StatusCode {
 	case 200:
 		var response GetPetsResponse200
-		response.Headers.XNext = resp.Header.Get("x-next")
+		var hs []string
+		hs = resp.Header.Values("x-next")
+		if len(hs) > 0 {
+			response.Headers.XNext = hs[0]
+		}
+
+		hs = resp.Header.Values("x-next-two")
+		if len(hs) == 0 {
+			return nil, fmt.Errorf("header parameter 'x-next-two': is required")
+		}
+		if len(hs) > 0 {
+			response.Headers.XNextTwo = make([]int, len(hs))
+			for i := range hs {
+				vInt, err := strconv.ParseInt(hs[i], 10, 0)
+				if err != nil {
+					return nil, ErrParseParam{In: "header", Parameter: "x-next-two", Reason: "parse int", Err: err}
+				}
+				response.Headers.XNextTwo[i] = int(vInt)
+			}
+		}
 
 		return response, nil
 

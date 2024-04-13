@@ -34,15 +34,17 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 
 	query := make(url.Values, 3)
 	if request.Query.Page != nil {
-		query["page"] = []string{request.Query.Page.String()}
+		query["page"] = request.Query.Page.Strings()
 	}
-	query["page_req"] = []string{request.Query.PageReq.String()}
-	{
-		query_values := make([]string, 0, len(request.Query.Pages))
-		for _, v := range request.Query.Pages {
-			query_values = append(query_values, v.String())
+	query["page_req"] = request.Query.PageReq.Strings()
+	if request.Query.Pages != nil {
+		{
+			query_values := make([]string, 0, len(request.Query.Pages))
+			for _, v := range request.Query.Pages {
+				query_values = append(query_values, v.String())
+			}
+			query["pages"] = query_values
 		}
-		query["pages"] = query_values
 	}
 	requestURL += "?" + query.Encode()
 

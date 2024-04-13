@@ -1,0 +1,125 @@
+package test
+
+const SpecFile string = `openapi: 3.1.0
+info:
+  title: components
+  version: 0.0.1
+
+
+paths:
+  /shops/{shop_string}/sep/{shop_schema}/pets:
+    post:
+      parameters:
+        - $ref: '#/components/parameters/ShopStringPath'
+        - $ref: '#/components/parameters/ShopSchemaPath'
+        - $ref: '#/components/parameters/PageIntQuery'
+        - $ref: '#/components/parameters/PageSchemaQuery'
+        - $ref: '#/components/parameters/PagesSchemaQuery'
+        - $ref: '#/components/parameters/PageIntQueryRequired'
+        - $ref: '#/components/parameters/PageSchemaQueryRequired'
+        - $ref: '#/components/parameters/OrgIntHeader'
+        - $ref: '#/components/parameters/OrgSchemaHeader'
+        - $ref: '#/components/parameters/OrgIntHeaderRequired'
+        - $ref: '#/components/parameters/OrgSchemaHeaderRequired'
+      responses:
+        200:
+          description: OK response
+
+
+components:
+  schemas:
+    Shop:
+      $ref: '#/components/schemas/Shopa'
+    Shopa:
+      type: string
+    Shops:
+      type: array
+      items:
+        type: string
+    Page:
+      type: integer
+      format: int32
+    Pages:
+      type: array
+      items:
+        type: integer
+        format: int32
+    Organization:
+      type: integer
+      format: int
+
+  parameters:
+    ShopStringPath:
+      name: shop_string
+      in: path
+      required: true
+      schema:
+        type: string
+
+    ShopSchemaPath:
+      name: shop_schema
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Shop'
+
+    PageIntQuery:
+      name: page_int
+      in: query
+      schema:
+        type: integer
+
+    PageSchemaQuery:
+      name: page_schema
+      in: query
+      schema:
+        $ref: '#/components/schemas/Page'
+
+    PagesSchemaQuery:
+      name: pages_schema
+      in: query
+      schema:
+        $ref: '#/components/schemas/Pages'
+
+    PageIntQueryRequired:
+      name: page_int_req
+      in: query
+      required: true
+      schema:
+        type: integer
+
+    PageSchemaQueryRequired:
+      name: page_schema_req
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/Page'
+
+    OrgIntHeader:
+      name: X-Organization-Int
+      in: header
+      schema:
+        type: integer
+        format: int
+
+    OrgSchemaHeader:
+      name: X-Organization-Schema
+      in: header
+      schema:
+        $ref: '#/components/schemas/Organization'
+
+    OrgIntHeaderRequired:
+      name: X-Organization-Int-Required
+      in: header
+      required: true
+      schema:
+        type: integer
+        format: int
+
+    OrgSchemaHeaderRequired:
+      name: X-Organization-Schema-Required
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/Organization'
+`

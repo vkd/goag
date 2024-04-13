@@ -9,8 +9,10 @@ type Page int
 
 func (p Page) String() string { return strconv.Itoa(int(p)) }
 
-func (p *Page) UnmarshalText(data []byte) error {
-	i, err := strconv.Atoi(string(data))
+func (p Page) Strings() []string { return []string{strconv.Itoa(int(p))} }
+
+func (p *Page) Parse(v string) error {
+	i, err := strconv.Atoi(v)
 	if err != nil {
 		return fmt.Errorf("parse int: %w", err)
 	}
@@ -22,8 +24,8 @@ type Shop string
 
 func (s Shop) String() string { return string(s) }
 
-func (s *Shop) UnmarshalText(data []byte) error {
-	*s = Shop(string(data))
+func (s *Shop) Parse(v string) error {
+	*s = Shop(v)
 	return nil
 }
 
@@ -31,7 +33,7 @@ type RequestID string
 
 func (s RequestID) String() string { return string(s) }
 
-func (s *RequestID) UnmarshalText(data []byte) error {
-	*s = RequestID(string(data))
+func (s *RequestID) Parse(v string) error {
+	*s = RequestID(v)
 	return nil
 }

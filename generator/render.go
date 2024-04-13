@@ -17,14 +17,23 @@ type QuotedRender string
 func (s QuotedRender) Render() (string, error) { return string(`"` + s + `"`), nil }
 
 type ErrorRender interface {
-	Wrap(message string) string
+	Wrap(reason string, errVar string) string
 	New(message string) string
 }
 
 // Parser parses 'string' to '<type>'.
 type Parser interface {
 	ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error)
+	IsMultivalue() bool
 }
+
+type SingleValue struct{}
+
+func (SingleValue) IsMultivalue() bool { return false }
+
+type Multivalue struct{}
+
+func (Multivalue) IsMultivalue() bool { return true }
 
 type ParserFunc func(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 

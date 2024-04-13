@@ -84,7 +84,14 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
             }
             {{end -}}
             if ok && len(q) > 0 {
-                {{ .ParseStrings (print "params.Query." .FieldName) "q" false (parseError "query" .ParameterName)}}
+			{{- if .Required }}
+                {{ .ParseStrings (print "params.Query." .FieldName) "q" false (returns "zero" (parseError "query" .ParameterName))}}
+			{{- else if not .IsPointer }}
+                {{ .ParseStrings (print "params.Query." .FieldName) "q" false (returns "zero" (parseError "query" .ParameterName))}}
+			{{- else }}
+                {{ .ParseStrings "v" "q" true (returns "zero" (parseError "query" .ParameterName))}}
+				params.Query.{{ .FieldName }} = {{ if .IsPointer }}&{{ end }}v
+			{{- end }}
             }
 		}
 		{{- end }}
@@ -104,7 +111,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 			}
             {{- end }}
 			if len(hs) > 0 {
-			    {{ $h.Parser.ParseString (print "params.Headers." .FieldName) "hs[0]" false (parseError "header" .ParameterName) }}
+			    {{ $h.Parser.ParseString (print "params.Headers." .FieldName) "hs[0]" false (returns "zero" (parseError "header" .ParameterName)) }}
 			}
 		}
 		{{- end}}
@@ -130,7 +137,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 
 		{{- range $_, $p := $h.PathParsers }}
 
-		{{ $p.ParseString "params.Path." "p" false nil }}
+		{{ $p.ParseString "params.Path." "p" false (returns "zero" nil) }}
 		{{- end }}
 	}
 	{{ end }}
@@ -193,7 +200,7 @@ p = p[{{len .Prefix}}:] // "{{.Prefix}}"
 	{{ .From }} = {{ .From }}[idx:]
 
 	if len(vPath) == 0 {
-		return zero, {{.Error.New "required"}}
+		return {{.Error.New "required"}}
 	}
 
 	{{ .Convert.ParseString .To "vPath" .IsNew .Error }}
@@ -228,7 +235,13 @@ func (r {{.Name}}) {{.ResponserInterfaceName}}() {}
 
 func (r {{.Name}}) Write(w http.ResponseWriter) {
 	{{- range $_, $h := .Headers}}
-	w.Header().Set("{{$h.Key}}", r.Headers.{{$h.FieldName}})
+		{{- if .IsMultivalue }}
+	for _, h := range r.Headers.{{ $h.FieldName }} {
+		w.Header().Add("{{$h.Key}}", {{ $h.Formatter.RenderFormat "h" }})
+	}
+		{{- else }}
+	w.Header().Set("{{$h.Key}}", r.Headers.{{ $h.Formatter.RenderFormat $h.FieldName }})
+		{{- end }}
 	{{- end }}
 	{{- if .ContentType }}
 	w.Header().Set("Content-Type", "{{ .ContentType }}")

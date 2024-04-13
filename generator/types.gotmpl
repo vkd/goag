@@ -1,12 +1,12 @@
 {{/* ----------------------------- Bool ------------------------------------- */}}
 
 {{ define "BoolParseString" -}}
-{{- if not .IsNew }}
+{{- if not .IsNew -}}
 var err error
-{{- end }}
-{{ .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseBool({{ .From }})
+{{ end }}
+{{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseBool({{ .From }})
 if err != nil {
-	return zero, {{ .MkErr.Wrap "parse bool"}}
+	return {{ .MkErr.Wrap "parse bool" "err" }}
 }
 {{- end }}
 
@@ -17,7 +17,7 @@ if err != nil {
 {{ define "IntParser" -}}
 vInt, err := strconv.ParseInt({{ .From }}, 10, 0)
 if err != nil {
-	return zero, {{ .MkErr.Wrap "parse int"}}
+	return {{ .MkErr.Wrap "parse int" "err" }}
 }
 {{ .To }} {{ if .IsNew }}:{{ end }}= int(vInt)
 {{- end }}
@@ -29,7 +29,7 @@ if err != nil {
 {{ define "Int32Parser" -}}
 vInt, err := strconv.ParseInt({{ .From }}, 10, 32)
 if err != nil {
-	return zero, {{ .MkErr.Wrap "parse int32"}}
+	return {{ .MkErr.Wrap "parse int32" "err" }}
 }
 {{ .To }} {{ if .IsNew }}:{{ end }}= int32(vInt)
 {{- end }}
@@ -39,12 +39,12 @@ if err != nil {
 {{/* ----------------------------- Int64 ------------------------------------- */}}
 
 {{ define "Int64Parser" -}}
-{{- if not .IsNew }}
+{{- if not .IsNew -}}
 var err error
-{{- end }}
+{{ end }}
 {{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseInt({{ .From }}, 10, 64)
 if err != nil {
-	return zero, {{ .MkErr.Wrap "parse int64"}}
+	return {{ .MkErr.Wrap "parse int64" "err" }}
 }
 {{- end }}
 
@@ -55,7 +55,7 @@ if err != nil {
 {{ define "Float32Parser" -}}
 vFloat, err := strconv.ParseFloat({{ .From }}, 32)
 if err != nil {
-	return zero, {{ .MkErr.Wrap "parse float32"}}
+	return {{ .MkErr.Wrap "parse float32" "err" }}
 }
 {{ .To }} {{ if .IsNew }}:{{ end }}= float32(vFloat)
 {{- end }}
@@ -65,12 +65,12 @@ if err != nil {
 {{/* ----------------------------- Float64 ------------------------------------- */}}
 
 {{ define "Float64Parser" -}}
-{{- if not .IsNew }}
+{{- if not .IsNew -}}
 var err error
-{{- end }}
+{{ end }}
 {{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseFloat({{ .From }}, 64)
 if err != nil {
-	return zero, {{ .MkErr.Wrap "parse float64"}}
+	return {{ .MkErr.Wrap "parse float64" "err" }}
 }
 {{- end }}
 
@@ -78,19 +78,26 @@ if err != nil {
 
 {{/* ----------------------------- CustomType ------------------------------------- */}}
 
-{{ define "CustomTypeParser" }}
-{{- if .IsNew }}var {{ .To }} {{ .Type }}{{ end }}
-err := {{ .To }}.UnmarshalText([]byte({{.From}}))
+{{ define "CustomTypeParserExternal" }}
+{{- if .IsNew }}var {{ .To }} {{ .Type.Render }}
+{{ end -}}
+err := {{ .To }}.Parse({{.From}})
 if err != nil {
-	return zero, {{.MkErr.Wrap (print "unmarshal text")}}
+	return {{.MkErr.Wrap (print "parse custom type") "err" }}
 }
 {{- end }}
-
-{{ define "CustomTypeFormat" }}{{ .From }}.String(){{ end }}
 
 {{/* ----------------------------- SliceType ------------------------------------- */}}
 
 {{ define "SliceType" }}[]{{ .Items.Render }}{{ end }}
+
+{{ define "SliceTypeRenderFormat" -}}
+out := make([]string, 0, len({{ .From }}))
+for _, v := range {{ .From }} {
+	out = append(out, {{ .Type.Items.RenderFormat "v" }})
+}
+return out
+{{- end }}
 
 {{ define "SliceTypeParseString" }}
 {{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ .Items.Render }}, 1)
@@ -98,9 +105,9 @@ if err != nil {
 {{- end }}
 
 {{ define "SliceTypeParseStrings" }}
-{{- .To}} = make([]{{ .ItemsRender.Render }}, len({{.From}}))
+{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ .Items.Render }}, len({{.From}}))
 for i := range {{.From}} {
-	{{ .Items.ParseString (print .To "[i]") (print .From "[i]") .IsNew .MkErr }}
+	{{ .Items.ParseString (print .To "[i]") (print .From "[i]") false .MkErr }}
 }
 {{- end }}
 
@@ -114,6 +121,20 @@ for i := range {{.From}} {
 }
 {{- else }}struct{}
 {{- end }}
+{{- end }}
+
+{{ define "StructureTypeRenderFormat" -}}
+bs, err := json.Marshal({{ .From }})
+if err != nil {
+	return {{ .MkErr.Wrap "marshal json" "err" }}
+}
+{{- end }}
+
+{{ define "StructureTypeParseString" -}}
+err := json.Unmarshal([]byte({{ .From }}), &{{ .To }})
+if err != nil {
+	return {{ .MkErr.Wrap "unmarshal json" "err" }}
+}
 {{- end }}
 
 
@@ -143,4 +164,33 @@ for i := range {{.From}} {
 
 {{ define "MapType" -}}
 map[{{ .Key.Render }}]{{ .Value.Render }}
+{{- end }}
+
+{{/* ----------------------------- RefParse ------------------------------------- */}}
+
+{{ define "RefParseString" -}}
+{{- if .IsNew }}var {{ .To }} {{ .Type }}
+{{ end -}}
+err := {{ .To }}.Parse({{.From}})
+if err != nil {
+	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
+}
+{{- end }}
+
+{{ define "RefParseQuery" -}}
+{{- if .IsNew }}var {{ .To }} {{ .Type }}
+{{ end -}}
+err := {{ .To }}.ParseStrings({{.From}})
+if err != nil {
+	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
+}
+{{- end }}
+
+{{ define "RefParseSchema" -}}
+{{- if .IsNew }}var {{ .To }} {{ .Type }}
+{{ end -}}
+err := {{ .To }}.Parse({{.From}})
+if err != nil {
+	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
+}
 {{- end }}

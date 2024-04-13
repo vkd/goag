@@ -90,7 +90,12 @@ func NewOperation(s *specification.Operation, components specification.Component
 	if s.RequestBody.IsSet {
 		rBody := s.RequestBody.Value
 		if ref := rBody.Ref(); ref != nil && ref.Name != "" {
-			o.Body.TypeName = NewRef(ref.Name)
+			if _, ok := ref.V.Value().Content.Get("application/json"); ok {
+				o.Body.TypeName = NewRef(&specification.Object[string, specification.Ref[specification.RequestBody]]{
+					Name: ref.Name + "JSON",
+					V:    ref.V,
+				})
+			}
 		} else {
 			requestBody := rBody.Value()
 			jsonContent, ok := requestBody.Content.Get("application/json")
@@ -156,16 +161,16 @@ func NewOperationParams(params specification.OperationParameters) (zero Operatio
 	var imports Imports
 
 	for _, p := range params.Query.List {
-		param, ims, err := NewQueryParameter(p.V.Value())
+		param, ims, err := NewQueryParameter(p.V)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new query parameter: %w", err)
 		}
-		op.Query.Add(p.Name, param)
 		imports = append(imports, ims...)
+		op.Query.Add(p.Name, param)
 	}
 
 	for _, p := range params.Headers.List {
-		param, ims, err := NewHeaderParameter(p.V.Value())
+		param, ims, err := NewHeaderParameter(p.V)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new header parameter: %w", err)
 		}

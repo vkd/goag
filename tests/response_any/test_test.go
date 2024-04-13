@@ -20,7 +20,7 @@ func TestResponseSchema(t *testing.T) {
 
 	resp, err := api.Client().GetPet(ctx, GetPetParams{})
 	require.NoError(t, err)
-	assert.Equal(t, "hello", resp.(GetPetResponse200JSON).Body)
+	assert.Equal(t, "hello", string(resp.(GetPetResponse200JSON).Body))
 }
 
 func (a API) Do(req *http.Request) (*http.Response, error) {

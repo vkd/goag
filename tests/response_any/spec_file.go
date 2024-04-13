@@ -13,5 +13,5 @@ components:
   schemas:
     RawResponse:
       type: object
-      x-goag-go-type: any
+      x-goag-go-type: json.RawMessage
 `

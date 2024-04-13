@@ -47,7 +47,15 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 	{{ if .Params.Query.List }}
 	query := make(url.Values, {{ len .Params.Query.List }})
 	{{- range $_, $q := .Params.Query.List }}
-	{{ $q.V.ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." $q.V.FieldName) }}
+		{{- with $q.V }}
+		{{- if .Required }}
+	{{ .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName) }}
+		{{- else }}
+	if request.Query.{{ .FieldName }} != nil {
+		{{ .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName) }}
+	}
+		{{- end }}
+		{{- end }}
 	{{- end }}
 	requestURL += "?" + query.Encode()
 	{{ end }}
@@ -97,16 +105,14 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 }
 {{ end }}
 
-{{/* ----------------------------- ClientQueryParameterFormatOptional ------------------------------------- */}}
-{{ define "ClientQueryParameterFormatOptional" -}}
-if {{ .From }} != nil {
-    {{ .To }} = []string{ {{ .Formatter.RenderFormat .FromPtr }} }
-}
+{{/* ----------------------------- ClientQueryParameterFormatMultivalue ------------------------------------- */}}
+{{ define "ClientQueryParameterFormatMultivalue" -}}
+{{- .To }} = {{ .Type.RenderFormat .From }}
 {{- end }}
 
-{{/* ----------------------------- ClientQueryParameterFormatRequired ------------------------------------- */}}
-{{ define "ClientQueryParameterFormatRequired" -}}
-{{ .To }} = []string{ {{ .Formatter.RenderFormat .From }} }
+{{/* ----------------------------- ClientQueryParameterFormat ------------------------------------- */}}
+{{ define "ClientQueryParameterFormat" -}}
+{{- .To }} = []string{ {{ .Formatter.RenderFormat .From }} }
 {{- end }}
 
 {{/* ----------------------------- ClientQueryParameterFormatToSliceStrings ------------------------------------- */}}
@@ -116,7 +122,7 @@ if {{ .From }} != nil {
     for _, v := range {{ .From }} {
         query_values = append(query_values, {{ .Items.RenderFormat "v" }})
     }
-    {{ .To }} = query_values
+	{{ .To }} = query_values
 }
 {{- end }}
 
@@ -128,8 +134,31 @@ var response {{ .Name }}
 	response.Code = resp.StatusCode
 {{ end }}
 
+{{- if .Headers }}
+var hs []string
+{{- end }}
 {{- range $_, $h := .Headers }}
-	response.Headers.{{ $h.FieldName }} = resp.Header.Get("{{ $h.Key }}")
+	{{- if .IsMultivalue }}
+	hs = resp.Header.Values("{{ .Key }}")
+	{{- if .Required }}
+	if len(hs) == 0 {
+		return nil, fmt.Errorf("header parameter '{{ .Key }}': is required")
+	}
+	{{- end }}
+	if len(hs) > 0 {
+		{{ $h.Schema.ParseString (print "response.Headers." .FieldName) "hs" false (returns "nil" (parseError "header" .Key)) }}
+	}
+	{{- else }}
+	hs = resp.Header.Values("{{ .Key }}")
+	{{- if .Required }}
+	if len(hs) == 0 {
+		return nil, fmt.Errorf("header parameter '{{ .Key }}': is required")
+	}
+	{{- end }}
+	if len(hs) > 0 {
+		{{ $h.Schema.ParseString (print "response.Headers." .FieldName) "hs[0]" false (returns "nil" (parseError "header" .Key)) }}
+	}
+	{{- end }}
 {{ end }}
 
 {{- if .ContentJSON.IsSet }}

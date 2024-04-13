@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // ---------------------------------------------
@@ -54,15 +55,17 @@ type GetPetsResponse interface {
 	Write(w http.ResponseWriter)
 }
 
-func NewGetPetsResponse200(xNext string) GetPetsResponse {
+func NewGetPetsResponse200(xNext string, xNextTwo []int) GetPetsResponse {
 	var out GetPetsResponse200
 	out.Headers.XNext = xNext
+	out.Headers.XNextTwo = xNextTwo
 	return out
 }
 
 type GetPetsResponse200 struct {
 	Headers struct {
-		XNext string
+		XNext    string
+		XNextTwo []int
 	}
 }
 
@@ -70,6 +73,9 @@ func (r GetPetsResponse200) getPets() {}
 
 func (r GetPetsResponse200) Write(w http.ResponseWriter) {
 	w.Header().Set("x-next", r.Headers.XNext)
+	for _, h := range r.Headers.XNextTwo {
+		w.Header().Add("x-next-two", strconv.FormatInt(int64(h), 10))
+	}
 	w.WriteHeader(200)
 }
 

@@ -652,8 +652,7 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_size", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt)
-				params.Query.PageSize = v
+				params.Query.PageSize = int32(vInt)
 			}
 		}
 	}
@@ -832,8 +831,7 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_size", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt)
-				params.Query.PageSize = v
+				params.Query.PageSize = int32(vInt)
 			}
 		}
 		{
@@ -851,8 +849,7 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse int32", Err: err}
 					}
-					v1 := int32(vInt)
-					params.Query.Filter[i] = v1
+					params.Query.Filter[i] = int32(vInt)
 				}
 			}
 		}

@@ -34,13 +34,17 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 	var requestURL = c.BaseURL + "/pets"
 
 	query := make(url.Values, 2)
-	query["tag"] = request.Query.Tag
-	{
-		query_values := make([]string, 0, len(request.Query.Page))
-		for _, v := range request.Query.Page {
-			query_values = append(query_values, strconv.FormatInt(v, 10))
+	if request.Query.Tag != nil {
+		query["tag"] = request.Query.Tag
+	}
+	if request.Query.Page != nil {
+		{
+			query_values := make([]string, 0, len(request.Query.Page))
+			for _, v := range request.Query.Page {
+				query_values = append(query_values, strconv.FormatInt(v, 10))
+			}
+			query["page"] = query_values
 		}
-		query["page"] = query_values
 	}
 	requestURL += "?" + query.Encode()
 
