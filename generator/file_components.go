@@ -17,6 +17,9 @@ type Components struct {
 	QueryParameters  []QueryParameterComponent
 	HeaderParameters []HeaderParameterComponent
 	PathParameters   []PathParameterComponent
+	Responses        []ResponseComponent
+
+	HasContentJSON bool
 }
 
 func NewComponents(spec specification.Components) (zero Components, _ error) {
@@ -188,6 +191,54 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 		}
 	}
 
+	// Responses
+	for _, r := range spec.Responses.List {
+		cs.HasComponent = true
+
+		var alias string
+		if ref := r.V.Ref(); ref != nil {
+			alias = ref.Name + "Response"
+		}
+
+		resp := r.V.Value()
+
+		response, ims, err := NewResponse(OperationName(r.Name), "", resp)
+		if err != nil {
+			return zero, fmt.Errorf("new %q response: %w", r.Name, err)
+		}
+		cs.Imports = append(cs.Imports, ims...)
+
+		var ifaces []ResponseUsedIn
+		var status string
+		for _, usedIn := range resp.UsedIn {
+			oName := NewOperationName(usedIn.Operation)
+			switch usedIn.Status {
+			case "default":
+				status = usedIn.Status
+			}
+
+			ifaces = append(ifaces, ResponseUsedIn{
+				OperationName: oName,
+				Status:        usedIn.Status,
+			})
+		}
+
+		hr := NewHandlerResponse(response, OperationName(r.Name), status, ifaces...)
+
+		if hr.ContentJSON.Set {
+			cs.HasContentJSON = true
+		}
+
+		cs.Responses = append(cs.Responses, ResponseComponent{
+			Name:        r.Name + "Response",
+			Description: r.V.Value().Description,
+			Alias:       alias,
+			IsComponent: true,
+
+			HandlerResponse: hr,
+		})
+	}
+
 	return cs, nil
 }
 
@@ -256,4 +307,20 @@ type PathParameterComponent struct {
 
 func (c PathParameterComponent) Render() (string, error) {
 	return ExecuteTemplate("PathParameterComponent", c)
+}
+
+type ResponseComponent struct {
+	Name        string
+	Description string
+	Alias       string
+	IsComponent bool
+
+	HandlerResponse
+}
+
+func (c ResponseComponent) Render() (string, error) {
+	if c.Alias != "" {
+		return ExecuteTemplate("ResponseComponentAlias", c)
+	}
+	return ExecuteTemplate("ResponseComponent", c)
 }

@@ -111,6 +111,9 @@ func NewOperation(s *specification.Operation, components specification.Component
 	}
 
 	for _, r := range s.Responses.List {
+		if r.V.Ref() != nil {
+			continue
+		}
 		resp, ims, err := NewResponse(name, r.Name, r.V.Value())
 		if err != nil {
 			return nil, nil, fmt.Errorf("new response for %q status: %w", r.Name, err)

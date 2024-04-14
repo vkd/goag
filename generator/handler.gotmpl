@@ -8,7 +8,6 @@
 {{- $request := print $name "Params" }}
 {{- $newParams := print "new" $name "Params" }}
 {{- $responseWriter := print $name "Response" }}
-{{- $responseIface := $h.ResponserInterfaceName }}
 // ---------------------------------------------
 // {{$name}} - {{$h.Description}}
 // ---------------------------------------------
@@ -17,7 +16,7 @@
 type {{ $handlerFunc }} func(ctx context.Context, r {{$requestParser}}) {{$responseWriter}}
 
 func (f {{$handlerFunc}}) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), {{$httpRequestParser}}(r)).Write(w)
+	f(r.Context(), {{$httpRequestParser}}(r)).write{{ .Name }}(w)
 }
 
 type {{$requestParser}} interface {
@@ -157,8 +156,7 @@ func (r {{ $request }}) HTTP() *http.Request { return nil }
 func (r {{ $request }}) Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}} {	return r{{if $h.CanParseError}}, nil{{end}} }
 
 type {{ $responseWriter }} interface {
-	{{$responseIface}}()
-	Write(w http.ResponseWriter)
+	write{{ .Name }}(http.ResponseWriter)
 }
 
 {{ range $_, $r := .Responses }}
@@ -202,50 +200,5 @@ p = p[{{len .Prefix}}:] // "{{.Prefix}}"
 	}
 
 	{{ .Convert.ParseString .To "vPath" .IsNew .Error }}
-}
-{{- end }}
-
-
-
-
-{{/* ----------------------------- HandlerResponse ------------------------------------- */}}
-{{ define "HandlerResponse" }}
-{{- $response := . -}}
-func New{{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.Type.Render}}{{end}}) {{.HandlerName}}Response {
-	var out {{.Name}}
-	{{- range $_, $a := .Args}}
-	out.{{if .IsHeader}}Headers.{{end}}{{.FieldName}} = {{.ArgName}}
-	{{- end}}
-	return out
-}
-
-{{- if .Body }}
-type {{.BodyTypeName.Render}} {{ .Body.Render }}
-{{- if .BodyRenders }}
-{{ .BodyRenders.Render }}
-{{- end }}
-{{- end }}
-
-{{ if .Description }}// {{ .Name }} - {{ .Description }}{{ end }}
-type {{.Name}} {{.Struct.Render}}
-
-func (r {{.Name}}) {{.ResponserInterfaceName}}() {}
-
-func (r {{.Name}}) Write(w http.ResponseWriter) {
-	{{- range $_, $h := .Headers}}
-		{{- if .IsMultivalue }}
-	for _, h := range r.Headers.{{ $h.FieldName }} {
-		w.Header().Add("{{$h.Key}}", {{ $h.Formatter.RenderFormat "h" }})
-	}
-		{{- else }}
-	w.Header().Set("{{$h.Key}}", r.Headers.{{ $h.Formatter.RenderFormat $h.FieldName }})
-		{{- end }}
-	{{- end }}
-	{{- if .ContentType }}
-	w.Header().Set("Content-Type", "{{ .ContentType }}")
-	{{- end }}
-	{{if .IsDefault}}w.WriteHeader(r.Code){{else}}w.WriteHeader({{.Status}}){{end}}
-	{{if .IsBody}}writeJSON(w, r.Body, "{{.Name}}")
-	{{end -}}
 }
 {{- end }}

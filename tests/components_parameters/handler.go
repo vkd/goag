@@ -16,7 +16,7 @@ import (
 type PostShopsShopStringSepShopSchemaPetsHandlerFunc func(ctx context.Context, r PostShopsShopStringSepShopSchemaPetsRequest) PostShopsShopStringSepShopSchemaPetsResponse
 
 func (f PostShopsShopStringSepShopSchemaPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), PostShopsShopStringSepShopSchemaPetsHTTPRequest(r)).Write(w)
+	f(r.Context(), PostShopsShopStringSepShopSchemaPetsHTTPRequest(r)).writePostShopsShopStringSepShopSchemaPets(w)
 }
 
 type PostShopsShopStringSepShopSchemaPetsRequest interface {
@@ -249,8 +249,7 @@ func (r PostShopsShopStringSepShopSchemaPetsParams) Parse() (PostShopsShopString
 }
 
 type PostShopsShopStringSepShopSchemaPetsResponse interface {
-	postShopsShopStringSepShopSchemaPets()
-	Write(w http.ResponseWriter)
+	writePostShopsShopStringSepShopSchemaPets(http.ResponseWriter)
 }
 
 func NewPostShopsShopStringSepShopSchemaPetsResponse200() PostShopsShopStringSepShopSchemaPetsResponse {
@@ -261,7 +260,9 @@ func NewPostShopsShopStringSepShopSchemaPetsResponse200() PostShopsShopStringSep
 // PostShopsShopStringSepShopSchemaPetsResponse200 - OK response
 type PostShopsShopStringSepShopSchemaPetsResponse200 struct{}
 
-func (r PostShopsShopStringSepShopSchemaPetsResponse200) postShopsShopStringSepShopSchemaPets() {}
+func (r PostShopsShopStringSepShopSchemaPetsResponse200) writePostShopsShopStringSepShopSchemaPets(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r PostShopsShopStringSepShopSchemaPetsResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)

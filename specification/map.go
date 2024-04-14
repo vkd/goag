@@ -40,9 +40,15 @@ func NewMapPrefix[T any, U any](m map[string]U, fn func(U) T, prefix RefKey) Map
 	return out
 }
 
-func NewMapRefSelfSource[T any, U any](m map[string]U, fn func(U, Map[Ref[T]]) (ref string, _ Ref[T]), source interface {
+type Sourcer[T any] interface {
 	Get(string) (*Object[string, Ref[T]], bool)
-}, prefix RefKey) Map[Ref[T]] {
+}
+
+type SourcerFunc[T any] func(string) (*Object[string, Ref[T]], bool)
+
+func (s SourcerFunc[T]) Get(str string) (*Object[string, Ref[T]], bool) { return s(str) }
+
+func NewMapRefSelfSource[T any, U any](m map[string]U, fn func(U, Map[Ref[T]]) (ref string, _ Ref[T]), source Sourcer[T], prefix RefKey) Map[Ref[T]] {
 	out := NewMapPrefix[Ref[T], U](m, func(u U) Ref[T] { return nil }, prefix)
 	if source == nil {
 		source = out
@@ -69,9 +75,7 @@ func NewMapRefSelf[T any, U any](m map[string]U, fn func(U) (ref string, _ Ref[T
 	}, nil, prefix)
 }
 
-func NewMapRefSource[T any, U any](m map[string]U, fn func(U) (ref string, _ Ref[T]), source interface {
-	Get(string) (*Object[string, Ref[T]], bool)
-}, prefix RefKey) Map[Ref[T]] {
+func NewMapRefSource[T any, U any](m map[string]U, fn func(U) (ref string, _ Ref[T]), source Sourcer[T], prefix RefKey) Map[Ref[T]] {
 	return NewMapRefSelfSource[T, U](m, func(u U, m Map[Ref[T]]) (ref string, _ Ref[T]) { return fn(u) }, source, prefix)
 }
 

@@ -11,6 +11,8 @@ type Response struct {
 	Headers     Map[Ref[Header]]
 	Content     Map[*MediaType]
 	Links       Map[Ref[Link]]
+
+	UsedIn []ResponseUsedIn
 }
 
 func NewResponse(s *openapi3.Response, components Components) *Response {
@@ -55,3 +57,8 @@ func NewLink(s *openapi3.Link) *Link {
 var _ Ref[Link] = (*Link)(nil)
 
 func (l *Link) Value() *Link { return l }
+
+type ResponseUsedIn struct {
+	Operation *Operation
+	Status    string
+}

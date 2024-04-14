@@ -20,7 +20,7 @@ import (
 type ListPetsHandlerFunc func(ctx context.Context, r ListPetsRequest) ListPetsResponse
 
 func (f ListPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), ListPetsHTTPRequest(r)).Write(w)
+	f(r.Context(), ListPetsHTTPRequest(r)).writeListPets(w)
 }
 
 type ListPetsRequest interface {
@@ -77,8 +77,7 @@ func (r ListPetsParams) HTTP() *http.Request { return nil }
 func (r ListPetsParams) Parse() (ListPetsParams, error) { return r, nil }
 
 type ListPetsResponse interface {
-	listPets()
-	Write(w http.ResponseWriter)
+	writeListPets(http.ResponseWriter)
 }
 
 func NewListPetsResponse200JSON(body Pets, xNext string) ListPetsResponse {
@@ -96,7 +95,9 @@ type ListPetsResponse200JSON struct {
 	}
 }
 
-func (r ListPetsResponse200JSON) listPets() {}
+func (r ListPetsResponse200JSON) writeListPets(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r ListPetsResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("x-next", r.Headers.XNext)
@@ -118,7 +119,9 @@ type ListPetsResponseDefaultJSON struct {
 	Body Error
 }
 
-func (r ListPetsResponseDefaultJSON) listPets() {}
+func (r ListPetsResponseDefaultJSON) writeListPets(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r ListPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
@@ -134,7 +137,7 @@ func (r ListPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 type CreatePetsHandlerFunc func(ctx context.Context, r CreatePetsRequest) CreatePetsResponse
 
 func (f CreatePetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), CreatePetsHTTPRequest(r)).Write(w)
+	f(r.Context(), CreatePetsHTTPRequest(r)).writeCreatePets(w)
 }
 
 type CreatePetsRequest interface {
@@ -170,8 +173,7 @@ func (r CreatePetsParams) HTTP() *http.Request { return nil }
 func (r CreatePetsParams) Parse() CreatePetsParams { return r }
 
 type CreatePetsResponse interface {
-	createPets()
-	Write(w http.ResponseWriter)
+	writeCreatePets(http.ResponseWriter)
 }
 
 func NewCreatePetsResponse201() CreatePetsResponse {
@@ -182,7 +184,9 @@ func NewCreatePetsResponse201() CreatePetsResponse {
 // CreatePetsResponse201 - Null response
 type CreatePetsResponse201 struct{}
 
-func (r CreatePetsResponse201) createPets() {}
+func (r CreatePetsResponse201) writeCreatePets(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r CreatePetsResponse201) Write(w http.ResponseWriter) {
 	w.WriteHeader(201)
@@ -201,7 +205,9 @@ type CreatePetsResponseDefaultJSON struct {
 	Body Error
 }
 
-func (r CreatePetsResponseDefaultJSON) createPets() {}
+func (r CreatePetsResponseDefaultJSON) writeCreatePets(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r CreatePetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
@@ -217,7 +223,7 @@ func (r CreatePetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 type ShowPetByIDHandlerFunc func(ctx context.Context, r ShowPetByIDRequest) ShowPetByIDResponse
 
 func (f ShowPetByIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), ShowPetByIDHTTPRequest(r)).Write(w)
+	f(r.Context(), ShowPetByIDHTTPRequest(r)).writeShowPetByID(w)
 }
 
 type ShowPetByIDRequest interface {
@@ -291,8 +297,7 @@ func (r ShowPetByIDParams) HTTP() *http.Request { return nil }
 func (r ShowPetByIDParams) Parse() (ShowPetByIDParams, error) { return r, nil }
 
 type ShowPetByIDResponse interface {
-	showPetByID()
-	Write(w http.ResponseWriter)
+	writeShowPetByID(http.ResponseWriter)
 }
 
 func NewShowPetByIDResponse200JSON(body Pet) ShowPetByIDResponse {
@@ -306,7 +311,9 @@ type ShowPetByIDResponse200JSON struct {
 	Body Pet
 }
 
-func (r ShowPetByIDResponse200JSON) showPetByID() {}
+func (r ShowPetByIDResponse200JSON) writeShowPetByID(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r ShowPetByIDResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
@@ -327,7 +334,9 @@ type ShowPetByIDResponseDefaultJSON struct {
 	Body Error
 }
 
-func (r ShowPetByIDResponseDefaultJSON) showPetByID() {}
+func (r ShowPetByIDResponseDefaultJSON) writeShowPetByID(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r ShowPetByIDResponseDefaultJSON) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")

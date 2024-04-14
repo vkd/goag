@@ -73,22 +73,30 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 		}
 	}
 
-	o.Responses = NewMapRefSource[Response, *openapi3.ResponseRef](operation.Responses, func(rr *openapi3.ResponseRef) (ref string, _ Ref[Response]) {
-		if rr.Ref != "" {
-			return rr.Ref, nil
-		}
-		return "", NewResponse(rr.Value, components)
-	}, components.Responses, "")
+	o.Responses = NewMapPrefix[Ref[Response], *openapi3.ResponseRef](operation.Responses, func(u *openapi3.ResponseRef) Ref[Response] { return nil }, "")
+	usedResponses := make(map[*Response]string)
+	for i, ro := range o.Responses.List {
+		rr := operation.Responses[ro.Name]
 
-	// for _, responseStatusCode := range sortedKeys(operation.Responses) {
-	// 	response := operation.Responses[responseStatusCode]
-	// 	if responseStatusCode == "default" {
-	// 		defaultResponse := NewResponse(response, responseStatusCode, o)
-	// 		o.DefaultResponse = NewOptional[Ref[Response]](defaultResponse)
-	// 	} else {
-	// 		o.Responses = append(o.Responses, NewResponseOld(responseStatusCode, o, response))
-	// 	}
-	// }
+		if rr.Ref != "" {
+			ref := rr.Ref
+			r, ok := components.Responses.Get(ref)
+			if !ok {
+				panic(fmt.Sprintf("reference %q: not found", ref))
+			}
+			if usedStatus, ok := usedResponses[r.V.Value()]; ok {
+				return nil, fmt.Errorf("the same %q response is used several times (at least for %q and %q responses)", r.Name, usedStatus, ro.Name)
+			}
+			usedResponses[r.V.Value()] = ro.Name
+			r.V.Value().UsedIn = append(r.V.Value().UsedIn, ResponseUsedIn{
+				Operation: o,
+				Status:    ro.Name,
+			})
+			o.Responses.List[i].V = NewRefObject(r)
+		} else {
+			o.Responses.List[i].V = NewResponse(rr.Value, components)
+		}
+	}
 
 	return o, nil
 }

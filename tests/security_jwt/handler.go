@@ -14,7 +14,7 @@ import (
 type PostLoginHandlerFunc func(ctx context.Context, r PostLoginRequest) PostLoginResponse
 
 func (f PostLoginHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), PostLoginHTTPRequest(r)).Write(w)
+	f(r.Context(), PostLoginHTTPRequest(r)).writePostLogin(w)
 }
 
 type PostLoginRequest interface {
@@ -50,8 +50,7 @@ func (r PostLoginParams) HTTP() *http.Request { return nil }
 func (r PostLoginParams) Parse() PostLoginParams { return r }
 
 type PostLoginResponse interface {
-	postLogin()
-	Write(w http.ResponseWriter)
+	writePostLogin(http.ResponseWriter)
 }
 
 func NewPostLoginResponse200() PostLoginResponse {
@@ -61,7 +60,9 @@ func NewPostLoginResponse200() PostLoginResponse {
 
 type PostLoginResponse200 struct{}
 
-func (r PostLoginResponse200) postLogin() {}
+func (r PostLoginResponse200) writePostLogin(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r PostLoginResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
@@ -74,7 +75,9 @@ func NewPostLoginResponse401() PostLoginResponse {
 
 type PostLoginResponse401 struct{}
 
-func (r PostLoginResponse401) postLogin() {}
+func (r PostLoginResponse401) writePostLogin(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r PostLoginResponse401) Write(w http.ResponseWriter) {
 	w.WriteHeader(401)
@@ -87,7 +90,7 @@ func (r PostLoginResponse401) Write(w http.ResponseWriter) {
 type PostShopsHandlerFunc func(ctx context.Context, r PostShopsRequest) PostShopsResponse
 
 func (f PostShopsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), PostShopsHTTPRequest(r)).Write(w)
+	f(r.Context(), PostShopsHTTPRequest(r)).writePostShops(w)
 }
 
 type PostShopsRequest interface {
@@ -142,8 +145,7 @@ func (r PostShopsParams) HTTP() *http.Request { return nil }
 func (r PostShopsParams) Parse() (PostShopsParams, error) { return r, nil }
 
 type PostShopsResponse interface {
-	postShops()
-	Write(w http.ResponseWriter)
+	writePostShops(http.ResponseWriter)
 }
 
 func NewPostShopsResponse200() PostShopsResponse {
@@ -153,7 +155,9 @@ func NewPostShopsResponse200() PostShopsResponse {
 
 type PostShopsResponse200 struct{}
 
-func (r PostShopsResponse200) postShops() {}
+func (r PostShopsResponse200) writePostShops(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r PostShopsResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
@@ -166,7 +170,9 @@ func NewPostShopsResponse401() PostShopsResponse {
 
 type PostShopsResponse401 struct{}
 
-func (r PostShopsResponse401) postShops() {}
+func (r PostShopsResponse401) writePostShops(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r PostShopsResponse401) Write(w http.ResponseWriter) {
 	w.WriteHeader(401)

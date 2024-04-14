@@ -70,6 +70,9 @@ func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Gen
 	if err != nil {
 		return nil, fmt.Errorf("file handler: %w", err)
 	}
+	if g.Components.HasContentJSON {
+		g.FileHandler.IsWriteJSONFunc = true
+	}
 	g.Client = NewClient(spec, g.Operations)
 	g.Router = NewRouter(spec, g.Paths, g.Operations, g.Options)
 

@@ -15,7 +15,7 @@ import (
 type PostPetsHandlerFunc func(ctx context.Context, r PostPetsRequest) PostPetsResponse
 
 func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), PostPetsHTTPRequest(r)).Write(w)
+	f(r.Context(), PostPetsHTTPRequest(r)).writePostPets(w)
 }
 
 type PostPetsRequest interface {
@@ -58,8 +58,7 @@ func (r PostPetsParams) HTTP() *http.Request { return nil }
 func (r PostPetsParams) Parse() (PostPetsParams, error) { return r, nil }
 
 type PostPetsResponse interface {
-	postPets()
-	Write(w http.ResponseWriter)
+	writePostPets(http.ResponseWriter)
 }
 
 func NewPostPetsResponse201() PostPetsResponse {
@@ -69,7 +68,9 @@ func NewPostPetsResponse201() PostPetsResponse {
 
 type PostPetsResponse201 struct{}
 
-func (r PostPetsResponse201) postPets() {}
+func (r PostPetsResponse201) writePostPets(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r PostPetsResponse201) Write(w http.ResponseWriter) {
 	w.WriteHeader(201)
@@ -85,7 +86,9 @@ type PostPetsResponseDefault struct {
 	Code int
 }
 
-func (r PostPetsResponseDefault) postPets() {}
+func (r PostPetsResponseDefault) writePostPets(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r PostPetsResponseDefault) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)

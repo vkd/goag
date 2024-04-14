@@ -16,7 +16,7 @@ import (
 type GetPetsHandlerFunc func(ctx context.Context, r GetPetsRequest) GetPetsResponse
 
 func (f GetPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), GetPetsHTTPRequest(r)).Write(w)
+	f(r.Context(), GetPetsHTTPRequest(r)).writeGetPets(w)
 }
 
 type GetPetsRequest interface {
@@ -52,8 +52,7 @@ func (r GetPetsParams) HTTP() *http.Request { return nil }
 func (r GetPetsParams) Parse() GetPetsParams { return r }
 
 type GetPetsResponse interface {
-	getPets()
-	Write(w http.ResponseWriter)
+	writeGetPets(http.ResponseWriter)
 }
 
 func NewGetPetsResponse200JSON(body []Pet) GetPetsResponse {
@@ -66,7 +65,9 @@ type GetPetsResponse200JSON struct {
 	Body []Pet
 }
 
-func (r GetPetsResponse200JSON) getPets() {}
+func (r GetPetsResponse200JSON) writeGetPets(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r GetPetsResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
@@ -81,7 +82,7 @@ func (r GetPetsResponse200JSON) Write(w http.ResponseWriter) {
 type GetPetsNamesHandlerFunc func(ctx context.Context, r GetPetsNamesRequest) GetPetsNamesResponse
 
 func (f GetPetsNamesHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), GetPetsNamesHTTPRequest(r)).Write(w)
+	f(r.Context(), GetPetsNamesHTTPRequest(r)).writeGetPetsNames(w)
 }
 
 type GetPetsNamesRequest interface {
@@ -117,8 +118,7 @@ func (r GetPetsNamesParams) HTTP() *http.Request { return nil }
 func (r GetPetsNamesParams) Parse() GetPetsNamesParams { return r }
 
 type GetPetsNamesResponse interface {
-	getPetsNames()
-	Write(w http.ResponseWriter)
+	writeGetPetsNames(http.ResponseWriter)
 }
 
 func NewGetPetsNamesResponse200JSON(body []string) GetPetsNamesResponse {
@@ -131,7 +131,9 @@ type GetPetsNamesResponse200JSON struct {
 	Body []string
 }
 
-func (r GetPetsNamesResponse200JSON) getPetsNames() {}
+func (r GetPetsNamesResponse200JSON) writeGetPetsNames(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r GetPetsNamesResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")

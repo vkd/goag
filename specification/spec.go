@@ -61,6 +61,25 @@ func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 		s.PathItems = append(s.PathItems, pi)
 	}
 
+	for _, resp := range s.Components.Responses.List {
+		var usedInDefault, usedInPatterned Maybe[ResponseUsedIn]
+		for _, usedIn := range resp.V.Value().UsedIn {
+			usedIn := usedIn
+			switch usedIn.Status {
+			case "default":
+				if usedInPatterned.Set {
+					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in patterned status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.Path.Raw, usedIn.Status, usedInPatterned.Value.Operation.HTTPMethod, usedInPatterned.Value.Operation.Path.Raw, usedInPatterned.Value.Status)
+				}
+				usedInDefault = Just(usedIn)
+			default:
+				if usedInDefault.Set {
+					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in default status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.Path.Raw, usedIn.Status, usedInDefault.Value.Operation.HTTPMethod, usedInDefault.Value.Operation.Path.Raw, usedInDefault.Value.Status)
+				}
+				usedInPatterned = Just(usedIn)
+			}
+		}
+	}
+
 	return s, nil
 }
 

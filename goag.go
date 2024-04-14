@@ -41,7 +41,7 @@ func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath, cf
 
 		err = g.generateFile(filepath.Join(testpath, out), packageName, specFile, basePath, cfgFile)
 		if err != nil {
-			return fmt.Errorf("generate: %w", err)
+			return fmt.Errorf("generate %q: %w", d.Name(), err)
 		}
 	}
 

@@ -10,9 +10,8 @@ import (
 type Handler struct {
 	*Operation
 
-	HandlerFuncName        string
-	ResponserInterfaceName string
-	BasePathPrefix         string
+	HandlerFuncName string
+	BasePathPrefix  string
 
 	CanParseError bool
 
@@ -27,9 +26,8 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 	out := &Handler{
 		Operation: o,
 
-		HandlerFuncName:        string(o.Name) + "HandlerFunc",
-		ResponserInterfaceName: PrivateFieldName(string(o.Name)),
-		BasePathPrefix:         basePathPrefix,
+		HandlerFuncName: string(o.Name) + "HandlerFunc",
+		BasePathPrefix:  basePathPrefix,
 
 		CanParseError: len(o.Parameters.Query.List) > 0 || len(o.Parameters.Path.List) > 0 || len(o.Parameters.Headers.List) > 0 || o.Body.TypeName != nil,
 	}
@@ -75,11 +73,11 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 	}
 
 	if o.DefaultResponse != nil {
-		resp := NewHandlerResponse(o.DefaultResponse.Response, o.Name, o.DefaultResponse.StatusCode, out.ResponserInterfaceName)
+		resp := NewHandlerResponse(o.DefaultResponse.Response, o.Name, o.DefaultResponse.StatusCode, ResponseUsedIn{OperationName: o.Name, Status: o.DefaultResponse.StatusCode})
 		out.DefaultResponse = &resp
 	}
 	for _, r := range o.Responses {
-		out.Responses = append(out.Responses, NewHandlerResponse(r.Response, o.Name, r.StatusCode, out.ResponserInterfaceName))
+		out.Responses = append(out.Responses, NewHandlerResponse(r.Response, o.Name, r.StatusCode, ResponseUsedIn{OperationName: o.Name, Status: r.StatusCode}))
 	}
 
 	return out, imports, nil
@@ -287,7 +285,7 @@ type HandlerResponse struct {
 	Status    string
 	IsDefault bool
 
-	ResponserInterfaceName string
+	UsedIn []ResponseUsedIn
 
 	IsBody       bool
 	BodyTypeName Render
@@ -301,7 +299,7 @@ type HandlerResponse struct {
 	Args []ResponseArg
 }
 
-func NewHandlerResponse(r *Response, name OperationName, status, ifaceName string) HandlerResponse {
+func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNames ...ResponseUsedIn) HandlerResponse {
 	out := HandlerResponse{
 		Response: r,
 
@@ -400,13 +398,17 @@ func NewHandlerResponse(r *Response, name OperationName, status, ifaceName strin
 		})
 	}
 
-	out.ResponserInterfaceName = ifaceName
+	out.UsedIn = ifaceNames
 
 	return out
 }
 
 func (h HandlerResponse) Render() (string, error) {
-	return ExecuteTemplate("HandlerResponse", h)
+	return ExecuteTemplate("ResponseComponent", ResponseComponent{
+		Name:            h.Name,
+		Description:     h.Description,
+		HandlerResponse: h,
+	})
 }
 
 type ResponseArg struct {
@@ -414,4 +416,9 @@ type ResponseArg struct {
 	ArgName   string
 	IsHeader  bool
 	Type      Render
+}
+
+type ResponseUsedIn struct {
+	OperationName OperationName
+	Status        string
 }

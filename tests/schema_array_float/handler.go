@@ -16,7 +16,7 @@ import (
 type GetPetsIDsHandlerFunc func(ctx context.Context, r GetPetsIDsRequest) GetPetsIDsResponse
 
 func (f GetPetsIDsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), GetPetsIDsHTTPRequest(r)).Write(w)
+	f(r.Context(), GetPetsIDsHTTPRequest(r)).writeGetPetsIDs(w)
 }
 
 type GetPetsIDsRequest interface {
@@ -52,8 +52,7 @@ func (r GetPetsIDsParams) HTTP() *http.Request { return nil }
 func (r GetPetsIDsParams) Parse() GetPetsIDsParams { return r }
 
 type GetPetsIDsResponse interface {
-	getPetsIDs()
-	Write(w http.ResponseWriter)
+	writeGetPetsIDs(http.ResponseWriter)
 }
 
 func NewGetPetsIDsResponse200JSON(body []float64) GetPetsIDsResponse {
@@ -66,7 +65,9 @@ type GetPetsIDsResponse200JSON struct {
 	Body []float64
 }
 
-func (r GetPetsIDsResponse200JSON) getPetsIDs() {}
+func (r GetPetsIDsResponse200JSON) writeGetPetsIDs(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r GetPetsIDsResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")

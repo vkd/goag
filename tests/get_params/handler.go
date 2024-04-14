@@ -16,7 +16,7 @@ import (
 type GetShopsShopHandlerFunc func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse
 
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), GetShopsShopHTTPRequest(r)).Write(w)
+	f(r.Context(), GetShopsShopHTTPRequest(r)).writeGetShopsShop(w)
 }
 
 type GetShopsShopRequest interface {
@@ -116,8 +116,7 @@ func (r GetShopsShopParams) HTTP() *http.Request { return nil }
 func (r GetShopsShopParams) Parse() (GetShopsShopParams, error) { return r, nil }
 
 type GetShopsShopResponse interface {
-	getShopsShop()
-	Write(w http.ResponseWriter)
+	writeGetShopsShop(http.ResponseWriter)
 }
 
 func NewGetShopsShopResponse200() GetShopsShopResponse {
@@ -127,7 +126,9 @@ func NewGetShopsShopResponse200() GetShopsShopResponse {
 
 type GetShopsShopResponse200 struct{}
 
-func (r GetShopsShopResponse200) getShopsShop() {}
+func (r GetShopsShopResponse200) writeGetShopsShop(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r GetShopsShopResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
@@ -143,7 +144,9 @@ type GetShopsShopResponseDefault struct {
 	Code int
 }
 
-func (r GetShopsShopResponseDefault) getShopsShop() {}
+func (r GetShopsShopResponseDefault) writeGetShopsShop(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r GetShopsShopResponseDefault) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)

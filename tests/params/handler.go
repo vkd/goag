@@ -16,7 +16,7 @@ import (
 type GetReviewsHandlerFunc func(ctx context.Context, r GetReviewsRequest) GetReviewsResponse
 
 func (f GetReviewsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), GetReviewsHTTPRequest(r)).Write(w)
+	f(r.Context(), GetReviewsHTTPRequest(r)).writeGetReviews(w)
 }
 
 type GetReviewsRequest interface {
@@ -306,8 +306,7 @@ func (r GetReviewsParams) HTTP() *http.Request { return nil }
 func (r GetReviewsParams) Parse() (GetReviewsParams, error) { return r, nil }
 
 type GetReviewsResponse interface {
-	getReviews()
-	Write(w http.ResponseWriter)
+	writeGetReviews(http.ResponseWriter)
 }
 
 func NewGetReviewsResponseDefault(code int) GetReviewsResponse {
@@ -320,7 +319,9 @@ type GetReviewsResponseDefault struct {
 	Code int
 }
 
-func (r GetReviewsResponseDefault) getReviews() {}
+func (r GetReviewsResponseDefault) writeGetReviews(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r GetReviewsResponseDefault) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)

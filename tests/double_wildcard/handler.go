@@ -15,7 +15,7 @@ import (
 type GetPetsPetIDNamesHandlerFunc func(ctx context.Context, r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse
 
 func (f GetPetsPetIDNamesHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), GetPetsPetIDNamesHTTPRequest(r)).Write(w)
+	f(r.Context(), GetPetsPetIDNamesHTTPRequest(r)).writeGetPetsPetIDNames(w)
 }
 
 type GetPetsPetIDNamesRequest interface {
@@ -84,8 +84,7 @@ func (r GetPetsPetIDNamesParams) HTTP() *http.Request { return nil }
 func (r GetPetsPetIDNamesParams) Parse() (GetPetsPetIDNamesParams, error) { return r, nil }
 
 type GetPetsPetIDNamesResponse interface {
-	getPetsPetIDNames()
-	Write(w http.ResponseWriter)
+	writeGetPetsPetIDNames(http.ResponseWriter)
 }
 
 func NewGetPetsPetIDNamesResponse200() GetPetsPetIDNamesResponse {
@@ -95,7 +94,9 @@ func NewGetPetsPetIDNamesResponse200() GetPetsPetIDNamesResponse {
 
 type GetPetsPetIDNamesResponse200 struct{}
 
-func (r GetPetsPetIDNamesResponse200) getPetsPetIDNames() {}
+func (r GetPetsPetIDNamesResponse200) writeGetPetsPetIDNames(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r GetPetsPetIDNamesResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)
@@ -108,7 +109,7 @@ func (r GetPetsPetIDNamesResponse200) Write(w http.ResponseWriter) {
 type GetPetsPetIDShopsHandlerFunc func(ctx context.Context, r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse
 
 func (f GetPetsPetIDShopsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), GetPetsPetIDShopsHTTPRequest(r)).Write(w)
+	f(r.Context(), GetPetsPetIDShopsHTTPRequest(r)).writeGetPetsPetIDShops(w)
 }
 
 type GetPetsPetIDShopsRequest interface {
@@ -177,8 +178,7 @@ func (r GetPetsPetIDShopsParams) HTTP() *http.Request { return nil }
 func (r GetPetsPetIDShopsParams) Parse() (GetPetsPetIDShopsParams, error) { return r, nil }
 
 type GetPetsPetIDShopsResponse interface {
-	getPetsPetIDShops()
-	Write(w http.ResponseWriter)
+	writeGetPetsPetIDShops(http.ResponseWriter)
 }
 
 func NewGetPetsPetIDShopsResponse200() GetPetsPetIDShopsResponse {
@@ -188,7 +188,9 @@ func NewGetPetsPetIDShopsResponse200() GetPetsPetIDShopsResponse {
 
 type GetPetsPetIDShopsResponse200 struct{}
 
-func (r GetPetsPetIDShopsResponse200) getPetsPetIDShops() {}
+func (r GetPetsPetIDShopsResponse200) writeGetPetsPetIDShops(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r GetPetsPetIDShopsResponse200) Write(w http.ResponseWriter) {
 	w.WriteHeader(200)

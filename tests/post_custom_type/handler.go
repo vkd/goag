@@ -18,7 +18,7 @@ import (
 type PostShopsShopPetsHandlerFunc func(ctx context.Context, r PostShopsShopPetsRequest) PostShopsShopPetsResponse
 
 func (f PostShopsShopPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), PostShopsShopPetsHTTPRequest(r)).Write(w)
+	f(r.Context(), PostShopsShopPetsHTTPRequest(r)).writePostShopsShopPets(w)
 }
 
 type PostShopsShopPetsRequest interface {
@@ -118,8 +118,7 @@ func (r PostShopsShopPetsParams) HTTP() *http.Request { return nil }
 func (r PostShopsShopPetsParams) Parse() (PostShopsShopPetsParams, error) { return r, nil }
 
 type PostShopsShopPetsResponse interface {
-	postShopsShopPets()
-	Write(w http.ResponseWriter)
+	writePostShopsShopPets(http.ResponseWriter)
 }
 
 func NewPostShopsShopPetsResponse201() PostShopsShopPetsResponse {
@@ -129,7 +128,9 @@ func NewPostShopsShopPetsResponse201() PostShopsShopPetsResponse {
 
 type PostShopsShopPetsResponse201 struct{}
 
-func (r PostShopsShopPetsResponse201) postShopsShopPets() {}
+func (r PostShopsShopPetsResponse201) writePostShopsShopPets(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r PostShopsShopPetsResponse201) Write(w http.ResponseWriter) {
 	w.WriteHeader(201)
@@ -145,7 +146,9 @@ type PostShopsShopPetsResponseDefault struct {
 	Code int
 }
 
-func (r PostShopsShopPetsResponseDefault) postShopsShopPets() {}
+func (r PostShopsShopPetsResponseDefault) writePostShopsShopPets(w http.ResponseWriter) {
+	r.Write(w)
+}
 
 func (r PostShopsShopPetsResponseDefault) Write(w http.ResponseWriter) {
 	w.WriteHeader(r.Code)
