@@ -267,7 +267,7 @@ func NewStructureType(s *specification.Schema) (zero StructureType, _ Imports, _
 		stype.Fields = append(stype.Fields, f)
 		imports = append(imports, ims...)
 	}
-	if s.AdditionalProperties.IsSet {
+	if s.AdditionalProperties.Set {
 		additional, ims, err := NewSchema(s.AdditionalProperties.Value)
 		if err != nil {
 			return zero, nil, fmt.Errorf("additional properties: %w", err)

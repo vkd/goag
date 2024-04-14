@@ -64,10 +64,10 @@ const (
 )
 
 type OAuthFlows struct {
-	Implicit          Optional[OAuthFlow]
-	Password          Optional[OAuthFlow]
-	ClientCredentials Optional[OAuthFlow]
-	AuthorizationCode Optional[OAuthFlow]
+	Implicit          Maybe[OAuthFlow]
+	Password          Maybe[OAuthFlow]
+	ClientCredentials Maybe[OAuthFlow]
+	AuthorizationCode Maybe[OAuthFlow]
 }
 
 func NewOAuthFlows(s *openapi3.OAuthFlows) OAuthFlows {
@@ -76,16 +76,16 @@ func NewOAuthFlows(s *openapi3.OAuthFlows) OAuthFlows {
 		return out
 	}
 	if s.Implicit != nil {
-		out.Implicit = NewOptional(NewOAuthFlow(s.Implicit))
+		out.Implicit = Just(NewOAuthFlow(s.Implicit))
 	}
 	if s.Password != nil {
-		out.Password = NewOptional(NewOAuthFlow(s.Password))
+		out.Password = Just(NewOAuthFlow(s.Password))
 	}
 	if s.ClientCredentials != nil {
-		out.ClientCredentials = NewOptional(NewOAuthFlow(s.ClientCredentials))
+		out.ClientCredentials = Just(NewOAuthFlow(s.ClientCredentials))
 	}
 	if s.AuthorizationCode != nil {
-		out.AuthorizationCode = NewOptional(NewOAuthFlow(s.AuthorizationCode))
+		out.AuthorizationCode = Just(NewOAuthFlow(s.AuthorizationCode))
 	}
 	return out
 }

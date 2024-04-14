@@ -41,7 +41,7 @@ func NewHandler(o *Operation, basePathPrefix string) (zero *Handler, _ Imports, 
 
 	var pathRenders []Parser
 	for _, pe := range o.PathBuilder {
-		if pe.Param.IsSet {
+		if pe.Param.Set {
 			pathRenders = append(pathRenders, PathParserVariable{
 				FieldName: pe.Param.Value.FieldName,
 				Name:      pe.Param.Value.Name,
@@ -307,7 +307,7 @@ func NewHandlerResponse(r *Response, h *Handler) HandlerResponse {
 	}
 
 	out.Name = string(h.Name) + "Response" + strings.Title(r.StatusCode)
-	if r.ContentJSON.IsSet {
+	if r.ContentJSON.Set {
 		out.Name += "JSON"
 		out.ContentType = "application/json"
 	}
@@ -324,7 +324,7 @@ func NewHandlerResponse(r *Response, h *Handler) HandlerResponse {
 		})
 	}
 
-	if r.ContentJSON.IsSet {
+	if r.ContentJSON.Set {
 		out.IsBody = true
 		switch contentType := r.ContentJSON.Value.Type.(type) {
 		case Ref[specification.Schema], SliceType, CustomType:
@@ -338,7 +338,7 @@ func NewHandlerResponse(r *Response, h *Handler) HandlerResponse {
 			bodyType := r.ContentJSON.Value
 			out.Body = bodyType.Type
 
-			if bodyType.Spec.Value().AdditionalProperties.IsSet {
+			if bodyType.Spec.Value().AdditionalProperties.Set {
 				out.BodyRenders = Renders{
 					StringRender("var _ json.Marshaler = (*" + bodyStructName + ")" + "(nil)"),
 					RenderFunc(func() (string, error) {

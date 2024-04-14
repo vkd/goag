@@ -60,7 +60,7 @@ func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, 
 
 	switch spec.Type {
 	case "object":
-		if spec.AdditionalProperties.IsSet && len(spec.Properties) == 0 {
+		if spec.AdditionalProperties.Set && len(spec.Properties) == 0 {
 			additional, ims, err := NewSchema(spec.AdditionalProperties.Value)
 			if err != nil {
 				return nil, nil, fmt.Errorf("additional properties: %w", err)

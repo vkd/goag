@@ -12,7 +12,7 @@ type QueryParameter struct {
 	AllowEmptyValue bool
 
 	Style         string
-	Explode       Optional[bool]
+	Explode       Maybe[bool]
 	AllowReserved bool
 
 	Schema Ref[Schema]
@@ -27,7 +27,7 @@ func NewQueryParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *QueryP
 		AllowEmptyValue: p.AllowEmptyValue,
 
 		Style:         p.Style,
-		Explode:       NewOptionalPtr(p.Explode),
+		Explode:       NewMaybe(p.Explode),
 		AllowReserved: p.AllowReserved,
 
 		Schema: NewSchemaRef(p.Schema, schemas),
@@ -47,7 +47,7 @@ type HeaderParameter struct {
 	Deprecated  bool
 
 	Style   string
-	Explode Optional[bool]
+	Explode Maybe[bool]
 
 	Schema Ref[Schema]
 }
@@ -60,7 +60,7 @@ func NewHeaderParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *Heade
 		Deprecated:  p.Deprecated,
 
 		Style:   p.Style,
-		Explode: NewOptionalPtr(p.Explode),
+		Explode: NewMaybe(p.Explode),
 
 		Schema: NewSchemaRef(p.Schema, schemas),
 	}
@@ -78,7 +78,7 @@ type PathParameter struct {
 	Deprecated  bool
 
 	Style   string
-	Explode Optional[bool]
+	Explode Maybe[bool]
 
 	Schema Ref[Schema]
 }
@@ -90,7 +90,7 @@ func NewPathParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *PathPar
 		Deprecated:  p.Deprecated,
 
 		Style:   p.Style,
-		Explode: NewOptionalPtr(p.Explode),
+		Explode: NewMaybe(p.Explode),
 
 		Schema: NewSchemaRef(p.Schema, schemas),
 	}
@@ -109,7 +109,7 @@ type CookieParameter struct {
 	Deprecated  bool
 
 	Style   string
-	Explode Optional[bool]
+	Explode Maybe[bool]
 
 	Schema Ref[Schema]
 }
@@ -122,7 +122,7 @@ func NewCookieParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *Cooki
 		Deprecated:  p.Deprecated,
 
 		Style:   p.Style,
-		Explode: NewOptionalPtr(p.Explode),
+		Explode: NewMaybe(p.Explode),
 
 		Schema: NewSchemaRef(p.Schema, schemas),
 	}

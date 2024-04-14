@@ -18,7 +18,7 @@ type Operation struct {
 
 	Parameters OperationParameters
 
-	RequestBody Optional[Ref[RequestBody]]
+	RequestBody Maybe[Ref[RequestBody]]
 
 	// Deprecated // TODO
 
@@ -67,9 +67,9 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 
 	if operation.RequestBody != nil {
 		if operation.RequestBody.Ref != "" {
-			o.RequestBody = NewOptional[Ref[RequestBody]](NewRefObjectSource[RequestBody](operation.RequestBody.Ref, components.RequestBodies))
+			o.RequestBody = Just[Ref[RequestBody]](NewRefObjectSource[RequestBody](operation.RequestBody.Ref, components.RequestBodies))
 		} else {
-			o.RequestBody = NewOptional[Ref[RequestBody]](NewRequestBody(operation.RequestBody.Value, components.Schemas))
+			o.RequestBody = Just[Ref[RequestBody]](NewRequestBody(operation.RequestBody.Value, components.Schemas))
 		}
 	}
 

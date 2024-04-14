@@ -39,7 +39,7 @@ type ClientOperation struct {
 func NewClientOperation(o *Operation) ClientOperation {
 	c := ClientOperation{
 		Operation:     o,
-		IsRequestBody: o.Operation.RequestBody.IsSet && o.Operation.RequestBody.Value.Value().Content.Has("application/json"),
+		IsRequestBody: o.Operation.RequestBody.Set && o.Operation.RequestBody.Value.Value().Content.Has("application/json"),
 	}
 
 	c.Headers = make([]ClientHeader, 0, len(o.Params.Headers.List))

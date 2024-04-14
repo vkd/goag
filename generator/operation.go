@@ -76,7 +76,7 @@ func NewOperation(s *specification.Operation, components specification.Component
 				return zero, nil, fmt.Errorf("unexpected path parameter %q found in path: not found in 'parameters'", pd.Param.Value().Name)
 			}
 			o.PathBuilder = append(o.PathBuilder, OperationPathElement{
-				Param: NewOptional(pp.V),
+				Param: Just(pp.V),
 			})
 		} else {
 			el.Raw += "/" + pd.V
@@ -87,7 +87,7 @@ func NewOperation(s *specification.Operation, components specification.Component
 		el = OperationPathElement{}
 	}
 
-	if s.RequestBody.IsSet {
+	if s.RequestBody.Set {
 		rBody := s.RequestBody.Value
 		if ref := rBody.Ref(); ref != nil && ref.Name != "" {
 			if _, ok := ref.V.Value().Content.Get("application/json"); ok {
@@ -192,5 +192,5 @@ func NewOperationParams(params specification.OperationParameters) (zero Operatio
 
 type OperationPathElement struct {
 	Raw   string
-	Param Optional[*PathParameter]
+	Param Maybe[*PathParameter]
 }
