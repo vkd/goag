@@ -42,7 +42,7 @@ func (r postShopsShopPetsHTTPRequest) Parse() (PostShopsShopPetsParams, error) {
 
 type PostShopsShopPetsParams struct {
 	Query struct {
-		Filter Maybe[pkg.ShopType]
+		Filter pkg.Maybe[pkg.ShopType]
 	}
 
 	Path struct {
@@ -153,23 +153,6 @@ func (r PostShopsShopPetsResponseDefault) Write(w http.ResponseWriter) {
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
-}
-
-type Maybe[T any] struct {
-	IsSet bool
-	Value T
-}
-
-func Just[T any](v T) Maybe[T] {
-	return Maybe[T]{
-		IsSet: true,
-		Value: v,
-	}
-}
-
-func (m *Maybe[T]) Set(v T) {
-	m.IsSet = true
-	m.Value = v
 }
 
 type ErrParseParam struct {

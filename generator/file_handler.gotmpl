@@ -19,6 +19,7 @@ func writeJSON(w io.Writer, v interface{}, name string) {
 
 {{ end -}}
 
+{{ if not .IsCustomMaybe }}
 type Maybe[T any] struct {
 	IsSet   bool
 	Value T
@@ -35,6 +36,7 @@ func (m *Maybe[T]) Set(v T) {
 	m.IsSet = true
 	m.Value = v
 }
+{{ end }}
 
 {{ template "ErrParseParam" }}
 {{ end }}

@@ -420,30 +420,33 @@ func (r Ref[T]) RenderFormat(from string) (string, error) {
 }
 
 type OptionalType struct {
-	V SchemaType
+	V         SchemaType
+	MaybeType string
 }
 
-func NewOptionalType(v SchemaType) OptionalType {
-	return OptionalType{V: v}
+func NewOptionalType(v SchemaType, typename string) OptionalType {
+	if typename == "" {
+		typename = "Maybe"
+	}
+	return OptionalType{V: v, MaybeType: typename}
 }
 
 var _ Render = OptionalType{}
 
 func (p OptionalType) Render() (string, error) {
 	out, err := p.V.Render()
-	return "Maybe[" + out + "]", err
+	return p.MaybeType + "[" + out + "]", err
 }
 
 var _ Parser = OptionalType{}
 
-func (p OptionalType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+func (p OptionalType) ParseString(to string, from string, _ bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("OptionalTypeParseString", TData{
 		"To":   to,
 		"Type": p.V,
 		"From": RenderFunc(func() (string, error) {
 			return p.V.ParseString("v", from, true, mkErr)
 		}),
-		"IsNew": isNew,
 	})
 }
 

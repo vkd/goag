@@ -34,7 +34,7 @@ type GeneratorOptions struct {
 	SpecFilename string
 }
 
-func NewGenerator(spec *specification.Spec, opts ...GenOption) (*Generator, error) {
+func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Generator, error) {
 	g := &Generator{
 		Options: defaultOptions,
 		Spec:    spec,
@@ -66,7 +66,7 @@ func NewGenerator(spec *specification.Spec, opts ...GenOption) (*Generator, erro
 	if err != nil {
 		return nil, fmt.Errorf("file components: %w", err)
 	}
-	g.FileHandler, err = NewFileHandler(g.Operations, g.Options.BasePath)
+	g.FileHandler, err = NewFileHandler(g.Operations, g.Options.BasePath, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("file handler: %w", err)
 	}

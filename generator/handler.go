@@ -23,7 +23,7 @@ type Handler struct {
 	Responses       []HandlerResponse
 }
 
-func NewHandler(o *Operation, basePathPrefix string) (zero *Handler, _ Imports, _ error) {
+func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler, _ Imports, _ error) {
 	out := &Handler{
 		Operation: o,
 
@@ -33,7 +33,7 @@ func NewHandler(o *Operation, basePathPrefix string) (zero *Handler, _ Imports, 
 
 		CanParseError: len(o.Parameters.Query.List) > 0 || len(o.Parameters.Path.List) > 0 || len(o.Parameters.Headers.List) > 0 || o.Body.TypeName != nil,
 	}
-	ps, imports, err := NewHandlerParameters(o.Params)
+	ps, imports, err := NewHandlerParameters(o.Params, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("params: %w", err)
 	}
@@ -95,11 +95,11 @@ type HandlerParameters struct {
 	Header []HandlerHeaderParameter
 }
 
-func NewHandlerParameters(p OperationParams) (zero HandlerParameters, _ Imports, _ error) {
+func NewHandlerParameters(p OperationParams, cfg Config) (zero HandlerParameters, _ Imports, _ error) {
 	out := HandlerParameters{}
 	var imports Imports
 	for _, q := range p.Query.List {
-		p, ims, err := NewHandlerQueryParameter(q.V)
+		p, ims, err := NewHandlerQueryParameter(q.V, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("query parameter %q: %w", q.Name, err)
 		}
@@ -115,7 +115,7 @@ func NewHandlerParameters(p OperationParams) (zero HandlerParameters, _ Imports,
 		out.Path = append(out.Path, p)
 	}
 	for _, q := range p.Headers.List {
-		p, ims, err := NewHandlerHeaderParameter(q.V)
+		p, ims, err := NewHandlerHeaderParameter(q.V, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("header parameter %q: %w", q.Name, err)
 		}
@@ -143,13 +143,21 @@ type HandlerQueryParameter struct {
 	Parser        Parser
 }
 
-func NewHandlerQueryParameter(p *QueryParameter) (zero HandlerQueryParameter, _ Imports, _ error) {
+func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryParameter, _ Imports, _ error) {
+	var ims Imports
 	tp := p.Type
 
 	var tpRender Render = tp
 	if !p.Required {
-		tpRender = NewOptionalType(tp)
+		// switch tp := tp.(type) {
+		// case CustomType:
+		// default:
+		tpRender = NewOptionalType(tp, cfg.Maybe.Type)
+		if cfg.Maybe.Import != "" {
+			ims = append(ims, Import(cfg.Maybe.Import))
+		}
 		// tp = NewOptionalType(tp)
+		// }
 	}
 
 	var parser Parser = tp
@@ -166,7 +174,7 @@ func NewHandlerQueryParameter(p *QueryParameter) (zero HandlerQueryParameter, _ 
 		Parser:        parser,
 	}
 
-	return out, nil, nil
+	return out, ims, nil
 }
 
 func (p HandlerQueryParameter) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -241,11 +249,15 @@ type HandlerHeaderParameter struct {
 	Parser        Parser
 }
 
-func NewHandlerHeaderParameter(p *HeaderParameter) (zero HandlerHeaderParameter, _ Imports, _ error) {
+func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHeaderParameter, _ Imports, _ error) {
+	var ims Imports
 	tp := p.Type
 
 	if !p.Required {
-		tp = NewOptionalType(tp)
+		tp = NewOptionalType(tp, cfg.Maybe.Type)
+		if cfg.Maybe.Import != "" {
+			ims = append(ims, Import(cfg.Maybe.Import))
+		}
 	}
 
 	fieldName := PublicFieldName(p.Name)
@@ -262,7 +274,7 @@ func NewHandlerHeaderParameter(p *HeaderParameter) (zero HandlerHeaderParameter,
 		Parser:        tp,
 	}
 
-	return out, nil, nil
+	return out, ims, nil
 }
 
 type HandlerResponse struct {

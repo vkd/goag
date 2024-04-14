@@ -8,12 +8,15 @@ type FileHandler struct {
 	Handlers []*Handler
 
 	IsWriteJSONFunc bool
+	IsCustomMaybe   bool
 }
 
-func NewFileHandler(os []*Operation, basePathPrefix string) (zero FileHandler, _ error) {
-	out := FileHandler{}
+func NewFileHandler(os []*Operation, basePathPrefix string, cfg Config) (zero FileHandler, _ error) {
+	out := FileHandler{
+		IsCustomMaybe: cfg.Maybe.Type != "",
+	}
 	for _, o := range os {
-		h, ims, err := NewHandler(o, basePathPrefix)
+		h, ims, err := NewHandler(o, basePathPrefix, cfg)
 		if err != nil {
 			return zero, fmt.Errorf("handler %q: %w", o.Name, err)
 		}

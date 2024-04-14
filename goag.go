@@ -22,7 +22,7 @@ type Generator struct {
 	DoNotEdit bool
 }
 
-func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath string) error {
+func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath, cfgFilename string) error {
 	ts, err := os.ReadDir(dir)
 	if err != nil {
 		return fmt.Errorf("read dir %q: %w", dir, err)
@@ -37,7 +37,9 @@ func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath str
 
 		specFile := filepath.Join(testpath, specFilename)
 
-		err = g.generateFile(filepath.Join(testpath, out), packageName, specFile, basePath)
+		cfgFile := filepath.Join(testpath, cfgFilename)
+
+		err = g.generateFile(filepath.Join(testpath, out), packageName, specFile, basePath, cfgFile)
 		if err != nil {
 			return fmt.Errorf("generate: %w", err)
 		}
@@ -46,11 +48,11 @@ func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath str
 	return nil
 }
 
-func (g Generator) GenerateFile(outDir, packageName, specFilename, basePath string) error {
-	return g.generateFile(outDir, packageName, specFilename, basePath)
+func (g Generator) GenerateFile(outDir, packageName, specFilename, basePath, cfgFilename string) error {
+	return g.generateFile(outDir, packageName, specFilename, basePath, cfgFilename)
 }
 
-func (g Generator) generateFile(outDir, packageName, specFilename, basePath string) error {
+func (g Generator) generateFile(outDir, packageName, specFilename, basePath, cfgFilename string) error {
 	specRaw, err := os.ReadFile(specFilename)
 	if err != nil {
 		return fmt.Errorf("read spec file: %w", err)
@@ -63,7 +65,12 @@ func (g Generator) generateFile(outDir, packageName, specFilename, basePath stri
 
 	specBaseFilename := filepath.Base(specFilename)
 
-	err = g.Generate(openapi3Spec, outDir, packageName, specRaw, specBaseFilename, basePath)
+	cfg, err := generator.LoadConfig(cfgFilename)
+	if err != nil {
+		return fmt.Errorf("load config: %w", err)
+	}
+
+	err = g.Generate(openapi3Spec, outDir, packageName, specRaw, specBaseFilename, basePath, cfg)
 	if err != nil {
 		return fmt.Errorf("generate: %w", err)
 	}
@@ -71,7 +78,7 @@ func (g Generator) generateFile(outDir, packageName, specFilename, basePath stri
 	return nil
 }
 
-func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packageName string, specRaw []byte, baseFilename, basePath string) error {
+func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packageName string, specRaw []byte, baseFilename, basePath string, cfg generator.Config) error {
 	s, err := specification.ParseSwagger(openapi3Spec)
 	if err != nil {
 		return fmt.Errorf("parse specification: %w", err)
@@ -101,6 +108,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 	}
 
 	gen, err := generator.NewGenerator(s,
+		cfg,
 		generator.PackageName(packageName),
 		generator.IfOption(generator.SkipDoNotEdit(), !g.DoNotEdit),
 		generator.BasePath(basePath),
