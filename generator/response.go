@@ -10,8 +10,7 @@ import (
 type Response struct {
 	*specification.Response
 
-	Name       string
-	StatusCode string
+	Name string
 
 	Headers []ResponseHeader
 
@@ -25,8 +24,6 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 	if response.Content.Has("application/json") {
 		r.Name += "JSON"
 	}
-
-	r.StatusCode = status
 
 	var imports Imports
 

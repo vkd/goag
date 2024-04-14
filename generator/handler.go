@@ -75,11 +75,11 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 	}
 
 	if o.DefaultResponse != nil {
-		resp := NewHandlerResponse(o.DefaultResponse, out)
+		resp := NewHandlerResponse(o.DefaultResponse.Response, o.Name, o.DefaultResponse.StatusCode, out.ResponserInterfaceName)
 		out.DefaultResponse = &resp
 	}
 	for _, r := range o.Responses {
-		out.Responses = append(out.Responses, NewHandlerResponse(r, out))
+		out.Responses = append(out.Responses, NewHandlerResponse(r.Response, o.Name, r.StatusCode, out.ResponserInterfaceName))
 	}
 
 	return out, imports, nil
@@ -301,17 +301,17 @@ type HandlerResponse struct {
 	Args []ResponseArg
 }
 
-func NewHandlerResponse(r *Response, h *Handler) HandlerResponse {
+func NewHandlerResponse(r *Response, name OperationName, status, ifaceName string) HandlerResponse {
 	out := HandlerResponse{
 		Response: r,
 
-		HandlerName: h.Name,
+		HandlerName: name,
 
-		Status:    r.StatusCode,
-		IsDefault: r.StatusCode == "default",
+		Status:    status,
+		IsDefault: status == "default",
 	}
 
-	out.Name = string(h.Name) + "Response" + strings.Title(r.StatusCode)
+	out.Name = string(name) + "Response" + strings.Title(status)
 	if r.ContentJSON.Set {
 		out.Name += "JSON"
 		out.ContentType = "application/json"
@@ -400,7 +400,7 @@ func NewHandlerResponse(r *Response, h *Handler) HandlerResponse {
 		})
 	}
 
-	out.ResponserInterfaceName = h.ResponserInterfaceName
+	out.ResponserInterfaceName = ifaceName
 
 	return out
 }

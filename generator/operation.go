@@ -34,8 +34,8 @@ type Operation struct {
 		TypeName Render
 	}
 
-	DefaultResponse *Response
-	Responses       []*Response
+	DefaultResponse *ResponseCode
+	Responses       []*ResponseCode
 }
 
 func NewOperation(s *specification.Operation, components specification.Components) (zero *Operation, _ Imports, _ error) {
@@ -117,10 +117,17 @@ func NewOperation(s *specification.Operation, components specification.Component
 		}
 		imports = append(imports, ims...)
 
-		if r.Name == "default" {
-			o.DefaultResponse = resp
-		} else {
-			o.Responses = append(o.Responses, resp)
+		switch r.Name {
+		case "default":
+			o.DefaultResponse = &ResponseCode{
+				Response:   resp,
+				StatusCode: r.Name,
+			}
+		default:
+			o.Responses = append(o.Responses, &ResponseCode{
+				Response:   resp,
+				StatusCode: r.Name,
+			})
 		}
 	}
 
@@ -193,4 +200,9 @@ func NewOperationParams(params specification.OperationParameters) (zero Operatio
 type OperationPathElement struct {
 	Raw   string
 	Param Maybe[*PathParameter]
+}
+
+type ResponseCode struct {
+	*Response
+	StatusCode string
 }
