@@ -19,5 +19,17 @@ func writeJSON(w io.Writer, v interface{}, name string) {
 
 {{ end -}}
 
+type Maybe[T any] struct {
+	IsSet   bool
+	Value T
+}
+
+func Just[T any](v T) Maybe[T] {
+	return Maybe[T]{
+		Value: v,
+		IsSet:   true,
+	}
+}
+
 {{ template "ErrParseParam" }}
 {{ end }}

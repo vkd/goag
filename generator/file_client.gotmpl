@@ -51,8 +51,8 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 		{{- if .Required }}
 	{{ .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName) }}
 		{{- else }}
-	if request.Query.{{ .FieldName }} != nil {
-		{{ .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName) }}
+	if request.Query.{{ .FieldName }}.IsSet {
+		{{ .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName ".Value") }}
 	}
 		{{- end }}
 		{{- end }}
@@ -73,11 +73,13 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 	}
 
 	{{- range $_, $h := .Headers }}
-	{{- if not $h.Required }}
-	if request.Headers.{{ $h.FieldName }} != nil {
-	{{- end }}
-	req.Header.Set("{{ $h.Name }}", {{ $h.RenderFormat (print "request.Headers." $h.FieldName) }})
-	{{- if not $h.Required }}}{{- end }}
+		{{- if not $h.Required }}
+	if request.Headers.{{ $h.FieldName }}.IsSet {
+		req.Header.Set("{{ $h.Name }}", {{ $h.Type.RenderFormat (print "request.Headers." $h.FieldName ".Value") }})
+	}
+		{{- else }}
+	req.Header.Set("{{ $h.Name }}", {{ $h.Type.RenderFormat (print "request.Headers." $h.FieldName) }})
+		{{- end }}
 	{{- end }}
 
 	resp, err := c.HTTPClient.Do(req)
@@ -161,7 +163,7 @@ var hs []string
 	{{- end }}
 {{ end }}
 
-{{- if .ContentJSON.IsSet }}
+{{- if .ContentJSON.Set }}
 err := json.NewDecoder(resp.Body).Decode(&response.Body)
 if err != nil {
 	return nil, fmt.Errorf("decode '{{ .Name }}' response body: %w", err)

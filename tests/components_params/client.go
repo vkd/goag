@@ -34,8 +34,8 @@ func (c *Client) PostShopsNew(ctx context.Context, request PostShopsNewParams) (
 	var requestURL = c.BaseURL + "/shops/new"
 
 	query := make(url.Values, 1)
-	if request.Query.Page != nil {
-		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+	if request.Query.Page.IsSet {
+		query["page"] = []string{strconv.FormatInt(int64(request.Query.Page.Value), 10)}
 	}
 	requestURL += "?" + query.Encode()
 
@@ -70,8 +70,8 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
 
 	query := make(url.Values, 1)
-	if request.Query.Page != nil {
-		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+	if request.Query.Page.IsSet {
+		query["page"] = []string{strconv.FormatInt(int64(request.Query.Page.Value), 10)}
 	}
 	requestURL += "?" + query.Encode()
 
@@ -106,8 +106,8 @@ func (c *Client) GetShopsShopReviews(ctx context.Context, request GetShopsShopRe
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/reviews"
 
 	query := make(url.Values, 1)
-	if request.Query.Page != nil {
-		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+	if request.Query.Page.IsSet {
+		query["page"] = []string{strconv.FormatInt(int64(request.Query.Page.Value), 10)}
 	}
 	requestURL += "?" + query.Encode()
 

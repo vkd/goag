@@ -34,8 +34,8 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
 
 	query := make(url.Values, 1)
-	if request.Query.Page != nil {
-		query["page"] = []string{strconv.FormatInt(int64(*request.Query.Page), 10)}
+	if request.Query.Page.IsSet {
+		query["page"] = []string{strconv.FormatInt(int64(request.Query.Page.Value), 10)}
 	}
 	requestURL += "?" + query.Encode()
 
@@ -43,8 +43,8 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.RequestID != nil {
-		req.Header.Set("request-id", *request.Headers.RequestID)
+	if request.Headers.RequestID.IsSet {
+		req.Header.Set("request-id", request.Headers.RequestID.Value)
 	}
 
 	resp, err := c.HTTPClient.Do(req)

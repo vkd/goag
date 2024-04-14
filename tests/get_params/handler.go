@@ -40,7 +40,7 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 
 type GetShopsShopParams struct {
 	Query struct {
-		Page *int32
+		Page Maybe[int32]
 	}
 
 	Path struct {
@@ -48,7 +48,7 @@ type GetShopsShopParams struct {
 	}
 
 	Headers struct {
-		RequestID *string
+		RequestID Maybe[string]
 	}
 }
 
@@ -66,7 +66,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Query.Page = &v
+				params.Query.Page = Just(v)
 			}
 		}
 	}
@@ -78,7 +78,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
 				v := hs[0]
-				params.Headers.RequestID = &v
+				params.Headers.RequestID = Just(v)
 			}
 		}
 	}
@@ -151,6 +151,18 @@ func (r GetShopsShopResponseDefault) Write(w http.ResponseWriter) {
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
+}
+
+type Maybe[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func Just[T any](v T) Maybe[T] {
+	return Maybe[T]{
+		Value: v,
+		IsSet: true,
+	}
 }
 
 type ErrParseParam struct {

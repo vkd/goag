@@ -20,7 +20,7 @@ func TestComponentsParams(t *testing.T) {
 				return NewGetShopsShopResponseDefault(400)
 			}
 			assert.Equal(t, testShop, req.Path.Shop)
-			assert.Equal(t, testPage, *req.Query.Page)
+			assert.Equal(t, Just(testPage), req.Query.Page)
 			return NewGetShopsShopResponse200()
 		},
 	}
@@ -39,7 +39,7 @@ func TestComponentsParams_Optional(t *testing.T) {
 			if err != nil {
 				return NewGetShopsShopResponseDefault(400)
 			}
-			assert.Nil(t, req.Query.Page)
+			assert.False(t, req.Query.Page.IsSet)
 			return NewGetShopsShopResponse200()
 		},
 	}

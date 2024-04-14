@@ -152,11 +152,11 @@ if err != nil {
 {{- end }}{{ end }}
 
 
-{{/* ----------------------------- PointerType ------------------------------------- */}}
+{{/* ----------------------------- OptionalType ------------------------------------- */}}
 
-{{ define "PointerTypeParseString" -}}
+{{ define "OptionalTypeParseString" -}}
 {{ .From.Render }}
-{{ .To }} {{ if .IsNew }}:{{ end }}= &v
+{{ .To }} {{ if .IsNew }}:{{ end }}= Just(v)
 {{- end }}
 
 

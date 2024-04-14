@@ -39,11 +39,11 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 
 type GetShopsShopParams struct {
 	Query struct {
-		Page *Page
+		Page Maybe[Page]
 
 		PageReq Page
 
-		Pages []Page
+		Pages Maybe[[]Page]
 	}
 
 	Path struct {
@@ -51,7 +51,7 @@ type GetShopsShopParams struct {
 	}
 
 	Headers struct {
-		RequestID *RequestID
+		RequestID Maybe[RequestID]
 	}
 }
 
@@ -69,7 +69,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse custom type", Err: err}
 				}
-				params.Query.Page = &v
+				params.Query.Page = Just(v)
 			}
 		}
 		{
@@ -87,13 +87,14 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["pages"]
 			if ok && len(q) > 0 {
-				params.Query.Pages = make([]Page, len(q))
+				v := make([]Page, len(q))
 				for i := range q {
-					err := params.Query.Pages[i].Parse(q[i])
+					err := v[i].Parse(q[i])
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "pages", Reason: "parse custom type", Err: err}
 					}
 				}
+				params.Query.Pages = Just(v)
 			}
 		}
 	}
@@ -109,7 +110,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "header", Parameter: "request-id", Reason: "parse custom type", Err: err}
 				}
-				params.Headers.RequestID = &v
+				params.Headers.RequestID = Just(v)
 			}
 		}
 	}
@@ -185,6 +186,18 @@ func (r GetShopsShopResponseDefault) Write(w http.ResponseWriter) {
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
+}
+
+type Maybe[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func Just[T any](v T) Maybe[T] {
+	return Maybe[T]{
+		Value: v,
+		IsSet: true,
+	}
 }
 
 type ErrParseParam struct {

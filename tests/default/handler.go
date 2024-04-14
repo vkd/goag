@@ -615,7 +615,7 @@ func (r getShopsShopPetsHTTPRequest) Parse() (GetShopsShopPetsParams, error) {
 
 type GetShopsShopPetsParams struct {
 	Query struct {
-		Page *int32
+		Page Maybe[int32]
 
 		PageSize int32
 	}
@@ -639,7 +639,7 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Query.Page = &v
+				params.Query.Page = Just(v)
 			}
 		}
 		{
@@ -782,13 +782,13 @@ func (r reviewShopHTTPRequest) Parse() (ReviewShopParams, error) {
 
 type ReviewShopParams struct {
 	Query struct {
-		Page *int32
+		Page Maybe[int32]
 
 		PageSize int32
 
-		Tag []string
+		Tag Maybe[[]string]
 
-		Filter []int32
+		Filter Maybe[[]int32]
 	}
 
 	Path struct {
@@ -796,7 +796,7 @@ type ReviewShopParams struct {
 	}
 
 	Headers struct {
-		RequestID *string
+		RequestID Maybe[string]
 
 		UserID string
 	}
@@ -818,7 +818,7 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Query.Page = &v
+				params.Query.Page = Just(v)
 			}
 		}
 		{
@@ -837,20 +837,22 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 		{
 			q, ok := query["tag"]
 			if ok && len(q) > 0 {
-				params.Query.Tag = q
+				v := q
+				params.Query.Tag = Just(v)
 			}
 		}
 		{
 			q, ok := query["filter"]
 			if ok && len(q) > 0 {
-				params.Query.Filter = make([]int32, len(q))
+				v := make([]int32, len(q))
 				for i := range q {
 					vInt, err := strconv.ParseInt(q[i], 10, 32)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse int32", Err: err}
 					}
-					params.Query.Filter[i] = int32(vInt)
+					v[i] = int32(vInt)
 				}
+				params.Query.Filter = Just(v)
 			}
 		}
 	}
@@ -862,7 +864,7 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
 				v := hs[0]
-				params.Headers.RequestID = &v
+				params.Headers.RequestID = Just(v)
 			}
 		}
 		{
@@ -979,6 +981,18 @@ func writeJSON(w io.Writer, v interface{}, name string) {
 	err := json.NewEncoder(w).Encode(v)
 	if err != nil {
 		LogError(fmt.Errorf("write json response %q: %w", name, err))
+	}
+}
+
+type Maybe[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func Just[T any](v T) Maybe[T] {
+	return Maybe[T]{
+		Value: v,
+		IsSet: true,
 	}
 }
 

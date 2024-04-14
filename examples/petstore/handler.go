@@ -46,7 +46,7 @@ type ListPetsParams struct {
 	Query struct {
 
 		// Limit - How many items to return at one time (max 100)
-		Limit *int32
+		Limit Maybe[int32]
 	}
 }
 
@@ -64,7 +64,7 @@ func newListPetsParams(r *http.Request) (zero ListPetsParams, _ error) {
 					return zero, ErrParseParam{In: "query", Parameter: "limit", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Query.Limit = &v
+				params.Query.Limit = Just(v)
 			}
 		}
 	}
@@ -343,6 +343,18 @@ func writeJSON(w io.Writer, v interface{}, name string) {
 	err := json.NewEncoder(w).Encode(v)
 	if err != nil {
 		LogError(fmt.Errorf("write json response %q: %w", name, err))
+	}
+}
+
+type Maybe[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func Just[T any](v T) Maybe[T] {
+	return Maybe[T]{
+		Value: v,
+		IsSet: true,
 	}
 }
 

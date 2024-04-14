@@ -42,31 +42,31 @@ type GetReviewsParams struct {
 	Query struct {
 		IntReq int
 
-		Int *int
+		Int Maybe[int]
 
 		Int32Req int32
 
-		Int32 *int32
+		Int32 Maybe[int32]
 
 		Int64Req int64
 
-		Int64 *int64
+		Int64 Maybe[int64]
 
 		Float32Req float32
 
-		Float32 *float32
+		Float32 Maybe[float32]
 
 		Float64Req float64
 
-		Float64 *float64
+		Float64 Maybe[float64]
 
 		StringReq string
 
-		String *string
+		String Maybe[string]
 
-		Tag []string
+		Tag Maybe[[]string]
 
-		Filter []int32
+		Filter Maybe[[]int32]
 	}
 
 	Path struct {
@@ -74,7 +74,7 @@ type GetReviewsParams struct {
 	}
 
 	Headers struct {
-		RequestID *string
+		RequestID Maybe[string]
 
 		UserID string
 	}
@@ -107,7 +107,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 					return zero, ErrParseParam{In: "query", Parameter: "int", Reason: "parse int", Err: err}
 				}
 				v := int(vInt)
-				params.Query.Int = &v
+				params.Query.Int = Just(v)
 			}
 		}
 		{
@@ -131,7 +131,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 					return zero, ErrParseParam{In: "query", Parameter: "int32", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Query.Int32 = &v
+				params.Query.Int32 = Just(v)
 			}
 		}
 		{
@@ -154,7 +154,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int64", Reason: "parse int64", Err: err}
 				}
-				params.Query.Int64 = &v
+				params.Query.Int64 = Just(v)
 			}
 		}
 		{
@@ -178,7 +178,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 					return zero, ErrParseParam{In: "query", Parameter: "float32", Reason: "parse float32", Err: err}
 				}
 				v := float32(vFloat)
-				params.Query.Float32 = &v
+				params.Query.Float32 = Just(v)
 			}
 		}
 		{
@@ -201,7 +201,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "float64", Reason: "parse float64", Err: err}
 				}
-				params.Query.Float64 = &v
+				params.Query.Float64 = Just(v)
 			}
 		}
 		{
@@ -217,26 +217,28 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 			q, ok := query["string"]
 			if ok && len(q) > 0 {
 				v := q[0]
-				params.Query.String = &v
+				params.Query.String = Just(v)
 			}
 		}
 		{
 			q, ok := query["tag"]
 			if ok && len(q) > 0 {
-				params.Query.Tag = q
+				v := q
+				params.Query.Tag = Just(v)
 			}
 		}
 		{
 			q, ok := query["filter"]
 			if ok && len(q) > 0 {
-				params.Query.Filter = make([]int32, len(q))
+				v := make([]int32, len(q))
 				for i := range q {
 					vInt, err := strconv.ParseInt(q[i], 10, 32)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse int32", Err: err}
 					}
-					params.Query.Filter[i] = int32(vInt)
+					v[i] = int32(vInt)
 				}
+				params.Query.Filter = Just(v)
 			}
 		}
 	}
@@ -248,7 +250,7 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
 				v := hs[0]
-				params.Headers.RequestID = &v
+				params.Headers.RequestID = Just(v)
 			}
 		}
 		{
@@ -326,6 +328,18 @@ func (r GetReviewsResponseDefault) Write(w http.ResponseWriter) {
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
+}
+
+type Maybe[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func Just[T any](v T) Maybe[T] {
+	return Maybe[T]{
+		Value: v,
+		IsSet: true,
+	}
 }
 
 type ErrParseParam struct {

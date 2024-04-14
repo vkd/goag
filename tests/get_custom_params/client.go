@@ -33,14 +33,14 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String()
 
 	query := make(url.Values, 3)
-	if request.Query.Page != nil {
-		query["page"] = request.Query.Page.Strings()
+	if request.Query.Page.IsSet {
+		query["page"] = request.Query.Page.Value.Strings()
 	}
 	query["page_req"] = request.Query.PageReq.Strings()
-	if request.Query.Pages != nil {
+	if request.Query.Pages.IsSet {
 		{
-			query_values := make([]string, 0, len(request.Query.Pages))
-			for _, v := range request.Query.Pages {
+			query_values := make([]string, 0, len(request.Query.Pages.Value))
+			for _, v := range request.Query.Pages.Value {
 				query_values = append(query_values, v.String())
 			}
 			query["pages"] = query_values
@@ -52,8 +52,8 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.RequestID != nil {
-		req.Header.Set("request-id", request.Headers.RequestID.String())
+	if request.Headers.RequestID.IsSet {
+		req.Header.Set("request-id", request.Headers.RequestID.Value.String())
 	}
 
 	resp, err := c.HTTPClient.Do(req)

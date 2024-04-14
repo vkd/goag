@@ -35,36 +35,36 @@ func (c *Client) GetReviews(ctx context.Context, request GetReviewsParams) (GetR
 
 	query := make(url.Values, 14)
 	query["int_req"] = []string{strconv.FormatInt(int64(request.Query.IntReq), 10)}
-	if request.Query.Int != nil {
-		query["int"] = []string{strconv.FormatInt(int64(*request.Query.Int), 10)}
+	if request.Query.Int.IsSet {
+		query["int"] = []string{strconv.FormatInt(int64(request.Query.Int.Value), 10)}
 	}
 	query["int32_req"] = []string{strconv.FormatInt(int64(request.Query.Int32Req), 10)}
-	if request.Query.Int32 != nil {
-		query["int32"] = []string{strconv.FormatInt(int64(*request.Query.Int32), 10)}
+	if request.Query.Int32.IsSet {
+		query["int32"] = []string{strconv.FormatInt(int64(request.Query.Int32.Value), 10)}
 	}
 	query["int64_req"] = []string{strconv.FormatInt(request.Query.Int64Req, 10)}
-	if request.Query.Int64 != nil {
-		query["int64"] = []string{strconv.FormatInt(*request.Query.Int64, 10)}
+	if request.Query.Int64.IsSet {
+		query["int64"] = []string{strconv.FormatInt(request.Query.Int64.Value, 10)}
 	}
 	query["float32_req"] = []string{strconv.FormatFloat(float64(request.Query.Float32Req), 'e', -1, 32)}
-	if request.Query.Float32 != nil {
-		query["float32"] = []string{strconv.FormatFloat(float64(*request.Query.Float32), 'e', -1, 32)}
+	if request.Query.Float32.IsSet {
+		query["float32"] = []string{strconv.FormatFloat(float64(request.Query.Float32.Value), 'e', -1, 32)}
 	}
 	query["float64_req"] = []string{strconv.FormatFloat(request.Query.Float64Req, 'e', -1, 64)}
-	if request.Query.Float64 != nil {
-		query["float64"] = []string{strconv.FormatFloat(*request.Query.Float64, 'e', -1, 64)}
+	if request.Query.Float64.IsSet {
+		query["float64"] = []string{strconv.FormatFloat(request.Query.Float64.Value, 'e', -1, 64)}
 	}
 	query["string_req"] = []string{request.Query.StringReq}
-	if request.Query.String != nil {
-		query["string"] = []string{*request.Query.String}
+	if request.Query.String.IsSet {
+		query["string"] = []string{request.Query.String.Value}
 	}
-	if request.Query.Tag != nil {
-		query["tag"] = request.Query.Tag
+	if request.Query.Tag.IsSet {
+		query["tag"] = request.Query.Tag.Value
 	}
-	if request.Query.Filter != nil {
+	if request.Query.Filter.IsSet {
 		{
-			query_values := make([]string, 0, len(request.Query.Filter))
-			for _, v := range request.Query.Filter {
+			query_values := make([]string, 0, len(request.Query.Filter.Value))
+			for _, v := range request.Query.Filter.Value {
 				query_values = append(query_values, strconv.FormatInt(int64(v), 10))
 			}
 			query["filter"] = query_values
@@ -76,8 +76,8 @@ func (c *Client) GetReviews(ctx context.Context, request GetReviewsParams) (GetR
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.RequestID != nil {
-		req.Header.Set("request-id", *request.Headers.RequestID)
+	if request.Headers.RequestID.IsSet {
+		req.Header.Set("request-id", request.Headers.RequestID.Value)
 	}
 	req.Header.Set("user-id", request.Headers.UserID)
 

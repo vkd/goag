@@ -39,9 +39,9 @@ func (r getPetsHTTPRequest) Parse() (GetPetsParams, error) {
 
 type GetPetsParams struct {
 	Query struct {
-		Tag []string
+		Tag Maybe[[]string]
 
-		Page []int64
+		Page Maybe[[]int64]
 	}
 }
 
@@ -54,20 +54,22 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 		{
 			q, ok := query["tag"]
 			if ok && len(q) > 0 {
-				params.Query.Tag = q
+				v := q
+				params.Query.Tag = Just(v)
 			}
 		}
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				params.Query.Page = make([]int64, len(q))
+				v := make([]int64, len(q))
 				for i := range q {
 					var err error
-					params.Query.Page[i], err = strconv.ParseInt(q[i], 10, 64)
+					v[i], err = strconv.ParseInt(q[i], 10, 64)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int64", Err: err}
 					}
 				}
+				params.Query.Page = Just(v)
 			}
 		}
 	}
@@ -115,6 +117,18 @@ func (r GetPetsResponseDefault) Write(w http.ResponseWriter) {
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
+}
+
+type Maybe[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func Just[T any](v T) Maybe[T] {
+	return Maybe[T]{
+		Value: v,
+		IsSet: true,
+	}
 }
 
 type ErrParseParam struct {

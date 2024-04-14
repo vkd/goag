@@ -40,11 +40,11 @@ func (r postShopsShopStringSepShopSchemaPetsHTTPRequest) Parse() (PostShopsShopS
 
 type PostShopsShopStringSepShopSchemaPetsParams struct {
 	Query struct {
-		PageInt *int
+		PageInt Maybe[int]
 
-		PageSchema *Page
+		PageSchema Maybe[Page]
 
-		PagesSchema *Pages
+		PagesSchema Maybe[Pages]
 
 		PageIntReq int
 
@@ -58,9 +58,9 @@ type PostShopsShopStringSepShopSchemaPetsParams struct {
 	}
 
 	Headers struct {
-		XOrganizationInt *int
+		XOrganizationInt Maybe[int]
 
-		XOrganizationSchema *Organization
+		XOrganizationSchema Maybe[Organization]
 
 		XOrganizationIntRequired int
 
@@ -82,7 +82,7 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 					return zero, ErrParseParam{In: "query", Parameter: "page_int", Reason: "parse int", Err: err}
 				}
 				v := int(vInt)
-				params.Query.PageInt = &v
+				params.Query.PageInt = Just(v)
 			}
 		}
 		{
@@ -93,7 +93,7 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_schema", Reason: "parse Page", Err: err}
 				}
-				params.Query.PageSchema = &v
+				params.Query.PageSchema = Just(v)
 			}
 		}
 		{
@@ -104,7 +104,7 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "pages_schema", Reason: "parse Pages", Err: err}
 				}
-				params.Query.PagesSchema = &v
+				params.Query.PagesSchema = Just(v)
 			}
 		}
 		{
@@ -145,7 +145,7 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Int", Reason: "parse int", Err: err}
 				}
 				v := int(vInt)
-				params.Headers.XOrganizationInt = &v
+				params.Headers.XOrganizationInt = Just(v)
 			}
 		}
 		{
@@ -156,7 +156,7 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				if err != nil {
 					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema", Reason: "parse Organization", Err: err}
 				}
-				params.Headers.XOrganizationSchema = &v
+				params.Headers.XOrganizationSchema = Just(v)
 			}
 		}
 		{
@@ -269,6 +269,18 @@ func (r PostShopsShopStringSepShopSchemaPetsResponse200) Write(w http.ResponseWr
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
+}
+
+type Maybe[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func Just[T any](v T) Maybe[T] {
+	return Maybe[T]{
+		Value: v,
+		IsSet: true,
+	}
 }
 
 type ErrParseParam struct {

@@ -141,17 +141,15 @@ type HandlerQueryParameter struct {
 	ParameterName string
 	Required      bool
 	Parser        Parser
-	IsPointer     bool
 }
 
 func NewHandlerQueryParameter(p *QueryParameter) (zero HandlerQueryParameter, _ Imports, _ error) {
 	tp := p.Type
 
 	var tpRender Render = tp
-	var isPointer bool
-	if _, ok := tp.(SliceType); !p.Required && !ok {
-		tpRender = NewPointerType(tp)
-		isPointer = true
+	if !p.Required {
+		tpRender = NewOptionalType(tp)
+		// tp = NewOptionalType(tp)
 	}
 
 	var parser Parser = tp
@@ -166,7 +164,6 @@ func NewHandlerQueryParameter(p *QueryParameter) (zero HandlerQueryParameter, _ 
 		ParameterName: p.Name,
 		Required:      p.Required,
 		Parser:        parser,
-		IsPointer:     isPointer,
 	}
 
 	return out, nil, nil
@@ -242,16 +239,13 @@ type HandlerHeaderParameter struct {
 	ParameterName string
 	Required      bool
 	Parser        Parser
-	IsPointer     bool
 }
 
 func NewHandlerHeaderParameter(p *HeaderParameter) (zero HandlerHeaderParameter, _ Imports, _ error) {
 	tp := p.Type
 
-	var isPointer bool
 	if !p.Required {
-		tp = NewPointerType(tp)
-		isPointer = true
+		tp = NewOptionalType(tp)
 	}
 
 	fieldName := PublicFieldName(p.Name)
@@ -266,7 +260,6 @@ func NewHandlerHeaderParameter(p *HeaderParameter) (zero HandlerHeaderParameter,
 		ParameterName: p.Name,
 		Required:      p.Required,
 		Parser:        tp,
-		IsPointer:     isPointer,
 	}
 
 	return out, nil, nil

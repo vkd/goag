@@ -40,7 +40,7 @@ func (r postShopsNewHTTPRequest) Parse() (PostShopsNewParams, error) {
 
 type PostShopsNewParams struct {
 	Query struct {
-		Page *int32
+		Page Maybe[int32]
 	}
 }
 
@@ -58,7 +58,7 @@ func newPostShopsNewParams(r *http.Request) (zero PostShopsNewParams, _ error) {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Query.Page = &v
+				params.Query.Page = Just(v)
 			}
 		}
 	}
@@ -135,7 +135,7 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 
 type GetShopsShopParams struct {
 	Query struct {
-		Page *int32
+		Page Maybe[int32]
 	}
 
 	Path struct {
@@ -157,7 +157,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Query.Page = &v
+				params.Query.Page = Just(v)
 			}
 		}
 	}
@@ -259,7 +259,7 @@ func (r getShopsShopReviewsHTTPRequest) Parse() (GetShopsShopReviewsParams, erro
 
 type GetShopsShopReviewsParams struct {
 	Query struct {
-		Page *int32
+		Page Maybe[int32]
 	}
 
 	Path struct {
@@ -281,7 +281,7 @@ func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsPara
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Query.Page = &v
+				params.Query.Page = Just(v)
 			}
 		}
 	}
@@ -359,6 +359,18 @@ func (r GetShopsShopReviewsResponseDefault) Write(w http.ResponseWriter) {
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
+}
+
+type Maybe[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func Just[T any](v T) Maybe[T] {
+	return Maybe[T]{
+		Value: v,
+		IsSet: true,
+	}
 }
 
 type ErrParseParam struct {

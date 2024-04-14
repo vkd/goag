@@ -21,8 +21,8 @@ func TestGetMultiParams(t *testing.T) {
 				return NewGetShopsShopResponseDefault(400)
 			}
 			assert.Equal(t, testShop, req.Path.Shop)
-			assert.Equal(t, testPage, *req.Query.Page)
-			assert.Equal(t, testRequestID, *req.Headers.RequestID)
+			assert.Equal(t, Just(testPage), req.Query.Page)
+			assert.Equal(t, Just(testRequestID), req.Headers.RequestID)
 			return NewGetShopsShopResponse200()
 		},
 	}
@@ -43,7 +43,7 @@ func TestGetMultiParams_Optional(t *testing.T) {
 			if err != nil {
 				return NewGetShopsShopResponseDefault(400)
 			}
-			assert.Nil(t, req.Query.Page)
+			assert.False(t, req.Query.Page.IsSet)
 			return NewGetShopsShopResponse200()
 		},
 	}

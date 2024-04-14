@@ -63,24 +63,6 @@ func (p QueryParameter) ExecuteFormat(to, from string) (string, error) {
 		})
 	}
 
-	if !p.Required {
-		var pointer string
-		switch p.Type.(type) {
-		case CustomType:
-		case Ref[specification.QueryParameter]:
-		case Ref[specification.HeaderParameter]:
-		case Ref[specification.Schema]:
-		default:
-			pointer = "*"
-		}
-		return ExecuteTemplate("ClientQueryParameterFormat", TData{
-			"From": pointer + from,
-			"To":   to,
-
-			"Formatter": p.Type,
-		})
-	}
-
 	return ExecuteTemplate("ClientQueryParameterFormat", TData{
 		"From": from,
 		"To":   to,
@@ -132,7 +114,6 @@ type HeaderParameter struct {
 	FieldTypeName string
 	Type          SchemaType
 	Required      bool
-	IsPointer     bool
 }
 
 func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter]) (zero *HeaderParameter, _ Imports, _ error) {

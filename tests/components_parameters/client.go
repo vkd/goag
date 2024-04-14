@@ -34,14 +34,14 @@ func (c *Client) PostShopsShopStringSepShopSchemaPets(ctx context.Context, reque
 	var requestURL = c.BaseURL + "/shops/" + request.Path.ShopString + "/sep/" + request.Path.ShopSchema.String() + "/pets"
 
 	query := make(url.Values, 5)
-	if request.Query.PageInt != nil {
-		query["page_int"] = []string{strconv.FormatInt(int64(*request.Query.PageInt), 10)}
+	if request.Query.PageInt.IsSet {
+		query["page_int"] = []string{strconv.FormatInt(int64(request.Query.PageInt.Value), 10)}
 	}
-	if request.Query.PageSchema != nil {
-		query["page_schema"] = []string{request.Query.PageSchema.String()}
+	if request.Query.PageSchema.IsSet {
+		query["page_schema"] = []string{request.Query.PageSchema.Value.String()}
 	}
-	if request.Query.PagesSchema != nil {
-		query["pages_schema"] = request.Query.PagesSchema.Strings()
+	if request.Query.PagesSchema.IsSet {
+		query["pages_schema"] = request.Query.PagesSchema.Value.Strings()
 	}
 	query["page_int_req"] = []string{strconv.FormatInt(int64(request.Query.PageIntReq), 10)}
 	query["page_schema_req"] = []string{request.Query.PageSchemaReq.String()}
@@ -51,11 +51,11 @@ func (c *Client) PostShopsShopStringSepShopSchemaPets(ctx context.Context, reque
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.XOrganizationInt != nil {
-		req.Header.Set("X-Organization-Int", strconv.FormatInt(int64(*request.Headers.XOrganizationInt), 10))
+	if request.Headers.XOrganizationInt.IsSet {
+		req.Header.Set("X-Organization-Int", strconv.FormatInt(int64(request.Headers.XOrganizationInt.Value), 10))
 	}
-	if request.Headers.XOrganizationSchema != nil {
-		req.Header.Set("X-Organization-Schema", request.Headers.XOrganizationSchema.String())
+	if request.Headers.XOrganizationSchema.IsSet {
+		req.Header.Set("X-Organization-Schema", request.Headers.XOrganizationSchema.Value.String())
 	}
 	req.Header.Set("X-Organization-Int-Required", strconv.FormatInt(int64(request.Headers.XOrganizationIntRequired), 10))
 	req.Header.Set("X-Organization-Schema-Required", request.Headers.XOrganizationSchemaRequired.String())

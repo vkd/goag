@@ -419,25 +419,25 @@ func (r Ref[T]) RenderFormat(from string) (string, error) {
 	return string(from) + ".String()", nil
 }
 
-type PointerType struct {
+type OptionalType struct {
 	V SchemaType
 }
 
-func NewPointerType(v SchemaType) PointerType {
-	return PointerType{V: v}
+func NewOptionalType(v SchemaType) OptionalType {
+	return OptionalType{V: v}
 }
 
-var _ Render = PointerType{}
+var _ Render = OptionalType{}
 
-func (p PointerType) Render() (string, error) {
+func (p OptionalType) Render() (string, error) {
 	out, err := p.V.Render()
-	return "*" + out, err
+	return "Maybe[" + out + "]", err
 }
 
-var _ Parser = PointerType{}
+var _ Parser = OptionalType{}
 
-func (p PointerType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("PointerTypeParseString", TData{
+func (p OptionalType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("OptionalTypeParseString", TData{
 		"To": to,
 		"From": RenderFunc(func() (string, error) {
 			return p.V.ParseString("v", from, true, mkErr)
@@ -446,11 +446,11 @@ func (p PointerType) ParseString(to string, from string, isNew bool, mkErr Error
 	})
 }
 
-func (p PointerType) IsMultivalue() bool { return p.V.IsMultivalue() }
+func (p OptionalType) IsMultivalue() bool { return p.V.IsMultivalue() }
 
-var _ Formatter = PointerType{}
+var _ Formatter = OptionalType{}
 
-func (p PointerType) RenderFormat(from string) (string, error) {
+func (p OptionalType) RenderFormat(from string) (string, error) {
 	return p.V.RenderFormat(from)
 }
 

@@ -19,24 +19,24 @@ func TestDefault(t *testing.T) {
 
 	// Query
 	params.Query.IntReq = 1
-	params.Query.Int = ptr(int(2))
+	params.Query.Int = Just(int(2))
 	params.Query.Int32Req = 3
-	params.Query.Int32 = ptr(int32(4))
+	params.Query.Int32 = Just(int32(4))
 	params.Query.Int64Req = 5
-	params.Query.Int64 = ptr(int64(6))
+	params.Query.Int64 = Just(int64(6))
 	params.Query.Float32Req = 7
-	params.Query.Float32 = ptr(float32(8))
+	params.Query.Float32 = Just(float32(8))
 	params.Query.Float64Req = 9
-	params.Query.Float64 = ptr(float64(10))
+	params.Query.Float64 = Just(float64(10))
 
 	params.Query.StringReq = "11"
-	params.Query.String = ptr("12")
+	params.Query.String = Just("12")
 
-	params.Query.Tag = []string{"13", "14"}
-	params.Query.Filter = []int32{15, 16}
+	params.Query.Tag = Just([]string{"13", "14"})
+	params.Query.Filter = Just([]int32{15, 16})
 
 	// Headers
-	params.Headers.RequestID = ptr("2000")
+	params.Headers.RequestID = Just("2000")
 	params.Headers.UserID = "2001"
 
 	api := API{GetReviewsHandler: func(ctx context.Context, r GetReviewsRequest) GetReviewsResponse {
@@ -47,24 +47,24 @@ func TestDefault(t *testing.T) {
 
 		// Query
 		assert.Equal(t, params.Query.IntReq, p.Query.IntReq)
-		assert.Equal(t, *params.Query.Int, *p.Query.Int)
+		assert.Equal(t, params.Query.Int, p.Query.Int)
 		assert.Equal(t, params.Query.Int32Req, p.Query.Int32Req)
-		assert.Equal(t, *params.Query.Int32, *p.Query.Int32)
+		assert.Equal(t, params.Query.Int32, p.Query.Int32)
 		assert.Equal(t, params.Query.Int64Req, p.Query.Int64Req)
-		assert.Equal(t, *params.Query.Int64, *p.Query.Int64)
+		assert.Equal(t, params.Query.Int64, p.Query.Int64)
 		assert.Equal(t, params.Query.Float32Req, p.Query.Float32Req)
-		assert.Equal(t, *params.Query.Float32, *p.Query.Float32)
+		assert.Equal(t, params.Query.Float32, p.Query.Float32)
 		assert.Equal(t, params.Query.Float64Req, p.Query.Float64Req)
-		assert.Equal(t, *params.Query.Float64, *p.Query.Float64)
+		assert.Equal(t, params.Query.Float64, p.Query.Float64)
 
 		assert.Equal(t, params.Query.StringReq, p.Query.StringReq)
-		assert.Equal(t, *params.Query.String, *p.Query.String)
+		assert.Equal(t, params.Query.String, p.Query.String)
 
 		assert.Equal(t, params.Query.Tag, p.Query.Tag)
 		assert.Equal(t, params.Query.Filter, p.Query.Filter)
 
 		// Headers
-		assert.Equal(t, *params.Headers.RequestID, *p.Headers.RequestID)
+		assert.Equal(t, params.Headers.RequestID, p.Headers.RequestID)
 		assert.Equal(t, params.Headers.UserID, p.Headers.UserID)
 
 		return NewGetReviewsResponseDefault(200)

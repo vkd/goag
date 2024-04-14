@@ -105,14 +105,3 @@ type ClientHeader struct {
 	Required  bool
 	Type      Formatter
 }
-
-func (c *ClientHeader) RenderFormat(from string) (string, error) {
-	switch t := c.Type.(type) {
-	case CustomType, Ref[specification.Schema], Ref[specification.HeaderParameter]:
-		return t.RenderFormat(from)
-	}
-	if c.Required {
-		return c.Type.RenderFormat(from)
-	}
-	return c.Type.RenderFormat("*" + from)
-}
