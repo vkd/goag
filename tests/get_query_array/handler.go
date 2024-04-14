@@ -55,7 +55,7 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 			q, ok := query["tag"]
 			if ok && len(q) > 0 {
 				v := q
-				params.Query.Tag = Just(v)
+				params.Query.Tag.Set(v)
 			}
 		}
 		{
@@ -69,7 +69,7 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 						return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int64", Err: err}
 					}
 				}
-				params.Query.Page = Just(v)
+				params.Query.Page.Set(v)
 			}
 		}
 	}
@@ -126,9 +126,14 @@ type Maybe[T any] struct {
 
 func Just[T any](v T) Maybe[T] {
 	return Maybe[T]{
-		Value: v,
 		IsSet: true,
+		Value: v,
 	}
+}
+
+func (m *Maybe[T]) Set(v T) {
+	m.IsSet = true
+	m.Value = v
 }
 
 type ErrParseParam struct {

@@ -88,7 +88,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
                 {{ .ParseStrings (print "params.Query." .FieldName) "q" false (returns "zero" (parseError "query" .ParameterName))}}
 			{{- else }}
                 {{ .ParseStrings "v" "q" true (returns "zero" (parseError "query" .ParameterName))}}
-				params.Query.{{ .FieldName }} = Just(v)
+				params.Query.{{ .FieldName }}.Set(v)
 			{{- end }}
             }
 		}

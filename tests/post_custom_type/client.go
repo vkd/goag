@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 type Client struct {
@@ -32,6 +33,12 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 // PostShopsShopPets - POST /shops/{shop}/pets
 func (c *Client) PostShopsShopPets(ctx context.Context, request PostShopsShopPetsParams) (PostShopsShopPetsResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String() + "/pets"
+
+	query := make(url.Values, 1)
+	if request.Query.Filter.IsSet {
+		query["filter"] = request.Query.Filter.Value.Strings()
+	}
+	requestURL += "?" + query.Encode()
 
 	bs, err := json.Marshal(request.Body)
 	if err != nil {

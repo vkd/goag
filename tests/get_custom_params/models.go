@@ -20,6 +20,8 @@ func (p *Page) Parse(v string) error {
 	return nil
 }
 
+func (p *Page) Set(s string) error { return p.Parse(s) }
+
 type Shop string
 
 func (s Shop) String() string { return string(s) }

@@ -9,6 +9,10 @@ const SpecFile string = `paths:
           required: true
           schema:
             x-goag-go-type: github.com/vkd/goag/tests/post_custom_type/pkg.ShopType
+        - name: filter
+          in: query
+          schema:
+            x-goag-go-type: github.com/vkd/goag/tests/post_custom_type/pkg.ShopType
       requestBody:
         content:
           application/json:

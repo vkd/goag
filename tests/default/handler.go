@@ -639,7 +639,7 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Query.Page = Just(v)
+				params.Query.Page.Set(v)
 			}
 		}
 		{
@@ -818,7 +818,7 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				v := int32(vInt)
-				params.Query.Page = Just(v)
+				params.Query.Page.Set(v)
 			}
 		}
 		{
@@ -838,7 +838,7 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 			q, ok := query["tag"]
 			if ok && len(q) > 0 {
 				v := q
-				params.Query.Tag = Just(v)
+				params.Query.Tag.Set(v)
 			}
 		}
 		{
@@ -852,7 +852,7 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 					}
 					v[i] = int32(vInt)
 				}
-				params.Query.Filter = Just(v)
+				params.Query.Filter.Set(v)
 			}
 		}
 	}
@@ -864,7 +864,7 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
 				v := hs[0]
-				params.Headers.RequestID = Just(v)
+				params.Headers.RequestID.Set(v)
 			}
 		}
 		{
@@ -991,9 +991,14 @@ type Maybe[T any] struct {
 
 func Just[T any](v T) Maybe[T] {
 	return Maybe[T]{
-		Value: v,
 		IsSet: true,
+		Value: v,
 	}
+}
+
+func (m *Maybe[T]) Set(v T) {
+	m.IsSet = true
+	m.Value = v
 }
 
 type ErrParseParam struct {

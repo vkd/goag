@@ -41,6 +41,10 @@ func (r postShopsShopPetsHTTPRequest) Parse() (PostShopsShopPetsParams, error) {
 }
 
 type PostShopsShopPetsParams struct {
+	Query struct {
+		Filter Maybe[pkg.ShopType]
+	}
+
 	Path struct {
 		Shop pkg.ShopType
 	}
@@ -50,6 +54,22 @@ type PostShopsShopPetsParams struct {
 
 func newPostShopsShopPetsParams(r *http.Request) (zero PostShopsShopPetsParams, _ error) {
 	var params PostShopsShopPetsParams
+
+	// Query parameters
+	{
+		query := r.URL.Query()
+		{
+			q, ok := query["filter"]
+			if ok && len(q) > 0 {
+				var v pkg.ShopType
+				err := v.Parse(q[0])
+				if err != nil {
+					return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse custom type", Err: err}
+				}
+				params.Query.Filter.Set(v)
+			}
+		}
+	}
 
 	// Path parameters
 	{
@@ -142,9 +162,14 @@ type Maybe[T any] struct {
 
 func Just[T any](v T) Maybe[T] {
 	return Maybe[T]{
-		Value: v,
 		IsSet: true,
+		Value: v,
 	}
+}
+
+func (m *Maybe[T]) Set(v T) {
+	m.IsSet = true
+	m.Value = v
 }
 
 type ErrParseParam struct {

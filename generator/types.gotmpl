@@ -156,7 +156,10 @@ if err != nil {
 
 {{ define "OptionalTypeParseString" -}}
 {{ .From.Render }}
-{{ .To }} {{ if .IsNew }}:{{ end }}= Just(v)
+{{- if .IsNew }}
+var {{ .To }} {{ .Type.Render }}
+{{- end }}
+{{ .To }}.Set(v)
 {{- end }}
 
 

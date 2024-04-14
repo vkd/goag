@@ -438,7 +438,8 @@ var _ Parser = OptionalType{}
 
 func (p OptionalType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("OptionalTypeParseString", TData{
-		"To": to,
+		"To":   to,
+		"Type": p.V,
 		"From": RenderFunc(func() (string, error) {
 			return p.V.ParseString("v", from, true, mkErr)
 		}),

@@ -9,7 +9,8 @@ type ShopType struct {
 	V string
 }
 
-func (s ShopType) String() string { return s.V }
+func (s ShopType) String() string    { return s.V }
+func (s ShopType) Strings() []string { return []string{s.String()} }
 
 func (s *ShopType) Parse(v string) error {
 	s.V = v
@@ -32,4 +33,14 @@ func (p *PetTag) UnmarshalJSON(v []byte) error {
 	}
 	p.V = s
 	return nil
+}
+
+type Maybe[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func (m *Maybe[T]) Set(v T) {
+	m.IsSet = true
+	m.Value = v
 }
