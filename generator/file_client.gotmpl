@@ -130,7 +130,11 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 
 {{/* ----------------------------- ClientResponse ------------------------------------- */}}
 {{ define "ClientResponse" -}}
+{{- if .ComponentRef -}}
+var response {{ .ComponentRef.Name }}Response
+{{- else -}}
 var response {{ .Name }}
+{{- end }}
 
 {{- if eq .StatusCode "default" }}
 	response.Code = resp.StatusCode
@@ -166,7 +170,11 @@ var hs []string
 {{- if .ContentJSON.Set }}
 err := json.NewDecoder(resp.Body).Decode(&response.Body)
 if err != nil {
+{{- if .ComponentRef }}
+	return nil, fmt.Errorf("decode '{{ .ComponentRef.Name }}Response' response body: %w", err)
+{{- else }}
 	return nil, fmt.Errorf("decode '{{ .Name }}' response body: %w", err)
+{{- end }}
 }
 {{- end }}
 return response, nil

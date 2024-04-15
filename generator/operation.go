@@ -111,9 +111,6 @@ func NewOperation(s *specification.Operation, components specification.Component
 	}
 
 	for _, r := range s.Responses.List {
-		if r.V.Ref() != nil {
-			continue
-		}
 		resp, ims, err := NewResponse(name, r.Name, r.V.Value())
 		if err != nil {
 			return nil, nil, fmt.Errorf("new response for %q status: %w", r.Name, err)
@@ -123,13 +120,15 @@ func NewOperation(s *specification.Operation, components specification.Component
 		switch r.Name {
 		case "default":
 			o.DefaultResponse = &ResponseCode{
-				Response:   resp,
-				StatusCode: r.Name,
+				Response:     resp,
+				StatusCode:   r.Name,
+				ComponentRef: r.V.Ref(),
 			}
 		default:
 			o.Responses = append(o.Responses, &ResponseCode{
-				Response:   resp,
-				StatusCode: r.Name,
+				Response:     resp,
+				StatusCode:   r.Name,
+				ComponentRef: r.V.Ref(),
 			})
 		}
 	}
@@ -207,5 +206,6 @@ type OperationPathElement struct {
 
 type ResponseCode struct {
 	*Response
-	StatusCode string
+	StatusCode   string
+	ComponentRef *specification.Object[string, specification.Ref[specification.Response]]
 }

@@ -73,11 +73,15 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 	}
 
 	if o.DefaultResponse != nil {
-		resp := NewHandlerResponse(o.DefaultResponse.Response, o.Name, o.DefaultResponse.StatusCode, ResponseUsedIn{OperationName: o.Name, Status: o.DefaultResponse.StatusCode})
-		out.DefaultResponse = &resp
+		if o.DefaultResponse.ComponentRef == nil {
+			resp := NewHandlerResponse(o.DefaultResponse.Response, o.Name, o.DefaultResponse.StatusCode, ResponseUsedIn{OperationName: o.Name, Status: o.DefaultResponse.StatusCode})
+			out.DefaultResponse = &resp
+		}
 	}
 	for _, r := range o.Responses {
-		out.Responses = append(out.Responses, NewHandlerResponse(r.Response, o.Name, r.StatusCode, ResponseUsedIn{OperationName: o.Name, Status: r.StatusCode}))
+		if r.ComponentRef == nil {
+			out.Responses = append(out.Responses, NewHandlerResponse(r.Response, o.Name, r.StatusCode, ResponseUsedIn{OperationName: o.Name, Status: r.StatusCode}))
+		}
 	}
 
 	return out, imports, nil

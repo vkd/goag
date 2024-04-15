@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -46,6 +47,13 @@ func (c *Client) GetPet(ctx context.Context, request GetPetParams) (GetPetRespon
 	}
 
 	switch resp.StatusCode {
+	case 200:
+		var response PetResponse
+		err := json.NewDecoder(resp.Body).Decode(&response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("decode 'PetResponse' response body: %w", err)
+		}
+		return response, nil
 
 	default:
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
@@ -71,9 +79,22 @@ func (c *Client) GetV2Pet(ctx context.Context, request GetV2PetParams) (GetV2Pet
 	}
 
 	switch resp.StatusCode {
-
+	case 201:
+		var response Pet2Response
+		err := json.NewDecoder(resp.Body).Decode(&response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("decode 'Pet2Response' response body: %w", err)
+		}
+		return response, nil
 	default:
-		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
+		var response ErrorResponse
+		response.Code = resp.StatusCode
+
+		err := json.NewDecoder(resp.Body).Decode(&response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("decode 'ErrorResponse' response body: %w", err)
+		}
+		return response, nil
 	}
 }
 
@@ -96,6 +117,13 @@ func (c *Client) GetV3Pet(ctx context.Context, request GetV3PetParams) (GetV3Pet
 	}
 
 	switch resp.StatusCode {
+	case 202:
+		var response Pet3Response
+		err := json.NewDecoder(resp.Body).Decode(&response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("decode 'Pet3Response' response body: %w", err)
+		}
+		return response, nil
 
 	default:
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
