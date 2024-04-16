@@ -8,15 +8,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vkd/goag/tests/custom_type/pkg"
 )
 
 func TestGetMultiParams(t *testing.T) {
 	ctx := context.Background()
 	testShop := Shop("paw")
-	testPage := Page(2)
-	testPageReq := Page(3)
-	testPages := []Page{4}
-	testRequestID := RequestID("abcdef")
+	testPageSchemaRefQuery := pkg.Page("testPage")
+	testPageCustomTypeQuery := pkg.PageCustomTypeQuery("testPage2")
+	testShopName := Shop(ShopName(pkg.Page("testPage3")))
 
 	api := API{
 		GetShopsShopHandler: func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse {
@@ -24,12 +24,12 @@ func TestGetMultiParams(t *testing.T) {
 			if err != nil {
 				return NewGetShopsShopResponseDefault(400)
 			}
+
 			assert.Equal(t, testShop, req.Path.Shop)
-			assert.Equal(t, Just(testPage), req.Query.Page)
-			assert.Equal(t, testPageReq, req.Query.PageReq)
-			assert.Equal(t, Just(testPages), req.Query.Pages)
-			assert.Equal(t, Just(testRequestID), req.Headers.RequestID)
-			return NewGetShopsShopResponse200()
+			assert.Equal(t, Just(testPageSchemaRefQuery), req.Query.PageSchemaRefQuery)
+			assert.Equal(t, Just(testPageCustomTypeQuery), req.Query.PageCustomTypeQuery)
+
+			return NewGetShopsShopResponse200JSON(Shop(testShopName))
 		},
 	}
 
@@ -41,14 +41,11 @@ func TestGetMultiParams(t *testing.T) {
 
 	var params GetShopsShopParams
 	params.Path.Shop = testShop
-	params.Query.Page = Just(testPage)
-	params.Query.PageReq = testPageReq
-	params.Query.Pages = Just(testPages)
-	params.Headers.RequestID = Just(testRequestID)
-
+	params.Query.PageSchemaRefQuery = Just(testPageSchemaRefQuery)
+	params.Query.PageCustomTypeQuery = Just(testPageCustomTypeQuery)
 	resp, err := client.GetShopsShop(ctx, params)
 	require.NoError(t, err)
 
-	body := resp.(GetShopsShopResponse200)
-	assert.NotNil(t, body)
+	body := resp.(GetShopsShopResponse200JSON)
+	assert.Equal(t, testShopName, body.Body)
 }

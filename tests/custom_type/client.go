@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -32,31 +33,18 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String()
 
-	query := make(url.Values, 4)
-	if request.Query.Page.IsSet {
-		query["page"] = request.Query.Page.Value.Strings()
+	query := make(url.Values, 2)
+	if request.Query.PageSchemaRefQuery.IsSet {
+		query["page_schema_ref_query"] = []string{request.Query.PageSchemaRefQuery.Value.String()}
 	}
-	query["page_req"] = request.Query.PageReq.Strings()
-	if request.Query.Pages.IsSet {
-		{
-			query_values := make([]string, 0, len(request.Query.Pages.Value))
-			for _, v := range request.Query.Pages.Value {
-				query_values = append(query_values, v.String())
-			}
-			query["pages"] = query_values
-		}
-	}
-	if request.Query.PageCustom.IsSet {
-		query["page_custom"] = []string{request.Query.PageCustom.Value.String()}
+	if request.Query.PageCustomTypeQuery.IsSet {
+		query["page_custom_type_query"] = request.Query.PageCustomTypeQuery.Value.Strings()
 	}
 	requestURL += "?" + query.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
-	}
-	if request.Headers.RequestID.IsSet {
-		req.Header.Set("request-id", request.Headers.RequestID.Value.String())
 	}
 
 	resp, err := c.HTTPClient.Do(req)
@@ -70,7 +58,11 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 
 	switch resp.StatusCode {
 	case 200:
-		var response GetShopsShopResponse200
+		var response GetShopsShopResponse200JSON
+		err := json.NewDecoder(resp.Body).Decode(&response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("decode 'GetShopsShopResponse200JSON' response body: %w", err)
+		}
 		return response, nil
 	default:
 		var response GetShopsShopResponseDefault

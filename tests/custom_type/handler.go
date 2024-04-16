@@ -2,10 +2,14 @@ package test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/vkd/goag/tests/custom_type/pkg"
 )
 
 // ---------------------------------------------
@@ -39,21 +43,13 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 
 type GetShopsShopParams struct {
 	Query struct {
-		Page Maybe[Page]
+		PageSchemaRefQuery Maybe[PageCustom]
 
-		PageReq Page
-
-		Pages Maybe[[]Page]
-
-		PageCustom Maybe[PageCustom]
+		PageCustomTypeQuery Maybe[pkg.PageCustomTypeQuery]
 	}
 
 	Path struct {
 		Shop Shop
-	}
-
-	Headers struct {
-		RequestID Maybe[RequestID]
 	}
 }
 
@@ -64,66 +60,25 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 	{
 		query := r.URL.Query()
 		{
-			q, ok := query["page"]
-			if ok && len(q) > 0 {
-				var v Page
-				err := v.Parse(q[0])
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse custom type", Err: err}
-				}
-				params.Query.Page.Set(v)
-			}
-		}
-		{
-			q, ok := query["page_req"]
-			if !ok {
-				return zero, fmt.Errorf("query parameter 'page_req': is required")
-			}
-			if ok && len(q) > 0 {
-				err := params.Query.PageReq.Parse(q[0])
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_req", Reason: "parse custom type", Err: err}
-				}
-			}
-		}
-		{
-			q, ok := query["pages"]
-			if ok && len(q) > 0 {
-				v := make([]Page, len(q))
-				for i := range q {
-					err := v[i].Parse(q[i])
-					if err != nil {
-						return zero, ErrParseParam{In: "query", Parameter: "pages", Reason: "parse custom type", Err: err}
-					}
-				}
-				params.Query.Pages.Set(v)
-			}
-		}
-		{
-			q, ok := query["page_custom"]
+			q, ok := query["page_schema_ref_query"]
 			if ok && len(q) > 0 {
 				var v PageCustom
 				err := v.Parse(q[0])
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_custom", Reason: "parse PageCustom", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "page_schema_ref_query", Reason: "parse PageCustom", Err: err}
 				}
-				params.Query.PageCustom.Set(v)
+				params.Query.PageSchemaRefQuery.Set(v)
 			}
 		}
-	}
-
-	// Headers
-	{
-		header := r.Header
 		{
-			hs := header.Values("request-id")
-			if len(hs) > 0 {
-				var v RequestID
-				err := v.Parse(hs[0])
+			q, ok := query["page_custom_type_query"]
+			if ok && len(q) > 0 {
+				var v pkg.PageCustomTypeQuery
+				err := v.Parse(q[0])
 				if err != nil {
-					return zero, ErrParseParam{In: "header", Parameter: "request-id", Reason: "parse custom type", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "page_custom_type_query", Reason: "parse custom type", Err: err}
 				}
-				params.Headers.RequestID.Set(v)
+				params.Query.PageCustomTypeQuery.Set(v)
 			}
 		}
 	}
@@ -167,19 +122,24 @@ type GetShopsShopResponse interface {
 	writeGetShopsShop(http.ResponseWriter)
 }
 
-func NewGetShopsShopResponse200() GetShopsShopResponse {
-	var out GetShopsShopResponse200
+func NewGetShopsShopResponse200JSON(body Shop) GetShopsShopResponse {
+	var out GetShopsShopResponse200JSON
+	out.Body = body
 	return out
 }
 
-type GetShopsShopResponse200 struct{}
+type GetShopsShopResponse200JSON struct {
+	Body Shop
+}
 
-func (r GetShopsShopResponse200) writeGetShopsShop(w http.ResponseWriter) {
+func (r GetShopsShopResponse200JSON) writeGetShopsShop(w http.ResponseWriter) {
 	r.Write(w)
 }
 
-func (r GetShopsShopResponse200) Write(w http.ResponseWriter) {
+func (r GetShopsShopResponse200JSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+	writeJSON(w, r.Body, "GetShopsShopResponse200JSON")
 }
 
 func NewGetShopsShopResponseDefault(code int) GetShopsShopResponse {
@@ -202,6 +162,13 @@ func (r GetShopsShopResponseDefault) Write(w http.ResponseWriter) {
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
+}
+
+func writeJSON(w io.Writer, v interface{}, name string) {
+	err := json.NewEncoder(w).Encode(v)
+	if err != nil {
+		LogError(fmt.Errorf("write json response %q: %w", name, err))
+	}
 }
 
 type Maybe[T any] struct {

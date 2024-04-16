@@ -33,6 +33,7 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 		}
 		cs.Imports = append(cs.Imports, ims...)
 		var ignoreParseFormat bool
+		var isAlias bool
 		switch schema := schema.(type) {
 		case StructureType:
 			ignoreParseFormat = true
@@ -55,6 +56,7 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 			case "any", "json.RawMessage":
 				ignoreParseFormat = true
 			default:
+				isAlias = true
 			}
 		}
 		cs.Schemas = append(cs.Schemas, SchemaComponent{
@@ -62,6 +64,7 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 			Type:              schema,
 			IgnoreParseFormat: ignoreParseFormat,
 			IsMultivalue:      schema.IsMultivalue(),
+			IsAlias:           isAlias,
 		})
 	}
 
@@ -251,9 +254,13 @@ type SchemaComponent struct {
 	Type              SchemaType
 	IgnoreParseFormat bool
 	IsMultivalue      bool
+	IsAlias           bool
 }
 
 func (s SchemaComponent) Render() (string, error) {
+	if s.IsAlias {
+		return ExecuteTemplate("SchemaComponent_Alias", s)
+	}
 	return ExecuteTemplate("SchemaComponent", s)
 }
 

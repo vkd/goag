@@ -19,7 +19,7 @@ func (g *Generator) ComponentsFile() GoFile {
 }
 
 func (g *Generator) HandlerFile() (GoFile, error) {
-	return g.goFile(nil, g.FileHandler), nil
+	return g.goFile(g.Imports, g.FileHandler), nil
 }
 
 func (g *Generator) RouterFile(basePath, baseFilename string) (GoFile, error) {

@@ -30,6 +30,10 @@ const SpecFile string = `paths:
             items:
               type: string
               x-goag-go-type: Page
+        - name: page_custom
+          in: query
+          schema:
+            $ref: '#/components/schemas/PageCustom'
         - name: request-id
           in: header
           schema:
@@ -38,4 +42,10 @@ const SpecFile string = `paths:
       responses:
         '200': {}
         default: {}
+
+components:
+  schemas:
+    PageCustom:
+      type: string
+      x-goag-go-type: github.com/vkd/goag/tests/get_custom_params/pkg.Page
 `

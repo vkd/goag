@@ -102,6 +102,11 @@ func (q {{ .Name }}) String() string {
 {{- end }}
 {{- end }}
 
+{{/* ----------------------------- SchemaComponent_Alias ------------------------------------- */}}
+{{ define "SchemaComponent_Alias" -}}
+type {{ .Name }} = {{ .Type.Render }}
+{{- end }}
+
 {{/* ----------------------------- HeaderComponent ------------------------------------- */}}
 {{ define "HeaderComponent" -}}
 {{- if .Description }}// {{ .Name }} - {{ .Description }}
