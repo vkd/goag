@@ -25,7 +25,7 @@ func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, 
 
 	spec := s.Value()
 
-	if v, ok := spec.Schema.ExtensionProps.Extensions[ExtTagGoType]; ok {
+	if v, ok := spec.Extensions[ExtTagGoType]; ok {
 		if raw, ok := v.(json.RawMessage); ok {
 			s := string(raw)
 			if len(s) > 2 {
@@ -81,7 +81,7 @@ func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, 
 	case "string":
 		return StringType{}, nil, nil
 	case "integer":
-		switch spec.Schema.Format {
+		switch spec.Format {
 		case "int32":
 			return IntType{BitSize: 32}, nil, nil
 		case "int64":
@@ -90,17 +90,17 @@ func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, 
 			return IntType{}, nil, nil
 		}
 	case "number":
-		switch spec.Schema.Format {
+		switch spec.Format {
 		case "float":
 			return FloatType{BitSize: 32}, nil, nil
 		case "double", "":
 		default:
-			return nil, nil, fmt.Errorf("unsupported 'number' format %q", spec.Schema.Format)
+			return nil, nil, fmt.Errorf("unsupported 'number' format %q", spec.Format)
 		}
 		return FloatType{BitSize: 64}, nil, nil
 	case "boolean":
 		return BoolType{}, nil, nil
 	}
 
-	return nil, nil, fmt.Errorf("unknown schema type: %q", spec.Schema.Type)
+	return nil, nil, fmt.Errorf("unknown schema type: %q", spec.Type)
 }

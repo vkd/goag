@@ -147,16 +147,16 @@ func NewResponseOld(responseStatusCode string, o *Operation, r *openapi3.Respons
 
 type Schema struct {
 	NoRef[Schema]
-	// Ref         string
+
 	Type        string
+	Format      string
 	Items       Ref[Schema]
 	Properties  []SchemaProperty
 	AllOf       []Ref[Schema]
 	Description string
 
 	AdditionalProperties Maybe[Ref[Schema]]
-
-	Schema *openapi3.Schema
+	Extensions           map[string]interface{}
 }
 
 func NewSchemaRef(schema *openapi3.SchemaRef, components ComponentsSchemas) Ref[Schema] {
@@ -168,31 +168,14 @@ func NewSchemaRef(schema *openapi3.SchemaRef, components ComponentsSchemas) Ref[
 		return NewRefObject[Schema](v)
 	}
 	return NewSchema(schema.Value, components)
-	// out := Schema{
-	// 	// Ref:         schema.Ref,
-	// 	Type:        schema.Type,
-	// 	Schema:      schema,
-	// 	Description: schema.Description,
-	// }
-	// if schema.Items != nil {
-	// 	s := NewSchema(schema.Items)
-	// 	out.Items = &s
-	// }
-	// for _, name := range sortedKeys(schema.Properties) {
-	// 	out.Properties = append(out.Properties, SchemaProperty{Name: name, Schema: NewSchema(schema.Properties[name])})
-	// }
-	// for _, a := range schema.AllOf {
-	// 	out.AllOf = append(out.AllOf, NewSchema(a))
-	// }
-	// return out
 }
 
 func NewSchema(schema *openapi3.Schema, components ComponentsSchemas) *Schema {
 	out := Schema{
-		// Ref:         schema.Ref,
 		Type:        schema.Type,
-		Schema:      schema,
+		Format:      schema.Format,
 		Description: schema.Description,
+		Extensions:  schema.ExtensionProps.Extensions,
 	}
 	if schema.Items != nil {
 		out.Items = NewSchemaRef(schema.Items, components)
@@ -203,9 +186,15 @@ func NewSchema(schema *openapi3.Schema, components ComponentsSchemas) *Schema {
 	for _, a := range schema.AllOf {
 		out.AllOf = append(out.AllOf, NewSchemaRef(a, components))
 	}
+
 	if schema.AdditionalProperties != nil {
 		out.AdditionalProperties = Just(NewSchemaRef(schema.AdditionalProperties, components))
+	} else if schema.AdditionalPropertiesAllowed != nil && *schema.AdditionalPropertiesAllowed {
+		out.AdditionalProperties = Just[Ref[Schema]](&Schema{
+			Type: "object",
+		})
 	}
+
 	return &out
 }
 
