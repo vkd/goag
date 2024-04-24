@@ -39,7 +39,7 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 
 	var pathRenders []Parser
 	for _, pe := range o.PathBuilder {
-		if pe.Param.Set {
+		if pe.Param.IsSet {
 			pathRenders = append(pathRenders, PathParserVariable{
 				FieldName: pe.Param.Value.FieldName,
 				Name:      pe.Param.Value.Name,
@@ -314,7 +314,7 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 	}
 
 	out.Name = string(name) + "Response" + strings.Title(status)
-	if r.ContentJSON.Set {
+	if r.ContentJSON.IsSet {
 		out.Name += "JSON"
 		out.ContentType = "application/json"
 	}
@@ -331,7 +331,7 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 		})
 	}
 
-	if r.ContentJSON.Set {
+	if r.ContentJSON.IsSet {
 		out.IsBody = true
 		switch contentType := r.ContentJSON.Value.Type.(type) {
 		case Ref[specification.Schema], SliceType, CustomType:

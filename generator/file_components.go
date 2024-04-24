@@ -235,7 +235,7 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 
 		hr := NewHandlerResponse(response, OperationName(r.Name), status, ifaces...)
 
-		if hr.ContentJSON.Set {
+		if hr.ContentJSON.IsSet {
 			cs.HasContentJSON = true
 		}
 

@@ -24,11 +24,11 @@ func NewFileHandler(os []*Operation, basePathPrefix string, cfg Config) (zero Fi
 		out.Handlers = append(out.Handlers, h)
 
 		for _, r := range h.Responses {
-			if r.ContentJSON.Set {
+			if r.ContentJSON.IsSet {
 				out.IsWriteJSONFunc = true
 			}
 		}
-		if h.DefaultResponse != nil && h.DefaultResponse.ContentJSON.Set {
+		if h.DefaultResponse != nil && h.DefaultResponse.ContentJSON.IsSet {
 			out.IsWriteJSONFunc = true
 		}
 	}

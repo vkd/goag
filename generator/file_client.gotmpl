@@ -167,7 +167,7 @@ var hs []string
 	{{- end }}
 {{ end }}
 
-{{- if .ContentJSON.Set }}
+{{- if .ContentJSON.IsSet }}
 err := json.NewDecoder(resp.Body).Decode(&response.Body)
 if err != nil {
 {{- if .ComponentRef }}
