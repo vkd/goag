@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"reflect"
+	"strings"
 	"text/template"
 )
 
@@ -21,6 +22,7 @@ func init() {
 				"parseError": parseErrorFunc,
 				"newError":   newErrorFunc,
 				"returns":    newReturnsFunc,
+				"comment":    commentFunc,
 			}).
 			ParseFS(templatesFS, "*.gotmpl"),
 	)
@@ -59,4 +61,8 @@ func newErrorFunc() (ErrorRender, error) {
 
 func newReturnsFunc(returns string, e ErrorRender) (ErrorRender, error) {
 	return returnsArgs{returns, e}, nil
+}
+
+func commentFunc(s string) (string, error) {
+	return strings.ReplaceAll(s, "\n", "\n// "), nil
 }

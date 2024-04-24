@@ -61,6 +61,7 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 		}
 		cs.Schemas = append(cs.Schemas, SchemaComponent{
 			Name:              c.Name,
+			Description:       c.V.Value().Description,
 			Type:              schema,
 			IgnoreParseFormat: ignoreParseFormat,
 			IsMultivalue:      schema.IsMultivalue(),
@@ -251,6 +252,7 @@ func (c Components) Render() (string, error) {
 
 type SchemaComponent struct {
 	Name              string
+	Description       string
 	Type              SchemaType
 	IgnoreParseFormat bool
 	IsMultivalue      bool

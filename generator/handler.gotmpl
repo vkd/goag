@@ -170,7 +170,7 @@ type {{ $responseWriter }} interface {
 
 {{/* ----------------------------- HandlerParameter ------------------------------------- */}}
 {{ define "HandlerParameter" }}
-{{- if .FieldComment }}// {{ .FieldName }} - {{ .FieldComment }}
+{{- if .FieldComment }}// {{ .FieldName }} - {{ comment .FieldComment }}
 {{end}}
 {{- .FieldName }} {{ .FieldType.Render }}
 {{- end }}

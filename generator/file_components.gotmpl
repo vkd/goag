@@ -75,6 +75,8 @@
 
 {{/* ----------------------------- SchemaComponent ------------------------------------- */}}
 {{ define "SchemaComponent" -}}
+{{- if .Description }}// {{ .Name }} - {{ comment .Description }}
+{{ end -}}
 type {{ .Name }} {{ .Type.Render }}
 
 {{- if not .IgnoreParseFormat }}
@@ -104,12 +106,14 @@ func (q {{ .Name }}) String() string {
 
 {{/* ----------------------------- SchemaComponent_Alias ------------------------------------- */}}
 {{ define "SchemaComponent_Alias" -}}
+{{- if .Description }}// {{ .Name }} - {{ comment .Description }}
+{{ end -}}
 type {{ .Name }} = {{ .Type.Render }}
 {{- end }}
 
 {{/* ----------------------------- HeaderComponent ------------------------------------- */}}
 {{ define "HeaderComponent" -}}
-{{- if .Description }}// {{ .Name }} - {{ .Description }}
+{{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
 type {{ .Name }} {{ .Type.Render }}
 
@@ -127,11 +131,15 @@ func (c *{{ .Name }}) Parse(s string) error {
 
 {{/* ----------------------------- RequestBodyComponent ------------------------------------- */}}
 {{ define "RequestBodyComponent" -}}
+{{- if .Description }}// {{ .Name }} - {{ comment .Description }}
+{{ end -}}
 type {{ .Name }} {{ .Type.Render }}
 {{- end }}
 
 {{/* ----------------------------- QueryParameterComponent ------------------------------------- */}}
 {{ define "QueryParameterComponent" -}}
+{{- if .Description }}// {{ .Name }} - {{ comment .Description }}
+{{ end -}}
 type {{ .Name }} {{ .Type.Render }}
 
 func (q *{{ .Name }}) ParseQuery(vs []string) error {
@@ -165,6 +173,8 @@ func (q {{ .Name }}) Strings() []string {
 
 {{/* ----------------------------- HeaderParameterComponent ------------------------------------- */}}
 {{ define "HeaderParameterComponent" -}}
+{{- if .Description }}// {{ .Name }} - {{ comment .Description }}
+{{ end -}}
 type {{ .Name }} {{ .Type.Render }}
 
 func (h *{{ .Name }}) Parse(s string) error {
@@ -181,6 +191,8 @@ func (h {{ .Name }}) String() string {
 
 {{/* ----------------------------- PathParameterComponent ------------------------------------- */}}
 {{ define "PathParameterComponent" -}}
+{{- if .Description }}// {{ .Name }} - {{ comment .Description }}
+{{ end -}}
 type {{ .Name }} {{ .Type.Render }}
 
 func (q *{{ .Name }}) Parse(s string) error {
@@ -207,13 +219,15 @@ func New{{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.
 }
 
 {{- if .Body }}
+{{ if .Description }}// {{.BodyTypeName.Render}} - {{ comment .Description }}
+{{ end -}}
 type {{.BodyTypeName.Render}} {{ .Body.Render }}
 {{- if .BodyRenders }}
 {{ .BodyRenders.Render }}
 {{- end }}
 {{- end }}
 
-{{ if .Description }}// {{ .Name }} - {{ .Description }}{{ end }}
+{{ if .Description }}// {{ .Name }} - {{ comment .Description }}{{ end }}
 type {{.Name}} {{.Struct.Render}}
 
 {{ range $_, $oName := .UsedIn }}
@@ -243,11 +257,11 @@ func (r {{.Name}}) Write(w http.ResponseWriter{{ if and (not .IsDefault) .IsComp
 
 {{/* ----------------------------- ResponseComponentAlias ------------------------------------- */}}
 {{ define "ResponseComponentAlias" -}}
-{{ if .Description }}// New{{ .Name }} - {{ .Description }}{{ end }}
+{{ if .Description }}// New{{ .Name }} - {{ comment .Description }}{{ end }}
 func New{{ .Name }}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.Type.Render}}{{end}}) {{.HandlerName}}Response {
 	return New{{ .Alias }}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}}{{end}})
 }
 
-{{ if .Description }}// {{ .Name }} - {{ .Description }}{{ end }}
+{{ if .Description }}// {{ .Name }} - {{ comment .Description }}{{ end }}
 type {{.Name}} = {{ .Alias }}
 {{- end }}
