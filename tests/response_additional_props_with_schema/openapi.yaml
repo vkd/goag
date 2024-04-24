@@ -21,6 +21,7 @@ components:
         $ref: '#/components/schemas/Pet'
     Pet:
       type: object
+      additionalProperties: true
       properties:
         name:
           type: string

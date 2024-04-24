@@ -102,6 +102,49 @@ func (q {{ .Name }}) String() string {
 }
 {{- end }}
 {{- end }}
+
+{{- if .CustomJSONMarshaler }}
+var _ json.Marshaler = (*{{ .Name }})(nil)
+
+func (c *{{ .Name }}) MarshalJSON() ([]byte, error) {
+	m := make(map[string]interface{})
+	for k, v := range c.AdditionalProperties {
+		m[k] = v
+	}
+    {{- range $_, $f := .StructureType.Fields }}
+	m["{{ .JSONTag }}"] = c.{{ .Name }}
+    {{- end }}
+	return json.Marshal(m)
+}
+
+var _ json.Unmarshaler = (*{{ .Name }})(nil)
+
+func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
+	m := make(map[string]json.RawMessage)
+    err := json.Unmarshal(bs, &m)
+    if err != nil {
+        return fmt.Errorf("raw key/value map: %w", err)
+    }
+    {{- range $_, $f := .StructureType.Fields }}
+    if v, ok := m["{{ .JSONTag }}"]; ok {
+        err = json.Unmarshal(v, &c.{{ .Name }})
+        if err != nil {
+            return fmt.Errorf("'{{ .JSONTag }}' field: %w", err)
+        }
+        delete(m, "{{ .JSONTag }}")
+    }
+    {{- end }}
+	for k, bs := range m {
+        var v {{ .StructureType.AdditionalProperties.Value.Render }}
+        err = json.Unmarshal(bs, &v)
+        if err != nil {
+            return fmt.Errorf("additional property %q: %w", k, err)
+        }
+		c.AdditionalProperties[k] = v
+	}
+	return nil
+}
+{{- end }}
 {{- end }}
 
 {{/* ----------------------------- SchemaComponent_Alias ------------------------------------- */}}

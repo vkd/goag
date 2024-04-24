@@ -1,6 +1,7 @@
 package specification
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
@@ -156,7 +157,8 @@ type Schema struct {
 	Description string
 
 	AdditionalProperties Maybe[Ref[Schema]]
-	Extensions           map[string]interface{}
+
+	Custom Maybe[string]
 }
 
 func NewSchemaRef(schema *openapi3.SchemaRef, components ComponentsSchemas) Ref[Schema] {
@@ -175,24 +177,35 @@ func NewSchema(schema *openapi3.Schema, components ComponentsSchemas) *Schema {
 		Type:        schema.Type,
 		Format:      schema.Format,
 		Description: schema.Description,
-		Extensions:  schema.ExtensionProps.Extensions,
 	}
 	if schema.Items != nil {
 		out.Items = NewSchemaRef(schema.Items, components)
 	}
 	for _, name := range sortedKeys(schema.Properties) {
-		out.Properties = append(out.Properties, SchemaProperty{Name: name, Schema: NewSchemaRef(schema.Properties[name], components)})
+		s := NewSchemaRef(schema.Properties[name], components)
+		out.Properties = append(out.Properties, SchemaProperty{Name: name, Schema: s})
 	}
 	for _, a := range schema.AllOf {
-		out.AllOf = append(out.AllOf, NewSchemaRef(a, components))
+		s := NewSchemaRef(a, components)
+		out.AllOf = append(out.AllOf, s)
 	}
 
 	if schema.AdditionalProperties != nil {
-		out.AdditionalProperties = Just(NewSchemaRef(schema.AdditionalProperties, components))
+		s := NewSchemaRef(schema.AdditionalProperties, components)
+		out.AdditionalProperties = Just(s)
 	} else if schema.AdditionalPropertiesAllowed != nil && *schema.AdditionalPropertiesAllowed {
 		out.AdditionalProperties = Just[Ref[Schema]](&Schema{
-			Type: "object",
+			Type:   "object",
+			Custom: Just("json.RawMessage"),
 		})
+	}
+
+	if v, ok := schema.ExtensionProps.Extensions[ExtTagGoType]; ok {
+		if raw, ok := v.(json.RawMessage); ok {
+			var s string
+			_ = json.Unmarshal(raw, &s)
+			out.Custom = Just(s)
+		}
 	}
 
 	return &out

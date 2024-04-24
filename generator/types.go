@@ -254,6 +254,8 @@ func (s SliceType) ParseStrings(to string, from string, isNew bool, mkErr ErrorR
 type StructureType struct {
 	SingleValue
 	Fields []StructureField
+
+	AdditionalProperties Maybe[SchemaType]
 }
 
 func NewStructureType(s *specification.Schema) (zero StructureType, _ Imports, _ error) {
@@ -273,11 +275,7 @@ func NewStructureType(s *specification.Schema) (zero StructureType, _ Imports, _
 			return zero, nil, fmt.Errorf("additional properties: %w", err)
 		}
 		imports = append(imports, ims...)
-		stype.Fields = append(stype.Fields, StructureField{
-			Name: "AdditionalProperties",
-			Type: NewMapType(StringType{}, additional),
-			Tags: []StructureFieldTag{{Key: "json", Values: []string{"-"}}},
-		})
+		stype.AdditionalProperties = Just(additional)
 	}
 	return stype, imports, nil
 }
@@ -309,6 +307,7 @@ type StructureField struct {
 	Name    string
 	Type    Render
 	Tags    []StructureFieldTag
+	JSONTag string
 }
 
 func NewStructureField(s specification.SchemaProperty) (zero StructureField, _ Imports, _ error) {
@@ -321,6 +320,7 @@ func NewStructureField(s specification.SchemaProperty) (zero StructureField, _ I
 		Name:    PublicFieldName(s.Name),
 		Type:    t,
 		Tags:    []StructureFieldTag{{Key: "json", Values: []string{s.Name}}},
+		JSONTag: s.Name,
 	}, ims, nil
 }
 

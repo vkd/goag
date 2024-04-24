@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/vkd/goag/specification"
@@ -25,17 +24,9 @@ func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, 
 
 	spec := s.Value()
 
-	if v, ok := spec.Extensions[ExtTagGoType]; ok {
-		if raw, ok := v.(json.RawMessage); ok {
-			s := string(raw)
-			if len(s) > 2 {
-				s = s[1 : len(s)-1]
-			}
-			ct, is := NewCustomType(s)
-			return ct, is, nil
-		} else {
-			return nil, nil, fmt.Errorf("unexpected type for 'Extension Properties' %T - expected 'json.RawMessage", v)
-		}
+	if spec.Custom.Set {
+		ct, is := NewCustomType(spec.Custom.Value)
+		return ct, is, nil
 	}
 
 	if len(spec.AllOf) > 0 {
