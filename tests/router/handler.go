@@ -265,6 +265,70 @@ func (r GetShopsActivateResponseDefault) Write(w http.ResponseWriter) {
 }
 
 // ---------------------------------------------
+// GetShopsMinePetsMikeTails -
+// ---------------------------------------------
+
+type GetShopsMinePetsMikeTailsHandlerFunc func(ctx context.Context, r GetShopsMinePetsMikeTailsRequest) GetShopsMinePetsMikeTailsResponse
+
+func (f GetShopsMinePetsMikeTailsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(r.Context(), GetShopsMinePetsMikeTailsHTTPRequest(r)).writeGetShopsMinePetsMikeTails(w)
+}
+
+type GetShopsMinePetsMikeTailsRequest interface {
+	HTTP() *http.Request
+	Parse() GetShopsMinePetsMikeTailsParams
+}
+
+func GetShopsMinePetsMikeTailsHTTPRequest(r *http.Request) GetShopsMinePetsMikeTailsRequest {
+	return getShopsMinePetsMikeTailsHTTPRequest{r}
+}
+
+type getShopsMinePetsMikeTailsHTTPRequest struct {
+	Request *http.Request
+}
+
+func (r getShopsMinePetsMikeTailsHTTPRequest) HTTP() *http.Request { return r.Request }
+
+func (r getShopsMinePetsMikeTailsHTTPRequest) Parse() GetShopsMinePetsMikeTailsParams {
+	return newGetShopsMinePetsMikeTailsParams(r.Request)
+}
+
+type GetShopsMinePetsMikeTailsParams struct {
+}
+
+func newGetShopsMinePetsMikeTailsParams(r *http.Request) (zero GetShopsMinePetsMikeTailsParams) {
+	var params GetShopsMinePetsMikeTailsParams
+
+	return params
+}
+
+func (r GetShopsMinePetsMikeTailsParams) HTTP() *http.Request { return nil }
+
+func (r GetShopsMinePetsMikeTailsParams) Parse() GetShopsMinePetsMikeTailsParams { return r }
+
+type GetShopsMinePetsMikeTailsResponse interface {
+	writeGetShopsMinePetsMikeTails(http.ResponseWriter)
+}
+
+func NewGetShopsMinePetsMikeTailsResponseDefault(code int) GetShopsMinePetsMikeTailsResponse {
+	var out GetShopsMinePetsMikeTailsResponseDefault
+	out.Code = code
+	return out
+}
+
+type GetShopsMinePetsMikeTailsResponseDefault struct {
+	Code int
+}
+
+func (r GetShopsMinePetsMikeTailsResponseDefault) writeGetShopsMinePetsMikeTails(w http.ResponseWriter) {
+	r.Write(w)
+}
+
+func (r GetShopsMinePetsMikeTailsResponseDefault) Write(w http.ResponseWriter) {
+	w.WriteHeader(r.Code)
+}
+
+// ---------------------------------------------
 // GetShopsShop -
 // ---------------------------------------------
 

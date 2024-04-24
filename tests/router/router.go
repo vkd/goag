@@ -8,14 +8,15 @@ import (
 )
 
 type API struct {
-	GetHandler                      GetHandlerFunc
-	GetShopsHandler                 GetShopsHandlerFunc
-	GetShopsRTHandler               GetShopsRTHandlerFunc
-	GetShopsActivateHandler         GetShopsActivateHandlerFunc
-	GetShopsShopHandler             GetShopsShopHandlerFunc
-	GetShopsShopRTHandler           GetShopsShopRTHandlerFunc
-	GetShopsShopPetsHandler         GetShopsShopPetsHandlerFunc
-	GetShopsShopPetsMikePawsHandler GetShopsShopPetsMikePawsHandlerFunc
+	GetHandler                       GetHandlerFunc
+	GetShopsHandler                  GetShopsHandlerFunc
+	GetShopsRTHandler                GetShopsRTHandlerFunc
+	GetShopsActivateHandler          GetShopsActivateHandlerFunc
+	GetShopsMinePetsMikeTailsHandler GetShopsMinePetsMikeTailsHandlerFunc
+	GetShopsShopHandler              GetShopsShopHandlerFunc
+	GetShopsShopRTHandler            GetShopsShopRTHandlerFunc
+	GetShopsShopPetsHandler          GetShopsShopPetsHandlerFunc
+	GetShopsShopPetsMikePawsHandler  GetShopsShopPetsMikePawsHandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
@@ -110,8 +111,57 @@ func (rt *API) routeShops(path, method string) (http.Handler, string) {
 	}
 
 	if path != "" {
+		switch prefix {
+		case "/mine":
+			h, out := rt.routeShopsMine(path, method)
+			if h != nil {
+				return h, out
+			}
+		}
 
 		return rt.routeShopsShop(path, method)
+	}
+
+	return nil, ""
+}
+
+func (rt *API) routeShopsMine(path, method string) (http.Handler, string) {
+	prefix, path := splitPath(path)
+
+	if path != "" {
+		switch prefix {
+		case "/pets":
+			return rt.routeShopsMinePets(path, method)
+		}
+	}
+
+	return nil, ""
+}
+
+func (rt *API) routeShopsMinePets(path, method string) (http.Handler, string) {
+	prefix, path := splitPath(path)
+
+	if path != "" {
+		switch prefix {
+		case "/mike":
+			return rt.routeShopsMinePetsMike(path, method)
+		}
+	}
+
+	return nil, ""
+}
+
+func (rt *API) routeShopsMinePetsMike(path, method string) (http.Handler, string) {
+	prefix, path := splitPath(path)
+
+	if path == "" {
+		switch prefix {
+		case "/tails":
+			switch method {
+			case http.MethodGet:
+				return rt.GetShopsMinePetsMikeTailsHandler, "/shops/mine/pets/mike/tails"
+			}
+		}
 	}
 
 	return nil, ""

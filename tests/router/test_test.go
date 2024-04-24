@@ -51,6 +51,10 @@ func TestRouter(t *testing.T) {
 		GetShopsShopPetsMikePawsHandler: func(ctx context.Context, r GetShopsShopPetsMikePawsRequest) GetShopsShopPetsMikePawsResponse {
 			return NewGetShopsShopPetsMikePawsResponseDefault(208)
 		},
+
+		GetShopsMinePetsMikeTailsHandler: func(ctx context.Context, r GetShopsMinePetsMikeTailsRequest) GetShopsMinePetsMikeTailsResponse {
+			return NewGetShopsMinePetsMikeTailsResponseDefault(209)
+		},
 	}
 
 	for _, tt := range []struct {
@@ -71,6 +75,8 @@ func TestRouter(t *testing.T) {
 		{"/shops/activate", 207, "/shops/activate"},
 
 		{"/shops/my_shop/pets/mike/paws", 208, "/shops/{shop}/pets/mike/paws"},
+
+		{"/shops/mine/pets/mike/tails", 209, "/shops/mine/pets/mike/tails"},
 
 		{"/not_found", 404, "/this_is_not_gonna_be_checked"},
 	} {

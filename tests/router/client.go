@@ -135,6 +135,33 @@ func (c *Client) GetShopsActivate(ctx context.Context, request GetShopsActivateP
 	}
 }
 
+// GetShopsMinePetsMikeTails - GET /shops/mine/pets/mike/tails
+func (c *Client) GetShopsMinePetsMikeTails(ctx context.Context, request GetShopsMinePetsMikeTailsParams) (GetShopsMinePetsMikeTailsResponse, error) {
+	var requestURL = c.BaseURL + "/shops/mine/pets/mike/tails"
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("new request: %w", err)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http client Do(): %w", err)
+	}
+
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	switch resp.StatusCode {
+	default:
+		var response GetShopsMinePetsMikeTailsResponseDefault
+		response.Code = resp.StatusCode
+
+		return response, nil
+	}
+}
+
 // GetShopsShop - GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop

@@ -135,11 +135,19 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
 
 	{{if or .Routes .VariableRoute -}}
 	if path != "" {
-		{{if .Routes -}}
+		{{- $isVariableRoute := .VariableRoute }}
+		{{- if .Routes -}}
 		switch prefix {
 		{{range $_, $r := .Routes -}}
 		case "{{.Prefix}}":
+			{{- if $isVariableRoute }}
+			h, out := rt.route{{.Name}}(path, method)
+			if h != nil {
+				return h, out
+			}
+			{{- else }}
 			return rt.route{{.Name}}(path, method)
+			{{- end }}
 		{{end -}}
 		}
 		{{- end}}

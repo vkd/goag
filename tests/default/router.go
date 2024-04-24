@@ -105,7 +105,10 @@ func (rt *API) routeShops(path, method string) (http.Handler, string) {
 	if path != "" {
 		switch prefix {
 		case "/activate":
-			return rt.routeShopsActivate(path, method)
+			h, out := rt.routeShopsActivate(path, method)
+			if h != nil {
+				return h, out
+			}
 		}
 
 		return rt.routeShopsShop(path, method)
