@@ -14,13 +14,13 @@ func TestResponseSchema(t *testing.T) {
 	ctx := context.Background()
 	api := API{
 		GetPetHandler: func(_ context.Context, _ GetPetRequest) GetPetResponse {
-			return NewGetPetResponse200JSON(RawResponse("hello"))
+			return NewGetPetResponse200JSON(RawResponse(`{"field1": "hello"}`))
 		},
 	}
 
 	resp, err := api.Client().GetPet(ctx, GetPetParams{})
 	require.NoError(t, err)
-	assert.Equal(t, "hello", string(resp.(GetPetResponse200JSON).Body))
+	assert.Equal(t, `{"field1":"hello"}`, string(resp.(GetPetResponse200JSON).Body))
 }
 
 func (a API) Do(req *http.Request) (*http.Response, error) {

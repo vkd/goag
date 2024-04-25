@@ -6,4 +6,4 @@ import "encoding/json"
 //         Schemas
 // ------------------------
 
-type RawResponse json.RawMessage
+type RawResponse = json.RawMessage

@@ -34,12 +34,14 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 		cs.Imports = append(cs.Imports, ims...)
 
 		var structureType StructureType
+		var isCustomJSONMarshaler bool
 		var ignoreParseFormat bool
 		var isAlias bool
 		switch schema := schema.(type) {
 		case StructureType:
 			ignoreParseFormat = true
 			structureType = schema
+			isCustomJSONMarshaler = c.V.Value().AdditionalProperties.Set
 		case SliceType:
 			switch items := schema.Items.(type) {
 			case Ref[specification.Schema]:
@@ -56,7 +58,7 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 			}
 		case CustomType:
 			switch schema.Type {
-			case "any", "json.RawMessage":
+			case "any":
 				ignoreParseFormat = true
 			default:
 				isAlias = true
@@ -70,7 +72,7 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 			IsMultivalue:      schema.IsMultivalue(),
 			IsAlias:           isAlias,
 
-			CustomJSONMarshaler: c.V.Value().AdditionalProperties.Set,
+			CustomJSONMarshaler: isCustomJSONMarshaler,
 			StructureType:       structureType,
 		})
 	}

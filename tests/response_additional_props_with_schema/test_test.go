@@ -21,6 +21,7 @@ func TestResponseSchema(t *testing.T) {
 						AdditionalProperties: map[string]json.RawMessage{
 							"status": json.RawMessage(`"ok"`),
 						},
+						Custom: PetCustom(`{"field1": "pet_custom_field"}`),
 					},
 				},
 			},
@@ -36,11 +37,15 @@ func TestResponseSchema(t *testing.T) {
 		Cats   []struct {
 			Name   string `json:"name"`
 			Status string `json:"status"`
+			Custom struct {
+				Field1 string `json:"field1"`
+			} `json:"custom"`
 		} `json:"cats"`
 	}
 	err := json.Unmarshal(w.Body.Bytes(), &v)
-	require.NoError(t, err)
+	require.NoError(t, err, w.Body.String())
 	assert.Equal(t, 1, v.Length)
 	assert.Equal(t, "mike", v.Cats[0].Name)
 	assert.Equal(t, "ok", v.Cats[0].Status, w.Body.String())
+	assert.Equal(t, "pet_custom_field", v.Cats[0].Custom.Field1, w.Body.String())
 }

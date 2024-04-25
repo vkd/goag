@@ -27,4 +27,14 @@ components:
       properties:
         name:
           type: string
+        custom:
+          $ref: '#/components/schemas/PetCustom'
+    PetCustom:
+      type: object
+      x-goag-go-type: json.RawMessage
+      additionalProperties:
+        type: object
+      properties:
+        field1:
+          type: string
 `

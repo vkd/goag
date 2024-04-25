@@ -10,6 +10,7 @@ import (
 // ------------------------
 
 type Pet struct {
+	Custom               PetCustom                  `json:"custom"`
 	Name                 string                     `json:"name"`
 	AdditionalProperties map[string]json.RawMessage `json:"-"`
 }
@@ -21,6 +22,7 @@ func (c *Pet) MarshalJSON() ([]byte, error) {
 	for k, v := range c.AdditionalProperties {
 		m[k] = v
 	}
+	m["custom"] = c.Custom
 	m["name"] = c.Name
 	return json.Marshal(m)
 }
@@ -32,6 +34,13 @@ func (c *Pet) UnmarshalJSON(bs []byte) error {
 	err := json.Unmarshal(bs, &m)
 	if err != nil {
 		return fmt.Errorf("raw key/value map: %w", err)
+	}
+	if v, ok := m["custom"]; ok {
+		err = json.Unmarshal(v, &c.Custom)
+		if err != nil {
+			return fmt.Errorf("'custom' field: %w", err)
+		}
+		delete(m, "custom")
 	}
 	if v, ok := m["name"]; ok {
 		err = json.Unmarshal(v, &c.Name)
@@ -50,5 +59,7 @@ func (c *Pet) UnmarshalJSON(bs []byte) error {
 	}
 	return nil
 }
+
+type PetCustom = json.RawMessage
 
 type Pets []Pet
