@@ -55,15 +55,13 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 				return rt.GetPetsHandler, "/pets"
 			}
 		}
+		return nil, ""
 	}
 
-	if path != "" {
-		switch prefix {
-		case "/pets":
-			return rt.routePets(path, method)
-		}
+	switch prefix {
+	case "/pets":
+		return rt.routePets(path, method)
 	}
-
 	return nil, ""
 }
 
@@ -78,6 +76,7 @@ func (rt *API) routePets(path, method string) (http.Handler, string) {
 				return rt.GetPetsNamesHandler, "/pets/names"
 			}
 		}
+		return nil, ""
 	}
 
 	return nil, ""

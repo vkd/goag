@@ -68,15 +68,13 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 				return rt.GetShopsHandler, "/shops"
 			}
 		}
+		return nil, ""
 	}
 
-	if path != "" {
-		switch prefix {
-		case "/shops":
-			return rt.routeShops(path, method)
-		}
+	switch prefix {
+	case "/shops":
+		return rt.routeShops(path, method)
 	}
-
 	return nil, ""
 }
 
@@ -100,21 +98,18 @@ func (rt *API) routeShops(path, method string) (http.Handler, string) {
 		case http.MethodGet:
 			return rt.GetShopsShopHandler, "/shops/{shop}"
 		}
+		return nil, ""
 	}
 
-	if path != "" {
-		switch prefix {
-		case "/activate":
-			h, out := rt.routeShopsActivate(path, method)
-			if h != nil {
-				return h, out
-			}
+	switch prefix {
+	case "/activate":
+		h, out := rt.routeShopsActivate(path, method)
+		if h != nil {
+			return h, out
 		}
-
-		return rt.routeShopsShop(path, method)
 	}
 
-	return nil, ""
+	return rt.routeShopsShop(path, method)
 }
 
 func (rt *API) routeShopsActivate(path, method string) (http.Handler, string) {
@@ -133,6 +128,7 @@ func (rt *API) routeShopsActivate(path, method string) (http.Handler, string) {
 				return rt.GetShopsActivateTagHandler, "/shops/activate/tag"
 			}
 		}
+		return nil, ""
 	}
 
 	return nil, ""
@@ -159,6 +155,7 @@ func (rt *API) routeShopsShop(path, method string) (http.Handler, string) {
 				return rt.ReviewShopHandler, "/shops/{shop}/review"
 			}
 		}
+		return nil, ""
 	}
 
 	return nil, ""

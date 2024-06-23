@@ -76,15 +76,13 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 				return rt.GetShopsHandler, "/shops"
 			}
 		}
+		return nil, ""
 	}
 
-	if path != "" {
-		switch prefix {
-		case "/shops":
-			return rt.routeShops(path, method)
-		}
+	switch prefix {
+	case "/shops":
+		return rt.routeShops(path, method)
 	}
-
 	return nil, ""
 }
 
@@ -108,46 +106,37 @@ func (rt *API) routeShops(path, method string) (http.Handler, string) {
 		case http.MethodGet:
 			return rt.GetShopsShopHandler, "/shops/{shop}"
 		}
+		return nil, ""
 	}
 
-	if path != "" {
-		switch prefix {
-		case "/mine":
-			h, out := rt.routeShopsMine(path, method)
-			if h != nil {
-				return h, out
-			}
+	switch prefix {
+	case "/mine":
+		h, out := rt.routeShopsMine(path, method)
+		if h != nil {
+			return h, out
 		}
-
-		return rt.routeShopsShop(path, method)
 	}
 
-	return nil, ""
+	return rt.routeShopsShop(path, method)
 }
 
 func (rt *API) routeShopsMine(path, method string) (http.Handler, string) {
 	prefix, path := splitPath(path)
 
-	if path != "" {
-		switch prefix {
-		case "/pets":
-			return rt.routeShopsMinePets(path, method)
-		}
+	switch prefix {
+	case "/pets":
+		return rt.routeShopsMinePets(path, method)
 	}
-
 	return nil, ""
 }
 
 func (rt *API) routeShopsMinePets(path, method string) (http.Handler, string) {
 	prefix, path := splitPath(path)
 
-	if path != "" {
-		switch prefix {
-		case "/mike":
-			return rt.routeShopsMinePetsMike(path, method)
-		}
+	switch prefix {
+	case "/mike":
+		return rt.routeShopsMinePetsMike(path, method)
 	}
-
 	return nil, ""
 }
 
@@ -162,6 +151,7 @@ func (rt *API) routeShopsMinePetsMike(path, method string) (http.Handler, string
 				return rt.GetShopsMinePetsMikeTailsHandler, "/shops/mine/pets/mike/tails"
 			}
 		}
+		return nil, ""
 	}
 
 	return nil, ""
@@ -183,28 +173,23 @@ func (rt *API) routeShopsShop(path, method string) (http.Handler, string) {
 				return rt.GetShopsShopPetsHandler, "/shops/{shop}/pets"
 			}
 		}
+		return nil, ""
 	}
 
-	if path != "" {
-		switch prefix {
-		case "/pets":
-			return rt.routeShopsShopPets(path, method)
-		}
+	switch prefix {
+	case "/pets":
+		return rt.routeShopsShopPets(path, method)
 	}
-
 	return nil, ""
 }
 
 func (rt *API) routeShopsShopPets(path, method string) (http.Handler, string) {
 	prefix, path := splitPath(path)
 
-	if path != "" {
-		switch prefix {
-		case "/mike":
-			return rt.routeShopsShopPetsMike(path, method)
-		}
+	switch prefix {
+	case "/mike":
+		return rt.routeShopsShopPetsMike(path, method)
 	}
-
 	return nil, ""
 }
 
@@ -219,6 +204,7 @@ func (rt *API) routeShopsShopPetsMike(path, method string) (http.Handler, string
 				return rt.GetShopsShopPetsMikePawsHandler, "/shops/{shop}/pets/mike/paws"
 			}
 		}
+		return nil, ""
 	}
 
 	return nil, ""

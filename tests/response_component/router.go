@@ -56,17 +56,15 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 				return rt.GetPetHandler, "/pet"
 			}
 		}
+		return nil, ""
 	}
 
-	if path != "" {
-		switch prefix {
-		case "/v2":
-			return rt.routeV2(path, method)
-		case "/v3":
-			return rt.routeV3(path, method)
-		}
+	switch prefix {
+	case "/v2":
+		return rt.routeV2(path, method)
+	case "/v3":
+		return rt.routeV3(path, method)
 	}
-
 	return nil, ""
 }
 
@@ -81,6 +79,7 @@ func (rt *API) routeV2(path, method string) (http.Handler, string) {
 				return rt.GetV2PetHandler, "/v2/pet"
 			}
 		}
+		return nil, ""
 	}
 
 	return nil, ""
@@ -97,6 +96,7 @@ func (rt *API) routeV3(path, method string) (http.Handler, string) {
 				return rt.GetV3PetHandler, "/v3/pet"
 			}
 		}
+		return nil, ""
 	}
 
 	return nil, ""

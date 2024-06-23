@@ -62,6 +62,7 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 				return middlewares(rt.PostShopsHandler, rt.SecurityBearerAuth), "/shops"
 			}
 		}
+		return nil, ""
 	}
 
 	return nil, ""

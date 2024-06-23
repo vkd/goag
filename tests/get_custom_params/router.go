@@ -46,13 +46,10 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 func (rt *API) route(path, method string) (http.Handler, string) {
 	prefix, path := splitPath(path)
 
-	if path != "" {
-		switch prefix {
-		case "/shops":
-			return rt.routeShops(path, method)
-		}
+	switch prefix {
+	case "/shops":
+		return rt.routeShops(path, method)
 	}
-
 	return nil, ""
 }
 
@@ -65,6 +62,7 @@ func (rt *API) routeShops(path, method string) (http.Handler, string) {
 		case http.MethodGet:
 			return rt.GetShopsShopHandler, "/shops/{shop}"
 		}
+		return nil, ""
 	}
 
 	return nil, ""

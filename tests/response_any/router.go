@@ -54,6 +54,7 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 				return rt.GetPetHandler, "/pet"
 			}
 		}
+		return nil, ""
 	}
 
 	return nil, ""

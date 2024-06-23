@@ -75,9 +75,10 @@ type Route struct {
 
 	PrefixPathItems []*RoutePathItem
 	Variable        *RoutePathItem
-	Routes          []*Route
-	mRoutes         map[string]*Route
-	VariableRoute   *Route
+
+	Routes        []*Route
+	mRoutes       map[string]*Route
+	VariableRoute *Route
 }
 
 func (r *Route) GetRoutes() []*Route {

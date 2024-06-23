@@ -46,49 +46,33 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 func (rt *API) route(path, method string) (http.Handler, string) {
 	prefix, path := splitPath(path)
 
-	if path != "" {
-		switch prefix {
-		case "/shops":
-			return rt.routeShops(path, method)
-		}
+	switch prefix {
+	case "/shops":
+		return rt.routeShops(path, method)
 	}
-
 	return nil, ""
 }
 
 func (rt *API) routeShops(path, method string) (http.Handler, string) {
 	_, path = splitPath(path)
 
-	if path != "" {
-
-		return rt.routeShopsShopString(path, method)
-	}
-
-	return nil, ""
+	return rt.routeShopsShopString(path, method)
 }
 
 func (rt *API) routeShopsShopString(path, method string) (http.Handler, string) {
 	prefix, path := splitPath(path)
 
-	if path != "" {
-		switch prefix {
-		case "/sep":
-			return rt.routeShopsShopStringSep(path, method)
-		}
+	switch prefix {
+	case "/sep":
+		return rt.routeShopsShopStringSep(path, method)
 	}
-
 	return nil, ""
 }
 
 func (rt *API) routeShopsShopStringSep(path, method string) (http.Handler, string) {
 	_, path = splitPath(path)
 
-	if path != "" {
-
-		return rt.routeShopsShopStringSepShopSchema(path, method)
-	}
-
-	return nil, ""
+	return rt.routeShopsShopStringSepShopSchema(path, method)
 }
 
 func (rt *API) routeShopsShopStringSepShopSchema(path, method string) (http.Handler, string) {
@@ -102,6 +86,7 @@ func (rt *API) routeShopsShopStringSepShopSchema(path, method string) (http.Hand
 				return rt.PostShopsShopStringSepShopSchemaPetsHandler, "/shops/{shop_string}/sep/{shop_schema}/pets"
 			}
 		}
+		return nil, ""
 	}
 
 	return nil, ""
