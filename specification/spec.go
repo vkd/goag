@@ -45,7 +45,6 @@ func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 		pi := NewPathItem(pathKey)
 		pi.Path = p
 		pi.PathItem = pathItem
-		pi.PathOld, _ = NewPathOld(pathKey)
 		for _, method := range httpMethods() {
 			operation := pathItem.GetOperation(string(method.HTTP))
 			if operation == nil {

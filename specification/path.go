@@ -71,39 +71,6 @@ func NewPathOld2(s string) (zero PathOld2, _ error) {
 	return out, nil
 }
 
-// PathOld always starts with '/'
-type PathOld string
-
-func NewPathOld(s string) (PathOld, error) {
-	if !strings.HasPrefix(s, "/") {
-		return "", fmt.Errorf("path must start with '/'")
-	}
-	return PathOld(s), nil
-}
-
-func (p PathOld) Cut() (Prefix, PathOld, bool) {
-	// s := string(p[1:])
-	idx := strings.Index(string(p[1:]), "/")
-	if idx == -1 {
-		return Prefix(p), "", false
-	}
-	return Prefix(p[:idx+1]), PathOld(p[idx+1:]), true
-}
-
-func (p PathOld) Name(fn func(Prefix) string, sep string) string {
-	var out string
-	for {
-		prefix, path, ok := p.Cut()
-		if !ok {
-			return out + fn(prefix)
-		}
-		out += fn(prefix) + sep
-		p = path
-	}
-}
-
-func (p PathOld) String() string { return string(p) }
-
 // Prefix always starts with '/'
 type Prefix string
 

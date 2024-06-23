@@ -10,7 +10,6 @@ type PathItem struct {
 
 	// Deprecated // TODO
 	Path     PathOld2
-	PathOld  PathOld
 	PathItem *openapi3.PathItem
 }
 
