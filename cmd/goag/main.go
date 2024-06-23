@@ -13,7 +13,7 @@ var (
 	outDir       = flag.String("out", "./", "output dif")
 	packageName  = flag.String("package", "simple", "package name")
 	specFilename = flag.String("spec", "openapi.yaml", "spec filename")
-	cfgFilename  = flag.String("config", "goag.yaml", "config filename")
+	cfgFilename  = flag.String("config", ".goag.yaml", "config filename")
 	basePath     = flag.String("basepath", "", "Base path prefix")
 	genClient    = flag.Bool("client", false, "Generate client code")
 	deleteOld    = flag.Bool("delete", false, "Delete old files")
