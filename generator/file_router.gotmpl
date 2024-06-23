@@ -11,6 +11,9 @@ type API struct {
 	NotFoundHandler http.Handler
 	// spec file
 	SpecFileHandler http.Handler
+	{{- if .Cors }}
+	CORSHandler http.Handler
+	{{- end }}
 
 	Middlewares []func(h http.Handler) http.Handler
 	{{- if .JWT }}
@@ -115,7 +118,7 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
 			switch method {
 				{{- range $_, $m := .Operations}}
 			case http.Method{{.Method}}:
-				return {{if $h.RouterPathItem.JWT }}middlewares({{ end }}rt.{{$m.Name}}Handler{{if $h.RouterPathItem.JWT }}, rt.SecurityBearerAuth){{ end }}, "{{.PathSpec}}"
+				return {{if $h.RouterPathItem.JWT }}middlewares({{ end }}rt.{{$m.Handler}}{{if $h.RouterPathItem.JWT }}, rt.SecurityBearerAuth){{ end }}, "{{.PathSpec}}"
 				{{- end}}
 			}
 			{{end -}}
@@ -126,7 +129,7 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
             {{- $jwt := .Variable.JWT }}
 			{{- range $_, $o := .Variable.Operations}}
 		case http.Method{{$o.Method}}:
-			return {{if $jwt }}middlewares({{ end }}rt.{{$o.Name}}Handler{{if $jwt }}, rt.SecurityBearerAuth){{ end }}, "{{.PathSpec}}"
+			return {{if $jwt }}middlewares({{ end }}rt.{{$o.Handler}}{{if $jwt }}, rt.SecurityBearerAuth){{ end }}, "{{.PathSpec}}"
 			{{- end}}
 		}
 		{{- end}}

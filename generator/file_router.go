@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"net/http"
 	"path/filepath"
 	"strings"
 
@@ -17,7 +18,8 @@ type Router struct {
 	Operations []*Operation
 	Routes     []*Route
 
-	JWT bool
+	JWT  bool
+	Cors bool
 }
 
 func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt GeneratorOptions) Router {
@@ -27,6 +29,8 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 		SpecFileExt:  strings.TrimPrefix(filepath.Ext(opt.SpecFilename), "."),
 
 		Operations: os,
+
+		Cors: opt.IsCors,
 	}
 	for _, pi := range ps {
 		p := &RouterPathItem{
@@ -37,7 +41,16 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 				Name:     o.Name,
 				Method:   o.Method,
 				PathSpec: o.PathItem.Path.Spec,
+				Handler:  string(o.Name) + "Handler",
 			})
+			if opt.IsCors && !pi.PathItem.HasOperation(http.MethodOptions) {
+				p.Operations = append(p.Operations, RouterPathItemOperation{
+					Name:     o.Name,
+					Method:   "Options",
+					PathSpec: o.PathItem.Path.Spec,
+					Handler:  "CORSHandler",
+				})
+			}
 		}
 
 		for _, o := range pi.Operations {
@@ -81,6 +94,7 @@ type RouterPathItemOperation struct {
 	Name     OperationName
 	Method   specification.HTTPMethodTitle
 	PathSpec string
+	Handler  string
 }
 
 type Route struct {

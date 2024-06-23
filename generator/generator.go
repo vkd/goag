@@ -32,12 +32,16 @@ type GeneratorOptions struct {
 	PackageName  string
 	BasePath     string
 	SpecFilename string
+	IsCors       bool
 }
 
 func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Generator, error) {
 	g := &Generator{
 		Options: defaultOptions,
 		Spec:    spec,
+	}
+	if cfg.Cors.Enable {
+		g.Options.IsCors = true
 	}
 	for _, opt := range opts {
 		opt.apply(&g.Options)

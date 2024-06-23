@@ -12,6 +12,10 @@ type Config struct {
 		Import string `yaml:"import"`
 		Type   string `yaml:"type"`
 	} `yaml:"maybe"`
+
+	Cors struct {
+		Enable bool `yaml:"enable"`
+	} `yaml:"cors"`
 }
 
 func LoadConfig(filepath string) (zero Config, _ error) {
