@@ -30,7 +30,14 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 	}
 	for _, pi := range ps {
 		p := &RouterPathItem{
-			PathItem: pi,
+			RawPath: pi.RawPath,
+		}
+		for _, o := range pi.Operations {
+			p.Operations = append(p.Operations, RouterPathItemOperation{
+				Name:     o.Name,
+				Method:   o.Method,
+				PathSpec: o.PathItem.Path.Spec,
+			})
 		}
 
 		for _, o := range pi.Operations {
@@ -63,9 +70,17 @@ func (r Router) Render() (string, error) {
 }
 
 type RouterPathItem struct {
-	*PathItem
+	RawPath string
+
+	Operations []RouterPathItemOperation
 
 	JWT bool
+}
+
+type RouterPathItemOperation struct {
+	Name     OperationName
+	Method   specification.HTTPMethodTitle
+	PathSpec string
 }
 
 type Route struct {

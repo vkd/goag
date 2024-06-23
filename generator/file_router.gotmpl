@@ -113,9 +113,9 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
 			{{range $_, $h := .PrefixPathItems -}}
 		case "{{.Prefix}}":
 			switch method {
-				{{- range $_, $m := .PathItem.Operations}}
-			case http.Method{{.Operation.Method}}:
-				return {{if $h.RouterPathItem.JWT }}middlewares({{ end }}rt.{{$m.Name}}Handler{{if $h.RouterPathItem.JWT }}, rt.SecurityBearerAuth){{ end }}, "{{.Operation.PathItem.Path.Spec}}"
+				{{- range $_, $m := .Operations}}
+			case http.Method{{.Method}}:
+				return {{if $h.RouterPathItem.JWT }}middlewares({{ end }}rt.{{$m.Name}}Handler{{if $h.RouterPathItem.JWT }}, rt.SecurityBearerAuth){{ end }}, "{{.PathSpec}}"
 				{{- end}}
 			}
 			{{end -}}
@@ -126,7 +126,7 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
             {{- $jwt := .Variable.JWT }}
 			{{- range $_, $o := .Variable.Operations}}
 		case http.Method{{$o.Method}}:
-			return {{if $jwt }}middlewares({{ end }}rt.{{$o.Name}}Handler{{if $jwt }}, rt.SecurityBearerAuth){{ end }}, "{{.Operation.PathItem.Path.Spec}}"
+			return {{if $jwt }}middlewares({{ end }}rt.{{$o.Name}}Handler{{if $jwt }}, rt.SecurityBearerAuth){{ end }}, "{{.PathSpec}}"
 			{{- end}}
 		}
 		{{- end}}
