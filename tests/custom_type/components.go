@@ -14,9 +14,9 @@ type PageCustom = pkg.Page
 
 type Shop ShopName
 
-func (c *Shop) Parse(s string) error {
+func (c *Shop) ParseString(s string) error {
 	var v ShopName
-	err := v.Parse(s)
+	err := v.ParseString(s)
 	if err != nil {
 		return fmt.Errorf("parse ShopName: %w", err)
 	}

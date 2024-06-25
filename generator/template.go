@@ -23,6 +23,7 @@ func init() {
 				"newError":   newErrorFunc,
 				"returns":    newReturnsFunc,
 				"comment":    commentFunc,
+				"title":      titleFunc,
 			}).
 			ParseFS(templatesFS, "*.gotmpl"),
 	)
@@ -65,4 +66,8 @@ func newReturnsFunc(returns string, e ErrorRender) (ErrorRender, error) {
 
 func commentFunc(s string) (string, error) {
 	return strings.ReplaceAll(s, "\n", "\n// "), nil
+}
+
+func titleFunc(s string) (string, error) {
+	return strings.Title(s), nil
 }

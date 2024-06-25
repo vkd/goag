@@ -24,11 +24,20 @@ func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, 
 
 	spec := s.Value()
 
-	if spec.Custom.Set {
-		ct, is := NewCustomType(spec.Custom.Value)
-		return ct, is, nil
+	out, ims, err := newSchema(spec)
+	if err != nil {
+		return nil, nil, err
 	}
 
+	if spec.Custom.Set {
+		ct, is := NewCustomType(spec.Custom.Value, out)
+		return ct, append(is, ims...), nil
+	}
+
+	return out, ims, nil
+}
+
+func newSchema(spec *specification.Schema) (SchemaType, Imports, error) {
 	if len(spec.AllOf) > 0 {
 		var s StructureType
 		var imports Imports

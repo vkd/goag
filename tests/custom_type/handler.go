@@ -63,7 +63,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 			q, ok := query["page_schema_ref_query"]
 			if ok && len(q) > 0 {
 				var v PageCustom
-				err := v.Parse(q[0])
+				err := v.ParseString(q[0])
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_schema_ref_query", Reason: "parse PageCustom", Err: err}
 				}
@@ -73,10 +73,13 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["page_custom_type_query"]
 			if ok && len(q) > 0 {
+				vCustom := q[0]
 				var v pkg.PageCustomTypeQuery
-				err := v.Parse(q[0])
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_custom_type_query", Reason: "parse custom type", Err: err}
+				{
+					err := v.ParseString(vCustom)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page_custom_type_query", Reason: "parse custom type", Err: err}
+					}
 				}
 				params.Query.PageCustomTypeQuery.Set(v)
 			}
@@ -104,9 +107,12 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			err := params.Path.Shop.Parse(vPath)
-			if err != nil {
-				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse custom type", Err: err}
+			vCustom := vPath
+			{
+				err := params.Path.Shop.ParseString(vCustom)
+				if err != nil {
+					return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse custom type", Err: err}
+				}
 			}
 		}
 	}

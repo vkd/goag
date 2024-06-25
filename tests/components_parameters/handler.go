@@ -89,7 +89,7 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 			q, ok := query["page_schema"]
 			if ok && len(q) > 0 {
 				var v Page
-				err := v.Parse(q[0])
+				err := v.ParseString(q[0])
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_schema", Reason: "parse Page", Err: err}
 				}
@@ -126,7 +126,7 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				return zero, fmt.Errorf("query parameter 'page_schema_req': is required")
 			}
 			if ok && len(q) > 0 {
-				err := params.Query.PageSchemaReq.Parse(q[0])
+				err := params.Query.PageSchemaReq.ParseString(q[0])
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_schema_req", Reason: "parse Page", Err: err}
 				}
@@ -152,7 +152,7 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 			hs := header.Values("X-Organization-Schema")
 			if len(hs) > 0 {
 				var v Organization
-				err := v.Parse(hs[0])
+				err := v.ParseString(hs[0])
 				if err != nil {
 					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema", Reason: "parse Organization", Err: err}
 				}
@@ -178,7 +178,7 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				return zero, fmt.Errorf("header parameter 'X-Organization-Schema-Required': is required")
 			}
 			if len(hs) > 0 {
-				err := params.Headers.XOrganizationSchemaRequired.Parse(hs[0])
+				err := params.Headers.XOrganizationSchemaRequired.ParseString(hs[0])
 				if err != nil {
 					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema-Required", Reason: "parse Organization", Err: err}
 				}
@@ -227,7 +227,7 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				return zero, ErrParseParam{In: "path", Parameter: "shop_schema", Reason: "required"}
 			}
 
-			err := params.Path.ShopSchema.Parse(vPath)
+			err := params.Path.ShopSchema.ParseString(vPath)
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop_schema", Reason: "parse Shop", Err: err}
 			}

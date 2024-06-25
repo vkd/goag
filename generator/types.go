@@ -177,9 +177,11 @@ type CustomType struct {
 	Multivalue
 	Type   string
 	Import string
+
+	Base SchemaType
 }
 
-func NewCustomType(s string) (CustomType, Imports) {
+func NewCustomType(s string, baseSchema SchemaType) (CustomType, Imports) {
 	var customImport, customType string = "", s
 	slIdx := strings.LastIndex(s, "/")
 	if slIdx >= 0 {
@@ -195,6 +197,7 @@ func NewCustomType(s string) (CustomType, Imports) {
 	return CustomType{
 		Type:   customType,
 		Import: customImport,
+		Base:   baseSchema,
 	}, NewImportsS(customImport)
 }
 
@@ -215,6 +218,7 @@ func (c CustomType) ParseString(to string, from string, isNew bool, mkErr ErrorR
 		"From":  from,
 		"IsNew": isNew,
 		"MkErr": mkErr,
+		"Base":  c.Base,
 	})
 }
 

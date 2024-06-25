@@ -91,7 +91,7 @@ func (q {{ .Name }}) Strings() []string {
     {{ .Type.RenderFormat (print .Type.Render "(q)") }}
 }
 {{- else }}
-func (c *{{ .Name }}) Parse(s string) error {
+func (c *{{ .Name }}) ParseString(s string) error {
     {{ .Type.ParseString "v" "s" true newError }}
     *c = {{ .Name }}(v)
     return nil

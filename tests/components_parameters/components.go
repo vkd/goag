@@ -11,7 +11,7 @@ import (
 
 type Organization int
 
-func (c *Organization) Parse(s string) error {
+func (c *Organization) ParseString(s string) error {
 	vInt, err := strconv.ParseInt(s, 10, 0)
 	if err != nil {
 		return fmt.Errorf("parse int: %w", err)
@@ -27,7 +27,7 @@ func (q Organization) String() string {
 
 type Page int32
 
-func (c *Page) Parse(s string) error {
+func (c *Page) ParseString(s string) error {
 	vInt, err := strconv.ParseInt(s, 10, 32)
 	if err != nil {
 		return fmt.Errorf("parse int32: %w", err)
@@ -66,9 +66,9 @@ func (q Pages) Strings() []string {
 
 type Shop Shopa
 
-func (c *Shop) Parse(s string) error {
+func (c *Shop) ParseString(s string) error {
 	var v Shopa
-	err := v.Parse(s)
+	err := v.ParseString(s)
 	if err != nil {
 		return fmt.Errorf("parse Shopa: %w", err)
 	}
@@ -82,7 +82,7 @@ func (q Shop) String() string {
 
 type Shopa string
 
-func (c *Shopa) Parse(s string) error {
+func (c *Shopa) ParseString(s string) error {
 	v := s
 	*c = Shopa(v)
 	return nil

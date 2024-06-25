@@ -79,11 +79,14 @@ if err != nil {
 {{/* ----------------------------- CustomType ------------------------------------- */}}
 
 {{ define "CustomTypeParserExternal" }}
-{{- if .IsNew }}var {{ .To }} {{ .Type.Render }}
+{{- .Base.ParseString "vCustom" .From true .MkErr }}
+{{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
 {{ end -}}
-err := {{ .To }}.Parse({{.From}})
-if err != nil {
-	return {{.MkErr.Wrap (print "parse custom type") "err" }}
+{
+	err := {{ .To }}.Parse{{ title .Base.Render }}({{"vCustom"}})
+	if err != nil {
+		return {{.MkErr.Wrap (print "parse custom type") "err" }}
+	}
 }
 {{- end }}
 
@@ -177,7 +180,7 @@ map[{{ .Key.Render }}]{{ .Value.Render }}
 {{ define "RefParseString" -}}
 {{- if .IsNew }}var {{ .To }} {{ .Type }}
 {{ end -}}
-err := {{ .To }}.Parse({{.From}})
+err := {{ .To }}.ParseString({{.From}})
 if err != nil {
 	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
 }
@@ -195,7 +198,7 @@ if err != nil {
 {{ define "RefParseSchema" -}}
 {{- if .IsNew }}var {{ .To }} {{ .Type }}
 {{ end -}}
-err := {{ .To }}.Parse({{.From}})
+err := {{ .To }}.ParseString({{.From}})
 if err != nil {
 	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
 }

@@ -61,10 +61,13 @@ func newPostShopsShopPetsParams(r *http.Request) (zero PostShopsShopPetsParams, 
 		{
 			q, ok := query["filter"]
 			if ok && len(q) > 0 {
+				vCustom := q[0]
 				var v pkg.ShopType
-				err := v.Parse(q[0])
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse custom type", Err: err}
+				{
+					err := v.ParseString(vCustom)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse custom type", Err: err}
+					}
 				}
 				params.Query.Filter.Set(v)
 			}
@@ -92,9 +95,12 @@ func newPostShopsShopPetsParams(r *http.Request) (zero PostShopsShopPetsParams, 
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			err := params.Path.Shop.Parse(vPath)
-			if err != nil {
-				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse custom type", Err: err}
+			vCustom := vPath
+			{
+				err := params.Path.Shop.ParseString(vCustom)
+				if err != nil {
+					return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse custom type", Err: err}
+				}
 			}
 		}
 

@@ -12,7 +12,7 @@ type ShopType struct {
 func (s ShopType) String() string    { return s.V }
 func (s ShopType) Strings() []string { return []string{s.String()} }
 
-func (s *ShopType) Parse(v string) error {
+func (s *ShopType) ParseString(v string) error {
 	s.V = v
 	return nil
 }
