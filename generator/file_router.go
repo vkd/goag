@@ -34,7 +34,8 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 	}
 	for _, pi := range ps {
 		p := &RouterPathItem{
-			RawPath: pi.RawPath,
+			RawPath:    pi.RawPath,
+			HasOptions: pi.PathItem.HasOperation(http.MethodOptions),
 		}
 		for _, o := range pi.Operations {
 			p.Operations = append(p.Operations, RouterPathItemOperation{
@@ -43,13 +44,14 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 				PathSpec: o.PathItem.Path.Spec,
 				Handler:  string(o.Name) + "Handler",
 			})
-			if opt.IsCors && !pi.PathItem.HasOperation(http.MethodOptions) {
+			if !p.HasOptions && opt.IsCors {
 				p.Operations = append(p.Operations, RouterPathItemOperation{
 					Name:     o.Name,
 					Method:   "Options",
 					PathSpec: o.PathItem.Path.Spec,
 					Handler:  "CORSHandler",
 				})
+				p.HasOptions = true
 			}
 		}
 
@@ -87,7 +89,8 @@ type RouterPathItem struct {
 
 	Operations []RouterPathItemOperation
 
-	JWT bool
+	JWT        bool
+	HasOptions bool
 }
 
 type RouterPathItemOperation struct {
