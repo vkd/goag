@@ -22,7 +22,7 @@ type Generator struct {
 	DoNotEdit bool
 }
 
-func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath, cfgFilename string) error {
+func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath, cfgFilename, specHandlerName string) error {
 	ts, err := os.ReadDir(dir)
 	if err != nil {
 		return fmt.Errorf("read dir %q: %w", dir, err)
@@ -39,7 +39,7 @@ func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath, cf
 
 		cfgFile := filepath.Join(testpath, cfgFilename)
 
-		err = g.generateFile(filepath.Join(testpath, out), packageName, specFile, basePath, cfgFile)
+		err = g.generateFile(filepath.Join(testpath, out), packageName, specFile, basePath, cfgFile, specHandlerName)
 		if err != nil {
 			return fmt.Errorf("generate %q: %w", d.Name(), err)
 		}
@@ -48,11 +48,11 @@ func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath, cf
 	return nil
 }
 
-func (g Generator) GenerateFile(outDir, packageName, specFilename, basePath, cfgFilename string) error {
-	return g.generateFile(outDir, packageName, specFilename, basePath, cfgFilename)
+func (g Generator) GenerateFile(outDir, packageName, specFilename, basePath, cfgFilename, handlerSpecFilename string) error {
+	return g.generateFile(outDir, packageName, specFilename, basePath, cfgFilename, handlerSpecFilename)
 }
 
-func (g Generator) generateFile(outDir, packageName, specFilename, basePath, cfgFilename string) error {
+func (g Generator) generateFile(outDir, packageName, specFilename, basePath, cfgFilename, handlerSpecFilename string) error {
 	specRaw, err := os.ReadFile(specFilename)
 	if err != nil {
 		return fmt.Errorf("read spec file: %w", err)
@@ -63,14 +63,16 @@ func (g Generator) generateFile(outDir, packageName, specFilename, basePath, cfg
 		return fmt.Errorf("load spec: %w", err)
 	}
 
-	specBaseFilename := filepath.Base(specFilename)
+	if handlerSpecFilename == "" {
+		handlerSpecFilename = filepath.Base(specFilename)
+	}
 
 	cfg, err := generator.LoadConfig(cfgFilename)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	err = g.Generate(openapi3Spec, outDir, packageName, specRaw, specBaseFilename, basePath, cfg)
+	err = g.Generate(openapi3Spec, outDir, packageName, specRaw, handlerSpecFilename, basePath, cfg)
 	if err != nil {
 		return fmt.Errorf("generate: %w", err)
 	}

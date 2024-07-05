@@ -18,6 +18,7 @@ var (
 	genClient    = flag.Bool("client", false, "Generate client code")
 	deleteOld    = flag.Bool("delete", false, "Delete old files")
 	doNotEdit    = flag.Bool("donotedit", true, "Add 'DO NOT EDIT' headers")
+	specHandler  = flag.String("spec-handler-name", "openapi.yaml", "Handler spec filename")
 )
 
 func main() {
@@ -31,9 +32,9 @@ func main() {
 
 	var err error
 	if dir != nil && *dir != "" {
-		err = g.GenerateDir(*dir, *outDir, *packageName, *specFilename, *basePath, *cfgFilename)
+		err = g.GenerateDir(*dir, *outDir, *packageName, *specFilename, *basePath, *cfgFilename, *specHandler)
 	} else {
-		err = g.GenerateFile(*outDir, *packageName, *specFile, *basePath, *cfgFilename)
+		err = g.GenerateFile(*outDir, *packageName, *specFile, *basePath, *cfgFilename, *specHandler)
 	}
 	if err != nil {
 		log.Fatalf("Error on generate: %v", err)
