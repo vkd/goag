@@ -22,7 +22,7 @@ func (g *Generator) HandlerFile() (GoFile, error) {
 	return g.goFile(g.Imports, g.FileHandler), nil
 }
 
-func (g *Generator) RouterFile(basePath, baseFilename string) (GoFile, error) {
+func (g *Generator) RouterFile() (GoFile, error) {
 	return g.goFile(nil, g.Router), nil
 }
 
