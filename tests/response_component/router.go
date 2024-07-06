@@ -28,7 +28,7 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h, path := rt.route(path, r.Method)
+	h, r := rt.Route(r)
 	if h == nil {
 		h = rt.NotFoundHandler
 		if h == nil {
@@ -41,8 +41,17 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	for i := len(rt.Middlewares) - 1; i >= 0; i-- {
 		h = rt.Middlewares[i](h)
 	}
-	r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
 	h.ServeHTTP(rw, r)
+}
+
+func (rt *API) Route(r *http.Request) (http.Handler, *http.Request) {
+	h, path := rt.route(r.URL.Path, r.Method)
+	if h == nil {
+		return nil, r
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
+	return h, r
 }
 
 func (rt *API) route(path, method string) (http.Handler, string) {
