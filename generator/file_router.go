@@ -37,6 +37,25 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 			RawPath:    pi.RawPath,
 			HasOptions: pi.PathItem.HasOperation(http.MethodOptions),
 		}
+
+		var methods []string
+		var headers []string
+		if opt.IsCors {
+			headersMap := map[string]struct{}{}
+			for _, o := range pi.PathItem.Operations {
+				methods = append(methods, string(o.HTTPMethod))
+
+				for _, h := range o.Parameters.Headers.List {
+					key := http.CanonicalHeaderKey(h.Name)
+
+					if _, ok := headersMap[key]; !ok {
+						headersMap[key] = struct{}{}
+						headers = append(headers, key)
+					}
+				}
+			}
+		}
+
 		for _, o := range pi.Operations {
 			p.Operations = append(p.Operations, RouterPathItemOperation{
 				Name:     o.Name,
@@ -46,10 +65,11 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 			})
 			if !p.HasOptions && opt.IsCors {
 				p.Operations = append(p.Operations, RouterPathItemOperation{
-					Name:     o.Name,
-					Method:   "Options",
 					PathSpec: o.PathItem.Path.Spec,
-					Handler:  "CORSHandler",
+
+					IsCORS:      true,
+					CORSMethods: methods,
+					CORSHeaders: headers,
 				})
 				p.HasOptions = true
 			}
@@ -98,6 +118,10 @@ type RouterPathItemOperation struct {
 	Method   specification.HTTPMethodTitle
 	PathSpec string
 	Handler  string
+
+	IsCORS      bool
+	CORSMethods []string
+	CORSHeaders []string
 }
 
 type Route struct {

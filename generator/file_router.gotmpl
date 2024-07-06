@@ -12,7 +12,7 @@ type API struct {
 	// spec file
 	SpecFileHandler http.Handler
 	{{- if .Cors }}
-	CORSHandler http.Handler
+	CORSHandler CorsHandlerFunc
 	{{- end }}
 
 	Middlewares []func(h http.Handler) http.Handler
@@ -21,6 +21,10 @@ type API struct {
 	SecurityBearerAuth SecurityBearerAuthMiddleware
 	{{- end }}
 }
+{{- if .Cors }}
+
+type CorsHandlerFunc func(methods, headers []string) http.Handler
+{{- end }}
 
 func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
@@ -126,10 +130,18 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
 		case "{{.Prefix}}":
 			switch method {
 				{{- range $_, $m := .Operations}}
+					{{- if .IsCORS }}
+			case http.MethodOptions:
+				if rt.CORSHandler == nil {
+					return nil, ""
+				}
+				h := rt.CORSHandler([]string{ {{ range $i, $_ := .CORSMethods }}{{ if $i }}, {{ end }}"{{ . }}"{{ end }} }, []string{ {{ range $i, $_ := .CORSHeaders }}{{ if $i }}, {{ end }}"{{ . }}"{{ end }} })
+					{{- else }}
 			case http.Method{{ .Method }}:
 				h := http.Handler(rt.{{ $m.Handler }})
-					{{- if $h.RouterPathItem.JWT }}
+						{{- if $h.RouterPathItem.JWT }}
 				h = middlewares(h, rt.SecurityBearerAuth)
+						{{- end }}
 					{{- end }}
 				return h, "{{.PathSpec}}"
 				{{- end }}
@@ -141,10 +153,18 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
 		switch method {
             {{- $jwt := .Variable.JWT }}
 			{{- range $_, $o := .Variable.Operations}}
+				{{- if .IsCORS }}
+		case http.MethodOptions:
+			if rt.CORSHandler == nil {
+				return nil, ""
+			}
+			h := rt.CORSHandler([]string{ {{ range $i, $_ := .CORSMethods }}{{ if $i }}, {{ end }}"{{ . }}"{{ end }} }, []string{ {{ range $i, $_ := .CORSHeaders }}{{ if $i }}, {{ end }}"{{ . }}"{{ end }} })
+				{{- else }}
 		case http.Method{{$o.Method}}:
 			h := http.Handler(rt.{{ $o.Handler }})
-				{{- if $jwt }}
+					{{- if $jwt }}
 			h = middlewares(h, rt.SecurityBearerAuth)
+					{{- end }}
 				{{- end }}
 			return h, "{{.PathSpec}}"
 			{{- end }}
