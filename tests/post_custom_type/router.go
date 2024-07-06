@@ -76,7 +76,8 @@ func (rt *API) routeShopsShop(path, method string) (http.Handler, string) {
 		case "/pets":
 			switch method {
 			case http.MethodPost:
-				return rt.PostShopsShopPetsHandler, "/shops/{shop}/pets"
+				h := http.Handler(rt.PostShopsShopPetsHandler)
+				return h, "/shops/{shop}/pets"
 			}
 		}
 		return nil, ""

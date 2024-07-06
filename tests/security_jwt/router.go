@@ -63,12 +63,15 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 		case "/login":
 			switch method {
 			case http.MethodPost:
-				return rt.PostLoginHandler, "/login"
+				h := http.Handler(rt.PostLoginHandler)
+				return h, "/login"
 			}
 		case "/shops":
 			switch method {
 			case http.MethodPost:
-				return middlewares(rt.PostShopsHandler, rt.SecurityBearerAuth), "/shops"
+				h := http.Handler(rt.PostShopsHandler)
+				h = middlewares(h, rt.SecurityBearerAuth)
+				return h, "/shops"
 			}
 		}
 		return nil, ""

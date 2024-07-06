@@ -126,9 +126,13 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
 		case "{{.Prefix}}":
 			switch method {
 				{{- range $_, $m := .Operations}}
-			case http.Method{{.Method}}:
-				return {{if $h.RouterPathItem.JWT }}middlewares({{ end }}rt.{{$m.Handler}}{{if $h.RouterPathItem.JWT }}, rt.SecurityBearerAuth){{ end }}, "{{.PathSpec}}"
-				{{- end}}
+			case http.Method{{ .Method }}:
+				h := http.Handler(rt.{{ $m.Handler }})
+					{{- if $h.RouterPathItem.JWT }}
+				h = middlewares(h, rt.SecurityBearerAuth)
+					{{- end }}
+				return h, "{{.PathSpec}}"
+				{{- end }}
 			}
 			{{end -}}
 		}
@@ -138,8 +142,12 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
             {{- $jwt := .Variable.JWT }}
 			{{- range $_, $o := .Variable.Operations}}
 		case http.Method{{$o.Method}}:
-			return {{if $jwt }}middlewares({{ end }}rt.{{$o.Handler}}{{if $jwt }}, rt.SecurityBearerAuth){{ end }}, "{{.PathSpec}}"
-			{{- end}}
+			h := http.Handler(rt.{{ $o.Handler }})
+				{{- if $jwt }}
+			h = middlewares(h, rt.SecurityBearerAuth)
+				{{- end }}
+			return h, "{{.PathSpec}}"
+			{{- end }}
 		}
 		{{- end}}
 		return nil, ""

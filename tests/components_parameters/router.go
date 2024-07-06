@@ -92,7 +92,8 @@ func (rt *API) routeShopsShopStringSepShopSchema(path, method string) (http.Hand
 		case "/pets":
 			switch method {
 			case http.MethodPost:
-				return rt.PostShopsShopStringSepShopSchemaPetsHandler, "/shops/{shop_string}/sep/{shop_schema}/pets"
+				h := http.Handler(rt.PostShopsShopStringSepShopSchemaPetsHandler)
+				return h, "/shops/{shop_string}/sep/{shop_schema}/pets"
 			}
 		}
 		return nil, ""

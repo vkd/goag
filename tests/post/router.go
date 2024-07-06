@@ -60,7 +60,8 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 		case "/pets":
 			switch method {
 			case http.MethodPost:
-				return rt.PostPetsHandler, "/pets"
+				h := http.Handler(rt.PostPetsHandler)
+				return h, "/pets"
 			}
 		}
 		return nil, ""

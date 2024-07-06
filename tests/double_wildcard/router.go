@@ -77,12 +77,14 @@ func (rt *API) routePetsPetID(path, method string) (http.Handler, string) {
 		case "/names":
 			switch method {
 			case http.MethodGet:
-				return rt.GetPetsPetIDNamesHandler, "/pets/{pet_id}/names"
+				h := http.Handler(rt.GetPetsPetIDNamesHandler)
+				return h, "/pets/{pet_id}/names"
 			}
 		case "/shops":
 			switch method {
 			case http.MethodGet:
-				return rt.GetPetsPetIDShopsHandler, "/pets/{pet_id}/shops"
+				h := http.Handler(rt.GetPetsPetIDShopsHandler)
+				return h, "/pets/{pet_id}/shops"
 			}
 		}
 		return nil, ""
