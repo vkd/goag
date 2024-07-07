@@ -26,43 +26,38 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h, r := rt.Route(r)
+	h, path, hasPath := rt.route(path, r.Method)
 	if h == nil {
 		h = rt.NotFoundHandler
 		if h == nil {
 			h = http.NotFoundHandler()
 		}
-		h.ServeHTTP(rw, r)
-		return
+
+		hasPath = false
 	}
 
-	for i := len(rt.Middlewares) - 1; i >= 0; i-- {
-		h = rt.Middlewares[i](h)
+	if hasPath {
+		r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
+
+		for i := len(rt.Middlewares) - 1; i >= 0; i-- {
+			h = rt.Middlewares[i](h)
+		}
 	}
+
 	h.ServeHTTP(rw, r)
 }
 
-func (rt *API) Route(r *http.Request) (http.Handler, *http.Request) {
-	h, path := rt.route(r.URL.Path, r.Method)
-	if h == nil {
-		return nil, r
-	}
-
-	r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
-	return h, r
-}
-
-func (rt *API) route(path, method string) (http.Handler, string) {
+func (rt *API) route(path, method string) (http.Handler, string, bool) {
 	prefix, path := splitPath(path)
 
 	switch prefix {
 	case "/pets":
 		return rt.routePets(path, method)
 	}
-	return nil, ""
+	return nil, "", false
 }
 
-func (rt *API) routePets(path, method string) (http.Handler, string) {
+func (rt *API) routePets(path, method string) (http.Handler, string, bool) {
 	prefix, path := splitPath(path)
 
 	if path == "" {
@@ -71,13 +66,13 @@ func (rt *API) routePets(path, method string) (http.Handler, string) {
 			switch method {
 			case http.MethodGet:
 				h := http.Handler(rt.GetPetsIDsHandler)
-				return h, "/pets/ids"
+				return h, "/pets/ids", true
 			}
 		}
-		return nil, ""
+		return nil, "", false
 	}
 
-	return nil, ""
+	return nil, "", false
 }
 
 type pathKey struct{}

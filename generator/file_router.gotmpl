@@ -34,30 +34,25 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h, r := rt.Route(r)
+	h, path, hasPath := rt.route(path, r.Method)
 	if h == nil {
 		h = rt.NotFoundHandler
 		if h == nil {
 			h = http.NotFoundHandler()
 		}
-		h.ServeHTTP(rw, r)
-		return
+
+		hasPath = false
 	}
 
-	for i := len(rt.Middlewares) - 1; i >= 0; i-- {
-		h = rt.Middlewares[i](h)
+	if hasPath {
+		r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
+
+		for i := len(rt.Middlewares) - 1; i >= 0; i-- {
+			h = rt.Middlewares[i](h)
+		}
 	}
+
 	h.ServeHTTP(rw, r)
-}
-
-func (rt *API) Route(r *http.Request) (http.Handler, *http.Request) {
-	h, path := rt.route(r.URL.Path, r.Method)
-	if h == nil {
-		return nil, r
-	}
-
-	r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
-	return h, r
 }
 
 {{ range $_, $r := .Routes }}
@@ -107,15 +102,15 @@ func splitPath(s string) (string, string) {
 {{/* ----------------------------- Route ------------------------------------- */}}
 {{ define "Route" }}
 {{- $basePath := .BasePath }}
-func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
+func (rt *API) route{{.Name}}(path, method string) (http.Handler, string, bool) {
 	{{- if and $basePath (not .Name) }}
 	if !strings.HasPrefix(path, "{{$basePath}}") {
-		return nil, ""
+		return nil, "", false
 	}
 	path = path[{{len $basePath }}:] // "{{$basePath}}"
 
 	if !strings.HasPrefix(path, "/") {
-		return nil, ""
+		return nil, "", false
 	}
 
 	{{ end -}}
@@ -133,17 +128,18 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
 					{{- if .IsCORS }}
 			case http.MethodOptions:
 				if rt.CORSHandler == nil {
-					return nil, ""
+					return nil, "", false
 				}
 				h := rt.CORSHandler([]string{ {{ range $i, $_ := .CORSMethods }}{{ if $i }}, {{ end }}"{{ . }}"{{ end }} }, []string{ {{ range $i, $_ := .CORSHeaders }}{{ if $i }}, {{ end }}"{{ . }}"{{ end }} })
+				return h, "", false
 					{{- else }}
 			case http.Method{{ .Method }}:
 				h := http.Handler(rt.{{ $m.Handler }})
 						{{- if $h.RouterPathItem.JWT }}
 				h = middlewares(h, rt.SecurityBearerAuth)
 						{{- end }}
+				return h, "{{.PathSpec}}", true
 					{{- end }}
-				return h, "{{.PathSpec}}"
 				{{- end }}
 			}
 			{{end -}}
@@ -156,21 +152,22 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
 				{{- if .IsCORS }}
 		case http.MethodOptions:
 			if rt.CORSHandler == nil {
-				return nil, ""
+				return nil, "", false
 			}
 			h := rt.CORSHandler([]string{ {{ range $i, $_ := .CORSMethods }}{{ if $i }}, {{ end }}"{{ . }}"{{ end }} }, []string{ {{ range $i, $_ := .CORSHeaders }}{{ if $i }}, {{ end }}"{{ . }}"{{ end }} })
+			return h, "", false
 				{{- else }}
 		case http.Method{{$o.Method}}:
 			h := http.Handler(rt.{{ $o.Handler }})
 					{{- if $jwt }}
 			h = middlewares(h, rt.SecurityBearerAuth)
 					{{- end }}
+			return h, "{{.PathSpec}}", true
 				{{- end }}
-			return h, "{{.PathSpec}}"
 			{{- end }}
 		}
 		{{- end}}
-		return nil, ""
+		return nil, "", false
 	}
 	{{- end}}
 
@@ -181,9 +178,9 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
 			{{range $_, $r := .Routes -}}
 	case "{{.Prefix}}":
 				{{- if $isVariableRoute }}
-		h, out := rt.route{{.Name}}(path, method)
+		h, out, hasPath := rt.route{{.Name}}(path, method)
 		if h != nil {
-			return h, out
+			return h, out, hasPath
 		}
 				{{- else }}
 		return rt.route{{.Name}}(path, method)
@@ -196,10 +193,10 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string) {
 
 	return rt.route{{.VariableRoute.Name}}(path, method)
 		{{- else}}
-	return nil, ""
+	return nil, "", false
 		{{- end}}
 	{{- else}}
-	return nil, ""
+	return nil, "", false
 	{{- end}}
 }
 {{- end }}

@@ -26,65 +26,60 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h, r := rt.Route(r)
+	h, path, hasPath := rt.route(path, r.Method)
 	if h == nil {
 		h = rt.NotFoundHandler
 		if h == nil {
 			h = http.NotFoundHandler()
 		}
-		h.ServeHTTP(rw, r)
-		return
+
+		hasPath = false
 	}
 
-	for i := len(rt.Middlewares) - 1; i >= 0; i-- {
-		h = rt.Middlewares[i](h)
+	if hasPath {
+		r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
+
+		for i := len(rt.Middlewares) - 1; i >= 0; i-- {
+			h = rt.Middlewares[i](h)
+		}
 	}
+
 	h.ServeHTTP(rw, r)
 }
 
-func (rt *API) Route(r *http.Request) (http.Handler, *http.Request) {
-	h, path := rt.route(r.URL.Path, r.Method)
-	if h == nil {
-		return nil, r
-	}
-
-	r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
-	return h, r
-}
-
-func (rt *API) route(path, method string) (http.Handler, string) {
+func (rt *API) route(path, method string) (http.Handler, string, bool) {
 	prefix, path := splitPath(path)
 
 	switch prefix {
 	case "/shops":
 		return rt.routeShops(path, method)
 	}
-	return nil, ""
+	return nil, "", false
 }
 
-func (rt *API) routeShops(path, method string) (http.Handler, string) {
+func (rt *API) routeShops(path, method string) (http.Handler, string, bool) {
 	_, path = splitPath(path)
 
 	return rt.routeShopsShopString(path, method)
 }
 
-func (rt *API) routeShopsShopString(path, method string) (http.Handler, string) {
+func (rt *API) routeShopsShopString(path, method string) (http.Handler, string, bool) {
 	prefix, path := splitPath(path)
 
 	switch prefix {
 	case "/sep":
 		return rt.routeShopsShopStringSep(path, method)
 	}
-	return nil, ""
+	return nil, "", false
 }
 
-func (rt *API) routeShopsShopStringSep(path, method string) (http.Handler, string) {
+func (rt *API) routeShopsShopStringSep(path, method string) (http.Handler, string, bool) {
 	_, path = splitPath(path)
 
 	return rt.routeShopsShopStringSepShopSchema(path, method)
 }
 
-func (rt *API) routeShopsShopStringSepShopSchema(path, method string) (http.Handler, string) {
+func (rt *API) routeShopsShopStringSepShopSchema(path, method string) (http.Handler, string, bool) {
 	prefix, path := splitPath(path)
 
 	if path == "" {
@@ -93,13 +88,13 @@ func (rt *API) routeShopsShopStringSepShopSchema(path, method string) (http.Hand
 			switch method {
 			case http.MethodPost:
 				h := http.Handler(rt.PostShopsShopStringSepShopSchemaPetsHandler)
-				return h, "/shops/{shop_string}/sep/{shop_schema}/pets"
+				return h, "/shops/{shop_string}/sep/{shop_schema}/pets", true
 			}
 		}
-		return nil, ""
+		return nil, "", false
 	}
 
-	return nil, ""
+	return nil, "", false
 }
 
 type pathKey struct{}

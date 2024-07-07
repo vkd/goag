@@ -35,33 +35,28 @@ func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h, r := rt.Route(r)
+	h, path, hasPath := rt.route(path, r.Method)
 	if h == nil {
 		h = rt.NotFoundHandler
 		if h == nil {
 			h = http.NotFoundHandler()
 		}
-		h.ServeHTTP(rw, r)
-		return
+
+		hasPath = false
 	}
 
-	for i := len(rt.Middlewares) - 1; i >= 0; i-- {
-		h = rt.Middlewares[i](h)
+	if hasPath {
+		r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
+
+		for i := len(rt.Middlewares) - 1; i >= 0; i-- {
+			h = rt.Middlewares[i](h)
+		}
 	}
+
 	h.ServeHTTP(rw, r)
 }
 
-func (rt *API) Route(r *http.Request) (http.Handler, *http.Request) {
-	h, path := rt.route(r.URL.Path, r.Method)
-	if h == nil {
-		return nil, r
-	}
-
-	r = r.WithContext(context.WithValue(r.Context(), pathKey{}, path))
-	return h, r
-}
-
-func (rt *API) route(path, method string) (http.Handler, string) {
+func (rt *API) route(path, method string) (http.Handler, string, bool) {
 	prefix, path := splitPath(path)
 
 	if path == "" {
@@ -70,26 +65,26 @@ func (rt *API) route(path, method string) (http.Handler, string) {
 			switch method {
 			case http.MethodGet:
 				h := http.Handler(rt.GetHandler)
-				return h, "/"
+				return h, "/", true
 			}
 		case "/shops":
 			switch method {
 			case http.MethodGet:
 				h := http.Handler(rt.GetShopsHandler)
-				return h, "/shops"
+				return h, "/shops", true
 			}
 		}
-		return nil, ""
+		return nil, "", false
 	}
 
 	switch prefix {
 	case "/shops":
 		return rt.routeShops(path, method)
 	}
-	return nil, ""
+	return nil, "", false
 }
 
-func (rt *API) routeShops(path, method string) (http.Handler, string) {
+func (rt *API) routeShops(path, method string) (http.Handler, string, bool) {
 	prefix, path := splitPath(path)
 
 	if path == "" {
@@ -98,35 +93,35 @@ func (rt *API) routeShops(path, method string) (http.Handler, string) {
 			switch method {
 			case http.MethodGet:
 				h := http.Handler(rt.GetShopsRTHandler)
-				return h, "/shops/"
+				return h, "/shops/", true
 			}
 		case "/activate":
 			switch method {
 			case http.MethodGet:
 				h := http.Handler(rt.GetShopsActivateHandler)
-				return h, "/shops/activate"
+				return h, "/shops/activate", true
 			}
 		}
 		switch method {
 		case http.MethodGet:
 			h := http.Handler(rt.GetShopsShopHandler)
-			return h, "/shops/{shop}"
+			return h, "/shops/{shop}", true
 		}
-		return nil, ""
+		return nil, "", false
 	}
 
 	switch prefix {
 	case "/activate":
-		h, out := rt.routeShopsActivate(path, method)
+		h, out, hasPath := rt.routeShopsActivate(path, method)
 		if h != nil {
-			return h, out
+			return h, out, hasPath
 		}
 	}
 
 	return rt.routeShopsShop(path, method)
 }
 
-func (rt *API) routeShopsActivate(path, method string) (http.Handler, string) {
+func (rt *API) routeShopsActivate(path, method string) (http.Handler, string, bool) {
 	prefix, path := splitPath(path)
 
 	if path == "" {
@@ -135,22 +130,22 @@ func (rt *API) routeShopsActivate(path, method string) (http.Handler, string) {
 			switch method {
 			case http.MethodGet:
 				h := http.Handler(rt.GetShopsActivateRTHandler)
-				return h, "/shops/activate/"
+				return h, "/shops/activate/", true
 			}
 		case "/tag":
 			switch method {
 			case http.MethodGet:
 				h := http.Handler(rt.GetShopsActivateTagHandler)
-				return h, "/shops/activate/tag"
+				return h, "/shops/activate/tag", true
 			}
 		}
-		return nil, ""
+		return nil, "", false
 	}
 
-	return nil, ""
+	return nil, "", false
 }
 
-func (rt *API) routeShopsShop(path, method string) (http.Handler, string) {
+func (rt *API) routeShopsShop(path, method string) (http.Handler, string, bool) {
 	prefix, path := splitPath(path)
 
 	if path == "" {
@@ -159,25 +154,25 @@ func (rt *API) routeShopsShop(path, method string) (http.Handler, string) {
 			switch method {
 			case http.MethodGet:
 				h := http.Handler(rt.GetShopsShopRTHandler)
-				return h, "/shops/{shop}/"
+				return h, "/shops/{shop}/", true
 			}
 		case "/pets":
 			switch method {
 			case http.MethodGet:
 				h := http.Handler(rt.GetShopsShopPetsHandler)
-				return h, "/shops/{shop}/pets"
+				return h, "/shops/{shop}/pets", true
 			}
 		case "/review":
 			switch method {
 			case http.MethodPost:
 				h := http.Handler(rt.ReviewShopHandler)
-				return h, "/shops/{shop}/review"
+				return h, "/shops/{shop}/review", true
 			}
 		}
-		return nil, ""
+		return nil, "", false
 	}
 
-	return nil, ""
+	return nil, "", false
 }
 
 type pathKey struct{}
