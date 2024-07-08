@@ -39,45 +39,51 @@ func (r getReviewsHTTPRequest) Parse() (GetReviewsParams, error) {
 }
 
 type GetReviewsParams struct {
-	Query struct {
-		IntReq int
+	Query GetReviewsParamsQuery
 
-		Int Maybe[int]
+	Path GetReviewsParamsPath
 
-		Int32Req int32
+	Headers GetReviewsParamsHeaders
+}
 
-		Int32 Maybe[int32]
+type GetReviewsParamsQuery struct {
+	IntReq int
 
-		Int64Req int64
+	Int Maybe[int]
 
-		Int64 Maybe[int64]
+	Int32Req int32
 
-		Float32Req float32
+	Int32 Maybe[int32]
 
-		Float32 Maybe[float32]
+	Int64Req int64
 
-		Float64Req float64
+	Int64 Maybe[int64]
 
-		Float64 Maybe[float64]
+	Float32Req float32
 
-		StringReq string
+	Float32 Maybe[float32]
 
-		String Maybe[string]
+	Float64Req float64
 
-		Tag Maybe[[]string]
+	Float64 Maybe[float64]
 
-		Filter Maybe[[]int32]
-	}
+	StringReq string
 
-	Path struct {
-		Shop int32
-	}
+	String Maybe[string]
 
-	Headers struct {
-		RequestID Maybe[string]
+	Tag Maybe[[]string]
 
-		UserID string
-	}
+	Filter Maybe[[]int32]
+}
+
+type GetReviewsParamsPath struct {
+	Shop int32
+}
+
+type GetReviewsParamsHeaders struct {
+	RequestID Maybe[string]
+
+	UserID string
 }
 
 func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {

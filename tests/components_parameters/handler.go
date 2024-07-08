@@ -39,33 +39,39 @@ func (r postShopsShopStringSepShopSchemaPetsHTTPRequest) Parse() (PostShopsShopS
 }
 
 type PostShopsShopStringSepShopSchemaPetsParams struct {
-	Query struct {
-		PageInt Maybe[int]
+	Query PostShopsShopStringSepShopSchemaPetsParamsQuery
 
-		PageSchema Maybe[Page]
+	Path PostShopsShopStringSepShopSchemaPetsParamsPath
 
-		PagesSchema Maybe[Pages]
+	Headers PostShopsShopStringSepShopSchemaPetsParamsHeaders
+}
 
-		PageIntReq int
+type PostShopsShopStringSepShopSchemaPetsParamsQuery struct {
+	PageInt Maybe[int]
 
-		PageSchemaReq Page
-	}
+	PageSchema Maybe[Page]
 
-	Path struct {
-		ShopString string
+	PagesSchema Maybe[Pages]
 
-		ShopSchema Shop
-	}
+	PageIntReq int
 
-	Headers struct {
-		XOrganizationInt Maybe[int]
+	PageSchemaReq Page
+}
 
-		XOrganizationSchema Maybe[Organization]
+type PostShopsShopStringSepShopSchemaPetsParamsPath struct {
+	ShopString string
 
-		XOrganizationIntRequired int
+	ShopSchema Shop
+}
 
-		XOrganizationSchemaRequired Organization
-	}
+type PostShopsShopStringSepShopSchemaPetsParamsHeaders struct {
+	XOrganizationInt Maybe[int]
+
+	XOrganizationSchema Maybe[Organization]
+
+	XOrganizationIntRequired int
+
+	XOrganizationSchemaRequired Organization
 }
 
 func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostShopsShopStringSepShopSchemaPetsParams, _ error) {

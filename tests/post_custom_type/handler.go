@@ -41,15 +41,19 @@ func (r postShopsShopPetsHTTPRequest) Parse() (PostShopsShopPetsParams, error) {
 }
 
 type PostShopsShopPetsParams struct {
-	Query struct {
-		Filter pkg.Maybe[pkg.ShopType]
-	}
+	Query PostShopsShopPetsParamsQuery
 
-	Path struct {
-		Shop pkg.ShopType
-	}
+	Path PostShopsShopPetsParamsPath
 
 	Body NewPet
+}
+
+type PostShopsShopPetsParamsQuery struct {
+	Filter pkg.Maybe[pkg.ShopType]
+}
+
+type PostShopsShopPetsParamsPath struct {
+	Shop pkg.ShopType
 }
 
 func newPostShopsShopPetsParams(r *http.Request) (zero PostShopsShopPetsParams, _ error) {

@@ -113,11 +113,13 @@ func (r postShopsHTTPRequest) Parse() (PostShopsParams, error) {
 }
 
 type PostShopsParams struct {
-	Headers struct {
+	Headers PostShopsParamsHeaders
+}
 
-		// Authorization - JWT
-		Authorization string
-	}
+type PostShopsParamsHeaders struct {
+
+	// Authorization - JWT
+	Authorization string
 }
 
 func newPostShopsParams(r *http.Request) (zero PostShopsParams, _ error) {

@@ -425,9 +425,11 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 }
 
 type GetShopsShopParams struct {
-	Path struct {
-		Shop int32
-	}
+	Path GetShopsShopParamsPath
+}
+
+type GetShopsShopParamsPath struct {
+	Shop int32
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
@@ -521,9 +523,11 @@ func (r getShopsShopRTHTTPRequest) Parse() (GetShopsShopRTParams, error) {
 }
 
 type GetShopsShopRTParams struct {
-	Path struct {
-		Shop int32
-	}
+	Path GetShopsShopRTParamsPath
+}
+
+type GetShopsShopRTParamsPath struct {
+	Shop int32
 }
 
 func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTParams, _ error) {
@@ -622,15 +626,19 @@ func (r getShopsShopPetsHTTPRequest) Parse() (GetShopsShopPetsParams, error) {
 }
 
 type GetShopsShopPetsParams struct {
-	Query struct {
-		Page Maybe[int32]
+	Query GetShopsShopPetsParamsQuery
 
-		PageSize int32
-	}
+	Path GetShopsShopPetsParamsPath
+}
 
-	Path struct {
-		Shop int32
-	}
+type GetShopsShopPetsParamsQuery struct {
+	Page Maybe[int32]
+
+	PageSize int32
+}
+
+type GetShopsShopPetsParamsPath struct {
+	Shop int32
 }
 
 func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ error) {
@@ -793,27 +801,33 @@ func (r reviewShopHTTPRequest) Parse() (ReviewShopParams, error) {
 }
 
 type ReviewShopParams struct {
-	Query struct {
-		Page Maybe[int32]
+	Query ReviewShopParamsQuery
 
-		PageSize int32
+	Path ReviewShopParamsPath
 
-		Tag Maybe[[]string]
-
-		Filter Maybe[[]int32]
-	}
-
-	Path struct {
-		Shop int32
-	}
-
-	Headers struct {
-		RequestID Maybe[string]
-
-		UserID string
-	}
+	Headers ReviewShopParamsHeaders
 
 	Body NewPet
+}
+
+type ReviewShopParamsQuery struct {
+	Page Maybe[int32]
+
+	PageSize int32
+
+	Tag Maybe[[]string]
+
+	Filter Maybe[[]int32]
+}
+
+type ReviewShopParamsPath struct {
+	Shop int32
+}
+
+type ReviewShopParamsHeaders struct {
+	RequestID Maybe[string]
+
+	UserID string
 }
 
 func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {

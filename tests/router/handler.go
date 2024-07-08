@@ -358,9 +358,11 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 }
 
 type GetShopsShopParams struct {
-	Path struct {
-		Shop string
-	}
+	Path GetShopsShopParamsPath
+}
+
+type GetShopsShopParamsPath struct {
+	Shop string
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
@@ -458,9 +460,11 @@ func (r getShopsShopRTHTTPRequest) Parse() (GetShopsShopRTParams, error) {
 }
 
 type GetShopsShopRTParams struct {
-	Path struct {
-		Shop string
-	}
+	Path GetShopsShopRTParamsPath
+}
+
+type GetShopsShopRTParamsPath struct {
+	Shop string
 }
 
 func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTParams, _ error) {
@@ -563,9 +567,11 @@ func (r getShopsShopPetsHTTPRequest) Parse() (GetShopsShopPetsParams, error) {
 }
 
 type GetShopsShopPetsParams struct {
-	Path struct {
-		Shop string
-	}
+	Path GetShopsShopPetsParamsPath
+}
+
+type GetShopsShopPetsParamsPath struct {
+	Shop string
 }
 
 func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ error) {
@@ -668,9 +674,11 @@ func (r getShopsShopPetsMikePawsHTTPRequest) Parse() (GetShopsShopPetsMikePawsPa
 }
 
 type GetShopsShopPetsMikePawsParams struct {
-	Path struct {
-		Shop string
-	}
+	Path GetShopsShopPetsMikePawsParamsPath
+}
+
+type GetShopsShopPetsMikePawsParamsPath struct {
+	Shop string
 }
 
 func newGetShopsShopPetsMikePawsParams(r *http.Request) (zero GetShopsShopPetsMikePawsParams, _ error) {

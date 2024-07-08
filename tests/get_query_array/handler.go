@@ -38,11 +38,13 @@ func (r getPetsHTTPRequest) Parse() (GetPetsParams, error) {
 }
 
 type GetPetsParams struct {
-	Query struct {
-		Tag Maybe[[]string]
+	Query GetPetsParamsQuery
+}
 
-		Page Maybe[[]int64]
-	}
+type GetPetsParamsQuery struct {
+	Tag Maybe[[]string]
+
+	Page Maybe[[]int64]
 }
 
 func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {

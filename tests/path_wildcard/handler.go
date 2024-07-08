@@ -41,9 +41,11 @@ func (r getPetsPetIDHTTPRequest) Parse() (GetPetsPetIDParams, error) {
 }
 
 type GetPetsPetIDParams struct {
-	Path struct {
-		PetID int32
-	}
+	Path GetPetsPetIDParamsPath
+}
+
+type GetPetsPetIDParamsPath struct {
+	PetID int32
 }
 
 func newGetPetsPetIDParams(r *http.Request) (zero GetPetsPetIDParams, _ error) {

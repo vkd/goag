@@ -38,9 +38,11 @@ func (r getPetsPetIDNamesHTTPRequest) Parse() (GetPetsPetIDNamesParams, error) {
 }
 
 type GetPetsPetIDNamesParams struct {
-	Path struct {
-		PetID string
-	}
+	Path GetPetsPetIDNamesParamsPath
+}
+
+type GetPetsPetIDNamesParamsPath struct {
+	PetID string
 }
 
 func newGetPetsPetIDNamesParams(r *http.Request) (zero GetPetsPetIDNamesParams, _ error) {
@@ -132,9 +134,11 @@ func (r getPetsPetIDShopsHTTPRequest) Parse() (GetPetsPetIDShopsParams, error) {
 }
 
 type GetPetsPetIDShopsParams struct {
-	Path struct {
-		PetID string
-	}
+	Path GetPetsPetIDShopsParamsPath
+}
+
+type GetPetsPetIDShopsParamsPath struct {
+	PetID string
 }
 
 func newGetPetsPetIDShopsParams(r *http.Request) (zero GetPetsPetIDShopsParams, _ error) {

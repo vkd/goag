@@ -40,33 +40,48 @@ func (r {{ private $httpRequestParser }}) Parse() {{if $h.CanParseError}}({{end}
 
 type {{$request}} struct {
 	{{ if $h.Parameters.Query }}
-	Query struct{
-		{{ range $_, $p := .Parameters.Query }}
-		{{ $p.HandlerParameter.Render }}
-		{{ end }}
-	}
+	Query {{$request}}Query
 	{{ end }}
 
 	{{ if $h.Parameters.Path }}
-	Path struct{
-		{{ range $_, $p := .Parameters.Path }}
-		{{ $p.HandlerParameter.Render }}
-		{{ end }}
-	}
+	Path {{$request}}Path
 	{{ end }}
 
 	{{ if $h.Parameters.Header }}
-	Headers struct{
-		{{ range $_, $p := .Parameters.Header }}
-		{{ $p.HandlerParameter.Render }}
-		{{ end }}
-	}
+	Headers {{$request}}Headers
 	{{ end }}
 
 	{{ if $h.Body.TypeName }}
 	Body {{ $h.Body.TypeName.Render }}
 	{{ end }}
 }
+
+{{- if $h.Parameters.Query }}
+
+type {{$request}}Query struct{
+	{{ range $_, $p := .Parameters.Query }}
+	{{ $p.HandlerParameter.Render }}
+	{{ end }}
+}
+{{- end }}
+
+{{- if $h.Parameters.Path }}
+
+type {{$request}}Path struct{
+	{{ range $_, $p := .Parameters.Path }}
+	{{ $p.HandlerParameter.Render }}
+	{{ end }}
+}
+{{- end }}
+
+{{- if $h.Parameters.Header }}
+
+type {{$request}}Headers struct{
+	{{ range $_, $p := .Parameters.Header }}
+	{{ $p.HandlerParameter.Render }}
+	{{ end }}
+}
+{{- end }}
 
 func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseError }}, _ error{{ end }}) {
 	var params {{ $request }}

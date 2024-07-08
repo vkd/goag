@@ -43,11 +43,13 @@ func (r listPetsHTTPRequest) Parse() (ListPetsParams, error) {
 }
 
 type ListPetsParams struct {
-	Query struct {
+	Query ListPetsParamsQuery
+}
 
-		// Limit - How many items to return at one time (max 100)
-		Limit Maybe[int32]
-	}
+type ListPetsParamsQuery struct {
+
+	// Limit - How many items to return at one time (max 100)
+	Limit Maybe[int32]
 }
 
 func newListPetsParams(r *http.Request) (zero ListPetsParams, _ error) {
@@ -246,11 +248,13 @@ func (r showPetByIDHTTPRequest) Parse() (ShowPetByIDParams, error) {
 }
 
 type ShowPetByIDParams struct {
-	Path struct {
+	Path ShowPetByIDParamsPath
+}
 
-		// PetID - The id of the pet to retrieve
-		PetID string
-	}
+type ShowPetByIDParamsPath struct {
+
+	// PetID - The id of the pet to retrieve
+	PetID string
 }
 
 func newShowPetByIDParams(r *http.Request) (zero ShowPetByIDParams, _ error) {

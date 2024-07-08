@@ -39,14 +39,19 @@ func TestGetMultiParams(t *testing.T) {
 		return w.Result(), nil
 	}))
 
-	var params GetShopsShopParams
-	params.Path.Shop = testShop
-	params.Query.Page = Just(testPage)
-	params.Query.PageReq = testPageReq
-	params.Query.Pages = Just(testPages)
-	params.Headers.RequestID = Just(testRequestID)
-
-	resp, err := client.GetShopsShop(ctx, params)
+	resp, err := client.GetShopsShop(ctx, GetShopsShopParams{
+		Path: GetShopsShopParamsPath{
+			Shop: testShop,
+		},
+		Query: GetShopsShopParamsQuery{
+			Page:    Just(testPage),
+			PageReq: testPageReq,
+			Pages:   Just(testPages),
+		},
+		Headers: GetShopsShopParamsHeaders{
+			RequestID: Just(testRequestID),
+		},
+	})
 	require.NoError(t, err)
 
 	body := resp.(GetShopsShopResponse200)

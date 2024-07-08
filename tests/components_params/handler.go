@@ -39,9 +39,11 @@ func (r postShopsNewHTTPRequest) Parse() (PostShopsNewParams, error) {
 }
 
 type PostShopsNewParams struct {
-	Query struct {
-		Page Maybe[int32]
-	}
+	Query PostShopsNewParamsQuery
+}
+
+type PostShopsNewParamsQuery struct {
+	Page Maybe[int32]
 }
 
 func newPostShopsNewParams(r *http.Request) (zero PostShopsNewParams, _ error) {
@@ -137,13 +139,17 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 }
 
 type GetShopsShopParams struct {
-	Query struct {
-		Page Maybe[int32]
-	}
+	Query GetShopsShopParamsQuery
 
-	Path struct {
-		Shop string
-	}
+	Path GetShopsShopParamsPath
+}
+
+type GetShopsShopParamsQuery struct {
+	Page Maybe[int32]
+}
+
+type GetShopsShopParamsPath struct {
+	Shop string
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
@@ -264,13 +270,17 @@ func (r getShopsShopReviewsHTTPRequest) Parse() (GetShopsShopReviewsParams, erro
 }
 
 type GetShopsShopReviewsParams struct {
-	Query struct {
-		Page Maybe[int32]
-	}
+	Query GetShopsShopReviewsParamsQuery
 
-	Path struct {
-		Shop string
-	}
+	Path GetShopsShopReviewsParamsPath
+}
+
+type GetShopsShopReviewsParamsQuery struct {
+	Page Maybe[int32]
+}
+
+type GetShopsShopReviewsParamsPath struct {
+	Shop string
 }
 
 func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsParams, _ error) {

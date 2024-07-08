@@ -39,23 +39,29 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 }
 
 type GetShopsShopParams struct {
-	Query struct {
-		Page Maybe[Page]
+	Query GetShopsShopParamsQuery
 
-		PageReq Page
+	Path GetShopsShopParamsPath
 
-		Pages Maybe[[]Page]
+	Headers GetShopsShopParamsHeaders
+}
 
-		PageCustom Maybe[PageCustom]
-	}
+type GetShopsShopParamsQuery struct {
+	Page Maybe[Page]
 
-	Path struct {
-		Shop Shop
-	}
+	PageReq Page
 
-	Headers struct {
-		RequestID Maybe[RequestID]
-	}
+	Pages Maybe[[]Page]
+
+	PageCustom Maybe[PageCustom]
+}
+
+type GetShopsShopParamsPath struct {
+	Shop Shop
+}
+
+type GetShopsShopParamsHeaders struct {
+	RequestID Maybe[RequestID]
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {

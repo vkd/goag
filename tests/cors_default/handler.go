@@ -39,13 +39,17 @@ func (r getShopsHTTPRequest) Parse() (GetShopsParams, error) {
 }
 
 type GetShopsParams struct {
-	Query struct {
-		Page Maybe[int32]
-	}
+	Query GetShopsParamsQuery
 
-	Headers struct {
-		AccessKey Maybe[string]
-	}
+	Headers GetShopsParamsHeaders
+}
+
+type GetShopsParamsQuery struct {
+	Page Maybe[int32]
+}
+
+type GetShopsParamsHeaders struct {
+	AccessKey Maybe[string]
 }
 
 func newGetShopsParams(r *http.Request) (zero GetShopsParams, _ error) {
@@ -153,17 +157,23 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 }
 
 type GetShopsShopParams struct {
-	Query struct {
-		Page Maybe[int32]
-	}
+	Query GetShopsShopParamsQuery
 
-	Path struct {
-		Shop string
-	}
+	Path GetShopsShopParamsPath
 
-	Headers struct {
-		RequestID Maybe[string]
-	}
+	Headers GetShopsShopParamsHeaders
+}
+
+type GetShopsShopParamsQuery struct {
+	Page Maybe[int32]
+}
+
+type GetShopsShopParamsPath struct {
+	Shop string
+}
+
+type GetShopsShopParamsHeaders struct {
+	RequestID Maybe[string]
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
@@ -296,17 +306,23 @@ func (r postShopsShopHTTPRequest) Parse() (PostShopsShopParams, error) {
 }
 
 type PostShopsShopParams struct {
-	Query struct {
-		Page Maybe[int32]
-	}
+	Query PostShopsShopParamsQuery
 
-	Path struct {
-		Shop string
-	}
+	Path PostShopsShopParamsPath
 
-	Headers struct {
-		QueryID Maybe[string]
-	}
+	Headers PostShopsShopParamsHeaders
+}
+
+type PostShopsShopParamsQuery struct {
+	Page Maybe[int32]
+}
+
+type PostShopsShopParamsPath struct {
+	Shop string
+}
+
+type PostShopsShopParamsHeaders struct {
+	QueryID Maybe[string]
 }
 
 func newPostShopsShopParams(r *http.Request) (zero PostShopsShopParams, _ error) {

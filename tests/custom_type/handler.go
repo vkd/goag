@@ -42,15 +42,19 @@ func (r getShopsShopHTTPRequest) Parse() (GetShopsShopParams, error) {
 }
 
 type GetShopsShopParams struct {
-	Query struct {
-		PageSchemaRefQuery Maybe[PageCustom]
+	Query GetShopsShopParamsQuery
 
-		PageCustomTypeQuery Maybe[pkg.PageCustomTypeQuery]
-	}
+	Path GetShopsShopParamsPath
+}
 
-	Path struct {
-		Shop Shop
-	}
+type GetShopsShopParamsQuery struct {
+	PageSchemaRefQuery Maybe[PageCustom]
+
+	PageCustomTypeQuery Maybe[pkg.PageCustomTypeQuery]
+}
+
+type GetShopsShopParamsPath struct {
+	Shop Shop
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
