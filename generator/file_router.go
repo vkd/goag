@@ -53,6 +53,17 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 						headers = append(headers, key)
 					}
 				}
+
+				for _, sec := range o.Security {
+					if sec.Scheme.Type == specification.SecuritySchemeTypeHTTP && sec.Scheme.Scheme == "bearer" {
+						key := http.CanonicalHeaderKey("Authorization")
+
+						if _, ok := headersMap[key]; !ok {
+							headersMap[key] = struct{}{}
+							headers = append(headers, key)
+						}
+					}
+				}
 			}
 		}
 
