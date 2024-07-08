@@ -15,17 +15,17 @@ type Response struct {
 	UsedIn []ResponseUsedIn
 }
 
-func NewResponse(s *openapi3.Response, components Components) *Response {
+func NewResponse(s *openapi3.Response, components Components, opts SchemaOptions) *Response {
 	out := &Response{
 		Headers: NewMapRefSource[Header, *openapi3.HeaderRef](s.Headers, func(h *openapi3.HeaderRef) (ref string, _ Ref[Header]) {
 			if h.Ref != "" {
 				return h.Ref, nil
 			}
-			return "", NewHeader(h.Value, components.Schemas)
+			return "", NewHeader(h.Value, components.Schemas, opts)
 		}, components.Headers, ""),
 
 		Content: NewMap[*MediaType, *openapi3.MediaType](s.Content, func(mt *openapi3.MediaType) *MediaType {
-			return NewMediaType(mt, components.Schemas)
+			return NewMediaType(mt, components.Schemas, opts)
 		}),
 
 		Links: NewMapRefSource[Link, *openapi3.LinkRef](s.Links, func(lr *openapi3.LinkRef) (ref string, _ Ref[Link]) {

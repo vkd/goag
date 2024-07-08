@@ -16,6 +16,10 @@ type Config struct {
 	Cors struct {
 		Enable bool `yaml:"enable"`
 	} `yaml:"cors"`
+
+	CustomTypes struct {
+		Ignore bool `yaml:"ignore"`
+	} `yaml:"customTypes"`
 }
 
 func LoadConfig(filepath string) (zero Config, _ error) {

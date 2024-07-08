@@ -22,14 +22,14 @@ type Spec struct {
 	Security []SecurityRequirement
 }
 
-func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
+func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
 	s := &Spec{
 		OpenAPI: spec.OpenAPI,
 		Info:    NewInfo(spec.Info),
 		Servers: NewServers(spec.Servers),
 	}
 	var err error
-	s.Components, err = NewComponents(spec.Components)
+	s.Components, err = NewComponents(spec.Components, opts)
 	if err != nil {
 		return nil, fmt.Errorf("new components: %w", err)
 	}
@@ -51,7 +51,7 @@ func ParseSwagger(spec *openapi3.Swagger) (*Spec, error) {
 				continue
 			}
 
-			o, err := NewOperation(pi, pathKey, method, operation, s.Security, spec.Components, s.Components.SecuritySchemes, s.Components)
+			o, err := NewOperation(pi, pathKey, method, operation, s.Security, spec.Components, s.Components.SecuritySchemes, s.Components, opts)
 			if err != nil {
 				return nil, fmt.Errorf("new operation for path=%q method=%q: %w", pi.Path.Spec, method.HTTP, err)
 			}
@@ -160,7 +160,7 @@ type Schema struct {
 	Custom Maybe[string]
 }
 
-func NewSchemaRef(schema *openapi3.SchemaRef, components ComponentsSchemas) Ref[Schema] {
+func NewSchemaRef(schema *openapi3.SchemaRef, components ComponentsSchemas, opts SchemaOptions) Ref[Schema] {
 	if schema.Ref != "" {
 		v, ok := components.Get(schema.Ref)
 		if !ok {
@@ -168,29 +168,33 @@ func NewSchemaRef(schema *openapi3.SchemaRef, components ComponentsSchemas) Ref[
 		}
 		return NewRefObject[Schema](v)
 	}
-	return NewSchema(schema.Value, components)
+	return NewSchema(schema.Value, components, opts)
 }
 
-func NewSchema(schema *openapi3.Schema, components ComponentsSchemas) *Schema {
+type SchemaOptions struct {
+	IgnoreCustomType bool
+}
+
+func NewSchema(schema *openapi3.Schema, components ComponentsSchemas, opts SchemaOptions) *Schema {
 	out := Schema{
 		Type:        schema.Type,
 		Format:      schema.Format,
 		Description: schema.Description,
 	}
 	if schema.Items != nil {
-		out.Items = NewSchemaRef(schema.Items, components)
+		out.Items = NewSchemaRef(schema.Items, components, opts)
 	}
 	for _, name := range sortedKeys(schema.Properties) {
-		s := NewSchemaRef(schema.Properties[name], components)
+		s := NewSchemaRef(schema.Properties[name], components, opts)
 		out.Properties = append(out.Properties, SchemaProperty{Name: name, Schema: s})
 	}
 	for _, a := range schema.AllOf {
-		s := NewSchemaRef(a, components)
+		s := NewSchemaRef(a, components, opts)
 		out.AllOf = append(out.AllOf, s)
 	}
 
 	if schema.AdditionalProperties != nil {
-		s := NewSchemaRef(schema.AdditionalProperties, components)
+		s := NewSchemaRef(schema.AdditionalProperties, components, opts)
 		out.AdditionalProperties = Just(s)
 	} else if schema.AdditionalPropertiesAllowed != nil && *schema.AdditionalPropertiesAllowed {
 		out.AdditionalProperties = Just[Ref[Schema]](&Schema{
@@ -199,11 +203,13 @@ func NewSchema(schema *openapi3.Schema, components ComponentsSchemas) *Schema {
 		})
 	}
 
-	if v, ok := schema.ExtensionProps.Extensions[ExtTagGoType]; ok {
-		if raw, ok := v.(json.RawMessage); ok {
-			var s string
-			_ = json.Unmarshal(raw, &s)
-			out.Custom = Just(s)
+	if !opts.IgnoreCustomType {
+		if v, ok := schema.ExtensionProps.Extensions[ExtTagGoType]; ok {
+			if raw, ok := v.(json.RawMessage); ok {
+				var s string
+				_ = json.Unmarshal(raw, &s)
+				out.Custom = Just(s)
+			}
 		}
 	}
 

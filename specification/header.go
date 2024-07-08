@@ -12,13 +12,13 @@ type Header struct {
 	Schema Ref[Schema]
 }
 
-func NewHeader(s *openapi3.Header, schemas ComponentsSchemas) *Header {
+func NewHeader(s *openapi3.Header, schemas ComponentsSchemas, opts SchemaOptions) *Header {
 	return &Header{
 		Description: s.Description,
 		Required:    s.Required,
 		Deprecated:  s.Deprecated,
 
-		Schema: NewSchemaRef(s.Schema, schemas),
+		Schema: NewSchemaRef(s.Schema, schemas, opts),
 	}
 }
 

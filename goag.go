@@ -81,7 +81,9 @@ func (g Generator) generateFile(outDir, packageName, specFilename, basePath, cfg
 }
 
 func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packageName string, specRaw []byte, baseFilename, basePath string, cfg generator.Config) error {
-	s, err := specification.ParseSwagger(openapi3Spec)
+	s, err := specification.ParseSwagger(openapi3Spec, specification.SchemaOptions{
+		IgnoreCustomType: cfg.CustomTypes.Ignore,
+	})
 	if err != nil {
 		return fmt.Errorf("parse specification: %w", err)
 	}

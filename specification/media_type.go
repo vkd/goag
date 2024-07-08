@@ -6,8 +6,8 @@ type MediaType struct {
 	Schema Ref[Schema]
 }
 
-func NewMediaType(s *openapi3.MediaType, components ComponentsSchemas) *MediaType {
+func NewMediaType(s *openapi3.MediaType, components ComponentsSchemas, opts SchemaOptions) *MediaType {
 	return &MediaType{
-		Schema: NewSchemaRef(s.Schema, components),
+		Schema: NewSchemaRef(s.Schema, components, opts),
 	}
 }

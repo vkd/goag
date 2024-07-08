@@ -10,10 +10,10 @@ type RequestBody struct {
 	Required    bool
 }
 
-func NewRequestBody(r *openapi3.RequestBody, components ComponentsSchemas) *RequestBody {
+func NewRequestBody(r *openapi3.RequestBody, components ComponentsSchemas, opts SchemaOptions) *RequestBody {
 	return &RequestBody{
 		Description: r.Description,
-		Content:     NewMap[*MediaType, *openapi3.MediaType](r.Content, func(mt *openapi3.MediaType) *MediaType { return NewMediaType(mt, components) }),
+		Content:     NewMap[*MediaType, *openapi3.MediaType](r.Content, func(mt *openapi3.MediaType) *MediaType { return NewMediaType(mt, components, opts) }),
 		Required:    r.Required,
 	}
 }

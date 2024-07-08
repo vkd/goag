@@ -18,7 +18,7 @@ type QueryParameter struct {
 	Schema Ref[Schema]
 }
 
-func NewQueryParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *QueryParameter {
+func NewQueryParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) *QueryParameter {
 	return &QueryParameter{
 		Name:            p.Name,
 		Description:     p.Description,
@@ -30,7 +30,7 @@ func NewQueryParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *QueryP
 		Explode:       NewMaybe(p.Explode),
 		AllowReserved: p.AllowReserved,
 
-		Schema: NewSchemaRef(p.Schema, schemas),
+		Schema: NewSchemaRef(p.Schema, schemas, opts),
 	}
 }
 
@@ -52,7 +52,7 @@ type HeaderParameter struct {
 	Schema Ref[Schema]
 }
 
-func NewHeaderParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *HeaderParameter {
+func NewHeaderParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) *HeaderParameter {
 	return &HeaderParameter{
 		Name:        p.Name,
 		Description: p.Description,
@@ -62,7 +62,7 @@ func NewHeaderParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *Heade
 		Style:   p.Style,
 		Explode: NewMaybe(p.Explode),
 
-		Schema: NewSchemaRef(p.Schema, schemas),
+		Schema: NewSchemaRef(p.Schema, schemas, opts),
 	}
 }
 
@@ -83,7 +83,7 @@ type PathParameter struct {
 	Schema Ref[Schema]
 }
 
-func NewPathParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *PathParameter {
+func NewPathParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) *PathParameter {
 	return &PathParameter{
 		Name:        p.Name,
 		Description: p.Description,
@@ -92,7 +92,7 @@ func NewPathParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *PathPar
 		Style:   p.Style,
 		Explode: NewMaybe(p.Explode),
 
-		Schema: NewSchemaRef(p.Schema, schemas),
+		Schema: NewSchemaRef(p.Schema, schemas, opts),
 	}
 }
 
@@ -114,7 +114,7 @@ type CookieParameter struct {
 	Schema Ref[Schema]
 }
 
-func NewCookieParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *CookieParameter {
+func NewCookieParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) *CookieParameter {
 	return &CookieParameter{
 		Name:        p.Name,
 		Description: p.Description,
@@ -124,7 +124,7 @@ func NewCookieParameter(p *openapi3.Parameter, schemas ComponentsSchemas) *Cooki
 		Style:   p.Style,
 		Explode: NewMaybe(p.Explode),
 
-		Schema: NewSchemaRef(p.Schema, schemas),
+		Schema: NewSchemaRef(p.Schema, schemas, opts),
 	}
 }
 

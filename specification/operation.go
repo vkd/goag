@@ -35,7 +35,7 @@ type Operation struct {
 	Responses Map[Ref[Response]]
 }
 
-func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *openapi3.Operation, specSecurityReqs SecurityRequirements, legacyComponents openapi3.Components, securitySchemes SecuritySchemes, components Components) (*Operation, error) {
+func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *openapi3.Operation, specSecurityReqs SecurityRequirements, legacyComponents openapi3.Components, securitySchemes SecuritySchemes, components Components, opts SchemaOptions) (*Operation, error) {
 	o := &Operation{
 		PathItem: pi,
 
@@ -46,7 +46,7 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 		Description: operation.Description,
 		OperationID: operation.OperationID,
 
-		Parameters: NewOperationParameters(pi.PathItem.Parameters, operation.Parameters, components),
+		Parameters: NewOperationParameters(pi.PathItem.Parameters, operation.Parameters, components, opts),
 
 		HTTPMethod: method.HTTP,
 		Method:     method.Title,
@@ -69,7 +69,7 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 		if operation.RequestBody.Ref != "" {
 			o.RequestBody = Just[Ref[RequestBody]](NewRefObjectSource[RequestBody](operation.RequestBody.Ref, components.RequestBodies))
 		} else {
-			o.RequestBody = Just[Ref[RequestBody]](NewRequestBody(operation.RequestBody.Value, components.Schemas))
+			o.RequestBody = Just[Ref[RequestBody]](NewRequestBody(operation.RequestBody.Value, components.Schemas, opts))
 		}
 	}
 
@@ -94,7 +94,7 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 			})
 			o.Responses.List[i].V = NewRefObject(r)
 		} else {
-			o.Responses.List[i].V = NewResponse(rr.Value, components)
+			o.Responses.List[i].V = NewResponse(rr.Value, components, opts)
 		}
 	}
 
@@ -124,7 +124,7 @@ type OperationParameters struct {
 	Cookie  Map[Ref[CookieParameter]]
 }
 
-func NewOperationParameters(pathParams, operationParams openapi3.Parameters, components Components) OperationParameters {
+func NewOperationParameters(pathParams, operationParams openapi3.Parameters, components Components, opts SchemaOptions) OperationParameters {
 	out := OperationParameters{
 		Query:   NewMapEmpty[Ref[QueryParameter]](0),
 		Headers: NewMapEmpty[Ref[HeaderParameter]](0),
@@ -135,16 +135,16 @@ func NewOperationParameters(pathParams, operationParams openapi3.Parameters, com
 	for _, param := range append(append(openapi3.Parameters{}, pathParams...), operationParams...) {
 		switch param.Value.In {
 		case openapi3.ParameterInPath:
-			p := NewRefPathParam(param, components)
+			p := NewRefPathParam(param, components, opts)
 			out.Path.Add(p.Value().Name, p)
 		case openapi3.ParameterInQuery:
-			p := NewRefQueryParam(param, components)
+			p := NewRefQueryParam(param, components, opts)
 			out.Query.Add(p.Value().Name, p)
 		case openapi3.ParameterInHeader:
-			p := NewRefHeaderParam(param, components)
+			p := NewRefHeaderParam(param, components, opts)
 			out.Headers.Add(p.Value().Name, p)
 		case openapi3.ParameterInCookie:
-			p := NewRefCookieParam(param, components)
+			p := NewRefCookieParam(param, components, opts)
 			out.Cookie.Add(p.Value().Name, p)
 		}
 	}
@@ -152,30 +152,30 @@ func NewOperationParameters(pathParams, operationParams openapi3.Parameters, com
 	return out
 }
 
-func NewRefQueryParam(p *openapi3.ParameterRef, components Components) Ref[QueryParameter] {
+func NewRefQueryParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) Ref[QueryParameter] {
 	if p.Ref != "" {
 		return NewRefObjectSource[QueryParameter](p.Ref, components.QueryParameters)
 	}
-	return NewQueryParameter(p.Value, components.Schemas)
+	return NewQueryParameter(p.Value, components.Schemas, opts)
 }
 
-func NewRefHeaderParam(p *openapi3.ParameterRef, components Components) Ref[HeaderParameter] {
+func NewRefHeaderParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) Ref[HeaderParameter] {
 	if p.Ref != "" {
 		return NewRefObjectSource[HeaderParameter](p.Ref, components.HeaderParameters)
 	}
-	return NewHeaderParameter(p.Value, components.Schemas)
+	return NewHeaderParameter(p.Value, components.Schemas, opts)
 }
 
-func NewRefPathParam(p *openapi3.ParameterRef, components Components) Ref[PathParameter] {
+func NewRefPathParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) Ref[PathParameter] {
 	if p.Ref != "" {
 		return NewRefObjectSource[PathParameter](p.Ref, components.PathParameters)
 	}
-	return NewPathParameter(p.Value, components.Schemas)
+	return NewPathParameter(p.Value, components.Schemas, opts)
 }
 
-func NewRefCookieParam(p *openapi3.ParameterRef, components Components) Ref[CookieParameter] {
+func NewRefCookieParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) Ref[CookieParameter] {
 	if p.Ref != "" {
 		return NewRefObjectSource[CookieParameter](p.Ref, components.CookieParameters)
 	}
-	return NewCookieParameter(p.Value, components.Schemas)
+	return NewCookieParameter(p.Value, components.Schemas, opts)
 }
