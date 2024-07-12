@@ -23,26 +23,25 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 }
 
 {{ range $_, $o := .Operations }}
-	{{ template "ClientOperation" $o }}
+	{{ $o.Render }}
 {{- end }}
 {{- end }}
 
 {{/* ----------------------------- ClientOperation ------------------------------------- */}}
 {{ define "ClientOperation" }}
-{{ $handler := . }}
-// {{ .Name }} - {{ .HTTPMethod }} {{ .Path.Raw }}
+// {{ .Name }} - {{ .HTTPMethod }} {{ .PathRaw }}
 func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}) ({{ .ResponseTypeName }}, error) {
 	var requestURL = c.BaseURL {{ range $_, $pr := .PathFormat }} + {{ $pr.Render }}{{ end }}
 
-	{{ if .Params.Query.List }}
-	query := make(url.Values, {{ len .Params.Query.List }})
-	{{- range $_, $q := .Params.Query.List }}
-		{{- with $q.V }}
+	{{ if .Queries }}
+	query := make(url.Values, {{ len .Queries }})
+	{{- range $_, $q := .Queries }}
+		{{- with $q }}
 		{{- if .Required }}
-	{{ .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName) }}
+	{{ call .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName) }}
 		{{- else }}
 	if request.Query.{{ .FieldName }}.IsSet {
-		{{ .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName ".Value") }}
+		{{ call .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName ".Value") }}
 	}
 		{{- end }}
 		{{- end }}
@@ -84,11 +83,11 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 	switch resp.StatusCode {
 	{{- range $_, $response := .Responses }}
 	case {{ $response.StatusCode }}:
-		{{ template "ClientResponse" $response }}
+		{{ $response.Render }}
 	{{- end }}
-	{{ if .DefaultResponse -}}
+	{{ if .DefaultResponse.IsSet -}}
 	default:
-		{{ template "ClientResponse" .DefaultResponse }}
+		{{ .DefaultResponse.Value.Render }}
 	{{- else }}
 	default:
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
@@ -120,8 +119,8 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 
 {{/* ----------------------------- ClientResponse ------------------------------------- */}}
 {{ define "ClientResponse" -}}
-{{- if .ComponentRef -}}
-var response {{ .ComponentRef.Name }}Response
+{{- if .ComponentRefName.IsSet -}}
+var response {{ .ComponentRefName.Value }}Response
 {{- else -}}
 var response {{ .Name }}
 {{- end }}
@@ -142,7 +141,7 @@ var hs []string
 	}
 	{{- end }}
 	if len(hs) > 0 {
-		{{ $h.Schema.ParseString (print "response.Headers." .FieldName) "hs" false (returns "nil" (parseError "header" .Key)) }}
+		{{ call .SchemaParseString (print "response.Headers." .FieldName) "hs" false (returns "nil" (parseError "header" .Key)) }}
 	}
 	{{- else }}
 	hs = resp.Header.Values("{{ .Key }}")
@@ -152,16 +151,16 @@ var hs []string
 	}
 	{{- end }}
 	if len(hs) > 0 {
-		{{ $h.Schema.ParseString (print "response.Headers." .FieldName) "hs[0]" false (returns "nil" (parseError "header" .Key)) }}
+		{{ call .SchemaParseString (print "response.Headers." .FieldName) "hs[0]" false (returns "nil" (parseError "header" .Key)) }}
 	}
 	{{- end }}
 {{ end }}
 
-{{- if .ContentJSON.IsSet }}
+{{- if .ContentJSON }}
 err := json.NewDecoder(resp.Body).Decode(&response.Body)
 if err != nil {
-{{- if .ComponentRef }}
-	return nil, fmt.Errorf("decode '{{ .ComponentRef.Name }}Response' response body: %w", err)
+{{- if .ComponentRefName.IsSet }}
+	return nil, fmt.Errorf("decode '{{ .ComponentRefName.Value }}Response' response body: %w", err)
 {{- else }}
 	return nil, fmt.Errorf("decode '{{ .Name }}' response body: %w", err)
 {{- end }}

@@ -15,7 +15,7 @@ type Generator struct {
 	Operations []*Operation
 	Paths      []*PathItem
 
-	Client     Client
+	Client     ClientTemplate
 	Components Components
 
 	Router      Router
@@ -77,7 +77,10 @@ func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Gen
 	if g.Components.HasContentJSON {
 		g.FileHandler.IsWriteJSONFunc = true
 	}
-	g.Client = NewClient(spec, g.Operations)
+	g.Client, err = NewClient(spec, g.Operations)
+	if err != nil {
+		return nil, fmt.Errorf("new client: %w", err)
+	}
 	g.Router = NewRouter(spec, g.Paths, g.Operations, g.Options)
 
 	return g, nil
