@@ -17,8 +17,9 @@ import (
 )
 
 type Generator struct {
-	GenClient bool
-	DoNotEdit bool
+	GenClient     bool
+	GenAPIHandler bool
+	DoNotEdit     bool
 }
 
 func (g Generator) GenerateDir(dir, out, packageName, specFilename, basePath, cfgFilename, specHandlerName string) error {
@@ -128,19 +129,40 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		}
 	}
 
-	err = RenderToFile(path.Join(outDir, "handler.go"), gen.HandlerFile())
-	if err != nil {
-		return fmt.Errorf("generate handler.go: %w", err)
-	}
+	if g.GenAPIHandler {
+		err = RenderToFile(path.Join(outDir, "handler.go"), gen.HandlerFile())
+		if err != nil {
+			return fmt.Errorf("generate handler.go: %w", err)
+		}
 
-	err = RenderToFile(path.Join(outDir, "router.go"), gen.RouterFile())
-	if err != nil {
-		return fmt.Errorf("generate router.go: %w", err)
-	}
+		err = RenderToFile(path.Join(outDir, "router.go"), gen.RouterFile())
+		if err != nil {
+			return fmt.Errorf("generate router.go: %w", err)
+		}
 
-	err = RenderToFile(path.Join(outDir, "spec_file.go"), gen.SpecFile(specRaw))
-	if err != nil {
-		return fmt.Errorf("generate spec_file.go: %w", err)
+		err = RenderToFile(path.Join(outDir, "spec_file.go"), gen.SpecFile(specRaw))
+		if err != nil {
+			return fmt.Errorf("generate spec_file.go: %w", err)
+		}
+	} else {
+		err = os.Remove(path.Join(outDir, "handler.go"))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return fmt.Errorf("remove components.go (%s): %w", path.Join(outDir, "handler.go"), err)
+			}
+		}
+		err = os.Remove(path.Join(outDir, "router.go"))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return fmt.Errorf("remove components.go (%s): %w", path.Join(outDir, "router.go"), err)
+			}
+		}
+		err = os.Remove(path.Join(outDir, "spec_file.go"))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return fmt.Errorf("remove components.go (%s): %w", path.Join(outDir, "router.go"), err)
+			}
+		}
 	}
 
 	clientFile := path.Join(outDir, "client.go")

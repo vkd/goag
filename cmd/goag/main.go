@@ -18,6 +18,7 @@ var (
 	genClient    = flag.Bool("client", false, "Generate client code")
 	doNotEdit    = flag.Bool("donotedit", true, "Add 'DO NOT EDIT' headers")
 	specHandler  = flag.String("spec-handler-name", "openapi.yaml", "Handler spec filename")
+	isApiHandler = flag.Bool("api-handler", true, "Generate api handler")
 )
 
 func main() {
@@ -26,6 +27,7 @@ func main() {
 
 	var g goag.Generator
 	g.GenClient = *genClient
+	g.GenAPIHandler = *isApiHandler
 	g.DoNotEdit = *doNotEdit
 
 	var err error
