@@ -108,10 +108,10 @@ func NewOperation(s *specification.Operation, components specification.Component
 				imports = append(imports, ims...)
 
 				switch body.(type) {
-				case Ref[specification.Schema], CustomType, SliceType:
-					o.Body.TypeName = body
-				default:
+				case StructureType:
 					o.Body.Type = body
+				default:
+					o.Body.TypeName = body
 				}
 			}
 		}
