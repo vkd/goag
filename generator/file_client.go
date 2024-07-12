@@ -7,11 +7,7 @@ import (
 )
 
 type Client struct {
-	Imports []Import
-
 	Operations []ClientOperation
-
-	IsDecodeJSONFunc bool
 }
 
 func NewClient(s *specification.Spec, ops []*Operation) Client {

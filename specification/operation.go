@@ -29,9 +29,6 @@ type Operation struct {
 
 	Security SecurityRequirements
 
-	// DefaultResponse Optional[Ref[Response]]
-	// Responses       []*ResponseOld
-
 	Responses Map[Ref[Response]]
 }
 

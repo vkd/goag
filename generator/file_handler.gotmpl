@@ -1,7 +1,6 @@
 {{ define "FileHandler" }}
-{{- template "Imports" .Imports }}
 
-{{ range $_, $h := .Handlers }}
+{{- range $_, $h := .Handlers }}
 {{ $h.Render }}
 {{ end -}}
 

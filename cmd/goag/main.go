@@ -16,7 +16,6 @@ var (
 	cfgFilename  = flag.String("config", ".goag.yaml", "config filename")
 	basePath     = flag.String("basepath", "", "Base path prefix")
 	genClient    = flag.Bool("client", false, "Generate client code")
-	deleteOld    = flag.Bool("delete", false, "Delete old files")
 	doNotEdit    = flag.Bool("donotedit", true, "Add 'DO NOT EDIT' headers")
 	specHandler  = flag.String("spec-handler-name", "openapi.yaml", "Handler spec filename")
 )
@@ -27,7 +26,6 @@ func main() {
 
 	var g goag.Generator
 	g.GenClient = *genClient
-	g.DeleteOld = *deleteOld
 	g.DoNotEdit = *doNotEdit
 
 	var err error

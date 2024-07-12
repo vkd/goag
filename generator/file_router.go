@@ -13,7 +13,6 @@ type Router struct {
 	SpecFilename string
 	SpecFileExt  string
 
-	Imports    Imports
 	PathItems  []*RouterPathItem
 	Operations []*Operation
 	Routes     []*Route

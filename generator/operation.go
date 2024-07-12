@@ -39,7 +39,7 @@ type Operation struct {
 	Responses       []*ResponseCode
 }
 
-func NewOperation(s *specification.Operation, components specification.Components) (zero *Operation, _ Imports, _ error) {
+func NewOperation(s *specification.Operation) (zero *Operation, _ Imports, _ error) {
 	name := NewOperationName(s)
 	o := Operation{
 		Operation: s,

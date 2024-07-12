@@ -1,6 +1,5 @@
 {{/* ----------------------------- Client ------------------------------------- */}}
 {{ define "Client" }}
-{{- template "Imports" .Imports }}
 
 type Client struct {
 	BaseURL    string
@@ -25,15 +24,6 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 
 {{ range $_, $o := .Operations }}
 	{{ template "ClientOperation" $o }}
-{{- end }}
-
-{{ if .IsDecodeJSONFunc -}}
-func decodeJSON(r io.Reader, v interface{}, name string) {
-	err := json.NewDecoder(r).Decode(v)
-	if err != nil {
-		LogError(fmt.Errorf("decode json response %q: %w", name, err))
-	}
-}
 {{- end }}
 {{- end }}
 

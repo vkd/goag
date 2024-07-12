@@ -6,6 +6,7 @@ func (g *Generator) ClientFile() GoFile {
 	return GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,
+		Imports:       nil,
 		Body:          g.Client,
 	}
 }
@@ -14,16 +15,27 @@ func (g *Generator) ComponentsFile() GoFile {
 	return GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,
+		Imports:       g.Components.Imports,
 		Body:          g.Components,
 	}
 }
 
-func (g *Generator) HandlerFile() (GoFile, error) {
-	return g.goFile(g.Imports, g.FileHandler), nil
+func (g *Generator) HandlerFile() GoFile {
+	return GoFile{
+		SkipDoNotEdit: !g.Options.DoNotEdit,
+		PackageName:   g.Options.PackageName,
+		Imports:       append(g.FileHandler.Imports, g.Imports...),
+		Body:          g.FileHandler,
+	}
 }
 
-func (g *Generator) RouterFile() (GoFile, error) {
-	return g.goFile(nil, g.Router), nil
+func (g *Generator) RouterFile() GoFile {
+	return GoFile{
+		SkipDoNotEdit: !g.Options.DoNotEdit,
+		PackageName:   g.Options.PackageName,
+		Imports:       nil,
+		Body:          g.Router,
+	}
 }
 
 func (g *Generator) SpecFile(fileContent []byte) GoFile {
@@ -33,15 +45,6 @@ func (g *Generator) SpecFile(fileContent []byte) GoFile {
 		Body: RenderFunc(func() (string, error) {
 			return "const SpecFile string = " + encodeRawFileAsString(string(fileContent)), nil
 		}),
-	}
-}
-
-func (g *Generator) goFile(ims []Import, body Render) GoFile {
-	return GoFile{
-		SkipDoNotEdit: !g.Options.DoNotEdit,
-		PackageName:   g.Options.PackageName,
-		Imports:       ims,
-		Body:          body,
 	}
 }
 

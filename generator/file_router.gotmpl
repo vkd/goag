@@ -1,6 +1,5 @@
 {{/* ----------------------------- Router ------------------------------------- */}}
 {{ define "Router" }}
-{{- template "Imports" .Imports }}
 
 type API struct {
 	{{range $_, $h := .Operations}}
