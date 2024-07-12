@@ -29,7 +29,7 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 		HandlerFuncName: string(o.Name) + "HandlerFunc",
 		BasePathPrefix:  basePathPrefix,
 
-		CanParseError: len(o.Parameters.Query.List) > 0 || len(o.Parameters.Path.List) > 0 || len(o.Parameters.Headers.List) > 0 || o.Body.TypeName != nil,
+		CanParseError: len(o.Parameters.Query.List) > 0 || len(o.Parameters.Path.List) > 0 || len(o.Parameters.Headers.List) > 0 || o.Body.TypeName != nil || o.Body.Type != nil,
 	}
 	ps, imports, err := NewHandlerParameters(o.Params, cfg)
 	if err != nil {

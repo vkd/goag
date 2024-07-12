@@ -53,7 +53,9 @@ type {{$request}} struct {
 
 	{{ if $h.Body.TypeName }}
 	Body {{ $h.Body.TypeName.Render }}
-	{{ end }}
+	{{- else if $h.Body.Type }}
+	Body {{$request}}Body
+	{{- end }}
 }
 
 {{- if $h.Parameters.Query }}
@@ -81,6 +83,11 @@ type {{$request}}Headers struct{
 	{{ $p.HandlerParameter.Render }}
 	{{ end }}
 }
+{{- end }}
+
+{{- if $h.Body.Type }}
+
+type {{$request}}Body {{ $h.Body.Type.Render }}
 {{- end }}
 
 func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseError }}, _ error{{ end }}) {
@@ -154,7 +161,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 	}
 	{{ end }}
 
-	{{- if $h.Body.TypeName }}
+	{{- if or $h.Body.TypeName $h.Body.Type }}
 
 	defer r.Body.Close()
 	err := json.NewDecoder(r.Body).Decode(&params.Body)

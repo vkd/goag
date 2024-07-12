@@ -32,6 +32,7 @@ type Operation struct {
 
 	Body struct {
 		TypeName Render
+		Type     Render
 	}
 
 	DefaultResponse *ResponseCode
@@ -105,7 +106,13 @@ func NewOperation(s *specification.Operation, components specification.Component
 					return nil, nil, fmt.Errorf("request body: %w", err)
 				}
 				imports = append(imports, ims...)
-				o.Body.TypeName = body
+
+				switch body.(type) {
+				case Ref[specification.Schema], CustomType, SliceType:
+					o.Body.TypeName = body
+				default:
+					o.Body.Type = body
+				}
 			}
 		}
 	}
