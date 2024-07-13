@@ -1,15 +1,10 @@
 package specification
 
-import "github.com/getkin/kin-openapi/openapi3"
-
 type PathItem struct {
 	NoRef[PathItem]
 
-	RawPath    string // TODO
+	RawPath    string
 	Operations []*Operation
-
-	// Deprecated // TODO
-	PathItem *openapi3.PathItem
 }
 
 func NewPathItem(path string) *PathItem {

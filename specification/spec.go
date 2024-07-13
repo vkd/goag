@@ -42,14 +42,13 @@ func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
 	for _, pathKey := range sortedKeys(spec.Paths) {
 		pathItem := spec.Paths[pathKey]
 		pi := NewPathItem(pathKey)
-		pi.PathItem = pathItem
 		for _, method := range httpMethods() {
 			operation := pathItem.GetOperation(string(method.HTTP))
 			if operation == nil {
 				continue
 			}
 
-			o, err := NewOperation(pi, pathKey, method, operation, s.Security, spec.Components, s.Components.SecuritySchemes, s.Components, opts)
+			o, err := NewOperation(pi, pathKey, method, operation, s.Security, spec.Components, s.Components.SecuritySchemes, s.Components, pathItem.Parameters, opts)
 			if err != nil {
 				return nil, fmt.Errorf("new operation for path=%q method=%q: %w", pathKey, method.HTTP, err)
 			}
@@ -113,34 +112,6 @@ type HeaderParameterOld struct {
 	Description string
 	Required    bool
 	Schema      Ref[Schema]
-}
-
-// type Parameter struct {
-// 	RefName     string
-// 	Name        string
-// 	Description string
-// 	Required    bool
-// }
-
-type ResponseOld struct {
-	StatusCode string
-	Operation  *Operation
-	Spec       *openapi3.Response
-
-	RefName string
-	Headers []HeaderOld
-}
-
-func NewResponseOld(responseStatusCode string, o *Operation, r *openapi3.ResponseRef) *ResponseOld {
-	out := &ResponseOld{
-		StatusCode: responseStatusCode,
-		Operation:  o,
-		Spec:       r.Value,
-
-		RefName: r.Ref,
-		Headers: Headers(r.Value.Headers),
-	}
-	return out
 }
 
 type Schema struct {
