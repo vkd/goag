@@ -34,7 +34,10 @@ func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
 		return nil, fmt.Errorf("new components: %w", err)
 	}
 
-	s.Security = NewSecurityRequirements(spec.Security, s.Components.SecuritySchemes)
+	s.Security, err = NewSecurityRequirements(spec.Security, s.Components.SecuritySchemes)
+	if err != nil {
+		return nil, fmt.Errorf("new security requirements: %w", err)
+	}
 
 	for _, pathKey := range sortedKeys(spec.Paths) {
 		pathItem := spec.Paths[pathKey]

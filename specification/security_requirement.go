@@ -8,15 +8,19 @@ import (
 
 type SecurityRequirements []SecurityRequirement
 
-func NewSecurityRequirements(s openapi3.SecurityRequirements, schemes SecuritySchemes) []SecurityRequirement {
+func NewSecurityRequirements(s openapi3.SecurityRequirements, schemes SecuritySchemes) ([]SecurityRequirement, error) {
 	out := make([]SecurityRequirement, 0, len(s))
 	for _, sr := range s {
 		for k, v := range sr {
-			out = append(out, NewSecurityRequirement(k, v, schemes))
+			ss, err := NewSecurityRequirement(k, v, schemes)
+			if err != nil {
+				return nil, fmt.Errorf("new security requirements %q: %w", k, err)
+			}
+			out = append(out, ss)
 			break
 		}
 	}
-	return out
+	return out, nil
 }
 
 type SecurityRequirement struct {
@@ -24,13 +28,13 @@ type SecurityRequirement struct {
 	Requirements []string
 }
 
-func NewSecurityRequirement(k string, v []string, schemes SecuritySchemes) SecurityRequirement {
+func NewSecurityRequirement(k string, v []string, schemes SecuritySchemes) (zero SecurityRequirement, _ error) {
 	scheme, ok := schemes.Get("#/components/securitySchemes/" + k)
 	if !ok {
-		panic(fmt.Sprintf("cannot find %q security scheme", k))
+		return zero, fmt.Errorf("cannot find %q security scheme", k)
 	}
 	return SecurityRequirement{
 		Scheme:       scheme.V.Value(),
 		Requirements: v,
-	}
+	}, nil
 }

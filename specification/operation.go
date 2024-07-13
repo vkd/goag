@@ -58,7 +58,10 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 	}
 
 	if operation.Security != nil {
-		o.Security = NewSecurityRequirements(*operation.Security, securitySchemes)
+		o.Security, err = NewSecurityRequirements(*operation.Security, securitySchemes)
+		if err != nil {
+			return nil, fmt.Errorf("new security requirements: %w", err)
+		}
 	}
 
 	if operation.RequestBody != nil {
@@ -82,7 +85,7 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 			ref := rr.Ref
 			r, ok := components.Responses.Get(ref)
 			if !ok {
-				panic(fmt.Sprintf("reference %q: not found", ref))
+				return nil, fmt.Errorf("reference %q: not found", ref)
 			}
 			if usedStatus, ok := usedResponses[r.V.Value()]; ok {
 				return nil, fmt.Errorf("the same %q response is used several times (at least for %q and %q responses)", r.Name, usedStatus, ro.Name)

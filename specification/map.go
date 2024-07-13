@@ -64,7 +64,7 @@ func NewMapRefSelfSource[T any, U any](m map[string]U, fn func(U, Map[Ref[T]]) (
 		if ref != "" {
 			r, ok := source.Get(ref)
 			if !ok {
-				panic(fmt.Sprintf("reference %q: not found", ref))
+				return zero, fmt.Errorf("reference %q: not found", ref)
 			}
 			out.List[i].V = NewRef(r)
 		} else {

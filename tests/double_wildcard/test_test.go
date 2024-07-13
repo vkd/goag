@@ -14,7 +14,8 @@ func TestGetRequest_Names(t *testing.T) {
 			return NewGetPetsPetIDNamesResponse200()
 		},
 		GetPetsPetIDShopsHandler: func(ctx context.Context, r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse {
-			panic("wrong handler")
+			t.Fatalf("wrong handler")
+			return nil
 		},
 	}
 
@@ -30,7 +31,8 @@ func TestGetRequest_Shops(t *testing.T) {
 			return NewGetPetsPetIDShopsResponse200()
 		},
 		GetPetsPetIDNamesHandler: func(ctx context.Context, r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse {
-			panic("wrong handler")
+			t.Fatalf("wrong handler")
+			return nil
 		},
 	}
 
