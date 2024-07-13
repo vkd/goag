@@ -1,8 +1,6 @@
 package generator
 
 import (
-	"fmt"
-
 	"github.com/vkd/goag/specification"
 )
 
@@ -10,17 +8,14 @@ type ClientTemplate struct {
 	Operations []ClientOperationTemplate
 }
 
-func NewClient(s *specification.Spec, ops []*Operation) (zero ClientTemplate, _ error) {
+func NewClient(s *specification.Spec, ops []*Operation) ClientTemplate {
 	var c ClientTemplate
 	c.Operations = make([]ClientOperationTemplate, 0, len(ops))
 	for _, o := range ops {
-		co, err := NewClientOperation(o)
-		if err != nil {
-			return zero, fmt.Errorf("new client for %q operation: %w", o.Name, err)
-		}
+		co := NewClientOperation(o)
 		c.Operations = append(c.Operations, co)
 	}
-	return c, nil
+	return c
 }
 
 func (c ClientTemplate) Render() (string, error) {
@@ -47,7 +42,7 @@ type ClientOperationTemplate struct {
 	PathFormat []Render
 }
 
-func NewClientOperation(o *Operation) (zero ClientOperationTemplate, _ error) {
+func NewClientOperation(o *Operation) ClientOperationTemplate {
 	c := ClientOperationTemplate{
 		Name:       o.Name,
 		HTTPMethod: o.HTTPMethod,
@@ -134,18 +129,14 @@ func NewClientOperation(o *Operation) (zero ClientOperationTemplate, _ error) {
 		v = ""
 
 		param := dir.Param
-		gp, ok := o.Params.Path.Get(param.Name)
-		if !ok {
-			return zero, fmt.Errorf("%q path parameter: not found in %q operation", param.Name, o.Name)
-		}
 		c.PathFormat = append(c.PathFormat, RenderFunc(func() (string, error) {
-			return gp.V.Type.RenderFormat("request.Path." + gp.V.FieldName)
+			return param.Type.RenderFormat("request.Path." + param.FieldName)
 		}))
 	}
 	if v != "" {
 		c.PathFormat = append(c.PathFormat, QuotedRender(v))
 	}
-	return c, nil
+	return c
 }
 
 func (c ClientOperationTemplate) Render() (string, error) {
@@ -153,17 +144,19 @@ func (c ClientOperationTemplate) Render() (string, error) {
 }
 
 type ClientOperationQueryTemplate struct {
-	Name          string
-	Required      bool
+	Name      string
+	Required  bool
+	FieldName string
+
 	ExecuteFormat func(to, from string) (string, error)
-	FieldName     string
 }
 
 type ClientOperationHeaderTemplate struct {
 	Name      string
-	FieldName string
 	Required  bool
-	Type      Formatter
+	FieldName string
+
+	Type Formatter
 }
 
 type ClientResponseTemplate struct {
