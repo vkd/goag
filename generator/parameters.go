@@ -107,9 +107,8 @@ func NewPathParameter(rs specification.Ref[specification.PathParameter]) (zero *
 }
 
 type HeaderParameter struct {
-	s *specification.HeaderParameter
-
 	Name          string
+	Description   string
 	FieldName     string
 	FieldTypeName string
 	Type          SchemaType
@@ -118,7 +117,9 @@ type HeaderParameter struct {
 
 func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter]) (zero *HeaderParameter, _ Imports, _ error) {
 	s := sr.Value()
-	out := HeaderParameter{s: s}
+	out := HeaderParameter{
+		Description: s.Description,
+	}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 

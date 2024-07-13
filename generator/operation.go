@@ -152,6 +152,24 @@ func NewOperation(s *specification.Operation) (zero *Operation, _ Imports, _ err
 		}
 	}
 
+	if len(o.Security) > 0 {
+		for _, sr := range o.Security {
+			if sr.Scheme.Type != specification.SecuritySchemeTypeHTTP {
+				continue
+			}
+			if sr.Scheme.Scheme != "bearer" {
+				continue
+			}
+			o.Params.Headers.Add("Authorization", &HeaderParameter{
+				Name:        "Authorization",
+				FieldName:   "Authorization",
+				Description: sr.Scheme.BearerFormat,
+				Required:    len(o.Security) == 1,
+				Type:        StringType{},
+			})
+		}
+	}
+
 	return &o, imports, nil
 }
 

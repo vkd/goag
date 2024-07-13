@@ -29,7 +29,7 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 		HandlerFuncName: string(o.Name) + "HandlerFunc",
 		BasePathPrefix:  basePathPrefix,
 
-		CanParseError: len(o.Parameters.Query.List) > 0 || len(o.Parameters.Path.List) > 0 || len(o.Parameters.Headers.List) > 0 || o.Body.TypeName != nil || o.Body.Type != nil,
+		CanParseError: len(o.Params.Query.List) > 0 || len(o.Params.Path.List) > 0 || len(o.Params.Headers.List) > 0 || o.Body.TypeName != nil || o.Body.Type != nil,
 	}
 	ps, imports, err := NewHandlerParameters(o.Params, cfg)
 	if err != nil {
@@ -53,24 +53,6 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 		}
 	}
 	out.PathParsers = pathRenders
-
-	for _, sec := range o.Security {
-		if sec.Scheme.Type == specification.SecuritySchemeTypeHTTP &&
-			sec.Scheme.Scheme == "bearer" &&
-			sec.Scheme.BearerFormat == "JWT" {
-			out.Parameters.Header = append(out.Parameters.Header, HandlerHeaderParameter{
-				HandlerParameter: HandlerParameter{
-					FieldName:    "Authorization",
-					FieldType:    StringType{},
-					FieldComment: sec.Scheme.BearerFormat,
-				},
-				ParameterName: "Authorization",
-				Required:      true,
-				Parser:        StringType{},
-			})
-			out.CanParseError = true
-		}
-	}
 
 	if o.DefaultResponse != nil {
 		if o.DefaultResponse.ComponentRef == nil {
@@ -268,7 +250,7 @@ func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHead
 		HandlerParameter: HandlerParameter{
 			FieldName:    fieldName,
 			FieldType:    tp,
-			FieldComment: strings.ReplaceAll(strings.TrimRight(p.s.Description, "\n "), "\n", "\n// "),
+			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
 		ParameterName: p.Name,

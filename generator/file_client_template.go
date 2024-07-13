@@ -79,23 +79,6 @@ func NewClientOperation(o *Operation) (zero ClientOperationTemplate, _ error) {
 		})
 	}
 
-	if len(o.Security) > 0 {
-		for _, sr := range o.Security {
-			if sr.Scheme.Type != specification.SecuritySchemeTypeHTTP {
-				continue
-			}
-			if sr.Scheme.Scheme != "bearer" {
-				continue
-			}
-			c.Headers = append(c.Headers, ClientOperationHeaderTemplate{
-				Name:      "Authorization",
-				FieldName: "Authorization",
-				Required:  len(o.Security) == 1,
-				Type:      StringType{},
-			})
-		}
-	}
-
 	for _, e := range o.Responses {
 		t := ClientResponseTemplate{
 			Name:             e.Name,
