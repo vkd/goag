@@ -80,40 +80,6 @@ func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
 	return s, nil
 }
 
-type PathParameters []*PathParameterOld
-
-func (ps PathParameters) Get(name string) (*PathParameterOld, bool) {
-	for _, p := range ps {
-		if p.Name == name {
-			return p, true
-		}
-	}
-	return nil, false
-}
-
-type PathParameterOld struct {
-	RefName     string
-	Name        string
-	Description string
-	Schema      Ref[Schema]
-}
-
-type QueryParameterOld struct {
-	RefName     string
-	Name        string
-	Description string
-	Required    bool
-	Schema      Ref[Schema]
-}
-
-type HeaderParameterOld struct {
-	RefName     string
-	Name        string
-	Description string
-	Required    bool
-	Schema      Ref[Schema]
-}
-
 type Schema struct {
 	NoRef[Schema]
 

@@ -8,7 +8,6 @@ import (
 
 type Security struct {
 	Requirement []string
-	Scheme      openapi3.SecurityScheme
 }
 
 func GetSecurity(secSchemes openapi3.SecuritySchemes, secRequirements openapi3.SecurityRequirements) ([][]Security, error) {
@@ -26,7 +25,6 @@ func GetSecurity(secSchemes openapi3.SecuritySchemes, secRequirements openapi3.S
 			}
 			sOut = append(sOut, Security{
 				Requirement: reqs,
-				Scheme:      *ref.Value,
 			})
 		}
 		out = append(out, sOut)

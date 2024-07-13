@@ -20,12 +20,8 @@ type Operation struct {
 
 	RequestBody Maybe[Ref[RequestBody]]
 
-	// Deprecated // TODO
-
 	HTTPMethod HTTPMethod
 	Method     HTTPMethodTitle
-
-	Operation *openapi3.Operation
 
 	Security SecurityRequirements
 
@@ -45,8 +41,6 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 
 		HTTPMethod: method.HTTP,
 		Method:     method.Title,
-
-		Operation: operation,
 
 		Security: specSecurityReqs,
 	}
