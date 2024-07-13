@@ -76,7 +76,7 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 		}
 	}
 
-	o.Responses = NewMapPrefix[Ref[Response], *openapi3.ResponseRef](operation.Responses, func(u *openapi3.ResponseRef) Ref[Response] { return nil }, "")
+	o.Responses = NewMap[Ref[Response], *openapi3.ResponseRef](operation.Responses, func(u *openapi3.ResponseRef) Ref[Response] { return nil })
 	usedResponses := make(map[*Response]string)
 	for i, ro := range o.Responses.List {
 		rr := operation.Responses[ro.Name]

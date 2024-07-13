@@ -31,7 +31,7 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 	var cs Components
 	var err error
 
-	cs.Schemas, err = NewMapRefSelfSource(spec.Schemas, func(sr *openapi3.SchemaRef, components ComponentsSchemas) (_ string, zero Ref[Schema], _ error) {
+	cs.Schemas, err = NewMapRefSelfSource(spec.Schemas, func(sr *openapi3.SchemaRef, components Sourcer[Schema]) (_ string, zero Ref[Schema], _ error) {
 		if sr.Ref != "" {
 			return sr.Ref, nil, nil
 		}

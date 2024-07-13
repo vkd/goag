@@ -158,7 +158,7 @@ type Schema struct {
 	Custom Maybe[string]
 }
 
-func NewSchemaRef(schema *openapi3.SchemaRef, components ComponentsSchemas, opts SchemaOptions) Ref[Schema] {
+func NewSchemaRef(schema *openapi3.SchemaRef, components Sourcer[Schema], opts SchemaOptions) Ref[Schema] {
 	if schema.Ref != "" {
 		v, ok := components.Get(schema.Ref)
 		if !ok {
@@ -173,7 +173,7 @@ type SchemaOptions struct {
 	IgnoreCustomType bool
 }
 
-func NewSchema(schema *openapi3.Schema, components ComponentsSchemas, opts SchemaOptions) *Schema {
+func NewSchema(schema *openapi3.Schema, components Sourcer[Schema], opts SchemaOptions) *Schema {
 	out := Schema{
 		Type:        schema.Type,
 		Format:      schema.Format,
