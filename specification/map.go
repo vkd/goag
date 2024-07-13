@@ -3,11 +3,13 @@ package specification
 import (
 	"fmt"
 	"sort"
+
+	"golang.org/x/exp/maps"
 )
 
 type Map[T any] struct {
 	List    []*Object[string, T]
-	indexes map[RefKey]*Object[string, T]
+	indexes map[string]*Object[string, T]
 }
 
 type Object[K, T any] struct {
@@ -18,7 +20,7 @@ type Object[K, T any] struct {
 func NewMapEmpty[T any](size int) Map[T] {
 	return Map[T]{
 		List:    make([]*Object[string, T], 0, size),
-		indexes: make(map[RefKey]*Object[string, T], size),
+		indexes: make(map[string]*Object[string, T], size),
 	}
 }
 
@@ -26,17 +28,17 @@ func NewMap[T any, U any](m map[string]U, fn func(U) T) Map[T] {
 	return NewMapPrefix[T, U](m, fn, "")
 }
 
-func NewMapPrefix[T any, U any](m map[string]U, fn func(U) T, prefix RefKey) Map[T] {
+func NewMapPrefix[T any, U any](m map[string]U, fn func(U) T, prefix string) Map[T] {
 	out := NewMapEmpty[T](len(m))
 
-	for k, v := range m {
-		out.List = append(out.List, &Object[string, T]{Name: k, V: fn(v)})
+	keys := maps.Keys(m)
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		o := &Object[string, T]{Name: k, V: fn(m[k])}
+		out.List = append(out.List, o)
+		out.indexes[prefix+k] = o
 	}
-	for i, v := range out.List {
-		refKey := prefix + RefKey(v.Name)
-		out.indexes[refKey] = out.List[i]
-	}
-	sort.Slice(out.List, func(i, j int) bool { return out.List[i].Name < out.List[j].Name })
 	return out
 }
 
@@ -48,42 +50,45 @@ type SourcerFunc[T any] func(string) (*Object[string, Ref[T]], bool)
 
 func (s SourcerFunc[T]) Get(str string) (*Object[string, Ref[T]], bool) { return s(str) }
 
-func NewMapRefSelfSource[T any, U any](m map[string]U, fn func(U, Map[Ref[T]]) (ref string, _ Ref[T]), source Sourcer[T], prefix RefKey) Map[Ref[T]] {
+func NewMapRefSelfSource[T any, U any](m map[string]U, fn func(U, Map[Ref[T]]) (ref string, _ Ref[T], _ error), source Sourcer[T], prefix string) (zero Map[Ref[T]], _ error) {
 	out := NewMapPrefix[Ref[T], U](m, func(u U) Ref[T] { return nil }, prefix)
 	if source == nil {
 		source = out
 	}
 
 	for i, o := range out.List {
-		ref, v := fn(m[o.Name], out)
+		ref, v, err := fn(m[o.Name], out)
+		if err != nil {
+			return zero, fmt.Errorf("map key %q: %w", o.Name, err)
+		}
 		if ref != "" {
 			r, ok := source.Get(ref)
 			if !ok {
 				panic(fmt.Sprintf("reference %q: not found", ref))
 			}
-			out.List[i].V = NewRefObject(r)
+			out.List[i].V = NewRef(r)
 		} else {
 			out.List[i].V = v
 		}
 	}
-	return out
+	return out, nil
 }
 
-func NewMapRefSelf[T any, U any](m map[string]U, fn func(U) (ref string, _ Ref[T]), prefix RefKey) Map[Ref[T]] {
-	return NewMapRefSelfSource[T, U](m, func(u U, _ Map[Ref[T]]) (ref string, _ Ref[T]) {
+func NewMapRefSelf[T any, U any](m map[string]U, fn func(U) (ref string, _ Ref[T], _ error), prefix string) (Map[Ref[T]], error) {
+	return NewMapRefSelfSource[T, U](m, func(u U, _ Map[Ref[T]]) (ref string, _ Ref[T], _ error) {
 		return fn(u)
 	}, nil, prefix)
 }
 
-func NewMapRefSource[T any, U any](m map[string]U, fn func(U) (ref string, _ Ref[T]), source Sourcer[T], prefix RefKey) Map[Ref[T]] {
-	return NewMapRefSelfSource[T, U](m, func(u U, m Map[Ref[T]]) (ref string, _ Ref[T]) { return fn(u) }, source, prefix)
+func NewMapRefSource[T any, U any](m map[string]U, fn func(U) (ref string, _ Ref[T], _ error), source Sourcer[T], prefix string) (Map[Ref[T]], error) {
+	return NewMapRefSelfSource[T, U](m, func(u U, m Map[Ref[T]]) (ref string, _ Ref[T], _ error) { return fn(u) }, source, prefix)
 }
 
 func (m Map[T]) Get(k string) (*Object[string, T], bool) {
 	if m.indexes == nil {
 		return nil, false
 	}
-	v, ok := m.indexes[RefKey(k)]
+	v, ok := m.indexes[k]
 	if !ok {
 		return nil, false
 	}
@@ -92,22 +97,20 @@ func (m Map[T]) Get(k string) (*Object[string, T], bool) {
 
 func (m *Map[T]) Add(name string, v T) {
 	if m.indexes == nil {
-		m.indexes = make(map[RefKey]*Object[string, T])
+		m.indexes = make(map[string]*Object[string, T])
 	}
 	obj := &Object[string, T]{
 		Name: name,
 		V:    v,
 	}
 	m.List = append(m.List, obj)
-	m.indexes[RefKey(name)] = obj
+	m.indexes[name] = obj
 }
 
 func (m *Map[T]) Has(k string) bool {
 	if m.indexes == nil {
 		return false
 	}
-	_, ok := m.indexes[RefKey(k)]
+	_, ok := m.indexes[k]
 	return ok
 }
-
-type RefKey string

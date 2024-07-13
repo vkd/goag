@@ -29,34 +29,51 @@ type SecuritySchemes = Map[Ref[SecurityScheme]]
 
 func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Components, _ error) {
 	var cs Components
+	var err error
 
-	cs.Schemas = NewMapRefSelfSource(spec.Schemas, func(sr *openapi3.SchemaRef, components ComponentsSchemas) (_ string, zero Ref[Schema]) {
+	cs.Schemas, err = NewMapRefSelfSource(spec.Schemas, func(sr *openapi3.SchemaRef, components ComponentsSchemas) (_ string, zero Ref[Schema], _ error) {
 		if sr.Ref != "" {
-			return sr.Ref, nil
+			return sr.Ref, nil, nil
 		}
-		return "", NewSchema(sr.Value, components, opts)
+		return "", NewSchema(sr.Value, components, opts), nil
 	}, nil, "#/components/schemas/")
+	if err != nil {
+		return zero, fmt.Errorf("new schemas: %w", err)
+	}
 
-	cs.Headers = NewMapRefSelf[Header, *openapi3.HeaderRef](spec.Headers, func(hr *openapi3.HeaderRef) (ref string, _ Ref[Header]) {
+	cs.Headers, err = NewMapRefSelf[Header, *openapi3.HeaderRef](spec.Headers, func(hr *openapi3.HeaderRef) (ref string, _ Ref[Header], _ error) {
 		if hr.Ref != "" {
-			return hr.Ref, nil
+			return hr.Ref, nil, nil
 		}
-		return "", NewHeader(hr.Value, cs.Schemas, opts)
+		return "", NewHeader(hr.Value, cs.Schemas, opts), nil
 	}, "#/components/headers/")
+	if err != nil {
+		return zero, fmt.Errorf("new headers: %w", err)
+	}
 
-	cs.RequestBodies = NewMapRefSelf[RequestBody, *openapi3.RequestBodyRef](spec.RequestBodies, func(hr *openapi3.RequestBodyRef) (ref string, _ Ref[RequestBody]) {
+	cs.RequestBodies, err = NewMapRefSelf[RequestBody, *openapi3.RequestBodyRef](spec.RequestBodies, func(hr *openapi3.RequestBodyRef) (ref string, _ Ref[RequestBody], _ error) {
 		if hr.Ref != "" {
-			return hr.Ref, nil
+			return hr.Ref, nil, nil
 		}
-		return "", NewRequestBody(hr.Value, cs.Schemas, opts)
+		return "", NewRequestBody(hr.Value, cs.Schemas, opts), nil
 	}, "#/components/requestBodies/")
+	if err != nil {
+		return zero, fmt.Errorf("new request bodies: %w", err)
+	}
 
-	cs.Responses = NewMapRefSelf[Response, *openapi3.ResponseRef](spec.Responses, func(rr *openapi3.ResponseRef) (ref string, _ Ref[Response]) {
+	cs.Responses, err = NewMapRefSelf[Response, *openapi3.ResponseRef](spec.Responses, func(rr *openapi3.ResponseRef) (ref string, _ Ref[Response], _ error) {
 		if rr.Ref != "" {
-			return rr.Ref, nil
+			return rr.Ref, nil, nil
 		}
-		return "", NewResponse(rr.Value, cs, opts)
+		r, err := NewResponse(rr.Value, cs, opts)
+		if err != nil {
+			return "", r, fmt.Errorf("new response  %w", err)
+		}
+		return "", r, nil
 	}, "#/components/responses/")
+	if err != nil {
+		return zero, fmt.Errorf("new responses: %w", err)
+	}
 
 	queryParameters := make(openapi3.ParametersMap)
 	headerParameters := make(openapi3.ParametersMap)
@@ -78,47 +95,65 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 	}
 
 	// ---------------- Parameters ----------------
-	cs.QueryParameters = NewMapRefSelf[QueryParameter, *openapi3.ParameterRef](queryParameters, func(pr *openapi3.ParameterRef) (ref string, _ Ref[QueryParameter]) {
+	cs.QueryParameters, err = NewMapRefSelf[QueryParameter, *openapi3.ParameterRef](queryParameters, func(pr *openapi3.ParameterRef) (ref string, _ Ref[QueryParameter], _ error) {
 		if pr.Ref != "" {
-			return pr.Ref, nil
+			return pr.Ref, nil, nil
 		}
-		return "", NewQueryParameter(pr.Value, cs.Schemas, opts)
+		return "", NewQueryParameter(pr.Value, cs.Schemas, opts), nil
 	}, "#/components/parameters/")
+	if err != nil {
+		return zero, fmt.Errorf("new query parameters: %w", err)
+	}
 
-	cs.HeaderParameters = NewMapRefSelf[HeaderParameter, *openapi3.ParameterRef](headerParameters, func(pr *openapi3.ParameterRef) (ref string, _ Ref[HeaderParameter]) {
+	cs.HeaderParameters, err = NewMapRefSelf[HeaderParameter, *openapi3.ParameterRef](headerParameters, func(pr *openapi3.ParameterRef) (ref string, _ Ref[HeaderParameter], _ error) {
 		if pr.Ref != "" {
-			return pr.Ref, nil
+			return pr.Ref, nil, nil
 		}
-		return "", NewHeaderParameter(pr.Value, cs.Schemas, opts)
+		return "", NewHeaderParameter(pr.Value, cs.Schemas, opts), nil
 	}, "#/components/parameters/")
+	if err != nil {
+		return zero, fmt.Errorf("new header parameters: %w", err)
+	}
 
-	cs.PathParameters = NewMapRefSelf[PathParameter, *openapi3.ParameterRef](pathParameters, func(pr *openapi3.ParameterRef) (ref string, _ Ref[PathParameter]) {
+	cs.PathParameters, err = NewMapRefSelf[PathParameter, *openapi3.ParameterRef](pathParameters, func(pr *openapi3.ParameterRef) (ref string, _ Ref[PathParameter], _ error) {
 		if pr.Ref != "" {
-			return pr.Ref, nil
+			return pr.Ref, nil, nil
 		}
-		return "", NewPathParameter(pr.Value, cs.Schemas, opts)
+		return "", NewPathParameter(pr.Value, cs.Schemas, opts), nil
 	}, "#/components/parameters/")
+	if err != nil {
+		return zero, fmt.Errorf("new path parameters: %w", err)
+	}
 
-	cs.CookieParameters = NewMapRefSelf[CookieParameter, *openapi3.ParameterRef](cookieParameters, func(pr *openapi3.ParameterRef) (ref string, _ Ref[CookieParameter]) {
+	cs.CookieParameters, err = NewMapRefSelf[CookieParameter, *openapi3.ParameterRef](cookieParameters, func(pr *openapi3.ParameterRef) (ref string, _ Ref[CookieParameter], _ error) {
 		if pr.Ref != "" {
-			return pr.Ref, nil
+			return pr.Ref, nil, nil
 		}
-		return "", NewCookieParameter(pr.Value, cs.Schemas, opts)
+		return "", NewCookieParameter(pr.Value, cs.Schemas, opts), nil
 	}, "#/components/parameters/")
+	if err != nil {
+		return zero, fmt.Errorf("new cookie parameters: %w", err)
+	}
 
-	cs.SecuritySchemes = NewMapRefSelf[SecurityScheme, *openapi3.SecuritySchemeRef](spec.SecuritySchemes, func(ss *openapi3.SecuritySchemeRef) (ref string, _ Ref[SecurityScheme]) {
+	cs.SecuritySchemes, err = NewMapRefSelf[SecurityScheme, *openapi3.SecuritySchemeRef](spec.SecuritySchemes, func(ss *openapi3.SecuritySchemeRef) (ref string, _ Ref[SecurityScheme], _ error) {
 		if ss.Ref != "" {
-			return ss.Ref, nil
+			return ss.Ref, nil, nil
 		}
-		return "", NewSecurityScheme(ss.Value)
+		return "", NewSecurityScheme(ss.Value), nil
 	}, "#/components/securitySchemes/")
+	if err != nil {
+		return zero, fmt.Errorf("new security schemes: %w", err)
+	}
 
-	cs.Links = NewMapRefSelf[Link, *openapi3.LinkRef](spec.Links, func(lr *openapi3.LinkRef) (ref string, _ Ref[Link]) {
+	cs.Links, err = NewMapRefSelf[Link, *openapi3.LinkRef](spec.Links, func(lr *openapi3.LinkRef) (ref string, _ Ref[Link], _ error) {
 		if lr.Ref != "" {
-			return lr.Ref, nil
+			return lr.Ref, nil, nil
 		}
-		return "", NewLink(lr.Value)
+		return "", NewLink(lr.Value), nil
 	}, "#/components/links/")
+	if err != nil {
+		return zero, fmt.Errorf("new links: %w", err)
+	}
 
 	return cs, nil
 }

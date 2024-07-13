@@ -43,8 +43,6 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 		Description: operation.Description,
 		OperationID: operation.OperationID,
 
-		Parameters: NewOperationParameters(pi.PathItem.Parameters, operation.Parameters, components, opts),
-
 		HTTPMethod: method.HTTP,
 		Method:     method.Title,
 
@@ -53,13 +51,23 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 		Security: specSecurityReqs,
 	}
 
+	var err error
+	o.Parameters, err = NewOperationParameters(pi.PathItem.Parameters, operation.Parameters, components, opts)
+	if err != nil {
+		return nil, fmt.Errorf("new operation parameters: %w", err)
+	}
+
 	if operation.Security != nil {
 		o.Security = NewSecurityRequirements(*operation.Security, securitySchemes)
 	}
 
 	if operation.RequestBody != nil {
 		if operation.RequestBody.Ref != "" {
-			o.RequestBody = Just[Ref[RequestBody]](NewRefObjectSource[RequestBody](operation.RequestBody.Ref, components.RequestBodies))
+			v, ok := components.RequestBodies.Get(operation.RequestBody.Ref)
+			if !ok {
+				return nil, fmt.Errorf("request body %q: not found", operation.RequestBody.Ref)
+			}
+			o.RequestBody = Just[Ref[RequestBody]](NewRef(v))
 		} else {
 			o.RequestBody = Just[Ref[RequestBody]](NewRequestBody(operation.RequestBody.Value, components.Schemas, opts))
 		}
@@ -84,9 +92,12 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 				Operation: o,
 				Status:    ro.Name,
 			})
-			o.Responses.List[i].V = NewRefObject(r)
+			o.Responses.List[i].V = NewRef(r)
 		} else {
-			o.Responses.List[i].V = NewResponse(rr.Value, components, opts)
+			o.Responses.List[i].V, err = NewResponse(rr.Value, components, opts)
+			if err != nil {
+				return nil, fmt.Errorf("new response %q: %w", ro.Name, err)
+			}
 		}
 	}
 
@@ -100,7 +111,7 @@ type OperationParameters struct {
 	Cookie  Map[Ref[CookieParameter]]
 }
 
-func NewOperationParameters(pathParams, operationParams openapi3.Parameters, components Components, opts SchemaOptions) OperationParameters {
+func NewOperationParameters(pathParams, operationParams openapi3.Parameters, components Components, opts SchemaOptions) (zero OperationParameters, _ error) {
 	out := OperationParameters{
 		Query:   NewMapEmpty[Ref[QueryParameter]](0),
 		Headers: NewMapEmpty[Ref[HeaderParameter]](0),
@@ -111,47 +122,75 @@ func NewOperationParameters(pathParams, operationParams openapi3.Parameters, com
 	for _, param := range append(append(openapi3.Parameters{}, pathParams...), operationParams...) {
 		switch param.Value.In {
 		case openapi3.ParameterInPath:
-			p := NewRefPathParam(param, components, opts)
+			p, err := NewRefPathParam(param, components, opts)
+			if err != nil {
+				return zero, fmt.Errorf("path param %q: %w", param.Value.Name, err)
+			}
 			out.Path.Add(p.Value().Name, p)
 		case openapi3.ParameterInQuery:
-			p := NewRefQueryParam(param, components, opts)
+			p, err := NewRefQueryParam(param, components, opts)
+			if err != nil {
+				return zero, fmt.Errorf("query param %q: %w", param.Value.Name, err)
+			}
 			out.Query.Add(p.Value().Name, p)
 		case openapi3.ParameterInHeader:
-			p := NewRefHeaderParam(param, components, opts)
+			p, err := NewRefHeaderParam(param, components, opts)
+			if err != nil {
+				return zero, fmt.Errorf("header param %q: %w", param.Value.Name, err)
+			}
 			out.Headers.Add(p.Value().Name, p)
 		case openapi3.ParameterInCookie:
-			p := NewRefCookieParam(param, components, opts)
+			p, err := NewRefCookieParam(param, components, opts)
+			if err != nil {
+				return zero, fmt.Errorf("cookie param %q: %w", param.Value.Name, err)
+			}
 			out.Cookie.Add(p.Value().Name, p)
 		}
 	}
 
-	return out
+	return out, nil
 }
 
-func NewRefQueryParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) Ref[QueryParameter] {
+func NewRefQueryParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) (Ref[QueryParameter], error) {
 	if p.Ref != "" {
-		return NewRefObjectSource[QueryParameter](p.Ref, components.QueryParameters)
+		v, ok := components.QueryParameters.Get(p.Ref)
+		if !ok {
+			return nil, fmt.Errorf("query parameter %q: not found", p.Ref)
+		}
+		return NewRef(v), nil
 	}
-	return NewQueryParameter(p.Value, components.Schemas, opts)
+	return NewQueryParameter(p.Value, components.Schemas, opts), nil
 }
 
-func NewRefHeaderParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) Ref[HeaderParameter] {
+func NewRefHeaderParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) (Ref[HeaderParameter], error) {
 	if p.Ref != "" {
-		return NewRefObjectSource[HeaderParameter](p.Ref, components.HeaderParameters)
+		v, ok := components.HeaderParameters.Get(p.Ref)
+		if !ok {
+			return nil, fmt.Errorf("header parameter %q: not found", p.Ref)
+		}
+		return NewRef(v), nil
 	}
-	return NewHeaderParameter(p.Value, components.Schemas, opts)
+	return NewHeaderParameter(p.Value, components.Schemas, opts), nil
 }
 
-func NewRefPathParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) Ref[PathParameter] {
+func NewRefPathParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) (Ref[PathParameter], error) {
 	if p.Ref != "" {
-		return NewRefObjectSource[PathParameter](p.Ref, components.PathParameters)
+		v, ok := components.PathParameters.Get(p.Ref)
+		if !ok {
+			return nil, fmt.Errorf("path parameter %q: not found", p.Ref)
+		}
+		return NewRef(v), nil
 	}
-	return NewPathParameter(p.Value, components.Schemas, opts)
+	return NewPathParameter(p.Value, components.Schemas, opts), nil
 }
 
-func NewRefCookieParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) Ref[CookieParameter] {
+func NewRefCookieParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) (Ref[CookieParameter], error) {
 	if p.Ref != "" {
-		return NewRefObjectSource[CookieParameter](p.Ref, components.CookieParameters)
+		v, ok := components.CookieParameters.Get(p.Ref)
+		if !ok {
+			return nil, fmt.Errorf("cookie parameter %q: not found", p.Ref)
+		}
+		return NewRef(v), nil
 	}
-	return NewCookieParameter(p.Value, components.Schemas, opts)
+	return NewCookieParameter(p.Value, components.Schemas, opts), nil
 }

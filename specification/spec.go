@@ -161,7 +161,7 @@ func NewSchemaRef(schema *openapi3.SchemaRef, components ComponentsSchemas, opts
 		if !ok {
 			panic(fmt.Sprintf("%q: not found in components", schema.Ref))
 		}
-		return NewRefObject[Schema](v)
+		return NewRef[Schema](v)
 	}
 	return NewSchema(schema.Value, components, opts)
 }
