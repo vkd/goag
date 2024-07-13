@@ -7,17 +7,18 @@ import (
 )
 
 type QueryParameter struct {
-	s *specification.QueryParameter
-
-	Name      string
-	FieldName string
-	Required  bool
-	Type      SchemaType
+	Name        string
+	Description string
+	FieldName   string
+	Required    bool
+	Type        SchemaType
 }
 
 func NewQueryParameter(refP specification.Ref[specification.QueryParameter]) (zero *QueryParameter, _ Imports, _ error) {
 	s := refP.Value()
-	out := QueryParameter{s: s}
+	out := QueryParameter{
+		Description: s.Description,
+	}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 	out.Required = s.Required

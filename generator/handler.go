@@ -150,7 +150,7 @@ func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryP
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
 			FieldType:    tpRender,
-			FieldComment: strings.ReplaceAll(strings.TrimRight(p.s.Description, "\n "), "\n", "\n// "),
+			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
 		ParameterName: p.Name,
