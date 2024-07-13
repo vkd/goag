@@ -2,6 +2,9 @@ package generator
 
 import (
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func Title(s string) string {
@@ -21,11 +24,11 @@ func Title(s string) string {
 	lower := strings.ToLower(s)
 	switch {
 	case strings.HasSuffix(lower, "id"):
-		return strings.Title(strings.TrimSuffix(lower, "id")) + "ID"
+		return stringsTitle(strings.TrimSuffix(lower, "id")) + "ID"
 	case strings.HasSuffix(lower, "ids"):
-		return strings.Title(strings.TrimSuffix(lower, "ids")) + "IDs"
+		return stringsTitle(strings.TrimSuffix(lower, "ids")) + "IDs"
 	}
-	return strings.Title(strings.ToLower(s))
+	return stringsTitle(strings.ToLower(s))
 }
 
 func PrivateFieldName(name string) string {
@@ -33,4 +36,10 @@ func PrivateFieldName(name string) string {
 		return ""
 	}
 	return strings.ToLower(name[:1]) + name[1:]
+}
+
+var undCaser = cases.Title(language.Und)
+
+func stringsTitle(s string) string {
+	return undCaser.String(s)
 }
