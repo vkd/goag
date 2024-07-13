@@ -37,13 +37,8 @@ func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
 	s.Security = NewSecurityRequirements(spec.Security, s.Components.SecuritySchemes)
 
 	for _, pathKey := range sortedKeys(spec.Paths) {
-		p, err := NewPathOld2(pathKey)
-		if err != nil {
-			return nil, fmt.Errorf("parse path %q: %w", pathKey, err)
-		}
 		pathItem := spec.Paths[pathKey]
 		pi := NewPathItem(pathKey)
-		pi.Path = p
 		pi.PathItem = pathItem
 		for _, method := range httpMethods() {
 			operation := pathItem.GetOperation(string(method.HTTP))
@@ -53,7 +48,7 @@ func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
 
 			o, err := NewOperation(pi, pathKey, method, operation, s.Security, spec.Components, s.Components.SecuritySchemes, s.Components, opts)
 			if err != nil {
-				return nil, fmt.Errorf("new operation for path=%q method=%q: %w", pi.Path.Spec, method.HTTP, err)
+				return nil, fmt.Errorf("new operation for path=%q method=%q: %w", pathKey, method.HTTP, err)
 			}
 			pi.Operations = append(pi.Operations, o)
 			s.Operations = append(s.Operations, o)
@@ -68,12 +63,12 @@ func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
 			switch usedIn.Status {
 			case "default":
 				if usedInPatterned.Set {
-					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in patterned status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.Path.Raw, usedIn.Status, usedInPatterned.Value.Operation.HTTPMethod, usedInPatterned.Value.Operation.Path.Raw, usedInPatterned.Value.Status)
+					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in patterned status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.PathRaw, usedIn.Status, usedInPatterned.Value.Operation.HTTPMethod, usedInPatterned.Value.Operation.PathRaw, usedInPatterned.Value.Status)
 				}
 				usedInDefault = Just(usedIn)
 			default:
 				if usedInDefault.Set {
-					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in default status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.Path.Raw, usedIn.Status, usedInDefault.Value.Operation.HTTPMethod, usedInDefault.Value.Operation.Path.Raw, usedInDefault.Value.Status)
+					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in default status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.PathRaw, usedIn.Status, usedInDefault.Value.Operation.HTTPMethod, usedInDefault.Value.Operation.PathRaw, usedInDefault.Value.Status)
 				}
 				usedInPatterned = Just(usedIn)
 			}

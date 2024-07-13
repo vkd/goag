@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/vkd/goag/specification"
 )
@@ -223,14 +224,28 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 		var ifaces []ResponseUsedIn
 		var status string
 		for _, usedIn := range resp.UsedIn {
-			oName := NewOperationName(usedIn.Operation)
+			oName := PublicFieldName(usedIn.Operation.OperationID)
+			if oName == "" {
+				oName = string(usedIn.Operation.Method)
+				raw := usedIn.Operation.PathRaw
+				for _, ss := range strings.Split(raw, "/")[1:] {
+					if strings.HasPrefix(ss, "{") && strings.HasSuffix(ss, "}") {
+						oName += Title(ss[1 : len(ss)-1])
+					} else {
+						oName += Title(ss)
+					}
+				}
+				if raw != "" && strings.HasSuffix(raw, "/") {
+					oName += "RT"
+				}
+			}
 			switch usedIn.Status {
 			case "default":
 				status = usedIn.Status
 			}
 
 			ifaces = append(ifaces, ResponseUsedIn{
-				OperationName: oName,
+				OperationName: OperationName(oName),
 				Status:        usedIn.Status,
 			})
 		}

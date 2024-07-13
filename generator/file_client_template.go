@@ -139,7 +139,7 @@ func NewClientOperation(o *Operation) (zero ClientOperationTemplate, _ error) {
 	}
 
 	var v string
-	for _, dir := range o.Operation.Path.Dirs {
+	for _, dir := range o.Path.Dirs {
 		if !dir.IsVariable {
 			v += "/" + dir.V
 			continue
@@ -147,7 +147,7 @@ func NewClientOperation(o *Operation) (zero ClientOperationTemplate, _ error) {
 		c.PathFormat = append(c.PathFormat, QuotedRender(v+"/"))
 		v = ""
 
-		param := dir.Param.Value()
+		param := dir.Param
 		gp, ok := o.Params.Path.Get(param.Name)
 		if !ok {
 			return zero, fmt.Errorf("%q path parameter: not found in %q operation", param.Name, o.Name)

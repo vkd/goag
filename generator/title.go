@@ -2,8 +2,6 @@ package generator
 
 import (
 	"strings"
-
-	"github.com/vkd/goag/specification"
 )
 
 func Title(s string) string {
@@ -28,10 +26,6 @@ func Title(s string) string {
 		return strings.Title(strings.TrimSuffix(lower, "ids")) + "IDs"
 	}
 	return strings.Title(strings.ToLower(s))
-}
-
-func PrefixTitle(s specification.Prefix) string {
-	return Title(s.Name())
 }
 
 func PrivateFieldName(name string) string {

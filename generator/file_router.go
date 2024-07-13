@@ -70,12 +70,12 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 			p.Operations = append(p.Operations, RouterPathItemOperation{
 				Name:     o.Name,
 				Method:   o.Method,
-				PathSpec: o.PathItem.Path.Spec,
+				PathSpec: o.PathItem.RawPath,
 				Handler:  string(o.Name) + "Handler",
 			})
 			if !p.HasOptions && opt.IsCors {
 				p.Operations = append(p.Operations, RouterPathItemOperation{
-					PathSpec: o.PathItem.Path.Spec,
+					PathSpec: o.PathItem.RawPath,
 
 					IsCORS:      true,
 					CORSMethods: methods,

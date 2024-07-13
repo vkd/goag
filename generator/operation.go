@@ -18,7 +18,7 @@ type Operation struct {
 	Description string
 	Summary     string
 
-	// Path specification.PathOld2
+	Path Path
 
 	PathBuilder []OperationPathElement
 
@@ -40,7 +40,12 @@ type Operation struct {
 }
 
 func NewOperation(s *specification.Operation) (zero *Operation, _ Imports, _ error) {
-	name := NewOperationName(s)
+	path, err := NewPath(s.PathRaw)
+	if err != nil {
+		return zero, nil, fmt.Errorf("parse raw path: %w", err)
+	}
+	name := NewOperationName(s.Method, s, path)
+
 	o := Operation{
 		Operation: s,
 
@@ -48,7 +53,7 @@ func NewOperation(s *specification.Operation) (zero *Operation, _ Imports, _ err
 		Description: s.Description,
 		Summary:     s.Summary,
 
-		// Path: s.PathItem.Path,
+		Path: path,
 
 		APIHandlerFieldName: string(name) + "Handler",
 		HandlerTypeName:     string(name) + "HandlerFunc",
@@ -58,26 +63,34 @@ func NewOperation(s *specification.Operation) (zero *Operation, _ Imports, _ err
 	}
 
 	var imports Imports
-	var err error
 	o.Params, imports, err = NewOperationParams(s.Parameters)
 	if err != nil {
 		return zero, nil, fmt.Errorf("new operation params: %w", err)
 	}
 
+	for _, pathParam := range o.Params.Path.List {
+		param, ok := o.Path.Parameters.Get(pathParam.Name)
+		if !ok {
+			return zero, nil, fmt.Errorf("%q path parameter: not found in %q endpoint", pathParam.Name, o.Path.Raw)
+		}
+		param.V.Param = pathParam.V
+	}
+	for _, pp := range o.Path.Parameters.List {
+		if pp.V.IsVariable && pp.V.Param == nil {
+			return zero, nil, fmt.Errorf("%q endpoint: %q param is not defined", o.Path.Raw, pp.V.V)
+		}
+	}
+
 	var el OperationPathElement
-	for _, pd := range s.Path.Dirs {
+	for _, pd := range o.Path.Dirs {
 		if pd.IsVariable {
 			if el.Raw != "" {
 				el.Raw += "/"
 				o.PathBuilder = append(o.PathBuilder, el)
 				el = OperationPathElement{}
 			}
-			pp, ok := o.Params.Path.Get(pd.Param.Value().Name)
-			if !ok {
-				return zero, nil, fmt.Errorf("unexpected path parameter %q found in path: not found in 'parameters'", pd.Param.Value().Name)
-			}
 			o.PathBuilder = append(o.PathBuilder, OperationPathElement{
-				Param: Just(pp.V),
+				Param: Just(pd.Param),
 			})
 		} else {
 			el.Raw += "/" + pd.V
@@ -145,24 +158,22 @@ func NewOperation(s *specification.Operation) (zero *Operation, _ Imports, _ err
 
 type OperationName string
 
-func NewOperationName(s *specification.Operation) OperationName {
+func NewOperationName(method specification.HTTPMethodTitle, s *specification.Operation, path Path) OperationName {
 	if s.OperationID != "" {
 		return OperationName(PublicFieldName(s.OperationID))
 	}
 
-	path := s.PathItem.Path
-
 	var out string
 	for _, dir := range path.Dirs {
-		out += PrefixTitle(dir.Raw)
+		out += Title(dir.V)
 	}
 
 	var suffix string
-	if len(path.Dirs) > 1 && path.Dirs[len(path.Dirs)-1].Raw == "/" {
+	if len(path.Dirs) > 1 && path.Dirs[len(path.Dirs)-1].V == "" {
 		suffix = "RT"
 	}
 
-	return OperationName(string(s.Method) + out + suffix)
+	return OperationName(string(method) + out + suffix)
 }
 
 type OperationParams struct {

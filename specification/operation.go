@@ -9,7 +9,7 @@ import (
 type Operation struct {
 	PathItem *PathItem
 
-	Path Path
+	PathRaw string
 
 	Tags        []string
 	Summary     string
@@ -36,7 +36,7 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 	o := &Operation{
 		PathItem: pi,
 
-		Path: NewPath(rawPath),
+		PathRaw: rawPath,
 
 		Tags:        operation.Tags,
 		Summary:     operation.Summary,
@@ -51,11 +51,6 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 		Operation: operation,
 
 		Security: specSecurityReqs,
-	}
-
-	err := o.mapPathParams()
-	if err != nil {
-		return nil, fmt.Errorf("map path parameters: %w", err)
 	}
 
 	if operation.Security != nil {
@@ -96,22 +91,6 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 	}
 
 	return o, nil
-}
-
-func (o *Operation) mapPathParams() error {
-	for _, pp := range o.Parameters.Path.List {
-		obj, ok := o.Path.Refs.Get(pp.Name)
-		if !ok {
-			return fmt.Errorf("%q path parameter: not found in %q endpoint", pp.Name, o.Path.Raw)
-		}
-		obj.V.Param = pp.V
-	}
-	for _, pp := range o.Path.Refs.List {
-		if pp.V.IsVariable && pp.V.Param == nil {
-			return fmt.Errorf("%q endpoint: %q param is not defined", o.Path.Raw, pp.V.V)
-		}
-	}
-	return nil
 }
 
 type OperationParameters struct {
