@@ -39,11 +39,11 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 
 	var pathRenders []Parser
 	for _, pe := range o.PathBuilder {
-		if pe.Param.IsSet {
+		if peParam, ok := pe.Param.Get(); ok {
 			pathRenders = append(pathRenders, PathParserVariable{
-				FieldName: pe.Param.Value.FieldName,
-				Name:      pe.Param.Value.Name,
-				Convert:   pe.Param.Value.Type,
+				FieldName: peParam.FieldName,
+				Name:      peParam.Name,
+				Convert:   peParam.Type,
 			})
 		} else if pe.Raw != "" {
 			pathRenders = append(pathRenders, PathParserConstant{
@@ -314,7 +314,7 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 	}
 
 	out.Name = string(name) + "Response" + strings.Title(status)
-	if r.ContentJSON.IsSet {
+	if r.ContentJSON.Set {
 		out.Name += "JSON"
 		out.ContentType = "application/json"
 	}
@@ -331,18 +331,18 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 		})
 	}
 
-	if r.ContentJSON.IsSet {
+	if contentJSON, ok := r.ContentJSON.Get(); ok {
 		out.IsBody = true
-		switch contentType := r.ContentJSON.Value.Type.(type) {
+		switch contentType := contentJSON.Type.(type) {
 		case Ref[specification.Schema], SliceType, CustomType:
 			out.BodyTypeName = contentType
 		default:
 			bodyStructName := out.Name + "Body"
 			out.BodyTypeName = NewRef(&specification.Object[string, specification.Ref[specification.Schema]]{
 				Name: bodyStructName,
-				V:    r.ContentJSON.Value.Spec,
+				V:    contentJSON.Spec,
 			})
-			bodyType := r.ContentJSON.Value
+			bodyType := contentJSON
 			out.Body = bodyType.Type
 
 			if bodyType.Spec.Value().AdditionalProperties.Set {

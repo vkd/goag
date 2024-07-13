@@ -121,8 +121,8 @@ for i := range {{.From}} {
 {{- range $_, $f := .Fields }}
 {{ $f.Render }}
 {{- end }}
-{{- if .AdditionalProperties.IsSet }}
-AdditionalProperties map[string]{{ .AdditionalProperties.Value.Render }} `json:"-"`
+{{- if .AdditionalProperties }}
+AdditionalProperties map[string]{{ .AdditionalProperties.Render }} `json:"-"`
 {{- end }}
 }
 {{- else }}struct{}

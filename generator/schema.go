@@ -29,8 +29,8 @@ func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, 
 		return nil, nil, err
 	}
 
-	if spec.Custom.Set {
-		ct, is := NewCustomType(spec.Custom.Value, out)
+	if specCustom, ok := spec.Custom.Get(); ok {
+		ct, is := NewCustomType(specCustom, out)
 		return ct, append(is, ims...), nil
 	}
 
@@ -60,8 +60,8 @@ func newSchema(spec *specification.Schema) (SchemaType, Imports, error) {
 
 	switch spec.Type {
 	case "object":
-		if spec.AdditionalProperties.Set && len(spec.Properties) == 0 {
-			additional, ims, err := NewSchema(spec.AdditionalProperties.Value)
+		if specAdditionalProperties, ok := spec.AdditionalProperties.Get(); ok && len(spec.Properties) == 0 {
+			additional, ims, err := NewSchema(specAdditionalProperties)
 			if err != nil {
 				return nil, nil, fmt.Errorf("additional properties: %w", err)
 			}

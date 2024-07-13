@@ -101,8 +101,7 @@ func NewOperation(s *specification.Operation) (zero *Operation, _ Imports, _ err
 		el = OperationPathElement{}
 	}
 
-	if s.RequestBody.Set {
-		rBody := s.RequestBody.Value
+	if rBody, ok := s.RequestBody.Get(); ok {
 		if ref := rBody.Ref(); ref != nil && ref.Name != "" {
 			if _, ok := ref.V.Value().Content.Get("application/json"); ok {
 				o.Body.TypeName = NewRef(&specification.Object[string, specification.Ref[specification.RequestBody]]{

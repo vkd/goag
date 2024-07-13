@@ -85,9 +85,9 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 	case {{ $response.StatusCode }}:
 		{{ $response.Render }}
 	{{- end }}
-	{{ if .DefaultResponse.IsSet -}}
+	{{ if .DefaultResponse -}}
 	default:
-		{{ .DefaultResponse.Value.Render }}
+		{{ .DefaultResponse.Render }}
 	{{- else }}
 	default:
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
@@ -119,11 +119,7 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 
 {{/* ----------------------------- ClientResponse ------------------------------------- */}}
 {{ define "ClientResponse" -}}
-{{- if .ComponentRefName.IsSet -}}
-var response {{ .ComponentRefName.Value }}Response
-{{- else -}}
-var response {{ .Name }}
-{{- end }}
+var response {{ .ComponentRefName }}
 
 {{- if eq .StatusCode "default" }}
 	response.Code = resp.StatusCode
@@ -159,11 +155,7 @@ var hs []string
 {{- if .ContentJSON }}
 err := json.NewDecoder(resp.Body).Decode(&response.Body)
 if err != nil {
-{{- if .ComponentRefName.IsSet }}
-	return nil, fmt.Errorf("decode '{{ .ComponentRefName.Value }}Response' response body: %w", err)
-{{- else }}
-	return nil, fmt.Errorf("decode '{{ .Name }}' response body: %w", err)
-{{- end }}
+	return nil, fmt.Errorf("decode '{{ .ComponentRefName }}' response body: %w", err)
 }
 {{- end }}
 return response, nil

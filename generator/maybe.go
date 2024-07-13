@@ -1,13 +1,17 @@
 package generator
 
 type Maybe[T any] struct {
-	IsSet bool
-	Value T
+	Set   bool
+	value T
 }
 
 func Just[T any](v T) Maybe[T] {
 	return Maybe[T]{
-		Value: v,
-		IsSet: true,
+		value: v,
+		Set:   true,
 	}
+}
+
+func (m Maybe[T]) Get() (zero T, _ bool) {
+	return m.value, m.Set
 }

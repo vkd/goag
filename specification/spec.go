@@ -65,13 +65,13 @@ func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
 			usedIn := usedIn
 			switch usedIn.Status {
 			case "default":
-				if usedInPatterned.Set {
-					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in patterned status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.PathRaw, usedIn.Status, usedInPatterned.Value.Operation.HTTPMethod, usedInPatterned.Value.Operation.PathRaw, usedInPatterned.Value.Status)
+				if usedInPatterned, ok := usedInPatterned.Get(); ok {
+					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in patterned status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.PathRaw, usedIn.Status, usedInPatterned.Operation.HTTPMethod, usedInPatterned.Operation.PathRaw, usedInPatterned.Status)
 				}
 				usedInDefault = Just(usedIn)
 			default:
-				if usedInDefault.Set {
-					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in default status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.PathRaw, usedIn.Status, usedInDefault.Value.Operation.HTTPMethod, usedInDefault.Value.Operation.PathRaw, usedInDefault.Value.Status)
+				if usedInDefault, ok := usedInDefault.Get(); ok {
+					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in default status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.PathRaw, usedIn.Status, usedInDefault.Operation.HTTPMethod, usedInDefault.Operation.PathRaw, usedInDefault.Status)
 				}
 				usedInPatterned = Just(usedIn)
 			}

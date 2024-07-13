@@ -259,7 +259,7 @@ type StructureType struct {
 	SingleValue
 	Fields []StructureField
 
-	AdditionalProperties Maybe[SchemaType]
+	AdditionalProperties *SchemaType
 }
 
 func NewStructureType(s *specification.Schema) (zero StructureType, _ Imports, _ error) {
@@ -273,13 +273,13 @@ func NewStructureType(s *specification.Schema) (zero StructureType, _ Imports, _
 		stype.Fields = append(stype.Fields, f)
 		imports = append(imports, ims...)
 	}
-	if s.AdditionalProperties.Set {
-		additional, ims, err := NewSchema(s.AdditionalProperties.Value)
+	if additionalProperties, ok := s.AdditionalProperties.Get(); ok {
+		additional, ims, err := NewSchema(additionalProperties)
 		if err != nil {
 			return zero, nil, fmt.Errorf("additional properties: %w", err)
 		}
 		imports = append(imports, ims...)
-		stype.AdditionalProperties = Just(additional)
+		stype.AdditionalProperties = &additional
 	}
 	return stype, imports, nil
 }

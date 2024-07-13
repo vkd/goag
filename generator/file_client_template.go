@@ -42,7 +42,7 @@ type ClientOperationTemplate struct {
 	IsRequestBody bool
 
 	Responses       []ClientResponseTemplate
-	DefaultResponse Maybe[ClientResponseTemplate]
+	DefaultResponse *ClientResponseTemplate
 
 	PathFormat []Render
 }
@@ -56,8 +56,9 @@ func NewClientOperation(o *Operation) (zero ClientOperationTemplate, _ error) {
 
 		RequestTypeName:  o.RequestTypeName,
 		ResponseTypeName: o.ResponseTypeName,
-
-		IsRequestBody: o.Operation.RequestBody.Set && o.Operation.RequestBody.Value.Value().Content.Has("application/json"),
+	}
+	if requestBody, ok := o.Operation.RequestBody.Get(); ok {
+		c.IsRequestBody = requestBody.Value().Content.Has("application/json")
 	}
 
 	for _, e := range o.Params.Query.List {
@@ -97,12 +98,13 @@ func NewClientOperation(o *Operation) (zero ClientOperationTemplate, _ error) {
 
 	for _, e := range o.Responses {
 		t := ClientResponseTemplate{
-			Name:        e.Name,
-			StatusCode:  e.StatusCode,
-			ContentJSON: e.ContentJSON.IsSet,
+			Name:             e.Name,
+			StatusCode:       e.StatusCode,
+			ContentJSON:      e.ContentJSON.Set,
+			ComponentRefName: e.Name,
 		}
 		if e.ComponentRef != nil {
-			t.ComponentRefName = Just(e.ComponentRef.Name)
+			t.ComponentRefName = e.ComponentRef.Name + "Response"
 		}
 		for _, h := range e.Headers {
 			t.Headers = append(t.Headers, ClientResponseHeaderTemplate{
@@ -119,12 +121,13 @@ func NewClientOperation(o *Operation) (zero ClientOperationTemplate, _ error) {
 		e := *o.DefaultResponse
 
 		t := ClientResponseTemplate{
-			Name:        e.Name,
-			StatusCode:  e.StatusCode,
-			ContentJSON: e.ContentJSON.IsSet,
+			Name:             e.Name,
+			StatusCode:       e.StatusCode,
+			ContentJSON:      e.ContentJSON.Set,
+			ComponentRefName: e.Name,
 		}
 		if e.ComponentRef != nil {
-			t.ComponentRefName = Just(e.ComponentRef.Name)
+			t.ComponentRefName = e.ComponentRef.Name + "Response"
 		}
 		for _, h := range e.Headers {
 			t.Headers = append(t.Headers, ClientResponseHeaderTemplate{
@@ -135,7 +138,7 @@ func NewClientOperation(o *Operation) (zero ClientOperationTemplate, _ error) {
 				FieldName:         h.FieldName,
 			})
 		}
-		c.DefaultResponse = Just(t)
+		c.DefaultResponse = &t
 	}
 
 	var v string
@@ -183,7 +186,7 @@ type ClientOperationHeaderTemplate struct {
 type ClientResponseTemplate struct {
 	Name             string
 	StatusCode       string
-	ComponentRefName Maybe[string]
+	ComponentRefName string
 	Headers          []ClientResponseHeaderTemplate
 	ContentJSON      bool
 }
