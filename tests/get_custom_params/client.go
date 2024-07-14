@@ -38,13 +38,11 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	}
 	query["page_req"] = request.Query.PageReq.Strings()
 	if request.Query.Pages.IsSet {
-		{
-			query_values := make([]string, 0, len(request.Query.Pages.Value))
-			for _, v := range request.Query.Pages.Value {
-				query_values = append(query_values, v.String())
-			}
-			query["pages"] = query_values
+		qv := make([]string, 0, len(request.Query.Pages.Value))
+		for _, v := range request.Query.Pages.Value {
+			qv = append(qv, v.String())
 		}
+		query["pages"] = qv
 	}
 	if request.Query.PageCustom.IsSet {
 		query["page_custom"] = []string{request.Query.PageCustom.Value.String()}

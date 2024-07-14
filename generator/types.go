@@ -211,6 +211,10 @@ func (c CustomType) RenderFormat(from string) (string, error) {
 	return from + ".String()", nil
 }
 
+func (c CustomType) RenderFormatStrings(from string) (string, error) {
+	return from + ".Strings()", nil
+}
+
 func (c CustomType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("CustomTypeParserExternal", TData{
 		"To":    to,
@@ -230,9 +234,18 @@ type SliceType struct {
 func (s SliceType) Render() (string, error) { return ExecuteTemplate("SliceType", s) }
 
 func (s SliceType) RenderFormat(from string) (string, error) {
-	return ExecuteTemplate("SliceTypeRenderFormat", TData{
-		"From": from,
-		"Type": s,
+	switch s.Items.(type) {
+	case StringType:
+		return from, nil
+	}
+	return "", fmt.Errorf(".RenderFormat() function for SliceType is not supported")
+}
+
+func (s SliceType) RenderFormatStringsMultiline(to, from string) (string, error) {
+	return ExecuteTemplate("SliceTypeRenderFormatMultiline", TData{
+		"To":    to,
+		"From":  from,
+		"Items": s.Items,
 	})
 }
 

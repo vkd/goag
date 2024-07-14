@@ -94,12 +94,11 @@ if err != nil {
 
 {{ define "SliceType" }}[]{{ .Items.Render }}{{ end }}
 
-{{ define "SliceTypeRenderFormat" -}}
-out := make([]string, 0, len({{ .From }}))
+{{ define "SliceTypeRenderFormatMultiline" -}}
+{{ .To }} := make([]string, 0, len({{ .From }}))
 for _, v := range {{ .From }} {
-	out = append(out, {{ .Type.Items.RenderFormat "v" }})
+	{{ .To }} = append({{ .To }}, {{ .Items.RenderFormat "v" }})
 }
-return out
 {{- end }}
 
 {{ define "SliceTypeParseString" }}

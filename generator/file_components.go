@@ -34,48 +34,43 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 		}
 		cs.Imports = append(cs.Imports, ims...)
 
-		var structureType StructureType
-		var isCustomJSONMarshaler bool
-		var ignoreParseFormat bool
-		var isAlias bool
+		sc := SchemaComponent{
+			Name:         c.Name,
+			Description:  c.V.Value().Description,
+			Type:         schema,
+			IsMultivalue: schema.IsMultivalue(),
+		}
+
 		switch schema := schema.(type) {
 		case StructureType:
-			ignoreParseFormat = true
-			structureType = schema
-			isCustomJSONMarshaler = c.V.Value().AdditionalProperties.Set
+			sc.IgnoreParseFormat = true
+			sc.StructureType = schema
+			sc.CustomJSONMarshaler = c.V.Value().AdditionalProperties.Set
 		case SliceType:
+			sc.RenderFormatStringsMultiline = schema.RenderFormatStringsMultiline
 			switch items := schema.Items.(type) {
 			case Ref[specification.Schema]:
 				switch tp := items.SchemaType.Value(); tp.Type {
 				case "object":
-					ignoreParseFormat = true
+					sc.IgnoreParseFormat = true
 				case "":
 					if len(tp.AllOf) > 0 {
-						ignoreParseFormat = true
+						sc.IgnoreParseFormat = true
 					}
 				}
 			case StructureType:
-				ignoreParseFormat = true
+				sc.IgnoreParseFormat = true
 			}
 		case CustomType:
 			switch schema.Type {
 			case "any":
-				ignoreParseFormat = true
+				sc.IgnoreParseFormat = true
 			default:
-				isAlias = true
+				sc.IsAlias = true
 			}
 		}
-		cs.Schemas = append(cs.Schemas, SchemaComponent{
-			Name:              c.Name,
-			Description:       c.V.Value().Description,
-			Type:              schema,
-			IgnoreParseFormat: ignoreParseFormat,
-			IsMultivalue:      schema.IsMultivalue(),
-			IsAlias:           isAlias,
 
-			CustomJSONMarshaler: isCustomJSONMarshaler,
-			StructureType:       structureType,
-		})
+		cs.Schemas = append(cs.Schemas, sc)
 	}
 
 	cs.Headers = make([]HeaderComponent, 0, len(spec.Headers.List))
@@ -280,6 +275,8 @@ type SchemaComponent struct {
 	IgnoreParseFormat bool
 	IsMultivalue      bool
 	IsAlias           bool
+
+	RenderFormatStringsMultiline func(to, from string) (string, error)
 
 	CustomJSONMarshaler bool
 	StructureType       StructureType

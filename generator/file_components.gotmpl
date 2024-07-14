@@ -87,7 +87,12 @@ func (c *{{ .Name }}) ParseStrings(s []string) error {
 }
 
 func (q {{ .Name }}) Strings() []string {
-    {{ .Type.RenderFormat (print .Type.Render "(q)") }}
+    {{- if .RenderFormatStringsMultiline }}
+    {{ call .RenderFormatStringsMultiline "out" "q" }}
+    return out
+    {{- else }}
+    return {{ .Type.RenderFormat (print .Type.Render "(q)") }}
+    {{- end }}
 }
 {{- else }}
 func (c *{{ .Name }}) ParseString(s string) error {

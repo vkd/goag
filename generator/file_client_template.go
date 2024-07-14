@@ -57,12 +57,28 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 	}
 
 	for _, e := range o.Params.Query.List {
-		c.Queries = append(c.Queries, ClientOperationQueryTemplate{
-			Name:          e.Name,
-			Required:      e.V.Required,
-			ExecuteFormat: e.V.ExecuteFormat,
-			FieldName:     e.V.FieldName,
-		})
+		renderFormatFn := e.V.Type.RenderFormat
+		switch eType := e.V.Type.(type) {
+		case CustomType:
+			renderFormatFn = eType.RenderFormatStrings
+		}
+		q := ClientOperationQueryTemplate{
+			Name:      e.Name,
+			Required:  e.V.Required,
+			FieldName: e.V.FieldName,
+
+			RenderFormat: renderFormatFn,
+			IsMultivalue: e.V.Type.IsMultivalue(),
+		}
+		switch tp := e.V.Type.(type) {
+		case SliceType:
+			switch tp.Items.(type) {
+			case StringType:
+			default:
+				q.ExecuteMultilineFormat = tp.RenderFormatStringsMultiline
+			}
+		}
+		c.Queries = append(c.Queries, q)
 	}
 
 	for _, h := range o.Params.Headers.List {
@@ -148,7 +164,10 @@ type ClientOperationQueryTemplate struct {
 	Required  bool
 	FieldName string
 
-	ExecuteFormat func(to, from string) (string, error)
+	RenderFormat func(from string) (string, error)
+	IsMultivalue bool
+
+	ExecuteMultilineFormat func(to, from string) (string, error)
 }
 
 type ClientOperationHeaderTemplate struct {

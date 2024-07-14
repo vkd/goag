@@ -31,47 +31,6 @@ func NewQueryParameter(refP specification.Ref[specification.QueryParameter]) (ze
 	return &out, ims, nil
 }
 
-func (p QueryParameter) ExecuteFormat(to, from string) (string, error) {
-	switch tp := p.Type.(type) {
-	case CustomType:
-		return to + " = " + from + ".Strings()", nil
-	case SliceType:
-		switch items := tp.Items.(type) {
-		case StringType:
-			return Assign(to, from, false), nil
-		case CustomType:
-			return ExecuteTemplate("ClientQueryParameterFormatToSliceStrings", TData{
-				"From": from,
-				"Items": FormatterFunc(func(from string) (string, error) {
-					return from + ".String()", nil
-				}),
-				"To": to,
-			})
-		default:
-			return ExecuteTemplate("ClientQueryParameterFormatToSliceStrings", TData{
-				"From":  from,
-				"Items": items,
-				"To":    to,
-			})
-		}
-	}
-
-	if p.Type.IsMultivalue() {
-		return ExecuteTemplate("ClientQueryParameterFormatMultivalue", TData{
-			"From": from,
-			"To":   to,
-			"Type": p.Type,
-		})
-	}
-
-	return ExecuteTemplate("ClientQueryParameterFormat", TData{
-		"From": from,
-		"To":   to,
-
-		"Formatter": p.Type,
-	})
-}
-
 type PathParameters []*PathParameter
 
 func (s PathParameters) Get(name string) (zero *PathParameter, _ error) {

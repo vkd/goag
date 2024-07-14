@@ -31,17 +31,29 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 {{ define "ClientOperation" }}
 // {{ .Name }} - {{ .HTTPMethod }} {{ .PathRaw }}
 func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}) ({{ .ResponseTypeName }}, error) {
-	var requestURL = c.BaseURL {{ range $_, $pr := .PathFormat }} + {{ $pr.Render }}{{ end }}
+	var requestURL = c.BaseURL {{ range $_, $pr := .PathFormat }}+ {{ $pr.Render }} {{ end }}
 
-	{{ if .Queries }}
+	{{- if .Queries }}
+
 	query := make(url.Values, {{ len .Queries }})
 	{{- range $_, $q := .Queries }}
 		{{- with $q }}
-		{{- if .Required }}
-	{{ call .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName) }}
-		{{- else }}
+		{{- $field := (print "request.Query." .FieldName) }}
+		{{- if not .Required }}
 	if request.Query.{{ .FieldName }}.IsSet {
-		{{ call .ExecuteFormat (print "query[\"" $q.Name "\"]") (print "request.Query." .FieldName ".Value") }}
+			{{- $field = (print "request.Query." .FieldName ".Value") }}
+		{{- end }}
+
+		{{- if .ExecuteMultilineFormat }}
+			{{ call .ExecuteMultilineFormat "qv" $field }}
+			query["{{ $q.Name }}"] = qv
+		{{- else if .IsMultivalue }}
+			query["{{ $q.Name }}"] = {{ call .RenderFormat $field }}
+		{{- else }}
+			query["{{ $q.Name }}"] = []string{ {{ call .RenderFormat $field }} }
+		{{- end }}
+
+		{{- if not .Required }}
 	}
 		{{- end }}
 		{{- end }}
@@ -95,27 +107,6 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 	}
 }
 {{ end }}
-
-{{/* ----------------------------- ClientQueryParameterFormatMultivalue ------------------------------------- */}}
-{{ define "ClientQueryParameterFormatMultivalue" -}}
-{{- .To }} = {{ .Type.RenderFormat .From }}
-{{- end }}
-
-{{/* ----------------------------- ClientQueryParameterFormat ------------------------------------- */}}
-{{ define "ClientQueryParameterFormat" -}}
-{{- .To }} = []string{ {{ .Formatter.RenderFormat .From }} }
-{{- end }}
-
-{{/* ----------------------------- ClientQueryParameterFormatToSliceStrings ------------------------------------- */}}
-{{ define "ClientQueryParameterFormatToSliceStrings" -}}
-{
-    query_values := make([]string, 0, len({{ .From }}))
-    for _, v := range {{ .From }} {
-        query_values = append(query_values, {{ .Items.RenderFormat "v" }})
-    }
-	{{ .To }} = query_values
-}
-{{- end }}
 
 {{/* ----------------------------- ClientResponse ------------------------------------- */}}
 {{ define "ClientResponse" -}}

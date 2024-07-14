@@ -57,8 +57,8 @@ func (c *Pages) ParseStrings(s []string) error {
 }
 
 func (q Pages) Strings() []string {
-	out := make([]string, 0, len([]int32(q)))
-	for _, v := range []int32(q) {
+	out := make([]string, 0, len(q))
+	for _, v := range q {
 		out = append(out, strconv.FormatInt(int64(v), 10))
 	}
 	return out
@@ -101,8 +101,8 @@ func (c *Shops) ParseStrings(s []string) error {
 }
 
 func (q Shops) Strings() []string {
-	out := make([]string, 0, len([]string(q)))
-	for _, v := range []string(q) {
+	out := make([]string, 0, len(q))
+	for _, v := range q {
 		out = append(out, v)
 	}
 	return out
