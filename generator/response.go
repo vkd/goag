@@ -64,6 +64,7 @@ type ResponseHeader struct {
 	Schema       SchemaType
 	Formatter    Formatter
 	IsMultivalue bool
+	IsCustomType bool
 }
 
 func NewResponseHeader(name string, ref specification.Ref[specification.Header]) (zero ResponseHeader, _ Imports, _ error) {
@@ -95,6 +96,9 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header])
 		Schema:       s,
 		Formatter:    formatter,
 		IsMultivalue: isMultivalue,
+	}
+	if _, ok := s.(CustomType); ok {
+		h.IsCustomType = true
 	}
 	return h, ims, nil
 }
