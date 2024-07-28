@@ -31,11 +31,11 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 	var cs Components
 	var err error
 
-	cs.Schemas, err = NewMapRefSelfSource(spec.Schemas, func(sr *openapi3.SchemaRef, components Sourcer[Schema]) (_ string, zero Ref[Schema], _ error) {
+	cs.Schemas, err = NewMapRefSelfSource(spec.Schemas, func(sr *openapi3.SchemaRef, self Sourcer[Schema]) (_ string, zero Ref[Schema], _ error) {
 		if sr.Ref != "" {
 			return sr.Ref, nil, nil
 		}
-		schema, err := NewSchema(sr.Value, components, opts)
+		schema, err := NewSchema(sr.Value, self, opts)
 		if err != nil {
 			return "", zero, fmt.Errorf("new schema: %w", err)
 		}

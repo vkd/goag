@@ -28,34 +28,26 @@ func NewResponse(s *openapi3.Response, components Components, opts SchemaOptions
 	out := &Response{
 		Content: responseContent,
 	}
-	out.Headers, err = NewMapSelf[Header, *openapi3.HeaderRef](s.Headers, func(h *openapi3.HeaderRef) (Ref[Header], error) {
+	out.Headers, err = NewMapRefSelfSource[Header, *openapi3.HeaderRef](s.Headers, func(h *openapi3.HeaderRef, _ Sourcer[Header]) (ref string, _ Ref[Header], _ error) {
 		if h.Ref != "" {
-			v, ok := components.Headers.Get(h.Ref)
-			if !ok {
-				return nil, fmt.Errorf("component header %q: not found", h.Ref)
-			}
-			return NewRef(v), nil
+			return h.Ref, nil, nil
 		}
 		header, err := NewHeader(h.Value, components.Schemas, opts)
 		if err != nil {
-			return nil, fmt.Errorf("new header: %w", err)
+			return "", nil, fmt.Errorf("new header: %w", err)
 		}
-		return header, nil
-	})
+		return "", header, nil
+	}, components.Headers, "")
 	if err != nil {
 		return nil, fmt.Errorf("new headers: %w", err)
 	}
 
-	out.Links, err = NewMapSelf[Link, *openapi3.LinkRef](s.Links, func(lr *openapi3.LinkRef) (Ref[Link], error) {
+	out.Links, err = NewMapRefSelfSource[Link, *openapi3.LinkRef](s.Links, func(lr *openapi3.LinkRef, _ Sourcer[Link]) (ref string, _ Ref[Link], _ error) {
 		if lr.Ref != "" {
-			v, ok := components.Links.Get(lr.Ref)
-			if !ok {
-				return nil, fmt.Errorf("components link %q: not found", lr.Ref)
-			}
-			return NewRef(v), nil
+			return lr.Ref, nil, nil
 		}
-		return NewLink(lr.Value), nil
-	})
+		return "", NewLink(lr.Value), nil
+	}, components.Links, "")
 	if err != nil {
 		return nil, fmt.Errorf("new links: %w", err)
 	}

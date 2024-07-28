@@ -82,13 +82,6 @@ func NewMapRefSelfSource[T any, U any](m map[string]U, fn func(U, Sourcer[T]) (r
 	return out, nil
 }
 
-func NewMapSelf[T any, U any](m map[string]U, fn func(U) (Ref[T], error)) (Map[Ref[T]], error) {
-	return NewMapRefSelfSource[T, U](m, func(u U, _ Sourcer[T]) (ref string, _ Ref[T], _ error) {
-		v, err := fn(u)
-		return "", v, err
-	}, nil, "")
-}
-
 func NewMapRefSelf[T any, U any](m map[string]U, fn func(U) (ref string, _ Ref[T], _ error), prefix string) (Map[Ref[T]], error) {
 	return NewMapRefSelfSource[T, U](m, func(u U, _ Sourcer[T]) (ref string, _ Ref[T], _ error) {
 		return fn(u)
