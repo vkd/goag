@@ -12,13 +12,9 @@ package {{ .PackageName }}
 
 {{/* ----------------------------- Imports ------------------------------------- */}}
 {{ define "Imports" -}}
-{{ if eq (len .) 1 -}}
-import "{{ index . 0 }}"
-{{ else -}}
 import (
 	{{ range $_, $i := . }}
 	"{{ $i }}"
 	{{- end }}
 )
-{{- end }}
 {{- end }}

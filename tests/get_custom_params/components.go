@@ -1,6 +1,8 @@
 package test
 
-import "github.com/vkd/goag/tests/get_custom_params/pkg"
+import (
+	"github.com/vkd/goag/tests/get_custom_params/pkg"
+)
 
 // ------------------------
 //         Schemas

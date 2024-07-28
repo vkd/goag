@@ -10,8 +10,6 @@ import (
 type Components struct {
 	HasComponent bool
 
-	Imports Imports
-
 	Schemas          []SchemaComponent
 	Headers          []HeaderComponent
 	RequestBodies    []RequestBodyComponent
@@ -23,16 +21,17 @@ type Components struct {
 	HasContentJSON bool
 }
 
-func NewComponents(spec specification.Components) (zero Components, _ error) {
+func NewComponents(spec specification.Components) (zero Components, _ Imports, _ error) {
 	var cs Components
+	var imports Imports
 	cs.Schemas = make([]SchemaComponent, 0, len(spec.Schemas.List))
 	for _, c := range spec.Schemas.List {
 		cs.HasComponent = true
 		schema, ims, err := NewSchema(c.V)
 		if err != nil {
-			return zero, fmt.Errorf("parse schema for %q type: %w", c.Name, err)
+			return zero, nil, fmt.Errorf("parse schema for %q type: %w", c.Name, err)
 		}
-		cs.Imports = append(cs.Imports, ims...)
+		imports = append(imports, ims...)
 
 		sc := SchemaComponent{
 			Name:         c.Name,
@@ -82,9 +81,9 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 		} else {
 			s, ims, err := NewSchema(h.V.Value().Schema)
 			if err != nil {
-				return zero, fmt.Errorf("parse header for %q type: %w", h.Name, err)
+				return zero, nil, fmt.Errorf("parse header for %q type: %w", h.Name, err)
 			}
-			cs.Imports = append(cs.Imports, ims...)
+			imports = append(imports, ims...)
 			schema = s
 		}
 
@@ -115,9 +114,9 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 				}
 				schema, ims, err := NewSchema(cnt.V.Schema)
 				if err != nil {
-					return zero, fmt.Errorf("new schema for %q type, %q content: %w", rb.Name, cnt.Name, err)
+					return zero, nil, fmt.Errorf("new schema for %q type, %q content: %w", rb.Name, cnt.Name, err)
 				}
-				cs.Imports = append(cs.Imports, ims...)
+				imports = append(imports, ims...)
 				cs.RequestBodies = append(cs.RequestBodies, RequestBodyComponent{
 					Name:        name,
 					Description: rb.V.Value().Description,
@@ -141,9 +140,9 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 			param := p.V.Value()
 			tp, ims, err := NewSchema(param.Schema)
 			if err != nil {
-				return zero, fmt.Errorf("new schema for %q query param: %w", p.Name, err)
+				return zero, nil, fmt.Errorf("new schema for %q query param: %w", p.Name, err)
 			}
-			cs.Imports = append(cs.Imports, ims...)
+			imports = append(imports, ims...)
 			cs.QueryParameters = append(cs.QueryParameters, QueryParameterComponent{
 				Name:        p.Name,
 				Description: param.Description,
@@ -165,9 +164,9 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 
 			tp, ims, err := NewSchema(param.Schema)
 			if err != nil {
-				return zero, fmt.Errorf("new schema for %q header param: %w", p.Name, err)
+				return zero, nil, fmt.Errorf("new schema for %q header param: %w", p.Name, err)
 			}
-			cs.Imports = append(cs.Imports, ims...)
+			imports = append(imports, ims...)
 			cs.HeaderParameters = append(cs.HeaderParameters, HeaderParameterComponent{
 				Name:        p.Name,
 				Description: param.Description,
@@ -188,9 +187,9 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 
 			tp, ims, err := NewSchema(param.Schema)
 			if err != nil {
-				return zero, fmt.Errorf("new schema for %q path param: %w", p.Name, err)
+				return zero, nil, fmt.Errorf("new schema for %q path param: %w", p.Name, err)
 			}
-			cs.Imports = append(cs.Imports, ims...)
+			imports = append(imports, ims...)
 			cs.PathParameters = append(cs.PathParameters, PathParameterComponent{
 				Name:        p.Name,
 				Description: param.Description,
@@ -212,9 +211,9 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 
 		response, ims, err := NewResponse(OperationName(r.Name), "", resp)
 		if err != nil {
-			return zero, fmt.Errorf("new %q response: %w", r.Name, err)
+			return zero, nil, fmt.Errorf("new %q response: %w", r.Name, err)
 		}
-		cs.Imports = append(cs.Imports, ims...)
+		imports = append(imports, ims...)
 
 		var ifaces []ResponseUsedIn
 		var status string
@@ -261,7 +260,7 @@ func NewComponents(spec specification.Components) (zero Components, _ error) {
 		})
 	}
 
-	return cs, nil
+	return cs, imports, nil
 }
 
 func (c Components) Render() (string, error) {

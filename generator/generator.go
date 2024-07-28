@@ -47,6 +47,15 @@ func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Gen
 		opt.apply(&g.Options)
 	}
 
+	components, ims, err := NewComponents(spec.Components)
+	if err != nil {
+		return nil, fmt.Errorf("file components: %w", err)
+	}
+	g.Components = components
+	g.Imports = append(g.Imports, ims...)
+
+	// ---
+
 	for _, pi := range spec.PathItems {
 		pathItem := &PathItem{
 			PathItem: pi,
@@ -64,12 +73,6 @@ func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Gen
 		g.Paths = append(g.Paths, pathItem)
 	}
 
-	var err error
-
-	g.Components, err = NewComponents(spec.Components)
-	if err != nil {
-		return nil, fmt.Errorf("file components: %w", err)
-	}
 	g.FileHandler, err = NewFileHandler(g.Operations, g.Options.BasePath, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("file handler: %w", err)

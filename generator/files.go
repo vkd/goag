@@ -15,7 +15,7 @@ func (g *Generator) ComponentsFile() GoFile {
 	return GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,
-		Imports:       g.Components.Imports,
+		Imports:       g.Imports,
 		Body:          g.Components,
 	}
 }
