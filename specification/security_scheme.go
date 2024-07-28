@@ -1,6 +1,10 @@
 package specification
 
-import "github.com/getkin/kin-openapi/openapi3"
+import (
+	"fmt"
+
+	"github.com/getkin/kin-openapi/openapi3"
+)
 
 type SecurityScheme struct {
 	NoRef[SecurityScheme]
@@ -24,7 +28,11 @@ type SecurityScheme struct {
 	OpenIDConnectURL string
 }
 
-func NewSecurityScheme(s *openapi3.SecurityScheme) *SecurityScheme {
+func NewSecurityScheme(s *openapi3.SecurityScheme) (*SecurityScheme, error) {
+	flows, err := NewOAuthFlows(s.Flows)
+	if err != nil {
+		return nil, fmt.Errorf("new flows: %w", err)
+	}
 	return &SecurityScheme{
 		Type:        SecuritySchemeType(s.Type),
 		Description: s.Description,
@@ -35,10 +43,10 @@ func NewSecurityScheme(s *openapi3.SecurityScheme) *SecurityScheme {
 		Scheme:       s.Scheme,
 		BearerFormat: s.BearerFormat,
 
-		Flows: NewOAuthFlows(s.Flows),
+		Flows: flows,
 
 		OpenIDConnectURL: s.OpenIdConnectUrl,
-	}
+	}, nil
 }
 
 var _ Ref[SecurityScheme] = (*SecurityScheme)(nil)
@@ -70,24 +78,40 @@ type OAuthFlows struct {
 	AuthorizationCode Maybe[OAuthFlow]
 }
 
-func NewOAuthFlows(s *openapi3.OAuthFlows) OAuthFlows {
+func NewOAuthFlows(s *openapi3.OAuthFlows) (zero OAuthFlows, _ error) {
 	var out OAuthFlows
 	if s == nil {
-		return out
+		return out, nil
 	}
 	if s.Implicit != nil {
-		out.Implicit = Just(NewOAuthFlow(s.Implicit))
+		flow, err := NewOAuthFlow(s.Implicit)
+		if err != nil {
+			return zero, fmt.Errorf("new implicit flow: %w", err)
+		}
+		out.Implicit = Just(flow)
 	}
 	if s.Password != nil {
-		out.Password = Just(NewOAuthFlow(s.Password))
+		flow, err := NewOAuthFlow(s.Password)
+		if err != nil {
+			return zero, fmt.Errorf("new password flow: %w", err)
+		}
+		out.Password = Just(flow)
 	}
 	if s.ClientCredentials != nil {
-		out.ClientCredentials = Just(NewOAuthFlow(s.ClientCredentials))
+		flow, err := NewOAuthFlow(s.ClientCredentials)
+		if err != nil {
+			return zero, fmt.Errorf("new client credentials flow: %w", err)
+		}
+		out.ClientCredentials = Just(flow)
 	}
 	if s.AuthorizationCode != nil {
-		out.AuthorizationCode = Just(NewOAuthFlow(s.AuthorizationCode))
+		flow, err := NewOAuthFlow(s.AuthorizationCode)
+		if err != nil {
+			return zero, fmt.Errorf("new authorization code flow: %w", err)
+		}
+		out.AuthorizationCode = Just(flow)
 	}
-	return out
+	return out, nil
 }
 
 type OAuthFlow struct {
@@ -97,13 +121,17 @@ type OAuthFlow struct {
 	Scopes           Map[string]
 }
 
-func NewOAuthFlow(s *openapi3.OAuthFlow) OAuthFlow {
+func NewOAuthFlow(s *openapi3.OAuthFlow) (zero OAuthFlow, _ error) {
+	scopesMap, err := NewMap[string, string](s.Scopes, func(s string) (string, error) {
+		return s, nil
+	})
+	if err != nil {
+		return zero, fmt.Errorf("new scopes map: %w", err)
+	}
 	return OAuthFlow{
 		AuthorizationURL: s.AuthorizationURL,
 		TokenURL:         s.TokenURL,
 		RefreshURL:       s.RefreshURL,
-		Scopes: NewMap[string, string](s.Scopes, func(s string) string {
-			return s
-		}),
-	}
+		Scopes:           scopesMap,
+	}, nil
 }

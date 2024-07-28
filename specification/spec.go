@@ -23,12 +23,16 @@ type Spec struct {
 }
 
 func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
+	servers, err := NewServers(spec.Servers)
+	if err != nil {
+		return nil, fmt.Errorf("new servers: %w", err)
+	}
+
 	s := &Spec{
 		OpenAPI: spec.OpenAPI,
 		Info:    NewInfo(spec.Info),
-		Servers: NewServers(spec.Servers),
+		Servers: servers,
 	}
-	var err error
 	s.Components, err = NewComponents(spec.Components, opts)
 	if err != nil {
 		return nil, fmt.Errorf("new components: %w", err)
@@ -95,13 +99,13 @@ type Schema struct {
 	Custom Maybe[string]
 }
 
-func NewSchemaRef(schema *openapi3.SchemaRef, components Sourcer[Schema], opts SchemaOptions) Ref[Schema] {
+func NewSchemaRef(schema *openapi3.SchemaRef, components Sourcer[Schema], opts SchemaOptions) (Ref[Schema], error) {
 	if schema.Ref != "" {
 		v, ok := components.Get(schema.Ref)
 		if !ok {
-			panic(fmt.Sprintf("%q: not found in components", schema.Ref))
+			return nil, fmt.Errorf("%q: not found in components", schema.Ref)
 		}
-		return NewRef[Schema](v)
+		return NewRef[Schema](v), nil
 	}
 	return NewSchema(schema.Value, components, opts)
 }
@@ -110,26 +114,39 @@ type SchemaOptions struct {
 	IgnoreCustomType bool
 }
 
-func NewSchema(schema *openapi3.Schema, components Sourcer[Schema], opts SchemaOptions) *Schema {
+func NewSchema(schema *openapi3.Schema, components Sourcer[Schema], opts SchemaOptions) (*Schema, error) {
 	out := Schema{
 		Type:        schema.Type,
 		Format:      schema.Format,
 		Description: schema.Description,
 	}
 	if schema.Items != nil {
-		out.Items = NewSchemaRef(schema.Items, components, opts)
+		items, err := NewSchemaRef(schema.Items, components, opts)
+		if err != nil {
+			return nil, fmt.Errorf("new schema ref for items: %w", err)
+		}
+		out.Items = items
 	}
 	for _, name := range sortedKeys(schema.Properties) {
-		s := NewSchemaRef(schema.Properties[name], components, opts)
+		s, err := NewSchemaRef(schema.Properties[name], components, opts)
+		if err != nil {
+			return nil, fmt.Errorf("new schema ref for properties: %w", err)
+		}
 		out.Properties = append(out.Properties, SchemaProperty{Name: name, Schema: s})
 	}
 	for _, a := range schema.AllOf {
-		s := NewSchemaRef(a, components, opts)
+		s, err := NewSchemaRef(a, components, opts)
+		if err != nil {
+			return nil, fmt.Errorf("new schema ref for allOf: %w", err)
+		}
 		out.AllOf = append(out.AllOf, s)
 	}
 
 	if schema.AdditionalProperties != nil {
-		s := NewSchemaRef(schema.AdditionalProperties, components, opts)
+		s, err := NewSchemaRef(schema.AdditionalProperties, components, opts)
+		if err != nil {
+			return nil, fmt.Errorf("new schema ref for additional properties: %w", err)
+		}
 		out.AdditionalProperties = Just(s)
 	} else if schema.AdditionalPropertiesAllowed != nil && *schema.AdditionalPropertiesAllowed {
 		out.AdditionalProperties = Just[Ref[Schema]](&Schema{
@@ -148,7 +165,7 @@ func NewSchema(schema *openapi3.Schema, components Sourcer[Schema], opts SchemaO
 		}
 	}
 
-	return &out
+	return &out, nil
 }
 
 var _ Ref[Schema] = (*Schema)(nil)

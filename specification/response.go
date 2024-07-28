@@ -18,12 +18,16 @@ type Response struct {
 }
 
 func NewResponse(s *openapi3.Response, components Components, opts SchemaOptions) (*Response, error) {
-	out := &Response{
-		Content: NewMap[*MediaType, *openapi3.MediaType](s.Content, func(mt *openapi3.MediaType) *MediaType {
-			return NewMediaType(mt, components.Schemas, opts)
-		}),
+	responseContent, err := NewMap[*MediaType, *openapi3.MediaType](s.Content, func(mt *openapi3.MediaType) (*MediaType, error) {
+		return NewMediaType(mt, components.Schemas, opts)
+	})
+	if err != nil {
+		return nil, fmt.Errorf("new response content map: %w", err)
 	}
-	var err error
+
+	out := &Response{
+		Content: responseContent,
+	}
 	out.Headers, err = NewMapSelf[Header, *openapi3.HeaderRef](s.Headers, func(h *openapi3.HeaderRef) (Ref[Header], error) {
 		if h.Ref != "" {
 			v, ok := components.Headers.Get(h.Ref)
@@ -32,7 +36,11 @@ func NewResponse(s *openapi3.Response, components Components, opts SchemaOptions
 			}
 			return NewRef(v), nil
 		}
-		return NewHeader(h.Value, components.Schemas, opts), nil
+		header, err := NewHeader(h.Value, components.Schemas, opts)
+		if err != nil {
+			return nil, fmt.Errorf("new header: %w", err)
+		}
+		return header, nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("new headers: %w", err)

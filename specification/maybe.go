@@ -16,7 +16,7 @@ func Just[T any](v T) Maybe[T] {
 	}
 }
 
-func NewMaybe[T any](v *T) Maybe[T] {
+func JustPointer[T any](v *T) Maybe[T] {
 	if v == nil {
 		return Nothing[T]()
 	}

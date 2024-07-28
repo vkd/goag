@@ -1,6 +1,10 @@
 package specification
 
-import "github.com/getkin/kin-openapi/openapi3"
+import (
+	"fmt"
+
+	"github.com/getkin/kin-openapi/openapi3"
+)
 
 type Header struct {
 	NoRef[Header]
@@ -12,14 +16,18 @@ type Header struct {
 	Schema Ref[Schema]
 }
 
-func NewHeader(s *openapi3.Header, schemas ComponentsSchemas, opts SchemaOptions) *Header {
+func NewHeader(s *openapi3.Header, schemas ComponentsSchemas, opts SchemaOptions) (*Header, error) {
+	hSchema, err := NewSchemaRef(s.Schema, schemas, opts)
+	if err != nil {
+		return nil, fmt.Errorf("new schema ref: %w", err)
+	}
 	return &Header{
 		Description: s.Description,
 		Required:    s.Required,
 		Deprecated:  s.Deprecated,
 
-		Schema: NewSchemaRef(s.Schema, schemas, opts),
-	}
+		Schema: hSchema,
+	}, nil
 }
 
 var _ Ref[Header] = (*Header)(nil)

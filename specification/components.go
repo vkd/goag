@@ -35,7 +35,11 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 		if sr.Ref != "" {
 			return sr.Ref, nil, nil
 		}
-		return "", NewSchema(sr.Value, components, opts), nil
+		schema, err := NewSchema(sr.Value, components, opts)
+		if err != nil {
+			return "", zero, fmt.Errorf("new schema: %w", err)
+		}
+		return "", schema, nil
 	}, nil, "#/components/schemas/")
 	if err != nil {
 		return zero, fmt.Errorf("new schemas: %w", err)
@@ -45,7 +49,11 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 		if hr.Ref != "" {
 			return hr.Ref, nil, nil
 		}
-		return "", NewHeader(hr.Value, cs.Schemas, opts), nil
+		header, err := NewHeader(hr.Value, cs.Schemas, opts)
+		if err != nil {
+			return "", nil, fmt.Errorf("new schema: %w", err)
+		}
+		return "", header, nil
 	}, "#/components/headers/")
 	if err != nil {
 		return zero, fmt.Errorf("new headers: %w", err)
@@ -55,7 +63,11 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 		if hr.Ref != "" {
 			return hr.Ref, nil, nil
 		}
-		return "", NewRequestBody(hr.Value, cs.Schemas, opts), nil
+		reqBody, err := NewRequestBody(hr.Value, cs.Schemas, opts)
+		if err != nil {
+			return "", nil, fmt.Errorf("new request body: %w", err)
+		}
+		return "", reqBody, nil
 	}, "#/components/requestBodies/")
 	if err != nil {
 		return zero, fmt.Errorf("new request bodies: %w", err)
@@ -99,7 +111,11 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 		if pr.Ref != "" {
 			return pr.Ref, nil, nil
 		}
-		return "", NewQueryParameter(pr.Value, cs.Schemas, opts), nil
+		par, err := NewQueryParameter(pr.Value, cs.Schemas, opts)
+		if err != nil {
+			return "", nil, fmt.Errorf("new parameter: %w", err)
+		}
+		return "", par, nil
 	}, "#/components/parameters/")
 	if err != nil {
 		return zero, fmt.Errorf("new query parameters: %w", err)
@@ -109,7 +125,11 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 		if pr.Ref != "" {
 			return pr.Ref, nil, nil
 		}
-		return "", NewHeaderParameter(pr.Value, cs.Schemas, opts), nil
+		par, err := NewHeaderParameter(pr.Value, cs.Schemas, opts)
+		if err != nil {
+			return "", nil, fmt.Errorf("new parameter: %w", err)
+		}
+		return "", par, nil
 	}, "#/components/parameters/")
 	if err != nil {
 		return zero, fmt.Errorf("new header parameters: %w", err)
@@ -119,7 +139,11 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 		if pr.Ref != "" {
 			return pr.Ref, nil, nil
 		}
-		return "", NewPathParameter(pr.Value, cs.Schemas, opts), nil
+		par, err := NewPathParameter(pr.Value, cs.Schemas, opts)
+		if err != nil {
+			return "", nil, fmt.Errorf("new parameter: %w", err)
+		}
+		return "", par, nil
 	}, "#/components/parameters/")
 	if err != nil {
 		return zero, fmt.Errorf("new path parameters: %w", err)
@@ -129,7 +153,11 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 		if pr.Ref != "" {
 			return pr.Ref, nil, nil
 		}
-		return "", NewCookieParameter(pr.Value, cs.Schemas, opts), nil
+		par, err := NewCookieParameter(pr.Value, cs.Schemas, opts)
+		if err != nil {
+			return "", nil, fmt.Errorf("new parameter: %w", err)
+		}
+		return "", par, nil
 	}, "#/components/parameters/")
 	if err != nil {
 		return zero, fmt.Errorf("new cookie parameters: %w", err)
@@ -139,7 +167,11 @@ func NewComponents(spec openapi3.Components, opts SchemaOptions) (zero Component
 		if ss.Ref != "" {
 			return ss.Ref, nil, nil
 		}
-		return "", NewSecurityScheme(ss.Value), nil
+		secScheme, err := NewSecurityScheme(ss.Value)
+		if err != nil {
+			return "", nil, fmt.Errorf("new security scheme: %w", err)
+		}
+		return "", secScheme, nil
 	}, "#/components/securitySchemes/")
 	if err != nil {
 		return zero, fmt.Errorf("new security schemes: %w", err)

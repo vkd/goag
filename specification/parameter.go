@@ -1,6 +1,10 @@
 package specification
 
-import "github.com/getkin/kin-openapi/openapi3"
+import (
+	"fmt"
+
+	"github.com/getkin/kin-openapi/openapi3"
+)
 
 type QueryParameter struct {
 	NoRef[QueryParameter]
@@ -18,7 +22,11 @@ type QueryParameter struct {
 	Schema Ref[Schema]
 }
 
-func NewQueryParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) *QueryParameter {
+func NewQueryParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) (*QueryParameter, error) {
+	querySchema, err := NewSchemaRef(p.Schema, schemas, opts)
+	if err != nil {
+		return nil, fmt.Errorf("new schema ref: %w", err)
+	}
 	return &QueryParameter{
 		Name:            p.Name,
 		Description:     p.Description,
@@ -27,11 +35,11 @@ func NewQueryParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts Sc
 		AllowEmptyValue: p.AllowEmptyValue,
 
 		Style:         p.Style,
-		Explode:       NewMaybe(p.Explode),
+		Explode:       JustPointer(p.Explode),
 		AllowReserved: p.AllowReserved,
 
-		Schema: NewSchemaRef(p.Schema, schemas, opts),
-	}
+		Schema: querySchema,
+	}, nil
 }
 
 var _ Ref[QueryParameter] = (*QueryParameter)(nil)
@@ -52,7 +60,11 @@ type HeaderParameter struct {
 	Schema Ref[Schema]
 }
 
-func NewHeaderParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) *HeaderParameter {
+func NewHeaderParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) (*HeaderParameter, error) {
+	parSchema, err := NewSchemaRef(p.Schema, schemas, opts)
+	if err != nil {
+		return nil, fmt.Errorf("new schema ref: %w", err)
+	}
 	return &HeaderParameter{
 		Name:        p.Name,
 		Description: p.Description,
@@ -60,10 +72,10 @@ func NewHeaderParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts S
 		Deprecated:  p.Deprecated,
 
 		Style:   p.Style,
-		Explode: NewMaybe(p.Explode),
+		Explode: JustPointer(p.Explode),
 
-		Schema: NewSchemaRef(p.Schema, schemas, opts),
-	}
+		Schema: parSchema,
+	}, nil
 }
 
 var _ Ref[HeaderParameter] = (*HeaderParameter)(nil)
@@ -83,17 +95,21 @@ type PathParameter struct {
 	Schema Ref[Schema]
 }
 
-func NewPathParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) *PathParameter {
+func NewPathParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) (*PathParameter, error) {
+	parSchema, err := NewSchemaRef(p.Schema, schemas, opts)
+	if err != nil {
+		return nil, fmt.Errorf("new schema ref: %w", err)
+	}
 	return &PathParameter{
 		Name:        p.Name,
 		Description: p.Description,
 		Deprecated:  p.Deprecated,
 
 		Style:   p.Style,
-		Explode: NewMaybe(p.Explode),
+		Explode: JustPointer(p.Explode),
 
-		Schema: NewSchemaRef(p.Schema, schemas, opts),
-	}
+		Schema: parSchema,
+	}, nil
 }
 
 var _ Ref[PathParameter] = (*PathParameter)(nil)
@@ -114,7 +130,11 @@ type CookieParameter struct {
 	Schema Ref[Schema]
 }
 
-func NewCookieParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) *CookieParameter {
+func NewCookieParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts SchemaOptions) (*CookieParameter, error) {
+	parSchema, err := NewSchemaRef(p.Schema, schemas, opts)
+	if err != nil {
+		return nil, fmt.Errorf("new schema ref: %w", err)
+	}
 	return &CookieParameter{
 		Name:        p.Name,
 		Description: p.Description,
@@ -122,10 +142,10 @@ func NewCookieParameter(p *openapi3.Parameter, schemas ComponentsSchemas, opts S
 		Deprecated:  p.Deprecated,
 
 		Style:   p.Style,
-		Explode: NewMaybe(p.Explode),
+		Explode: JustPointer(p.Explode),
 
-		Schema: NewSchemaRef(p.Schema, schemas, opts),
-	}
+		Schema: parSchema,
+	}, nil
 }
 
 var _ Ref[CookieParameter] = (*CookieParameter)(nil)

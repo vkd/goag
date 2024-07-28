@@ -24,22 +24,26 @@ func NewMapEmpty[T any](size int) Map[T] {
 	}
 }
 
-func NewMap[T any, U any](m map[string]U, fn func(U) T) Map[T] {
+func NewMap[T any, U any](m map[string]U, fn func(U) (T, error)) (Map[T], error) {
 	return NewMapPrefix[T, U](m, fn, "")
 }
 
-func NewMapPrefix[T any, U any](m map[string]U, fn func(U) T, prefix string) Map[T] {
+func NewMapPrefix[T any, U any](m map[string]U, fn func(U) (T, error), prefix string) (zero Map[T], _ error) {
 	out := NewMapEmpty[T](len(m))
 
 	keys := maps.Keys(m)
 	sort.Strings(keys)
 
 	for _, k := range keys {
-		o := &Object[string, T]{Name: k, V: fn(m[k])}
+		value, err := fn(m[k])
+		if err != nil {
+			return zero, fmt.Errorf("%q key: %w", k, err)
+		}
+		o := &Object[string, T]{Name: k, V: value}
 		out.List = append(out.List, o)
 		out.indexes[prefix+k] = o
 	}
-	return out
+	return out, nil
 }
 
 type Sourcer[T any] interface {
@@ -51,7 +55,11 @@ type SourcerFunc[T any] func(string) (*Object[string, Ref[T]], bool)
 func (s SourcerFunc[T]) Get(str string) (*Object[string, Ref[T]], bool) { return s(str) }
 
 func NewMapRefSelfSource[T any, U any](m map[string]U, fn func(U, Sourcer[T]) (ref string, _ Ref[T], _ error), source Sourcer[T], prefix string) (zero Map[Ref[T]], _ error) {
-	out := NewMapPrefix[Ref[T], U](m, func(u U) Ref[T] { return nil }, prefix)
+	out, err := NewMapPrefix[Ref[T], U](m, func(u U) (Ref[T], error) { return nil, nil }, prefix)
+	if err != nil {
+		return zero, fmt.Errorf("new empty map: %w", err)
+	}
+
 	if source == nil {
 		source = out
 	}
@@ -101,6 +109,10 @@ func (m Map[T]) Get(k string) (*Object[string, T], bool) {
 func (m *Map[T]) Add(name string, v T) {
 	if m.indexes == nil {
 		m.indexes = make(map[string]*Object[string, T])
+	}
+	if o, ok := m.indexes[name]; ok {
+		o.V = v
+		return
 	}
 	obj := &Object[string, T]{
 		Name: name,

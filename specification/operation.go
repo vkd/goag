@@ -66,11 +66,18 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 			}
 			o.RequestBody = Just[Ref[RequestBody]](NewRef(v))
 		} else {
-			o.RequestBody = Just[Ref[RequestBody]](NewRequestBody(operation.RequestBody.Value, components.Schemas, opts))
+			reqBody, err := NewRequestBody(operation.RequestBody.Value, components.Schemas, opts)
+			if err != nil {
+				return nil, fmt.Errorf("new request body: %w", err)
+			}
+			o.RequestBody = Just[Ref[RequestBody]](reqBody)
 		}
 	}
 
-	o.Responses = NewMap[Ref[Response], *openapi3.ResponseRef](operation.Responses, func(u *openapi3.ResponseRef) Ref[Response] { return nil })
+	o.Responses, err = NewMap[Ref[Response], *openapi3.ResponseRef](operation.Responses, func(u *openapi3.ResponseRef) (Ref[Response], error) { return nil, nil })
+	if err != nil {
+		return nil, fmt.Errorf("new responses map: %w", err)
+	}
 	usedResponses := make(map[*Response]string)
 	for i, ro := range o.Responses.List {
 		rr := operation.Responses[ro.Name]
@@ -156,7 +163,11 @@ func NewRefQueryParam(p *openapi3.ParameterRef, components Components, opts Sche
 		}
 		return NewRef(v), nil
 	}
-	return NewQueryParameter(p.Value, components.Schemas, opts), nil
+	out, err := NewQueryParameter(p.Value, components.Schemas, opts)
+	if err != nil {
+		return nil, fmt.Errorf("new parameter: %w", err)
+	}
+	return out, nil
 }
 
 func NewRefHeaderParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) (Ref[HeaderParameter], error) {
@@ -167,7 +178,11 @@ func NewRefHeaderParam(p *openapi3.ParameterRef, components Components, opts Sch
 		}
 		return NewRef(v), nil
 	}
-	return NewHeaderParameter(p.Value, components.Schemas, opts), nil
+	out, err := NewHeaderParameter(p.Value, components.Schemas, opts)
+	if err != nil {
+		return nil, fmt.Errorf("new parameter: %w", err)
+	}
+	return out, nil
 }
 
 func NewRefPathParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) (Ref[PathParameter], error) {
@@ -178,7 +193,11 @@ func NewRefPathParam(p *openapi3.ParameterRef, components Components, opts Schem
 		}
 		return NewRef(v), nil
 	}
-	return NewPathParameter(p.Value, components.Schemas, opts), nil
+	out, err := NewPathParameter(p.Value, components.Schemas, opts)
+	if err != nil {
+		return nil, fmt.Errorf("new parameter: %w", err)
+	}
+	return out, nil
 }
 
 func NewRefCookieParam(p *openapi3.ParameterRef, components Components, opts SchemaOptions) (Ref[CookieParameter], error) {
@@ -189,5 +208,9 @@ func NewRefCookieParam(p *openapi3.ParameterRef, components Components, opts Sch
 		}
 		return NewRef(v), nil
 	}
-	return NewCookieParameter(p.Value, components.Schemas, opts), nil
+	out, err := NewCookieParameter(p.Value, components.Schemas, opts)
+	if err != nil {
+		return nil, fmt.Errorf("new parameter: %w", err)
+	}
+	return out, nil
 }
