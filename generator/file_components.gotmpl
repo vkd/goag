@@ -21,36 +21,6 @@
 {{end}}
 {{- end}}
 
-{{- if and false .QueryParameters }}
-// ---------------------------------
-//         Query Parameters
-// ---------------------------------
-
-{{range $_, $v := .QueryParameters}}
-{{ $v.Render }}
-{{end}}
-{{end}}
-
-{{- if and false .HeaderParameters }}
-// ----------------------------------
-//         Header Parameters
-// ----------------------------------
-
-{{range $_, $v := .HeaderParameters}}
-{{ $v.Render }}
-{{end}}
-{{end}}
-
-{{- if and false .PathParameters }}
-// --------------------------------
-//         Path Parameters
-// --------------------------------
-
-{{range $_, $v := .PathParameters}}
-{{ $v.Render }}
-{{end}}
-{{- end}}
-
 {{- if .RequestBodies }}
 // ------------------------------
 //         RequestBodies
@@ -180,77 +150,6 @@ func (c *{{ .Name }}) Parse(s string) error {
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
 type {{ .Name }} {{ .Type.Render }}
-{{- end }}
-
-{{/* ----------------------------- QueryParameterComponent ------------------------------------- */}}
-{{ define "QueryParameterComponent" -}}
-{{- if .Description }}// {{ .Name }} - {{ comment .Description }}
-{{ end -}}
-type {{ .Name }} {{ .Type.Render }}
-
-func (q *{{ .Name }}) ParseQuery(vs []string) error {
-{{- if .IsStringsParser }}
-    /*var v {{ .Type.Render }}
-    {{ .Type.ParseString "v" "vs" true newError }}
-    err := v.ParseStrings(vs)
-    if err != nil {
-        return fmt.Errorf("parse query for {{ .Type.Render }} type: %w", err)
-    }*/
-    {{ .Type.ParseString "v" "vs" true newError }}
-{{- else if .IsArray }}
-    {{ .Type.ParseString "v" "vs" true newError }}
-{{- else }}
-    {{ .Type.ParseString "v" "vs[0]" true newError }}
-{{- end }}
-    *q = {{ .Name }}(v)
-    return nil
-}
-
-func (q {{ .Name }}) Strings() []string {
-{{- if .IsStringsParser }}
-    return {{ .Type.Render }}(q).Strings()
-{{- else if .IsArray }}
-    {{ .Type.RenderFormat "q" }}
-{{- else }}
-    return []string{ {{ .Type.RenderFormat (print .Type.Render "(q)") }} }
-{{- end }}
-}
-{{- end }}
-
-{{/* ----------------------------- HeaderParameterComponent ------------------------------------- */}}
-{{ define "HeaderParameterComponent" -}}
-{{- if .Description }}// {{ .Name }} - {{ comment .Description }}
-{{ end -}}
-type {{ .Name }} {{ .Type.Render }}
-
-func (h *{{ .Name }}) Parse(s string) error {
-    var v {{ .Type.Render }}
-    {{ .Type.ParseString "v" "s" false newError }}
-    *h = {{ .Name }}(v)
-    return nil
-}
-
-func (h {{ .Name }}) String() string {
-    return {{ .Type.RenderFormat (print .Type.Render "(h)") }}
-}
-{{- end }}
-
-{{/* ----------------------------- PathParameterComponent ------------------------------------- */}}
-{{ define "PathParameterComponent" -}}
-{{- if .Description }}// {{ .Name }} - {{ comment .Description }}
-{{ end -}}
-type {{ .Name }} {{ .Type.Render }}
-
-func (q *{{ .Name }}) Parse(s string) error {
-    var v {{ .Type.Render }}
-    {{ .Type.ParseString "v" "s" false newError }}
-    *q = {{ .Name }}(v)
-    return nil
-}
-
-func (q {{ .Name }}) String() string {
-    return {{ .Type.RenderFormat (print .Type.Render "(q)") }}
-}
 {{- end }}
 
 {{/* ----------------------------- ResponseComponent ------------------------------------- */}}

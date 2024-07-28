@@ -8,15 +8,10 @@ import (
 )
 
 type Components struct {
-	HasComponent bool
-
-	Schemas          []SchemaComponent
-	Headers          []HeaderComponent
-	RequestBodies    []RequestBodyComponent
-	QueryParameters  []QueryParameterComponent
-	HeaderParameters []HeaderParameterComponent
-	PathParameters   []PathParameterComponent
-	Responses        []ResponseComponent
+	Schemas       []SchemaComponent
+	Headers       []HeaderComponent
+	RequestBodies []RequestBodyComponent
+	Responses     []ResponseComponent
 
 	HasContentJSON bool
 }
@@ -26,7 +21,6 @@ func NewComponents(spec specification.Components) (zero Components, _ Imports, _
 	var imports Imports
 	cs.Schemas = make([]SchemaComponent, 0, len(spec.Schemas.List))
 	for _, c := range spec.Schemas.List {
-		cs.HasComponent = true
 		schema, ims, err := NewSchema(c.V)
 		if err != nil {
 			return zero, nil, fmt.Errorf("parse schema for %q type: %w", c.Name, err)
@@ -74,7 +68,6 @@ func NewComponents(spec specification.Components) (zero Components, _ Imports, _
 
 	cs.Headers = make([]HeaderComponent, 0, len(spec.Headers.List))
 	for _, h := range spec.Headers.List {
-		// cs.HasComponent = true
 		var schema SchemaType
 		if ref := h.V.Ref(); ref != nil {
 			schema = NewRef(ref)
@@ -96,7 +89,6 @@ func NewComponents(spec specification.Components) (zero Components, _ Imports, _
 
 	cs.RequestBodies = make([]RequestBodyComponent, 0, len(spec.RequestBodies.List))
 	for _, rb := range spec.RequestBodies.List {
-		cs.HasComponent = true
 		if ref := rb.V.Ref(); ref != nil {
 			cs.RequestBodies = append(cs.RequestBodies, RequestBodyComponent{
 				Name:        rb.Name,
@@ -126,82 +118,8 @@ func NewComponents(spec specification.Components) (zero Components, _ Imports, _
 		}
 	}
 
-	for _, p := range spec.QueryParameters.List {
-		// cs.HasComponent = true
-		if ref := p.V.Ref(); ref != nil {
-			cs.QueryParameters = append(cs.QueryParameters, QueryParameterComponent{
-				Name:        p.Name,
-				Description: p.V.Value().Description,
-				Type:        NewRef(p),
-				// IsStringsParser: true,
-				IsArray: p.V.Value().Schema.Value().Type == "array",
-			})
-		} else {
-			param := p.V.Value()
-			tp, ims, err := NewSchema(param.Schema)
-			if err != nil {
-				return zero, nil, fmt.Errorf("new schema for %q query param: %w", p.Name, err)
-			}
-			imports = append(imports, ims...)
-			cs.QueryParameters = append(cs.QueryParameters, QueryParameterComponent{
-				Name:        p.Name,
-				Description: param.Description,
-				Type:        tp,
-				IsArray:     param.Schema.Value().Type == "array",
-			})
-		}
-	}
-	for _, p := range spec.HeaderParameters.List {
-		// cs.HasComponent = true
-		if ref := p.V.Ref(); ref != nil {
-			cs.HeaderParameters = append(cs.HeaderParameters, HeaderParameterComponent{
-				Name:        p.Name,
-				Description: p.V.Value().Description,
-				Type:        NewRef(p),
-			})
-		} else {
-			param := p.V.Value()
-
-			tp, ims, err := NewSchema(param.Schema)
-			if err != nil {
-				return zero, nil, fmt.Errorf("new schema for %q header param: %w", p.Name, err)
-			}
-			imports = append(imports, ims...)
-			cs.HeaderParameters = append(cs.HeaderParameters, HeaderParameterComponent{
-				Name:        p.Name,
-				Description: param.Description,
-				Type:        tp,
-			})
-		}
-	}
-	for _, p := range spec.PathParameters.List {
-		// cs.HasComponent = true
-		if ref := p.V.Ref(); ref != nil {
-			cs.PathParameters = append(cs.PathParameters, PathParameterComponent{
-				Name:        p.Name,
-				Description: p.V.Value().Description,
-				Type:        NewRef(p),
-			})
-		} else {
-			param := p.V.Value()
-
-			tp, ims, err := NewSchema(param.Schema)
-			if err != nil {
-				return zero, nil, fmt.Errorf("new schema for %q path param: %w", p.Name, err)
-			}
-			imports = append(imports, ims...)
-			cs.PathParameters = append(cs.PathParameters, PathParameterComponent{
-				Name:        p.Name,
-				Description: param.Description,
-				Type:        tp,
-			})
-		}
-	}
-
 	// Responses
 	for _, r := range spec.Responses.List {
-		cs.HasComponent = true
-
 		var alias string
 		if ref := r.V.Ref(); ref != nil {
 			alias = ref.Name + "Response"
@@ -267,6 +185,11 @@ func (c Components) Render() (string, error) {
 	return ExecuteTemplate("Components", c)
 }
 
+func (c Components) LenToRender() int {
+	ln := len(c.Schemas) + len(c.Headers) + len(c.RequestBodies) + len(c.Responses)
+	return ln
+}
+
 type SchemaComponent struct {
 	Name              string
 	Description       string
@@ -306,38 +229,6 @@ type RequestBodyComponent struct {
 
 func (s RequestBodyComponent) Render() (string, error) {
 	return ExecuteTemplate("RequestBodyComponent", s)
-}
-
-type QueryParameterComponent struct {
-	Name            string
-	Description     string
-	Type            SchemaType
-	IsStringsParser bool
-	IsArray         bool
-}
-
-func (c QueryParameterComponent) Render() (string, error) {
-	return ExecuteTemplate("QueryParameterComponent", c)
-}
-
-type HeaderParameterComponent struct {
-	Name        string
-	Description string
-	Type        SchemaType
-}
-
-func (c HeaderParameterComponent) Render() (string, error) {
-	return ExecuteTemplate("HeaderParameterComponent", c)
-}
-
-type PathParameterComponent struct {
-	Name        string
-	Description string
-	Type        SchemaType
-}
-
-func (c PathParameterComponent) Render() (string, error) {
-	return ExecuteTemplate("PathParameterComponent", c)
 }
 
 type ResponseComponent struct {

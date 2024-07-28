@@ -215,7 +215,7 @@ func NewHandlerPathParameter(p *PathParameter) (zero HandlerPathParameter, _ Imp
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
 			FieldType:    p.Type,
-			FieldComment: strings.ReplaceAll(strings.TrimRight(p.s.Description, "\n "), "\n", "\n// "),
+			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
 		ParameterName: p.Name,

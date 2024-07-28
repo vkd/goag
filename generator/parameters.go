@@ -49,11 +49,12 @@ type PathParameter struct {
 	FieldName     string
 	FieldTypeName string
 	Type          SchemaType
+	Description   string
 }
 
 func NewPathParameter(rs specification.Ref[specification.PathParameter]) (zero *PathParameter, _ Imports, _ error) {
 	s := rs.Value()
-	out := PathParameter{s: s}
+	out := PathParameter{Description: s.Description}
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 
