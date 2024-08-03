@@ -46,7 +46,6 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 
 	query := make(url.Values, {{ len .Queries }})
 	{{- range $_, $q := .Queries }}
-		{{- with $q }}
 		{{- $field := (print "request.Query." .FieldName) }}
 		{{- if not .Required }}
 	if request.Query.{{ .FieldName }}.IsSet {
@@ -64,7 +63,6 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 
 		{{- if not .Required }}
 	}
-		{{- end }}
 		{{- end }}
 	{{- end }}
 	requestURL += "?" + query.Encode()
@@ -131,21 +129,21 @@ var hs []string
 {{- range $_, $h := .Headers }}
 	{{- if .IsMultivalue }}
 	hs = resp.Header.Values("{{ .Key }}")
-	{{- if .Required }}
+		{{- if .Required }}
 	if len(hs) == 0 {
 		return nil, fmt.Errorf("header parameter '{{ .Key }}': is required")
 	}
-	{{- end }}
+		{{- end }}
 	if len(hs) > 0 {
 		{{ call .SchemaParseString (print "response.Headers." .FieldName) "hs" false (returns "nil" (parseError "header" .Key)) }}
 	}
 	{{- else }}
 	hs = resp.Header.Values("{{ .Key }}")
-	{{- if .Required }}
+		{{- if .Required }}
 	if len(hs) == 0 {
 		return nil, fmt.Errorf("header parameter '{{ .Key }}': is required")
 	}
-	{{- end }}
+		{{- end }}
 	if len(hs) > 0 {
 		{{ call .SchemaParseString (print "response.Headers." .FieldName) "hs[0]" false (returns "nil" (parseError "header" .Key)) }}
 	}
