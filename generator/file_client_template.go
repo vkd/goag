@@ -23,10 +23,11 @@ func (c ClientTemplate) Render() (string, error) {
 }
 
 type ClientOperationTemplate struct {
-	Name       OperationName
-	HTTPMethod specification.HTTPMethod
-	Method     specification.HTTPMethodTitle
-	PathRaw    string
+	Name        OperationName
+	Description string
+	HTTPMethod  specification.HTTPMethod
+	Method      specification.HTTPMethodTitle
+	PathRaw     string
 
 	RequestTypeName  string
 	ResponseTypeName string
@@ -44,10 +45,11 @@ type ClientOperationTemplate struct {
 
 func NewClientOperation(o *Operation) ClientOperationTemplate {
 	c := ClientOperationTemplate{
-		Name:       o.Name,
-		HTTPMethod: o.HTTPMethod,
-		Method:     o.Method,
-		PathRaw:    o.Path.Raw,
+		Name:        o.Name,
+		Description: o.Description,
+		HTTPMethod:  o.HTTPMethod,
+		Method:      o.Method,
+		PathRaw:     o.Path.Raw,
 
 		RequestTypeName:  o.RequestTypeName,
 		ResponseTypeName: o.ResponseTypeName,

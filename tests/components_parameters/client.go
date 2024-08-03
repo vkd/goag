@@ -29,7 +29,8 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// PostShopsShopStringSepShopSchemaPets - POST /shops/{shop_string}/sep/{shop_schema}/pets
+// PostShopsShopStringSepShopSchemaPets
+// POST /shops/{shop_string}/sep/{shop_schema}/pets
 func (c *Client) PostShopsShopStringSepShopSchemaPets(ctx context.Context, request PostShopsShopStringSepShopSchemaPetsParams) (PostShopsShopStringSepShopSchemaPetsResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.ShopString + "/sep/" + request.Path.ShopSchema.String() + "/pets"
 

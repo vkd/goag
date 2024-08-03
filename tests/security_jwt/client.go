@@ -27,7 +27,8 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// PostLogin - POST /login
+// PostLogin
+// POST /login
 func (c *Client) PostLogin(ctx context.Context, request PostLoginParams) (PostLoginResponse, error) {
 	var requestURL = c.BaseURL + "/login"
 
@@ -58,7 +59,8 @@ func (c *Client) PostLogin(ctx context.Context, request PostLoginParams) (PostLo
 	}
 }
 
-// PostShops - POST /shops
+// PostShops
+// POST /shops
 func (c *Client) PostShops(ctx context.Context, request PostShopsParams) (PostShopsResponse, error) {
 	var requestURL = c.BaseURL + "/shops"
 

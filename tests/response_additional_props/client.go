@@ -28,7 +28,8 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// GetPet - GET /pet
+// GetPet
+// GET /pet
 func (c *Client) GetPet(ctx context.Context, request GetPetParams) (GetPetResponse, error) {
 	var requestURL = c.BaseURL + "/pet"
 

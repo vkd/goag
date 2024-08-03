@@ -28,7 +28,8 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// GetShopsShop - GET /shops/{shop}
+// GetShopsShop
+// GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String()
 

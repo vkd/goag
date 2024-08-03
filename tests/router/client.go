@@ -27,7 +27,8 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// Get - GET /
+// Get
+// GET /
 func (c *Client) Get(ctx context.Context, request GetParams) (GetResponse, error) {
 	var requestURL = c.BaseURL + "/"
 
@@ -54,7 +55,8 @@ func (c *Client) Get(ctx context.Context, request GetParams) (GetResponse, error
 	}
 }
 
-// GetShops - GET /shops
+// GetShops
+// GET /shops
 func (c *Client) GetShops(ctx context.Context, request GetShopsParams) (GetShopsResponse, error) {
 	var requestURL = c.BaseURL + "/shops"
 
@@ -81,7 +83,8 @@ func (c *Client) GetShops(ctx context.Context, request GetShopsParams) (GetShops
 	}
 }
 
-// GetShopsRT - GET /shops/
+// GetShopsRT
+// GET /shops/
 func (c *Client) GetShopsRT(ctx context.Context, request GetShopsRTParams) (GetShopsRTResponse, error) {
 	var requestURL = c.BaseURL + "/shops/"
 
@@ -108,7 +111,8 @@ func (c *Client) GetShopsRT(ctx context.Context, request GetShopsRTParams) (GetS
 	}
 }
 
-// GetShopsActivate - GET /shops/activate
+// GetShopsActivate
+// GET /shops/activate
 func (c *Client) GetShopsActivate(ctx context.Context, request GetShopsActivateParams) (GetShopsActivateResponse, error) {
 	var requestURL = c.BaseURL + "/shops/activate"
 
@@ -135,7 +139,8 @@ func (c *Client) GetShopsActivate(ctx context.Context, request GetShopsActivateP
 	}
 }
 
-// GetShopsMinePetsMikeTails - GET /shops/mine/pets/mike/tails
+// GetShopsMinePetsMikeTails
+// GET /shops/mine/pets/mike/tails
 func (c *Client) GetShopsMinePetsMikeTails(ctx context.Context, request GetShopsMinePetsMikeTailsParams) (GetShopsMinePetsMikeTailsResponse, error) {
 	var requestURL = c.BaseURL + "/shops/mine/pets/mike/tails"
 
@@ -162,7 +167,8 @@ func (c *Client) GetShopsMinePetsMikeTails(ctx context.Context, request GetShops
 	}
 }
 
-// GetShopsShop - GET /shops/{shop}
+// GetShopsShop
+// GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
 
@@ -189,7 +195,8 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	}
 }
 
-// GetShopsShopRT - GET /shops/{shop}/
+// GetShopsShopRT
+// GET /shops/{shop}/
 func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParams) (GetShopsShopRTResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/"
 
@@ -216,7 +223,8 @@ func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParam
 	}
 }
 
-// GetShopsShopPets - GET /shops/{shop}/pets
+// GetShopsShopPets
+// GET /shops/{shop}/pets
 func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsParams) (GetShopsShopPetsResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/pets"
 
@@ -243,7 +251,8 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 	}
 }
 
-// GetShopsShopPetsMikePaws - GET /shops/{shop}/pets/mike/paws
+// GetShopsShopPetsMikePaws
+// GET /shops/{shop}/pets/mike/paws
 func (c *Client) GetShopsShopPetsMikePaws(ctx context.Context, request GetShopsShopPetsMikePawsParams) (GetShopsShopPetsMikePawsResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/pets/mike/paws"
 
