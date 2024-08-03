@@ -29,6 +29,8 @@ type ClientOperationTemplate struct {
 	Method      specification.HTTPMethodTitle
 	PathRaw     string
 
+	PathParams []PathStringBuilder
+
 	RequestTypeName  string
 	ResponseTypeName string
 
@@ -39,8 +41,6 @@ type ClientOperationTemplate struct {
 
 	Responses       []ClientResponseTemplate
 	DefaultResponse *ClientResponseTemplate
-
-	PathFormat []Render
 }
 
 func NewClientOperation(o *Operation) ClientOperationTemplate {
@@ -51,9 +51,12 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 		Method:      o.Method,
 		PathRaw:     o.Path.Raw,
 
+		PathParams: o.Path.StringBuilder(),
+
 		RequestTypeName:  o.RequestTypeName,
 		ResponseTypeName: o.ResponseTypeName,
 	}
+
 	if requestBody, ok := o.Operation.RequestBody.Get(); ok {
 		c.IsRequestBody = requestBody.Value().Content.Has("application/json")
 	}
@@ -137,23 +140,6 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 		c.DefaultResponse = &t
 	}
 
-	var v string
-	for _, dir := range o.Path.Dirs {
-		if !dir.IsVariable {
-			v += "/" + dir.V
-			continue
-		}
-		c.PathFormat = append(c.PathFormat, QuotedRender(v+"/"))
-		v = ""
-
-		param := dir.Param
-		c.PathFormat = append(c.PathFormat, RenderFunc(func() (string, error) {
-			return param.Type.RenderFormat("request.Path." + param.FieldName)
-		}))
-	}
-	if v != "" {
-		c.PathFormat = append(c.PathFormat, QuotedRender(v))
-	}
 	return c
 }
 

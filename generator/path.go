@@ -43,3 +43,32 @@ func NewPath(raw string) (zero Path, _ error) {
 
 	return p, nil
 }
+
+func (p Path) StringBuilder() []PathStringBuilder {
+	var out []PathStringBuilder
+	var prefix string
+	for _, d := range p.Dirs {
+		if !d.IsVariable {
+			prefix += "/" + d.V
+			continue
+		}
+
+		out = append(out, PathStringBuilder{
+			Prefix: prefix + "/",
+			Param:  d.Param,
+		})
+		prefix = ""
+	}
+	if prefix != "" {
+		out = append(out, PathStringBuilder{
+			Prefix: prefix,
+			Param:  nil,
+		})
+	}
+	return out
+}
+
+type PathStringBuilder struct {
+	Prefix string
+	Param  *PathParameter
+}

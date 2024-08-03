@@ -32,7 +32,15 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 // {{ .Name }}{{if .Description }} - {{ comment .Description }}{{ end }}
 // {{ .HTTPMethod }} {{ .PathRaw }}
 func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}) ({{ .ResponseTypeName }}, error) {
-	var requestURL = c.BaseURL {{ range $_, $pr := .PathFormat }}+ {{ $pr.Render }} {{ end }}
+	var requestURL = c.BaseURL
+	{{- range $_, $pr := .PathParams }} +
+		{{- if .Prefix }} "{{ $pr.Prefix }}"
+			{{- if .Param}} + {{ end }}
+		{{- end }}
+		{{- if .Param }}
+		{{- .Param.Type.RenderFormat (print "request.Path." .Param.FieldName) }}
+		{{- end }}
+	{{- end }}
 
 	{{- if .Queries }}
 
