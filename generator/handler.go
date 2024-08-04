@@ -186,6 +186,10 @@ func (p PathParserConstant) ParseString(_, _ string, _ bool, _ ErrorRender) (str
 	return ExecuteTemplate("PathParserConstant", p)
 }
 
+func (p PathParserConstant) ParseStrings(_, _ string, _ bool, _ ErrorRender) (string, error) {
+	return ExecuteTemplate("PathParserConstant", p)
+}
+
 type PathParserVariable struct {
 	SingleValue
 	FieldName string
@@ -194,6 +198,16 @@ type PathParserVariable struct {
 }
 
 func (p PathParserVariable) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("PathParserVariable", TData{
+		"From":    from,
+		"To":      to + p.FieldName,
+		"IsNew":   isNew,
+		"Error":   wrappedError{mkErr, parseParamError{"path", p.Name}},
+		"Convert": p.Convert,
+	})
+}
+
+func (p PathParserVariable) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("PathParserVariable", TData{
 		"From":    from,
 		"To":      to + p.FieldName,

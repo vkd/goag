@@ -113,6 +113,18 @@ for i := range {{.From}} {
 }
 {{- end }}
 
+{{ define "SliceSingleElementFormatStrings" -}}
+{{ .To }} {{ if .IsNew }}:{{ end }}= []string{ {{ .Item.RenderFormat .From }} }
+{{- end }}
+
+{{ define "SliceRenderFormatStrings" -}}
+qv := make([]string, 0, len({{ .From }}))
+for _, v := range {{ .From }} {
+	qv = append(qv, {{ .Items.RenderFormat "v" }})
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= qv
+{{- end }}
+
 {{/* ----------------------------- StructureType ------------------------------------- */}}
 
 {{ define "StructureType" }}
@@ -133,6 +145,7 @@ bs, err := json.Marshal({{ .From }})
 if err != nil {
 	return {{ .MkErr.Wrap "marshal json" "err" }}
 }
+{{ .To }} {{ if .IsNew }}:{{ end }}= []string{string(bs)}
 {{- end }}
 
 {{ define "StructureTypeParseString" -}}
@@ -176,15 +189,6 @@ map[{{ .Key.Render }}]{{ .Value.Render }}
 
 {{/* ----------------------------- RefParse ------------------------------------- */}}
 
-{{ define "RefParseString" -}}
-{{- if .IsNew }}var {{ .To }} {{ .Type }}
-{{ end -}}
-err := {{ .To }}.ParseString({{.From}})
-if err != nil {
-	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
-}
-{{- end }}
-
 {{ define "RefParseQuery" -}}
 {{- if .IsNew }}var {{ .To }} {{ .Type }}
 {{ end -}}
@@ -198,6 +202,18 @@ if err != nil {
 {{- if .IsNew }}var {{ .To }} {{ .Type }}
 {{ end -}}
 err := {{ .To }}.ParseString({{.From}})
+if err != nil {
+	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
+}
+{{- end }}
+
+
+{{/* ----------------------------- ParserWithError ------------------------------------- */}}
+
+{{ define "ParserWithError" -}}
+{{- if .IsNew }}var {{ .To }} {{ .Type }}
+{{ end -}}
+err := {{ .To }}.{{ .Method }}({{.From}})
 if err != nil {
 	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
 }

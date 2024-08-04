@@ -39,13 +39,13 @@ func (c *Client) PostShopsShopStringSepShopSchemaPets(ctx context.Context, reque
 		query["page_int"] = []string{strconv.FormatInt(int64(request.Query.PageInt.Value), 10)}
 	}
 	if request.Query.PageSchema.IsSet {
-		query["page_schema"] = []string{request.Query.PageSchema.Value.String()}
+		query["page_schema"] = request.Query.PageSchema.Value.Strings()
 	}
 	if request.Query.PagesSchema.IsSet {
 		query["pages_schema"] = request.Query.PagesSchema.Value.Strings()
 	}
 	query["page_int_req"] = []string{strconv.FormatInt(int64(request.Query.PageIntReq), 10)}
-	query["page_schema_req"] = []string{request.Query.PageSchemaReq.String()}
+	query["page_schema_req"] = request.Query.PageSchemaReq.Strings()
 	requestURL += "?" + query.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, nil)

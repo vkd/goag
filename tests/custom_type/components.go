@@ -28,4 +28,8 @@ func (q Shop) String() string {
 	return ShopName(q).String()
 }
 
+func (q Shop) Strings() []string {
+	return []string{q.String()}
+}
+
 type ShopName = pkg.Page

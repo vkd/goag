@@ -62,25 +62,19 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 	}
 
 	for _, e := range o.Params.Query.List {
-		renderFormatFn := e.V.Type.RenderFormat
-		switch eType := e.V.Type.(type) {
-		case CustomType:
-			renderFormatFn = eType.RenderFormatStrings
-		}
 		q := ClientOperationQueryTemplate{
 			Name:      e.Name,
 			Required:  e.V.Required,
 			FieldName: e.V.FieldName,
 
-			RenderFormat: renderFormatFn,
-			IsMultivalue: e.V.Type.IsMultivalue(),
+			RenderFormatStrings: e.V.Type.RenderFormatStrings,
+			IsMultivalue:        e.V.Type.IsMultivalue(),
 		}
 		switch tp := e.V.Type.(type) {
 		case SliceType:
 			switch tp.Items.(type) {
 			case StringType:
 			default:
-				q.ExecuteMultilineFormat = tp.RenderFormatStringsMultiline
 			}
 		}
 		c.Queries = append(c.Queries, q)
@@ -107,11 +101,11 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 		}
 		for _, h := range e.Headers {
 			t.Headers = append(t.Headers, ClientResponseHeaderTemplate{
-				IsMultivalue:      h.IsMultivalue,
-				Key:               h.Key,
-				Required:          h.Required,
-				SchemaParseString: h.Schema.ParseString,
-				FieldName:         h.FieldName,
+				IsMultivalue:       h.IsMultivalue,
+				Key:                h.Key,
+				Required:           h.Required,
+				SchemaParseStrings: h.Schema.ParseStrings,
+				FieldName:          h.FieldName,
 			})
 		}
 		c.Responses = append(c.Responses, t)
@@ -130,11 +124,11 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 		}
 		for _, h := range e.Headers {
 			t.Headers = append(t.Headers, ClientResponseHeaderTemplate{
-				IsMultivalue:      h.IsMultivalue,
-				Key:               h.Key,
-				Required:          h.Required,
-				SchemaParseString: h.Schema.ParseString,
-				FieldName:         h.FieldName,
+				IsMultivalue:       h.IsMultivalue,
+				Key:                h.Key,
+				Required:           h.Required,
+				SchemaParseStrings: h.Schema.ParseStrings,
+				FieldName:          h.FieldName,
 			})
 		}
 		c.DefaultResponse = &t
@@ -152,10 +146,8 @@ type ClientOperationQueryTemplate struct {
 	Required  bool
 	FieldName string
 
-	RenderFormat func(from string) (string, error)
-	IsMultivalue bool
-
-	ExecuteMultilineFormat func(to, from string) (string, error)
+	RenderFormatStrings func(to, from string, isNew bool) (string, error)
+	IsMultivalue        bool
 }
 
 type ClientOperationHeaderTemplate struct {
@@ -179,9 +171,9 @@ func (c ClientResponseTemplate) Render() (string, error) {
 }
 
 type ClientResponseHeaderTemplate struct {
-	IsMultivalue      bool
-	Key               string
-	Required          bool
-	SchemaParseString ParserFunc
-	FieldName         string
+	IsMultivalue       bool
+	Key                string
+	Required           bool
+	SchemaParseStrings ParserFunc
+	FieldName          string
 }

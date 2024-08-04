@@ -25,6 +25,10 @@ func (q Organization) String() string {
 	return strconv.FormatInt(int64(int(q)), 10)
 }
 
+func (q Organization) Strings() []string {
+	return []string{q.String()}
+}
+
 type Page int32
 
 func (c *Page) ParseString(s string) error {
@@ -39,6 +43,10 @@ func (c *Page) ParseString(s string) error {
 
 func (q Page) String() string {
 	return strconv.FormatInt(int64(int32(q)), 10)
+}
+
+func (q Page) Strings() []string {
+	return []string{q.String()}
 }
 
 type Pages []int32
@@ -80,6 +88,10 @@ func (q Shop) String() string {
 	return Shopa(q).String()
 }
 
+func (q Shop) Strings() []string {
+	return []string{q.String()}
+}
+
 type Shopa string
 
 func (c *Shopa) ParseString(s string) error {
@@ -90,6 +102,10 @@ func (c *Shopa) ParseString(s string) error {
 
 func (q Shopa) String() string {
 	return string(q)
+}
+
+func (q Shopa) Strings() []string {
+	return []string{q.String()}
 }
 
 type Shops []string

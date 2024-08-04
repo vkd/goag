@@ -36,7 +36,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 
 	query := make(url.Values, 2)
 	if request.Query.PageSchemaRefQuery.IsSet {
-		query["page_schema_ref_query"] = []string{request.Query.PageSchemaRefQuery.Value.String()}
+		query["page_schema_ref_query"] = request.Query.PageSchemaRefQuery.Value.Strings()
 	}
 	if request.Query.PageCustomTypeQuery.IsSet {
 		query["page_custom_type_query"] = request.Query.PageCustomTypeQuery.Value.Strings()

@@ -37,8 +37,9 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 		{{- if .Prefix }} "{{ $pr.Prefix }}"
 			{{- if .Param}} + {{ end }}
 		{{- end }}
+
 		{{- if .Param }}
-		{{- .Param.Type.RenderFormat (print "request.Path." .Param.FieldName) }}
+			{{- .Param.Type.RenderFormat (print "request.Path." .Param.FieldName) }}
 		{{- end }}
 	{{- end }}
 
@@ -51,16 +52,7 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 	if request.Query.{{ .FieldName }}.IsSet {
 			{{- $field = (print "request.Query." .FieldName ".Value") }}
 		{{- end }}
-
-		{{- if .ExecuteMultilineFormat }}
-			{{ call .ExecuteMultilineFormat "qv" $field }}
-			query["{{ $q.Name }}"] = qv
-		{{- else if .IsMultivalue }}
-			query["{{ $q.Name }}"] = {{ call .RenderFormat $field }}
-		{{- else }}
-			query["{{ $q.Name }}"] = []string{ {{ call .RenderFormat $field }} }
-		{{- end }}
-
+		{{ call .RenderFormatStrings (print "query[\"" $q.Name "\"]") $field false }}
 		{{- if not .Required }}
 	}
 		{{- end }}
@@ -127,7 +119,6 @@ var response {{ .ComponentRefName }}
 var hs []string
 {{- end }}
 {{- range $_, $h := .Headers }}
-	{{- if .IsMultivalue }}
 	hs = resp.Header.Values("{{ .Key }}")
 		{{- if .Required }}
 	if len(hs) == 0 {
@@ -135,19 +126,8 @@ var hs []string
 	}
 		{{- end }}
 	if len(hs) > 0 {
-		{{ call .SchemaParseString (print "response.Headers." .FieldName) "hs" false (returns "nil" (parseError "header" .Key)) }}
+		{{ call .SchemaParseStrings (print "response.Headers." .FieldName) "hs" false (returns "nil" (parseError "header" .Key)) }}
 	}
-	{{- else }}
-	hs = resp.Header.Values("{{ .Key }}")
-		{{- if .Required }}
-	if len(hs) == 0 {
-		return nil, fmt.Errorf("header parameter '{{ .Key }}': is required")
-	}
-		{{- end }}
-	if len(hs) > 0 {
-		{{ call .SchemaParseString (print "response.Headers." .FieldName) "hs[0]" false (returns "nil" (parseError "header" .Key)) }}
-	}
-	{{- end }}
 {{ end }}
 
 {{- if .ContentJSON }}

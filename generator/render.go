@@ -25,6 +25,7 @@ type ErrorRender interface {
 type Parser interface {
 	ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 	IsMultivalue() bool
+	ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
 
 type SingleValue struct{}
@@ -44,6 +45,7 @@ func (p ParserFunc) ParseString(to, from string, isNew bool, mkErr ErrorRender) 
 // Formatter formats 'string' from '<type>'.
 type Formatter interface {
 	RenderFormat(from string) (string, error)
+	RenderFormatStrings(to, from string, isNew bool) (string, error)
 }
 
 type FormatterFunc func(from string) (string, error)

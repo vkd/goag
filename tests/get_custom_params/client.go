@@ -46,7 +46,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 		query["pages"] = qv
 	}
 	if request.Query.PageCustom.IsSet {
-		query["page_custom"] = []string{request.Query.PageCustom.Value.String()}
+		query["page_custom"] = request.Query.PageCustom.Value.Strings()
 	}
 	requestURL += "?" + query.Encode()
 

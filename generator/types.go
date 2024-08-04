@@ -25,10 +25,23 @@ func (b BoolType) ParseString(to string, from string, isNew bool, mkErr ErrorRen
 	}{from, to, mkErr, isNew})
 }
 
+func (b BoolType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return b.ParseString(to, from+"[0]", isNew, mkErr)
+}
+
 func (b BoolType) RenderFormat(from string) (string, error) {
 	return ExecuteTemplate("BoolFormat", struct {
 		From string
 	}{from})
+}
+
+func (b BoolType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return ExecuteTemplate("SliceSingleElementFormatStrings", TData{
+		"Item":  b,
+		"From":  from,
+		"To":    to,
+		"IsNew": isNew,
+	})
 }
 
 type IntType struct {
@@ -79,6 +92,10 @@ func (i IntType) ParseString(to string, from string, isNew bool, mkErr ErrorRend
 	}
 }
 
+func (i IntType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return i.ParseString(to, from+"[0]", isNew, mkErr)
+}
+
 func (i IntType) RenderFormat(from string) (string, error) {
 	switch i.BitSize {
 	case 0:
@@ -96,6 +113,15 @@ func (i IntType) RenderFormat(from string) (string, error) {
 	default:
 		return "", fmt.Errorf("unsupported int bit size %d", i.BitSize)
 	}
+}
+
+func (i IntType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return ExecuteTemplate("SliceSingleElementFormatStrings", TData{
+		"Item":  i,
+		"From":  from,
+		"To":    to,
+		"IsNew": isNew,
+	})
 }
 
 type FloatType struct {
@@ -137,6 +163,10 @@ func (i FloatType) ParseString(to string, from string, isNew bool, mkErr ErrorRe
 	}
 }
 
+func (i FloatType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return i.ParseString(to, from+"[0]", isNew, mkErr)
+}
+
 var _ Formatter = FloatType{}
 
 func (i FloatType) RenderFormat(from string) (string, error) {
@@ -154,6 +184,15 @@ func (i FloatType) RenderFormat(from string) (string, error) {
 	}
 }
 
+func (i FloatType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return ExecuteTemplate("SliceSingleElementFormatStrings", TData{
+		"Item":  i,
+		"From":  from,
+		"To":    to,
+		"IsNew": isNew,
+	})
+}
+
 type StringType struct {
 	SingleValue
 }
@@ -166,11 +205,27 @@ func (_ StringType) RenderFormat(from string) (string, error) {
 	return from, nil
 }
 
+func (s StringType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return ExecuteTemplate("SliceSingleElementFormatStrings", TData{
+		"Item":  s,
+		"From":  from,
+		"To":    to,
+		"IsNew": isNew,
+	})
+}
+
 func (_ StringType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	if isNew {
 		return to + " := " + from, nil
 	}
 	return to + " = " + from, nil
+}
+
+func (_ StringType) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	if isNew {
+		return to + " := " + from + "[0]", nil
+	}
+	return to + " = " + from + "[0]", nil
 }
 
 type CustomType struct {
@@ -211,11 +266,22 @@ func (c CustomType) RenderFormat(from string) (string, error) {
 	return from + ".String()", nil
 }
 
-func (c CustomType) RenderFormatStrings(from string) (string, error) {
-	return from + ".Strings()", nil
+func (c CustomType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return Assign(to, from+".Strings()", isNew), nil
 }
 
 func (c CustomType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("CustomTypeParserExternal", TData{
+		"To":    to,
+		"Type":  c,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+		"Base":  c.Base,
+	})
+}
+
+func (c CustomType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("CustomTypeParserExternal", TData{
 		"To":    to,
 		"Type":  c,
@@ -238,7 +304,20 @@ func (s SliceType) RenderFormat(from string) (string, error) {
 	case StringType:
 		return from, nil
 	}
-	return "", fmt.Errorf(".RenderFormat() function for SliceType is not supported")
+	return "", fmt.Errorf(".RenderFormat() function for SliceType is not supported for type %T", s.Items)
+}
+
+func (s SliceType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	switch s.Items.(type) {
+	case StringType:
+		return Assign(to, from, isNew), nil
+	}
+	return ExecuteTemplate("SliceRenderFormatStrings", TData{
+		"From":  from,
+		"Items": s.Items,
+		"To":    to,
+		"IsNew": isNew,
+	})
 }
 
 func (s SliceType) RenderFormatStringsMultiline(to, from string) (string, error) {
@@ -307,7 +386,30 @@ func (s StructureType) RenderFormat(from string) (string, error) {
 		"MkErr": newError{},
 	})
 }
+
+func (s StructureType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return ExecuteTemplate("StructureTypeRenderFormat", TData{
+		"From":  from,
+		"Type":  s,
+		"MkErr": newError{},
+		"To":    to,
+		"IsNew": isNew,
+	})
+}
+
 func (s StructureType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	if isNew {
+		return "/* isNew == true is not supported */", nil
+	}
+	return ExecuteTemplate("StructureTypeParseString", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
+}
+
+func (s StructureType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	if isNew {
 		return "/* isNew == true is not supported */", nil
 	}
@@ -374,12 +476,24 @@ var _ SchemaType = Ref[any]{}
 func (r Ref[T]) Render() (string, error) { return r.Ref, nil }
 
 func (r Ref[T]) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("RefParseString", TData{
-		"To":    to,
-		"Type":  r.Ref,
-		"From":  from,
-		"IsNew": isNew,
-		"MkErr": mkErr,
+	return ExecuteTemplate("ParserWithError", TData{
+		"To":     to,
+		"Type":   r.Ref,
+		"From":   from,
+		"IsNew":  isNew,
+		"MkErr":  mkErr,
+		"Method": "ParseString",
+	})
+}
+
+func (r Ref[T]) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("ParserWithError", TData{
+		"To":     to,
+		"Type":   r.Ref,
+		"From":   from,
+		"IsNew":  isNew,
+		"MkErr":  mkErr,
+		"Method": "ParseStrings",
 	})
 }
 
@@ -429,11 +543,16 @@ func (r Ref[T]) ParseSchema(to string, from string, isNew bool, mkErr ErrorRende
 		"MkErr": mkErr,
 	})
 }
+
 func (r Ref[T]) RenderFormat(from string) (string, error) {
 	if r.IsMultivalue() {
 		return string(from) + ".Strings()", nil
 	}
 	return string(from) + ".String()", nil
+}
+
+func (r Ref[T]) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return Assign(to, string(from)+".Strings()", isNew), nil
 }
 
 type OptionalType struct {
@@ -469,10 +588,24 @@ func (p OptionalType) ParseString(to string, from string, _ bool, mkErr ErrorRen
 
 func (p OptionalType) IsMultivalue() bool { return p.V.IsMultivalue() }
 
+func (p OptionalType) ParseStrings(to string, from string, _ bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("OptionalTypeParseString", TData{
+		"To":   to,
+		"Type": p.V,
+		"From": RenderFunc(func() (string, error) {
+			return p.V.ParseStrings(to, from, true, mkErr)
+		}),
+	})
+}
+
 var _ Formatter = OptionalType{}
 
 func (p OptionalType) RenderFormat(from string) (string, error) {
 	return p.V.RenderFormat(from)
+}
+
+func (p OptionalType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return p.V.RenderFormatStrings(to, from, isNew)
 }
 
 type MapType struct {
@@ -495,6 +628,14 @@ func (m MapType) ParseString(to string, from string, isNew bool, mkErr ErrorRend
 	return "", fmt.Errorf("not implemented")
 }
 
+func (m MapType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return "", fmt.Errorf("not implemented")
+}
+
 func (m MapType) RenderFormat(from string) (string, error) {
+	return "", fmt.Errorf("not implemented")
+}
+
+func (m MapType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
 	return "", fmt.Errorf("not implemented")
 }

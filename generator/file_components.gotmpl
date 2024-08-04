@@ -74,6 +74,10 @@ func (c *{{ .Name }}) ParseString(s string) error {
 func (q {{ .Name }}) String() string {
     return {{ .Type.RenderFormat (print .Type.Render "(q)") }}
 }
+
+func (q {{ .Name }}) Strings() []string {
+    return []string{q.String()}
+}
 {{- end }}
 {{- end }}
 
