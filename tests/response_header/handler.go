@@ -54,7 +54,7 @@ type GetPetsResponse interface {
 	writeGetPets(http.ResponseWriter)
 }
 
-func NewGetPetsResponse200(xNext string, xNextTwo []int) GetPetsResponse {
+func NewGetPetsResponse200(xNext Maybe[string], xNextTwo []int) GetPetsResponse {
 	var out GetPetsResponse200
 	out.Headers.XNext = xNext
 	out.Headers.XNextTwo = xNextTwo
@@ -63,7 +63,7 @@ func NewGetPetsResponse200(xNext string, xNextTwo []int) GetPetsResponse {
 
 type GetPetsResponse200 struct {
 	Headers struct {
-		XNext    string
+		XNext    Maybe[string]
 		XNextTwo []int
 	}
 }
@@ -73,9 +73,21 @@ func (r GetPetsResponse200) writeGetPets(w http.ResponseWriter) {
 }
 
 func (r GetPetsResponse200) Write(w http.ResponseWriter) {
-	w.Header().Set("x-next", r.Headers.XNext)
-	for _, h := range r.Headers.XNextTwo {
-		w.Header().Add("x-next-two", strconv.FormatInt(int64(h), 10))
+	if r.Headers.XNext.IsSet {
+		hs := []string{r.Headers.XNext.Value}
+		for _, h := range hs {
+			w.Header().Add("x-next", h)
+		}
+	}
+	{
+		qv := make([]string, 0, len(r.Headers.XNextTwo))
+		for _, v := range r.Headers.XNextTwo {
+			qv = append(qv, strconv.FormatInt(int64(v), 10))
+		}
+		hs := qv
+		for _, h := range hs {
+			w.Header().Add("x-next-two", h)
+		}
 	}
 	w.WriteHeader(200)
 }

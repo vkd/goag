@@ -101,7 +101,6 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 		}
 		for _, h := range e.Headers {
 			t.Headers = append(t.Headers, ClientResponseHeaderTemplate{
-				IsMultivalue:       h.IsMultivalue,
 				Key:                h.Key,
 				Required:           h.Required,
 				SchemaParseStrings: h.Schema.ParseStrings,
@@ -124,7 +123,6 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 		}
 		for _, h := range e.Headers {
 			t.Headers = append(t.Headers, ClientResponseHeaderTemplate{
-				IsMultivalue:       h.IsMultivalue,
 				Key:                h.Key,
 				Required:           h.Required,
 				SchemaParseStrings: h.Schema.ParseStrings,
@@ -171,7 +169,6 @@ func (c ClientResponseTemplate) Render() (string, error) {
 }
 
 type ClientResponseHeaderTemplate struct {
-	IsMultivalue       bool
 	Key                string
 	Required           bool
 	SchemaParseStrings ParserFunc

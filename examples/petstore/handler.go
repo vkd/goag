@@ -82,7 +82,7 @@ type ListPetsResponse interface {
 	writeListPets(http.ResponseWriter)
 }
 
-func NewListPetsResponse200JSON(body Pets, xNext string) ListPetsResponse {
+func NewListPetsResponse200JSON(body Pets, xNext Maybe[string]) ListPetsResponse {
 	var out ListPetsResponse200JSON
 	out.Body = body
 	out.Headers.XNext = xNext
@@ -93,7 +93,7 @@ func NewListPetsResponse200JSON(body Pets, xNext string) ListPetsResponse {
 type ListPetsResponse200JSON struct {
 	Body    Pets
 	Headers struct {
-		XNext string
+		XNext Maybe[string]
 	}
 }
 
@@ -102,7 +102,12 @@ func (r ListPetsResponse200JSON) writeListPets(w http.ResponseWriter) {
 }
 
 func (r ListPetsResponse200JSON) Write(w http.ResponseWriter) {
-	w.Header().Set("x-next", r.Headers.XNext)
+	if r.Headers.XNext.IsSet {
+		hs := []string{r.Headers.XNext.Value}
+		for _, h := range hs {
+			w.Header().Add("x-next", h)
+		}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "ListPetsResponse200JSON")

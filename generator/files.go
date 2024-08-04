@@ -6,7 +6,7 @@ func (g *Generator) ClientFile() GoFile {
 	return GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,
-		Imports:       nil,
+		Imports:       g.Imports,
 		Body:          g.Client,
 	}
 }

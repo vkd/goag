@@ -39,7 +39,7 @@ type Operation struct {
 	Responses       []*ResponseCode
 }
 
-func NewOperation(s *specification.Operation) (zero *Operation, _ Imports, _ error) {
+func NewOperation(s *specification.Operation, cfg Config) (zero *Operation, _ Imports, _ error) {
 	path, err := NewPath(s.PathRaw)
 	if err != nil {
 		return zero, nil, fmt.Errorf("parse raw path: %w", err)
@@ -130,7 +130,7 @@ func NewOperation(s *specification.Operation) (zero *Operation, _ Imports, _ err
 	}
 
 	for _, r := range s.Responses.List {
-		resp, ims, err := NewResponse(name, r.Name, r.V.Value())
+		resp, ims, err := NewResponse(name, r.Name, r.V.Value(), cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("new response for %q status: %w", r.Name, err)
 		}

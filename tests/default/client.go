@@ -287,7 +287,8 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 		var hs []string
 		hs = resp.Header.Values("x-next")
 		if len(hs) > 0 {
-			response.Headers.XNext = hs[0]
+			v := hs[0]
+			response.Headers.XNext.Set(v)
 		}
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
@@ -358,7 +359,8 @@ func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (Revi
 		var hs []string
 		hs = resp.Header.Values("x-next")
 		if len(hs) > 0 {
-			response.Headers.XNext = hs[0]
+			v := hs[0]
+			response.Headers.XNext.Set(v)
 		}
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)

@@ -16,7 +16,7 @@ type Components struct {
 	HasContentJSON bool
 }
 
-func NewComponents(spec specification.Components) (zero Components, _ Imports, _ error) {
+func NewComponents(spec specification.Components, cfg Config) (zero Components, _ Imports, _ error) {
 	var cs Components
 	var imports Imports
 	cs.Schemas = make([]SchemaComponent, 0, len(spec.Schemas.List))
@@ -127,7 +127,7 @@ func NewComponents(spec specification.Components) (zero Components, _ Imports, _
 
 		resp := r.V.Value()
 
-		response, ims, err := NewResponse(OperationName(r.Name), "", resp)
+		response, ims, err := NewResponse(OperationName(r.Name), "", resp, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new %q response: %w", r.Name, err)
 		}

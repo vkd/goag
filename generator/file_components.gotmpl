@@ -186,19 +186,19 @@ func (r {{ $response.Name }}) write{{ $oName.OperationName }}(w http.ResponseWri
 {{ end }}
 
 func (r {{.Name}}) Write(w http.ResponseWriter{{ if and (not .IsDefault) .IsComponent }}, code int{{ end }}) {
-	{{- range $_, $h := .Headers}}
-		{{- if .IsCustomType }}
-	for _, h := range r.Headers.{{ $h.FieldName }}.Strings() {
-		w.Header().Add("{{$h.Key}}", h)
-	}
-		{{- else if .IsMultivalue }}
-	for _, h := range r.Headers.{{ $h.FieldName }} {
-		w.Header().Add("{{$h.Key}}", {{ $h.Formatter.RenderFormat "h" }})
-	}
-		{{- else }}
-	w.Header().Set("{{$h.Key}}", {{ $h.Formatter.RenderFormat (print "r.Headers." $h.FieldName) }})
-		{{- end }}
+	{{- range .Headers}}
+    {{- if not .Required }}
+    if r.Headers.{{ .FieldName }}.IsSet {
+    {{- else }}
+    {
+    {{- end }}
+        {{ .Schema.RenderFormatStrings "hs" (print "r.Headers." .FieldName) true }}
+        for _, h := range hs {
+            w.Header().Add("{{ .Key }}", h)
+        }
+    }
 	{{- end }}
+
 	{{- if .ContentType }}
 	w.Header().Set("Content-Type", "{{ .ContentType }}")
 	{{- end }}

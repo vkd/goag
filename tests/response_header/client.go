@@ -53,7 +53,8 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 		var hs []string
 		hs = resp.Header.Values("x-next")
 		if len(hs) > 0 {
-			response.Headers.XNext = hs[0]
+			v := hs[0]
+			response.Headers.XNext.Set(v)
 		}
 
 		hs = resp.Header.Values("x-next-two")

@@ -30,8 +30,8 @@ func TestDefault(t *testing.T) {
 		},
 		GetShopsShopPetsHandler: func(ctx context.Context, r GetShopsShopPetsRequest) GetShopsShopPetsResponse {
 			return GetShopsShopPetsResponse200JSON{Headers: struct {
-				XNext string
-			}{"test-next-value"}}
+				XNext Maybe[string]
+			}{Just("test-next-value")}}
 		},
 		ReviewShopHandler: func(ctx context.Context, r ReviewShopRequest) ReviewShopResponse {
 			params, err := r.Parse()
@@ -71,7 +71,7 @@ func TestDefault(t *testing.T) {
 		resp, err := api.Client().GetShopsShopPets(ctx, GetShopsShopPetsParams{})
 		require.NoError(t, err)
 		require.IsType(t, GetShopsShopPetsResponse200JSON{}, resp, resp)
-		assert.Equal(t, "test-next-value", resp.(GetShopsShopPetsResponse200JSON).Headers.XNext)
+		assert.Equal(t, Just("test-next-value"), resp.(GetShopsShopPetsResponse200JSON).Headers.XNext)
 	}
 	{
 		resp, err := api.Client().ReviewShop(ctx, ReviewShopParams{Body: NewPet{Name: "207"}})

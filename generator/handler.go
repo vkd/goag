@@ -136,7 +136,7 @@ func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryP
 		// switch tp := tp.(type) {
 		// case CustomType:
 		// default:
-		tpRender = NewOptionalType(tp, cfg.Maybe.Type)
+		tpRender = NewOptionalType(tp, cfg)
 		if cfg.Maybe.Import != "" {
 			ims = append(ims, Import(cfg.Maybe.Import))
 		}
@@ -252,7 +252,7 @@ func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHead
 	tp := p.Type
 
 	if !p.Required {
-		tp = NewOptionalType(tp, cfg.Maybe.Type)
+		tp = NewOptionalType(tp, cfg)
 		if cfg.Maybe.Import != "" {
 			ims = append(ims, Import(cfg.Maybe.Import))
 		}

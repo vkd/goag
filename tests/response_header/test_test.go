@@ -13,7 +13,7 @@ func TestResponseHeader(t *testing.T) {
 	testHeader2 := 2
 
 	handler := GetPetsHandlerFunc(func(_ context.Context, _ GetPetsRequest) GetPetsResponse {
-		return NewGetPetsResponse200(testHeader, []int{testHeader2})
+		return NewGetPetsResponse200(Just(testHeader), []int{testHeader2})
 	})
 
 	w := httptest.NewRecorder()

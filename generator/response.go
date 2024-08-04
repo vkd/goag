@@ -18,7 +18,7 @@ type Response struct {
 	ContentJSON Maybe[Schema]
 }
 
-func NewResponse(handlerName OperationName, status string, response *specification.Response) (*Response, Imports, error) {
+func NewResponse(handlerName OperationName, status string, response *specification.Response, cfg Config) (*Response, Imports, error) {
 	r := &Response{Response: response}
 	r.Name = string(handlerName) + "Response" + strings.Title(status)
 	if response.Content.Has("application/json") {
@@ -45,7 +45,7 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 	}
 
 	for _, header := range response.Headers.List {
-		h, ims, err := NewResponseHeader(header.Name, header.V)
+		h, ims, err := NewResponseHeader(header.Name, header.V, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("new response %q: %w", header.Name, err)
 		}
@@ -62,12 +62,10 @@ type ResponseHeader struct {
 	Key          string
 	Required     bool
 	Schema       SchemaType
-	Formatter    Formatter
-	IsMultivalue bool
 	IsCustomType bool
 }
 
-func NewResponseHeader(name string, ref specification.Ref[specification.Header]) (zero ResponseHeader, _ Imports, _ error) {
+func NewResponseHeader(name string, ref specification.Ref[specification.Header], cfg Config) (zero ResponseHeader, _ Imports, _ error) {
 	var s SchemaType
 	var ims Imports
 	if r := ref.Ref(); r != nil {
@@ -80,22 +78,18 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header])
 			return zero, nil, fmt.Errorf("new schema: %w", err)
 		}
 	}
-	var formatter Formatter = s
-	isMultivalue := s.IsMultivalue()
 
-	switch s := s.(type) {
-	case SliceType:
-		formatter = s.Items
+	if !ref.Value().Required {
+		s = NewOptionalType(s, cfg)
 	}
+
 	h := ResponseHeader{
 		Spec: ref.Value(),
 
-		FieldName:    PublicFieldName(name),
-		Key:          name,
-		Required:     ref.Value().Required,
-		Schema:       s,
-		Formatter:    formatter,
-		IsMultivalue: isMultivalue,
+		FieldName: PublicFieldName(name),
+		Key:       name,
+		Required:  ref.Value().Required,
+		Schema:    s,
 	}
 	if _, ok := s.(CustomType); ok {
 		h.IsCustomType = true

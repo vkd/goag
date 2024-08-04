@@ -560,7 +560,8 @@ type OptionalType struct {
 	MaybeType string
 }
 
-func NewOptionalType(v SchemaType, typename string) OptionalType {
+func NewOptionalType(v SchemaType, cfg Config) OptionalType {
+	typename := cfg.Maybe.Type
 	if typename == "" {
 		typename = "Maybe"
 	}
@@ -576,36 +577,38 @@ func (p OptionalType) Render() (string, error) {
 
 var _ Parser = OptionalType{}
 
-func (p OptionalType) ParseString(to string, from string, _ bool, mkErr ErrorRender) (string, error) {
+func (p OptionalType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("OptionalTypeParseString", TData{
-		"To":   to,
-		"Type": p.V,
-		"From": RenderFunc(func() (string, error) {
-			return p.V.ParseString("v", from, true, mkErr)
-		}),
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+		"Self":  p,
+		"Type":  p.V,
 	})
 }
 
 func (p OptionalType) IsMultivalue() bool { return p.V.IsMultivalue() }
 
-func (p OptionalType) ParseStrings(to string, from string, _ bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("OptionalTypeParseString", TData{
-		"To":   to,
-		"Type": p.V,
-		"From": RenderFunc(func() (string, error) {
-			return p.V.ParseStrings(to, from, true, mkErr)
-		}),
+func (p OptionalType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("OptionalTypeParseStrings", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+		"Self":  p,
+		"Type":  p.V,
 	})
 }
 
 var _ Formatter = OptionalType{}
 
 func (p OptionalType) RenderFormat(from string) (string, error) {
-	return p.V.RenderFormat(from)
+	return p.V.RenderFormat(from + ".Value")
 }
 
 func (p OptionalType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return p.V.RenderFormatStrings(to, from, isNew)
+	return p.V.RenderFormatStrings(to, from+".Value", isNew)
 }
 
 type MapType struct {

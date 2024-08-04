@@ -718,7 +718,7 @@ type GetShopsShopPetsResponse interface {
 	writeGetShopsShopPets(http.ResponseWriter)
 }
 
-func NewGetShopsShopPetsResponse200JSON(body GetShopsShopPetsResponse200JSONBody, xNext string) GetShopsShopPetsResponse {
+func NewGetShopsShopPetsResponse200JSON(body GetShopsShopPetsResponse200JSONBody, xNext Maybe[string]) GetShopsShopPetsResponse {
 	var out GetShopsShopPetsResponse200JSON
 	out.Body = body
 	out.Headers.XNext = xNext
@@ -734,7 +734,7 @@ type GetShopsShopPetsResponse200JSONBody struct {
 type GetShopsShopPetsResponse200JSON struct {
 	Body    GetShopsShopPetsResponse200JSONBody
 	Headers struct {
-		XNext string
+		XNext Maybe[string]
 	}
 }
 
@@ -743,7 +743,12 @@ func (r GetShopsShopPetsResponse200JSON) writeGetShopsShopPets(w http.ResponseWr
 }
 
 func (r GetShopsShopPetsResponse200JSON) Write(w http.ResponseWriter) {
-	w.Header().Set("x-next", r.Headers.XNext)
+	if r.Headers.XNext.IsSet {
+		hs := []string{r.Headers.XNext.Value}
+		for _, h := range hs {
+			w.Header().Add("x-next", h)
+		}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "GetShopsShopPetsResponse200JSON")
@@ -955,7 +960,7 @@ type ReviewShopResponse interface {
 	writeReviewShop(http.ResponseWriter)
 }
 
-func NewReviewShopResponse200JSON(body Pet, xNext string) ReviewShopResponse {
+func NewReviewShopResponse200JSON(body Pet, xNext Maybe[string]) ReviewShopResponse {
 	var out ReviewShopResponse200JSON
 	out.Body = body
 	out.Headers.XNext = xNext
@@ -965,7 +970,7 @@ func NewReviewShopResponse200JSON(body Pet, xNext string) ReviewShopResponse {
 type ReviewShopResponse200JSON struct {
 	Body    Pet
 	Headers struct {
-		XNext string
+		XNext Maybe[string]
 	}
 }
 
@@ -974,7 +979,12 @@ func (r ReviewShopResponse200JSON) writeReviewShop(w http.ResponseWriter) {
 }
 
 func (r ReviewShopResponse200JSON) Write(w http.ResponseWriter) {
-	w.Header().Set("x-next", r.Headers.XNext)
+	if r.Headers.XNext.IsSet {
+		hs := []string{r.Headers.XNext.Value}
+		for _, h := range hs {
+			w.Header().Add("x-next", h)
+		}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	writeJSON(w, r.Body, "ReviewShopResponse200JSON")
