@@ -120,11 +120,6 @@ var hs []string
 {{- end }}
 {{- range $_, $h := .Headers }}
 	hs = resp.Header.Values("{{ .Key }}")
-		{{- if .Required }}
-	if len(hs) == 0 {
-		return nil, fmt.Errorf("header parameter '{{ .Key }}': is required")
-	}
-		{{- end }}
 	if len(hs) > 0 {
 		{{ call .SchemaParseStrings (print "response.Headers." .FieldName) "hs" false (returns "nil" (parseError "header" .Key)) }}
 	}

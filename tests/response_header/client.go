@@ -58,9 +58,6 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 		}
 
 		hs = resp.Header.Values("x-next-two")
-		if len(hs) == 0 {
-			return nil, fmt.Errorf("header parameter 'x-next-two': is required")
-		}
 		if len(hs) > 0 {
 			response.Headers.XNextTwo = make([]int, len(hs))
 			for i := range hs {
