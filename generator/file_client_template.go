@@ -68,7 +68,6 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 			FieldName: e.V.FieldName,
 
 			RenderFormatStrings: e.V.Type.RenderFormatStrings,
-			IsMultivalue:        e.V.Type.IsMultivalue(),
 		}
 		switch tp := e.V.Type.(type) {
 		case SliceType:
@@ -145,7 +144,6 @@ type ClientOperationQueryTemplate struct {
 	FieldName string
 
 	RenderFormatStrings func(to, from string, isNew bool) (string, error)
-	IsMultivalue        bool
 }
 
 type ClientOperationHeaderTemplate struct {
