@@ -310,7 +310,7 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 	}
 
 	out.Name = string(name) + "Response" + strings.Title(status)
-	if r.ContentJSON.Set {
+	if r.ContentJSON.IsSet {
 		out.Name += "JSON"
 		out.ContentType = "application/json"
 	}

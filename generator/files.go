@@ -24,8 +24,8 @@ func (g *Generator) HandlerFile() GoFile {
 	return GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,
-		Imports:       append(g.FileHandler.Imports, g.Imports...),
-		Body:          g.FileHandler,
+		Imports:       g.Imports,
+		Body:          g.HandlersFile,
 	}
 }
 

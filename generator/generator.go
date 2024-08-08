@@ -18,8 +18,11 @@ type Generator struct {
 	Client     ClientTemplate
 	Components Components
 
-	Router      Router
-	FileHandler FileHandler
+	Router Router
+
+	HandlersFile    HandlersFileTemplate
+	Handlers        []*Handler
+	IsWriteJSONFunc bool
 }
 
 var defaultOptions = GeneratorOptions{
@@ -73,13 +76,31 @@ func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Gen
 		g.Paths = append(g.Paths, pathItem)
 	}
 
-	g.FileHandler, err = NewFileHandler(g.Operations, g.Options.BasePath, cfg)
-	if err != nil {
-		return nil, fmt.Errorf("file handler: %w", err)
+	var isWriteJSONFunc bool
+	for _, o := range g.Operations {
+		h, ims, err := NewHandler(o, g.Options.BasePath, cfg)
+		if err != nil {
+			return nil, fmt.Errorf("handler %q: %w", o.Name, err)
+		}
+		g.Imports = append(g.Imports, ims...)
+		g.Handlers = append(g.Handlers, h)
+
+		for _, r := range h.Responses {
+			if r.ContentJSON.IsSet {
+				isWriteJSONFunc = true
+			}
+		}
+		if h.DefaultResponse != nil && h.DefaultResponse.ContentJSON.IsSet {
+			isWriteJSONFunc = true
+		}
 	}
+
 	if g.Components.HasContentJSON {
-		g.FileHandler.IsWriteJSONFunc = true
+		isWriteJSONFunc = true
 	}
+
+	g.HandlersFile = NewHandlersFileTemplate(g.Handlers, isWriteJSONFunc, cfg)
+
 	g.Client = NewClient(spec, g.Operations)
 	g.Router = NewRouter(spec, g.Paths, g.Operations, g.Options)
 

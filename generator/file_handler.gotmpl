@@ -39,3 +39,230 @@ func (m *Maybe[T]) Set(v T) {
 
 {{ template "ErrParseParam" }}
 {{ end }}
+
+{{/* ----------------------------- Handler ------------------------------------- */}}
+{{ define "Handler" }}
+{{- $h := . }}
+{{- $name := $h.Name}}
+{{- $handlerFunc := $h.HandlerFuncName }}
+{{- $requestParser := print $name "Request" }}
+{{- $httpRequestParser := print "" $name "HTTPRequest" }}
+{{- $request := print $name "Params" }}
+{{- $newParams := print "new" $name "Params" }}
+{{- $responseWriter := print $name "Response" }}
+// ---------------------------------------------
+// {{$name}} - {{$h.Description}}
+// ---------------------------------------------
+
+{{if $h.Summary}}// {{$handlerFunc}} - {{$h.Summary}}{{end}}
+type {{ $handlerFunc }} func(ctx context.Context, r {{$requestParser}}) {{$responseWriter}}
+
+func (f {{$handlerFunc}}) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(r.Context(), {{$httpRequestParser}}(r)).write{{ .Name }}(w)
+}
+
+type {{$requestParser}} interface {
+	HTTP() *http.Request
+	Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}}
+}
+
+func {{ $httpRequestParser }}(r *http.Request) {{ $requestParser }} {
+	return {{ private $httpRequestParser }}{r}
+}
+
+type {{ private $httpRequestParser }} struct {
+	Request *http.Request
+}
+
+func (r {{ private $httpRequestParser }}) HTTP() *http.Request { return r.Request }
+
+func (r {{ private $httpRequestParser }}) Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}} {
+	return {{$newParams}}(r.Request)
+}
+
+type {{$request}} struct {
+	{{ if $h.ParametersQuery }}
+	Query {{$request}}Query
+	{{ end }}
+
+	{{ if $h.ParametersPath }}
+	Path {{$request}}Path
+	{{ end }}
+
+	{{ if $h.ParametersHeader }}
+	Headers {{$request}}Headers
+	{{ end }}
+
+	{{ if $h.BodyTypeName }}
+	Body {{ $h.BodyTypeName.Render }}
+	{{- else if $h.BodyType }}
+	Body {{$request}}Body
+	{{- end }}
+}
+
+{{- if $h.ParametersQuery }}
+
+type {{$request}}Query struct{
+	{{ range $_, $p := .ParametersQuery }}
+	{{ $p.HandlerParameter.Render }}
+	{{ end }}
+}
+{{- end }}
+
+{{- if $h.ParametersPath }}
+
+type {{$request}}Path struct{
+	{{ range $_, $p := .ParametersPath }}
+	{{ $p.HandlerParameter.Render }}
+	{{ end }}
+}
+{{- end }}
+
+{{- if $h.ParametersHeader }}
+
+type {{$request}}Headers struct{
+	{{ range $_, $p := .ParametersHeader }}
+	{{ $p.HandlerParameter.Render }}
+	{{ end }}
+}
+{{- end }}
+
+{{- if $h.BodyType }}
+
+type {{$request}}Body {{ $h.BodyType.Render }}
+{{- end }}
+
+func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseError }}, _ error{{ end }}) {
+	var params {{ $request }}
+
+	{{ if $h.ParametersQuery }}
+	// Query parameters
+	{
+		query := r.URL.Query()
+		{{- range $_, $q := .ParametersQuery }}
+		{
+            q, ok := query["{{.ParameterName}}"]
+            {{if .Required}}if !ok {
+                return zero, fmt.Errorf("query parameter '{{.ParameterName}}': is required")
+            }
+            {{end -}}
+            if ok && len(q) > 0 {
+			{{- if .Required }}
+                {{ (call .ParseStrings (print "params.Query." .HandlerParameter.FieldName) "q" false (returns "zero" (parseError "query" .ParameterName))) }}
+			{{- else }}
+                {{ (call .ParseStrings "v" "q" true (returns "zero" (parseError "query" .ParameterName))) }}
+				params.Query.{{ .HandlerParameter.FieldName }}.Set(v)
+			{{- end }}
+            }
+		}
+		{{- end }}
+	}
+	{{ end }}
+
+	{{ if $h.ParametersHeader }}
+	// Headers
+	{
+		header := r.Header
+		{{- range $_, $h := .ParametersHeader }}
+		{
+            hs := header.Values("{{ .ParameterName }}")
+            {{- if .Required }}
+            if len(hs) == 0 {
+				return zero, fmt.Errorf("header parameter '{{ .ParameterName }}': is required")
+			}
+            {{- end }}
+			if len(hs) > 0 {
+			    {{ $h.Parser.ParseString (print "params.Headers." .HandlerParameter.FieldName) "hs[0]" false (returns "zero" (parseError "header" .ParameterName)) }}
+			}
+		}
+		{{- end}}
+	}
+	{{ end }}
+
+	{{ if $h.ParametersPath }}
+	// Path parameters
+	{
+		p := r.URL.Path
+
+		{{- if $h.BasePathPrefix }}
+		if !strings.HasPrefix(p, "{{ $h.BasePathPrefix }}") {
+			return zero, fmt.Errorf("wrong path: expected '{{ $h.BasePathPrefix }}...'")
+		}
+		p = p[{{ len $h.BasePathPrefix }}:] // "{{ $h.BasePathPrefix }}"
+
+		if !strings.HasPrefix(p, "/") {
+			return zero, fmt.Errorf("wrong path: expected '{{ $h.BasePathPrefix }}/...'")
+		}
+
+		{{ end }}
+
+		{{- range $_, $p := $h.PathParsers }}
+
+		{{ $p.ParseString "params.Path." "p" false (returns "zero" nil) }}
+		{{- end }}
+	}
+	{{ end }}
+
+	{{- if or $h.BodyTypeName $h.BodyType }}
+
+	defer r.Body.Close()
+	err := json.NewDecoder(r.Body).Decode(&params.Body)
+	if err != nil {
+		return zero, fmt.Errorf("decode request body: %w", err)
+	}
+	{{- end }}
+
+	return params{{ if $h.CanParseError }}, nil{{ end }}
+}
+
+func (r {{ $request }}) HTTP() *http.Request { return nil }
+
+func (r {{ $request }}) Parse() {{if $h.CanParseError}}({{end}}{{$request}}{{if $h.CanParseError}}, error){{end}} {	return r{{if $h.CanParseError}}, nil{{end}} }
+
+type {{ $responseWriter }} interface {
+	write{{ .Name }}(http.ResponseWriter)
+}
+
+{{ range $_, $r := .Responses }}
+{{ $r.Render }}
+{{ end }}
+{{ if .DefaultResponse.IsSet }}
+{{ .DefaultResponse.Value.Render }}
+{{ end }}
+{{ end }}
+
+
+{{/* ----------------------------- HandlerParameter ------------------------------------- */}}
+{{ define "HandlerParameter" }}
+{{- if .FieldComment }}// {{ .FieldName }} - {{ comment .FieldComment }}
+{{end}}
+{{- .FieldName }} {{ .FieldType.Render }}
+{{- end }}
+
+
+{{/* ----------------------------- PathParserConstant ------------------------------------- */}}
+{{ define "PathParserConstant" }}
+if !strings.HasPrefix(p, "{{.Prefix}}") {
+	return zero, fmt.Errorf("wrong path: expected '{{.FullPath}}'")
+}
+p = p[{{len .Prefix}}:] // "{{.Prefix}}"
+{{- end }}
+
+
+{{/* ----------------------------- PathParserVariable ------------------------------------- */}}
+{{ define "PathParserVariable" }}
+{
+	idx := strings.Index({{ .From }}, "/")
+	if idx == -1 {
+		idx = len({{ .From }})
+	}
+	vPath := {{ .From }}[:idx]
+	{{ .From }} = {{ .From }}[idx:]
+
+	if len(vPath) == 0 {
+		return {{.Error.New "required"}}
+	}
+
+	{{ .Convert.ParseString .To "vPath" .IsNew .Error }}
+}
+{{- end }}

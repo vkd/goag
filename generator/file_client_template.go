@@ -92,7 +92,7 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 		t := ClientResponseTemplate{
 			Name:             e.Name,
 			StatusCode:       e.StatusCode,
-			ContentJSON:      e.ContentJSON.Set,
+			ContentJSON:      e.ContentJSON.IsSet,
 			ComponentRefName: e.Name,
 		}
 		if e.ComponentRef != nil {
@@ -114,7 +114,7 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 		t := ClientResponseTemplate{
 			Name:             e.Name,
 			StatusCode:       e.StatusCode,
-			ContentJSON:      e.ContentJSON.Set,
+			ContentJSON:      e.ContentJSON.IsSet,
 			ComponentRefName: e.Name,
 		}
 		if e.ComponentRef != nil {
