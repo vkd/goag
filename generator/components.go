@@ -19,8 +19,24 @@ type Components struct {
 func NewComponents(spec specification.Components, cfg Config) (zero Components, _ Imports, _ error) {
 	var cs Components
 	var imports Imports
-	cs.Schemas = make([]SchemaComponent, 0, len(spec.Schemas.List))
+
+	schemas := make([]SchemaComponent, len(spec.Schemas.List))
+	schemasMap := make(map[*specification.Object[string, specification.Ref[specification.Schema]]]*SchemaComponent, len(spec.Schemas.List))
+	for i, c := range spec.Schemas.List {
+		schemasMap[c] = &schemas[i]
+	}
+
+	cs.Schemas = schemas
 	for _, c := range spec.Schemas.List {
+		if ref := c.V.Ref(); ref != nil {
+			*schemasMap[c] = SchemaComponent{
+				Name: c.Name,
+				Ref:  Just(schemasMap[ref]),
+				Type: NewRef(ref),
+			}
+			continue
+		}
+
 		schema, ims, err := NewSchema(c.V)
 		if err != nil {
 			return zero, nil, fmt.Errorf("parse schema for %q type: %w", c.Name, err)
@@ -63,7 +79,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 			}
 		}
 
-		cs.Schemas = append(cs.Schemas, sc)
+		*schemasMap[c] = sc
 	}
 
 	cs.Headers = make([]HeaderComponent, 0, len(spec.Headers.List))
@@ -202,6 +218,15 @@ type SchemaComponent struct {
 
 	CustomJSONMarshaler bool
 	StructureType       StructureType
+
+	Ref Maybe[*SchemaComponent]
+}
+
+func (s SchemaComponent) Base() SchemaType {
+	if ref, ok := s.Ref.Get(); ok {
+		return ref.Base()
+	}
+	return s.Type
 }
 
 func (s SchemaComponent) Render() (string, error) {
