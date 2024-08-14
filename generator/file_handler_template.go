@@ -86,6 +86,7 @@ type HandlerParameterQueryTemplate struct {
 	HandlerParameter HandlerParameterTemplate
 	ParameterName    string
 	Required         bool
+	IsOptional       bool
 
 	ParseStrings func(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
@@ -95,6 +96,7 @@ func NewHandlerParameterQueryTemplate(p HandlerQueryParameter) HandlerParameterQ
 		HandlerParameter: NewHandlerParameterTemplate(p.HandlerParameter),
 		ParameterName:    p.ParameterName,
 		Required:         p.Required,
+		IsOptional:       p.IsOptional,
 
 		ParseStrings: p.ParseStrings,
 	}

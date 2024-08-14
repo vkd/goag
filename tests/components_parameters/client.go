@@ -32,20 +32,24 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 // PostShopsShopStringSepShopSchemaPets
 // POST /shops/{shop_string}/sep/{shop_schema}/pets
 func (c *Client) PostShopsShopStringSepShopSchemaPets(ctx context.Context, request PostShopsShopStringSepShopSchemaPetsParams) (PostShopsShopStringSepShopSchemaPetsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.ShopString + "/sep/" + request.Path.ShopSchema.String() + "/pets"
+	var requestURL = c.BaseURL + "/shops/" + request.Path.ShopString + "/sep/" + request.Path.ShopSchema.Shopa().Shopb().Shopc().String() + "/pets"
 
 	query := make(url.Values, 5)
 	if request.Query.PageInt.IsSet {
 		query["page_int"] = []string{strconv.FormatInt(int64(request.Query.PageInt.Value), 10)}
 	}
 	if request.Query.PageSchema.IsSet {
-		query["page_schema"] = request.Query.PageSchema.Value.Strings()
+		query["page_schema"] = []string{strconv.FormatInt(int64(request.Query.PageSchema.Value.Int32()), 10)}
 	}
 	if request.Query.PagesSchema.IsSet {
-		query["pages_schema"] = request.Query.PagesSchema.Value.Strings()
+		qv := make([]string, 0, len(request.Query.PagesSchema.Value.Int32s()))
+		for _, v := range request.Query.PagesSchema.Value.Int32s() {
+			qv = append(qv, strconv.FormatInt(int64(v), 10))
+		}
+		query["pages_schema"] = qv
 	}
 	query["page_int_req"] = []string{strconv.FormatInt(int64(request.Query.PageIntReq), 10)}
-	query["page_schema_req"] = request.Query.PageSchemaReq.Strings()
+	query["page_schema_req"] = []string{strconv.FormatInt(int64(request.Query.PageSchemaReq.Int32()), 10)}
 	requestURL += "?" + query.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, nil)
@@ -56,10 +60,10 @@ func (c *Client) PostShopsShopStringSepShopSchemaPets(ctx context.Context, reque
 		req.Header.Set("X-Organization-Int", strconv.FormatInt(int64(request.Headers.XOrganizationInt.Value), 10))
 	}
 	if request.Headers.XOrganizationSchema.IsSet {
-		req.Header.Set("X-Organization-Schema", request.Headers.XOrganizationSchema.Value.String())
+		req.Header.Set("X-Organization-Schema", strconv.FormatInt(int64(request.Headers.XOrganizationSchema.Value.Int()), 10))
 	}
 	req.Header.Set("X-Organization-Int-Required", strconv.FormatInt(int64(request.Headers.XOrganizationIntRequired), 10))
-	req.Header.Set("X-Organization-Schema-Required", request.Headers.XOrganizationSchemaRequired.String())
+	req.Header.Set("X-Organization-Schema-Required", strconv.FormatInt(int64(request.Headers.XOrganizationSchemaRequired.Int()), 10))
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

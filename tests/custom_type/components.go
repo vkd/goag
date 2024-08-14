@@ -1,8 +1,6 @@
 package test
 
 import (
-	"fmt"
-
 	"github.com/vkd/goag/tests/custom_type/pkg"
 )
 
@@ -14,22 +12,12 @@ type PageCustom = pkg.Page
 
 type Shop ShopName
 
-func (c *Shop) ParseString(s string) error {
-	var v ShopName
-	err := v.ParseString(s)
-	if err != nil {
-		return fmt.Errorf("parse ShopName: %w", err)
-	}
-	*c = Shop(v)
-	return nil
+func NewShop(v ShopName) Shop {
+	return Shop(v)
 }
 
-func (q Shop) String() string {
-	return ShopName(q).String()
-}
-
-func (q Shop) Strings() []string {
-	return []string{q.String()}
+func (c Shop) ShopName() ShopName {
+	return ShopName(c)
 }
 
 type ShopName = pkg.Page

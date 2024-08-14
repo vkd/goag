@@ -16,6 +16,10 @@ var _ SchemaType = BoolType{}
 
 func (b BoolType) Render() (string, error) { return "bool", nil }
 
+func (b BoolType) Base() SchemaType {
+	return b
+}
+
 func (b BoolType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("BoolParseString", struct {
 		From  string
@@ -62,6 +66,10 @@ func (i IntType) Render() (string, error) {
 	default:
 		return "int" + strconv.Itoa(i.BitSize), nil
 	}
+}
+
+func (i IntType) Base() SchemaType {
+	return i
 }
 
 func (i IntType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -140,6 +148,10 @@ func (f FloatType) Render() (string, error) {
 	}
 }
 
+func (f FloatType) Base() SchemaType {
+	return f
+}
+
 var _ Parser = FloatType{}
 
 func (i FloatType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -201,6 +213,10 @@ var _ SchemaType = StringType{}
 
 func (s StringType) Render() (string, error) { return "string", nil }
 
+func (s StringType) Base() SchemaType {
+	return s
+}
+
 func (_ StringType) RenderFormat(from string) (string, error) {
 	return from, nil
 }
@@ -229,11 +245,10 @@ func (_ StringType) ParseStrings(to, from string, isNew bool, mkErr ErrorRender)
 }
 
 type CustomType struct {
-	Multivalue
 	Type   string
 	Import string
 
-	Base SchemaType
+	BaseType SchemaType
 }
 
 func NewCustomType(s string, baseSchema SchemaType) (CustomType, Imports) {
@@ -250,45 +265,79 @@ func NewCustomType(s string, baseSchema SchemaType) (CustomType, Imports) {
 	}
 
 	return CustomType{
-		Type:   customType,
-		Import: customImport,
-		Base:   baseSchema,
+		Type:     customType,
+		Import:   customImport,
+		BaseType: baseSchema,
 	}, NewImportsS(customImport)
 }
 
 var _ SchemaType = (*CustomType)(nil)
 
+func (c CustomType) IsMultivalue() bool {
+	return c.Base().IsMultivalue()
+}
+
 func (c CustomType) Render() (string, error) {
 	return string(c.Type), nil
 }
 
+func (c CustomType) Base() SchemaType {
+	return c.BaseType
+}
+
+func BaseFuncName(st SchemaType) Render {
+	switch base := st.Base().(type) {
+	case SliceType:
+		return base.Items
+	default:
+		return base
+	}
+}
+
 func (c CustomType) RenderFormat(from string) (string, error) {
-	return from + ".String()", nil
+	return ExecuteTemplate("CustomTypeRenderFormat", TData{
+		"From": from,
+		"Base": c.BaseType.Base(),
+
+		"IsMultivalue": c.BaseType.IsMultivalue(),
+	})
 }
 
 func (c CustomType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return Assign(to, from+".Strings()", isNew), nil
+	return ExecuteTemplate("CustomTypeRenderFormatStrings", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"Base":  c.BaseType.Base(),
+
+		"IsMultivalue": c.BaseType.Base().IsMultivalue(),
+		"BaseFunc":     BaseFuncName(c.BaseType),
+	})
 }
 
 func (c CustomType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("CustomTypeParserExternal", TData{
-		"To":    to,
-		"Type":  c,
-		"From":  from,
-		"IsNew": isNew,
-		"MkErr": mkErr,
-		"Base":  c.Base,
+	return ExecuteTemplate("CustomTypeParseString", TData{
+		"To":           to,
+		"Type":         c,
+		"From":         from,
+		"IsNew":        isNew,
+		"MkErr":        mkErr,
+		"Base":         c.BaseType.Base(),
+		"IsMultivalue": c.BaseType.IsMultivalue(),
+		"BaseFunc":     BaseFuncName(c.BaseType),
 	})
 }
 
 func (c CustomType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("CustomTypeParserExternal", TData{
-		"To":    to,
-		"Type":  c,
-		"From":  from,
-		"IsNew": isNew,
-		"MkErr": mkErr,
-		"Base":  c.Base,
+	return ExecuteTemplate("CustomTypeParseStrings", TData{
+		"To":           to,
+		"Type":         c,
+		"From":         from,
+		"IsNew":        isNew,
+		"MkErr":        mkErr,
+		"Base":         c.BaseType,
+		"IsMultivalue": c.BaseType.IsMultivalue(),
+		"BaseFunc":     BaseFuncName(c.BaseType),
 	})
 }
 
@@ -298,6 +347,10 @@ type SliceType struct {
 }
 
 func (s SliceType) Render() (string, error) { return ExecuteTemplate("SliceType", s) }
+
+func (s SliceType) Base() SchemaType {
+	return s
+}
 
 func (s SliceType) RenderFormat(from string) (string, error) {
 	switch s.Items.(type) {
@@ -354,11 +407,11 @@ type StructureType struct {
 	AdditionalProperties *SchemaType
 }
 
-func NewStructureType(s *specification.Schema) (zero StructureType, _ Imports, _ error) {
+func NewStructureType(s *specification.Schema, components Components) (zero StructureType, _ Imports, _ error) {
 	var stype StructureType
 	var imports Imports
 	for _, p := range s.Properties {
-		f, ims, err := NewStructureField(p)
+		f, ims, err := NewStructureField(p, components)
 		if err != nil {
 			return zero, nil, fmt.Errorf("field %q: %w", p.Name, err)
 		}
@@ -366,7 +419,7 @@ func NewStructureType(s *specification.Schema) (zero StructureType, _ Imports, _
 		imports = append(imports, ims...)
 	}
 	if additionalProperties, ok := s.AdditionalProperties.Get(); ok {
-		additional, ims, err := NewSchema(additionalProperties)
+		additional, ims, err := NewSchema(additionalProperties, components)
 		if err != nil {
 			return zero, nil, fmt.Errorf("additional properties: %w", err)
 		}
@@ -385,6 +438,10 @@ func (s StructureType) RenderFormat(from string) (string, error) {
 		"Type":  s,
 		"MkErr": newError{},
 	})
+}
+
+func (s StructureType) Base() SchemaType {
+	return s
 }
 
 func (s StructureType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
@@ -429,8 +486,8 @@ type StructureField struct {
 	JSONTag string
 }
 
-func NewStructureField(s specification.SchemaProperty) (zero StructureField, _ Imports, _ error) {
-	t, ims, err := NewSchema(s.Schema)
+func NewStructureField(s specification.SchemaProperty, components Components) (zero StructureField, _ Imports, _ error) {
+	t, ims, err := NewSchema(s.Schema, components)
 	if err != nil {
 		return zero, nil, fmt.Errorf(": %w", err)
 	}
@@ -459,100 +516,70 @@ type StructureFieldTag struct {
 	Values []string
 }
 
-type Ref[T any] struct {
-	// Multivalue
-	Ref        string
-	SchemaType specification.Ref[T]
+type RefSchemaType struct {
+	Name string
+	Ref  *SchemaComponent
 }
 
-func NewRef[T any](ref *specification.Object[string, specification.Ref[T]]) Ref[T] {
-	// ref = ref[strings.LastIndex(ref, "/"):]
-	// ref = strings.TrimPrefix(ref, "/")
-	return Ref[T]{Ref: ref.Name, SchemaType: ref.V}
-}
+var _ SchemaType = RefSchemaType{}
 
-var _ SchemaType = Ref[any]{}
-
-func (r Ref[T]) Render() (string, error) { return r.Ref, nil }
-
-func (r Ref[T]) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("ParserWithError", TData{
-		"To":     to,
-		"Type":   r.Ref,
-		"From":   from,
-		"IsNew":  isNew,
-		"MkErr":  mkErr,
-		"Method": "ParseString",
-	})
-}
-
-func (r Ref[T]) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("ParserWithError", TData{
-		"To":     to,
-		"Type":   r.Ref,
-		"From":   from,
-		"IsNew":  isNew,
-		"MkErr":  mkErr,
-		"Method": "ParseStrings",
-	})
-}
-
-func (r Ref[T]) IsMultivalue() bool {
-	switch tp := any(*r.SchemaType.Value()).(type) {
-	case SchemaType:
-		return r.IsMultivalue()
-	case specification.Schema:
-		switch tp.Type {
-		case "array":
-			return true
-		default:
-			return false
-		}
-	case specification.QueryParameter:
-		return true
-	case specification.PathParameter:
-		return false
-	case specification.HeaderParameter:
-		switch tp.Schema.Value().Type {
-		case "array":
-			return true
-		default:
-			return false
-		}
-	default:
-		panic(fmt.Errorf("unsupported Ref[T].IsMultivalue() type: %T", tp))
+func NewRefSchemaType(name string, next *SchemaComponent) RefSchemaType {
+	return RefSchemaType{
+		Name: name,
+		Ref:  next,
 	}
 }
 
-func (r Ref[T]) ParseQuery(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("RefParseQuery", TData{
-		"To":    to,
-		"Type":  r.Ref,
-		"From":  from,
-		"IsNew": isNew,
-		"MkErr": mkErr,
+func (r RefSchemaType) Base() SchemaType { return r.Ref.Type }
+
+func (r RefSchemaType) Render() (string, error) { return r.Name, nil }
+
+func (r RefSchemaType) RenderFormat(from string) (string, error) {
+	return ExecuteTemplate("RefSchemaType_RenderFormat", TData{
+		"SchemaType":   r.Ref.Type,
+		"From":         from,
+		"FuncName":     BaseFuncName(r),
+		"IsMultivalue": r.IsMultivalue(),
 	})
 }
 
-func (r Ref[T]) ParseSchema(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("RefParseSchema", TData{
-		"To":    to,
-		"Type":  r.Ref,
-		"From":  from,
-		"IsNew": isNew,
-		"MkErr": mkErr,
+func (r RefSchemaType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return ExecuteTemplate("RefSchemaType_RenderFormatStrings", TData{
+		"Ref":          r.Ref,
+		"From":         from,
+		"To":           to,
+		"IsNew":        isNew,
+		"FuncName":     BaseFuncName(r),
+		"IsMultivalue": r.IsMultivalue(),
 	})
 }
 
-func (r Ref[T]) RenderFormat(from string) (string, error) {
-	if r.IsMultivalue() {
-		return string(from) + ".Strings()", nil
-	}
-	return string(from) + ".String()", nil
+func (r RefSchemaType) IsMultivalue() bool {
+	return r.Base().IsMultivalue()
 }
 
-func (r Ref[T]) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return Assign(to, string(from)+".Strings()", isNew), nil
+func (r RefSchemaType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("RefSchemaType_ParseString", TData{
+		"Ref":      r.Ref.Type,
+		"Name":     r.Name,
+		"From":     from,
+		"To":       to,
+		"IsNew":    isNew,
+		"MkErr":    mkErr,
+		"FuncName": BaseFuncName(r),
+	})
+}
+
+func (r RefSchemaType) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("RefSchemaType_ParseStrings", TData{
+		"Ref":      r.Ref,
+		"Name":     r.Name,
+		"From":     from,
+		"To":       to,
+		"IsNew":    isNew,
+		"MkErr":    mkErr,
+		"FuncName": BaseFuncName(r),
+	})
 }
 
 type OptionalType struct {
@@ -573,6 +600,10 @@ var _ Render = OptionalType{}
 func (p OptionalType) Render() (string, error) {
 	out, err := p.V.Render()
 	return p.MaybeType + "[" + out + "]", err
+}
+
+func (o OptionalType) Base() SchemaType {
+	return o.V
 }
 
 var _ Parser = OptionalType{}
@@ -625,6 +656,10 @@ var _ SchemaType = MapType{}
 
 func (m MapType) Render() (string, error) {
 	return ExecuteTemplate("MapType", m)
+}
+
+func (m MapType) Base() SchemaType {
+	return m
 }
 
 func (m MapType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {

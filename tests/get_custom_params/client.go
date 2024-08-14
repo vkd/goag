@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 type Client struct {
@@ -33,20 +34,32 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String()
 
-	query := make(url.Values, 4)
+	query := make(url.Values, 5)
 	if request.Query.Page.IsSet {
-		query["page"] = request.Query.Page.Value.Strings()
+		cv := request.Query.Page.Value.Int32()
+		query["page"] = []string{strconv.FormatInt(int64(cv), 10)}
 	}
-	query["page_req"] = request.Query.PageReq.Strings()
+	cv := request.Query.PageReq.Int32()
+	query["page_req"] = []string{strconv.FormatInt(int64(cv), 10)}
 	if request.Query.Pages.IsSet {
 		qv := make([]string, 0, len(request.Query.Pages.Value))
 		for _, v := range request.Query.Pages.Value {
-			qv = append(qv, v.String())
+			qv = append(qv, strconv.FormatInt(int64(v.Int32()), 10))
 		}
 		query["pages"] = qv
 	}
+	if request.Query.PagesArray.IsSet {
+		cvs := request.Query.PagesArray.Value.Int32s()
+		qv := make([]string, 0, len(cvs))
+		for _, v := range cvs {
+			qv = append(qv, strconv.FormatInt(int64(v), 10))
+		}
+		vs := qv
+		query["pages_array"] = vs
+	}
 	if request.Query.PageCustom.IsSet {
-		query["page_custom"] = request.Query.PageCustom.Value.Strings()
+		cv := request.Query.PageCustom.Value.String()
+		query["page_custom"] = []string{cv}
 	}
 	requestURL += "?" + query.Encode()
 

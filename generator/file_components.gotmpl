@@ -6,7 +6,7 @@
 //         Schemas
 // ------------------------
 
-{{range $_, $s := .Schemas}}
+{{range $_, $s := .Schemas.List}}
 {{ $s.Render }}
 {{end}}
 {{- end}}
@@ -49,36 +49,18 @@
 type {{ .Name }} {{ .Type.Render }}
 
 {{- if not .IgnoreParseFormat }}
-{{- if .IsMultivalue }}
-func (c *{{ .Name }}) ParseStrings(s []string) error {
-    {{ .Type.ParseString "v" "s" true newError }}
-    *c = {{ .Name }}(v)
-    return nil
+
+func New{{ .Name }}(v {{ .Type.Render }}) {{ .Name }} {
+    return {{ .Name }}(v)
 }
 
-func (q {{ .Name }}) Strings() []string {
-    {{- if .RenderFormatStringsMultiline }}
-    {{ call .RenderFormatStringsMultiline "out" "q" }}
-    return out
+func (c {{ .Name }}) {{ title .BaseType.Render }}{{ if .IsMultivalue }}s{{ end }}() {{ .Type.Render }} {
+    {{- if .IsRef }}
+    return {{ .Type.Render }}(c).{{ title .Type.Render }}{{ if .IsMultivalue }}s{{ end }}()
     {{- else }}
-    return {{ .Type.RenderFormat (print .Type.Render "(q)") }}
+    return {{ .Type.Render }}(c)
     {{- end }}
 }
-{{- else }}
-func (c *{{ .Name }}) ParseString(s string) error {
-    {{ .Type.ParseString "v" "s" true newError }}
-    *c = {{ .Name }}(v)
-    return nil
-}
-
-func (q {{ .Name }}) String() string {
-    return {{ .Type.RenderFormat (print .Type.Render "(q)") }}
-}
-
-func (q {{ .Name }}) Strings() []string {
-    return []string{q.String()}
-}
-{{- end }}
 {{- end }}
 
 {{- if .CustomJSONMarshaler }}

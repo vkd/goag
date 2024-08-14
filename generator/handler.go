@@ -3,8 +3,6 @@ package generator
 import (
 	"fmt"
 	"strings"
-
-	"github.com/vkd/goag/specification"
 )
 
 type Handler struct {
@@ -124,27 +122,27 @@ type HandlerQueryParameter struct {
 
 	ParameterName string
 	Required      bool
+	IsOptional    bool
 	Parser        Parser
 }
 
 func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryParameter, _ Imports, _ error) {
 	var ims Imports
-	tp := p.Type
 
-	var tpRender Render = tp
+	var tpRender Render = p.Type
+	var isOptional bool
 	if !p.Required {
-		// switch tp := tp.(type) {
+		// switch tp := p.Type.(type) {
 		// case CustomType:
 		// default:
-		tpRender = NewOptionalType(tp, cfg)
+		tpRender = NewOptionalType(p.Type, cfg)
 		if cfg.Maybe.Import != "" {
 			ims = append(ims, Import(cfg.Maybe.Import))
 		}
-		// tp = NewOptionalType(tp)
+		// tp = NewOptionalType(p.Type)
 		// }
+		isOptional = true
 	}
-
-	var parser Parser = tp
 
 	out := HandlerQueryParameter{
 		HandlerParameter: HandlerParameter{
@@ -155,25 +153,28 @@ func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryP
 
 		ParameterName: p.Name,
 		Required:      p.Required,
-		Parser:        parser,
+		Parser:        p.Type,
+		IsOptional:    isOptional,
 	}
 
 	return out, ims, nil
 }
 
 func (p HandlerQueryParameter) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	switch parser := p.Parser.(type) {
-	case SliceType:
-		return parser.ParseStrings(to, from, isNew, mkErr)
-	case Ref[specification.Schema]:
-		if parser.SchemaType.Value().Type == "array" {
-			return parser.ParseQuery(to, from, isNew, mkErr)
-		}
-		return parser.ParseSchema(to, from+"[0]", isNew, mkErr)
-	case Ref[specification.QueryParameter]:
-		return parser.ParseQuery(to, from, isNew, mkErr)
-	}
-	return p.Parser.ParseString(to, from+"[0]", isNew, mkErr)
+	// switch parser := p.Parser.(type) {
+	// case SliceType:
+	// 	return parser.ParseStrings(to, from, isNew, mkErr)
+	// case Ref[specification.Schema]:
+	// 	if parser.SchemaType.Value().Type == "array" {
+	// 		return parser.ParseQuery(to, from, isNew, mkErr)
+	// 	}
+	// 	return parser.ParseSchema(to, from+"[0]", isNew, mkErr)
+	// case Ref[specification.QueryParameter]:
+	// 	return parser.ParseQuery(to, from, isNew, mkErr)
+	// case CustomType:
+	// 	return parser.ParseStrings(to, from, isNew, mkErr)
+	// }
+	return p.Parser.ParseStrings(to, from, isNew, mkErr)
 }
 
 type PathParserConstant struct {
@@ -330,14 +331,11 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 	if contentJSON, ok := r.ContentJSON.Get(); ok {
 		out.IsBody = true
 		switch contentType := contentJSON.Type.(type) {
-		case Ref[specification.Schema], SliceType, CustomType:
+		case RefSchemaType, SliceType, CustomType:
 			out.BodyTypeName = contentType
 		default:
 			bodyStructName := out.Name + "Body"
-			out.BodyTypeName = NewRef(&specification.Object[string, specification.Ref[specification.Schema]]{
-				Name: bodyStructName,
-				V:    contentJSON.Spec,
-			})
+			out.BodyTypeName = StringRender(bodyStructName)
 			bodyType := contentJSON
 			out.Body = bodyType.Type
 

@@ -54,7 +54,7 @@ type GetShopsShopParamsQuery struct {
 }
 
 type GetShopsShopParamsPath struct {
-	Shop Shop
+	Shop pkg.Shop
 }
 
 func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
@@ -66,10 +66,13 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["page_schema_ref_query"]
 			if ok && len(q) > 0 {
-				var v PageCustom
-				err := v.ParseString(q[0])
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_schema_ref_query", Reason: "parse PageCustom", Err: err}
+				vCustom := q[0]
+				var v pkg.Page
+				{
+					err := v.ParseString(vCustom)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page_schema_ref_query", Reason: "parse custom type", Err: err}
+					}
 				}
 				params.Query.PageSchemaRefQuery.Set(v)
 			}

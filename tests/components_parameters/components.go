@@ -1,125 +1,85 @@
 package test
 
-import (
-	"fmt"
-	"strconv"
-)
-
 // ------------------------
 //         Schemas
 // ------------------------
 
 type Organization int
 
-func (c *Organization) ParseString(s string) error {
-	vInt, err := strconv.ParseInt(s, 10, 0)
-	if err != nil {
-		return fmt.Errorf("parse int: %w", err)
-	}
-	v := int(vInt)
-	*c = Organization(v)
-	return nil
+func NewOrganization(v int) Organization {
+	return Organization(v)
 }
 
-func (q Organization) String() string {
-	return strconv.FormatInt(int64(int(q)), 10)
-}
-
-func (q Organization) Strings() []string {
-	return []string{q.String()}
+func (c Organization) Int() int {
+	return int(c)
 }
 
 type Page int32
 
-func (c *Page) ParseString(s string) error {
-	vInt, err := strconv.ParseInt(s, 10, 32)
-	if err != nil {
-		return fmt.Errorf("parse int32: %w", err)
-	}
-	v := int32(vInt)
-	*c = Page(v)
-	return nil
+func NewPage(v int32) Page {
+	return Page(v)
 }
 
-func (q Page) String() string {
-	return strconv.FormatInt(int64(int32(q)), 10)
-}
-
-func (q Page) Strings() []string {
-	return []string{q.String()}
+func (c Page) Int32() int32 {
+	return int32(c)
 }
 
 type Pages []int32
 
-func (c *Pages) ParseStrings(s []string) error {
-	v := make([]int32, len(s))
-	for i := range s {
-		vInt, err := strconv.ParseInt(s[i], 10, 32)
-		if err != nil {
-			return fmt.Errorf("parse int32: %w", err)
-		}
-		v[i] = int32(vInt)
-	}
-	*c = Pages(v)
-	return nil
+func NewPages(v []int32) Pages {
+	return Pages(v)
 }
 
-func (q Pages) Strings() []string {
-	out := make([]string, 0, len(q))
-	for _, v := range q {
-		out = append(out, strconv.FormatInt(int64(v), 10))
-	}
-	return out
+func (c Pages) Int32s() []int32 {
+	return []int32(c)
 }
 
 type Shop Shopa
 
-func (c *Shop) ParseString(s string) error {
-	var v Shopa
-	err := v.ParseString(s)
-	if err != nil {
-		return fmt.Errorf("parse Shopa: %w", err)
-	}
-	*c = Shop(v)
-	return nil
+func NewShop(v Shopa) Shop {
+	return Shop(v)
 }
 
-func (q Shop) String() string {
-	return Shopa(q).String()
+func (c Shop) Shopa() Shopa {
+	return Shopa(c)
 }
 
-func (q Shop) Strings() []string {
-	return []string{q.String()}
+type Shopa Shopb
+
+func NewShopa(v Shopb) Shopa {
+	return Shopa(v)
 }
 
-type Shopa string
-
-func (c *Shopa) ParseString(s string) error {
-	v := s
-	*c = Shopa(v)
-	return nil
+func (c Shopa) Shopb() Shopb {
+	return Shopb(c)
 }
 
-func (q Shopa) String() string {
-	return string(q)
+type Shopb Shopc
+
+func NewShopb(v Shopc) Shopb {
+	return Shopb(v)
 }
 
-func (q Shopa) Strings() []string {
-	return []string{q.String()}
+func (c Shopb) Shopc() Shopc {
+	return Shopc(c)
+}
+
+type Shopc string
+
+func NewShopc(v string) Shopc {
+	return Shopc(v)
+}
+
+func (c Shopc) String() string {
+	return string(c)
 }
 
 type Shops []string
 
-func (c *Shops) ParseStrings(s []string) error {
-	v := s
-	*c = Shops(v)
-	return nil
+func NewShops(v []string) Shops {
+	return Shops(v)
 }
 
-func (q Shops) Strings() []string {
-	out := make([]string, 0, len(q))
-	for _, v := range q {
-		out = append(out, v)
-	}
-	return out
+func (c Shops) Strings() []string {
+	return []string(c)
 }

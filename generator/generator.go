@@ -64,7 +64,7 @@ func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Gen
 			PathItem: pi,
 		}
 		for _, o := range pi.Operations {
-			operation, ims, err := NewOperation(o, cfg)
+			operation, ims, err := NewOperation(o, components, cfg)
 			if err != nil {
 				return nil, fmt.Errorf(": %w", err)
 			}

@@ -18,7 +18,7 @@ type Response struct {
 	ContentJSON Maybe[Schema]
 }
 
-func NewResponse(handlerName OperationName, status string, response *specification.Response, cfg Config) (*Response, Imports, error) {
+func NewResponse(handlerName OperationName, status string, response *specification.Response, components Components, cfg Config) (*Response, Imports, error) {
 	r := &Response{Response: response}
 	r.Name = string(handlerName) + "Response" + strings.Title(status)
 	if response.Content.Has("application/json") {
@@ -30,7 +30,7 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 	for _, c := range response.Content.List {
 		switch c.Name {
 		case "application/json":
-			s, ims, err := NewSchema(c.V.Schema)
+			s, ims, err := NewSchema(c.V.Schema, components)
 			if err != nil {
 				return nil, nil, fmt.Errorf("schema for %q content response: %w", c.Name, err)
 			}
@@ -44,39 +44,43 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 		}
 	}
 
+	headers := make([]ResponseHeader, len(response.Headers.List))
+	headersMap := make(map[*specification.Object[string, specification.Ref[specification.Header]]]*ResponseHeader, len(response.Headers.List))
+	for i, c := range response.Headers.List {
+		headersMap[c] = &headers[i]
+	}
+
 	for _, header := range response.Headers.List {
-		h, ims, err := NewResponseHeader(header.Name, header.V, cfg)
+		h, ims, err := NewResponseHeader(header.Name, header.V, components, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("new response %q: %w", header.Name, err)
 		}
 		imports = append(imports, ims...)
-		r.Headers = append(r.Headers, h)
+		*headersMap[header] = h
 	}
+
+	r.Headers = headers
+
 	return r, imports, nil
 }
 
 type ResponseHeader struct {
 	Spec *specification.Header
 
-	FieldName    string
-	Key          string
-	Required     bool
-	Schema       SchemaType
+	FieldName string
+	Key       string
+	Required  bool
+	Schema    interface {
+		Render
+		Parser
+	}
 	IsCustomType bool
 }
 
-func NewResponseHeader(name string, ref specification.Ref[specification.Header], cfg Config) (zero ResponseHeader, _ Imports, _ error) {
-	var s SchemaType
-	var ims Imports
-	if r := ref.Ref(); r != nil {
-		s = NewRef(r)
-	} else {
-		spec := ref.Value()
-		var err error
-		s, ims, err = NewSchema(spec.Schema)
-		if err != nil {
-			return zero, nil, fmt.Errorf("new schema: %w", err)
-		}
+func NewResponseHeader(name string, ref specification.Ref[specification.Header], components Components, cfg Config) (zero ResponseHeader, _ Imports, _ error) {
+	s, ims, err := NewSchema(ref.Value().Schema, components)
+	if err != nil {
+		return zero, nil, fmt.Errorf("new schema: %w", err)
 	}
 
 	if !ref.Value().Required {

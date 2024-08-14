@@ -147,7 +147,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
             }
             {{end -}}
             if ok && len(q) > 0 {
-			{{- if .Required }}
+			{{- if not .IsOptional }}
                 {{ (call .ParseStrings (print "params.Query." .HandlerParameter.FieldName) "q" false (returns "zero" (parseError "query" .ParameterName))) }}
 			{{- else }}
                 {{ (call .ParseStrings "v" "q" true (returns "zero" (parseError "query" .ParameterName))) }}
@@ -172,7 +172,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 			}
             {{- end }}
 			if len(hs) > 0 {
-			    {{ $h.Parser.ParseString (print "params.Headers." .HandlerParameter.FieldName) "hs[0]" false (returns "zero" (parseError "header" .ParameterName)) }}
+			    {{ $h.Parser.ParseStrings (print "params.Headers." .HandlerParameter.FieldName) "hs" false (returns "zero" (parseError "header" .ParameterName)) }}
 			}
 		}
 		{{- end}}

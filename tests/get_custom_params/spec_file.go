@@ -31,6 +31,14 @@ const SpecFile string = `paths:
               type: integer
               format: int32
               x-goag-go-type: Page
+        - name: pages_array
+          in: query
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+            x-goag-go-type: Pages
         - name: page_custom
           in: query
           schema:

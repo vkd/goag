@@ -31,6 +31,10 @@ components:
     Shop:
       $ref: '#/components/schemas/Shopa'
     Shopa:
+      $ref: '#/components/schemas/Shopb'
+    Shopb:
+      $ref: '#/components/schemas/Shopc'
+    Shopc:
       type: string
     Shops:
       type: array

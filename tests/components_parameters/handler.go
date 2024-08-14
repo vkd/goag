@@ -94,22 +94,27 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 		{
 			q, ok := query["page_schema"]
 			if ok && len(q) > 0 {
-				var v Page
-				err := v.ParseString(q[0])
+				vInt, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_schema", Reason: "parse Page", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "page_schema", Reason: "parse int32", Err: err}
 				}
+				vint32 := int32(vInt)
+				v := NewPage(vint32)
 				params.Query.PageSchema.Set(v)
 			}
 		}
 		{
 			q, ok := query["pages_schema"]
 			if ok && len(q) > 0 {
-				var v Pages
-				err := v.ParseStrings(q)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "pages_schema", Reason: "parse Pages", Err: err}
+				vint32 := make([]int32, len(q))
+				for i := range q {
+					vInt, err := strconv.ParseInt(q[i], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "pages_schema", Reason: "parse int32", Err: err}
+					}
+					vint32[i] = int32(vInt)
 				}
+				v := NewPages(vint32)
 				params.Query.PagesSchema.Set(v)
 			}
 		}
@@ -132,10 +137,12 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				return zero, fmt.Errorf("query parameter 'page_schema_req': is required")
 			}
 			if ok && len(q) > 0 {
-				err := params.Query.PageSchemaReq.ParseString(q[0])
+				vInt, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_schema_req", Reason: "parse Page", Err: err}
+					return zero, ErrParseParam{In: "query", Parameter: "page_schema_req", Reason: "parse int32", Err: err}
 				}
+				vint32 := int32(vInt)
+				params.Query.PageSchemaReq = NewPage(vint32)
 			}
 		}
 	}
@@ -157,11 +164,12 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 		{
 			hs := header.Values("X-Organization-Schema")
 			if len(hs) > 0 {
-				var v Organization
-				err := v.ParseString(hs[0])
+				vInt, err := strconv.ParseInt(hs[0], 10, 0)
 				if err != nil {
-					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema", Reason: "parse Organization", Err: err}
+					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema", Reason: "parse int", Err: err}
 				}
+				vint := int(vInt)
+				v := NewOrganization(vint)
 				params.Headers.XOrganizationSchema.Set(v)
 			}
 		}
@@ -184,10 +192,12 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				return zero, fmt.Errorf("header parameter 'X-Organization-Schema-Required': is required")
 			}
 			if len(hs) > 0 {
-				err := params.Headers.XOrganizationSchemaRequired.ParseString(hs[0])
+				vInt, err := strconv.ParseInt(hs[0], 10, 0)
 				if err != nil {
-					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema-Required", Reason: "parse Organization", Err: err}
+					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema-Required", Reason: "parse int", Err: err}
 				}
+				vint := int(vInt)
+				params.Headers.XOrganizationSchemaRequired = NewOrganization(vint)
 			}
 		}
 	}
@@ -233,10 +243,11 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				return zero, ErrParseParam{In: "path", Parameter: "shop_schema", Reason: "required"}
 			}
 
-			err := params.Path.ShopSchema.ParseString(vPath)
-			if err != nil {
-				return zero, ErrParseParam{In: "path", Parameter: "shop_schema", Reason: "parse Shop", Err: err}
-			}
+			vstring := vPath
+			vShopc := NewShopc(vstring)
+			vShopb := NewShopb(vShopc)
+			vShopa := NewShopa(vShopb)
+			params.Path.ShopSchema = NewShop(vShopa)
 		}
 
 		if !strings.HasPrefix(p, "/pets") {

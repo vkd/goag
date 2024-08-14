@@ -37,7 +37,8 @@ func (c *Client) PostShopsShopPets(ctx context.Context, request PostShopsShopPet
 
 	query := make(url.Values, 1)
 	if request.Query.Filter.IsSet {
-		query["filter"] = request.Query.Filter.Value.Strings()
+		cv := request.Query.Filter.Value.String()
+		query["filter"] = []string{cv}
 	}
 	requestURL += "?" + query.Encode()
 

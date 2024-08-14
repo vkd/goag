@@ -7,7 +7,7 @@ paths:
           required: true
           schema:
             type: string
-            x-goag-go-type: Shop
+            x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Shop
         - name: page_schema_ref_query
           in: query
           schema:

@@ -39,7 +39,7 @@ type Operation struct {
 	Responses       []*ResponseCode
 }
 
-func NewOperation(s *specification.Operation, cfg Config) (zero *Operation, _ Imports, _ error) {
+func NewOperation(s *specification.Operation, componenets Components, cfg Config) (zero *Operation, _ Imports, _ error) {
 	path, err := NewPath(s.PathRaw)
 	if err != nil {
 		return zero, nil, fmt.Errorf("parse raw path: %w", err)
@@ -63,7 +63,7 @@ func NewOperation(s *specification.Operation, cfg Config) (zero *Operation, _ Im
 	}
 
 	var imports Imports
-	o.Params, imports, err = NewOperationParams(s.Parameters)
+	o.Params, imports, err = NewOperationParams(s.Parameters, componenets)
 	if err != nil {
 		return zero, nil, fmt.Errorf("new operation params: %w", err)
 	}
@@ -104,16 +104,13 @@ func NewOperation(s *specification.Operation, cfg Config) (zero *Operation, _ Im
 	if rBody, ok := s.RequestBody.Get(); ok {
 		if ref := rBody.Ref(); ref != nil && ref.Name != "" {
 			if _, ok := ref.V.Value().Content.Get("application/json"); ok {
-				o.Body.TypeName = NewRef(&specification.Object[string, specification.Ref[specification.RequestBody]]{
-					Name: ref.Name + "JSON",
-					V:    ref.V,
-				})
+				o.Body.TypeName = StringRender(ref.Name + "JSON")
 			}
 		} else {
 			requestBody := rBody.Value()
 			jsonContent, ok := requestBody.Content.Get("application/json")
 			if ok {
-				body, ims, err := NewSchema(jsonContent.V.Schema)
+				body, ims, err := NewSchema(jsonContent.V.Schema, componenets)
 				if err != nil {
 					return nil, nil, fmt.Errorf("request body: %w", err)
 				}
@@ -130,7 +127,7 @@ func NewOperation(s *specification.Operation, cfg Config) (zero *Operation, _ Im
 	}
 
 	for _, r := range s.Responses.List {
-		resp, ims, err := NewResponse(name, r.Name, r.V.Value(), cfg)
+		resp, ims, err := NewResponse(name, r.Name, r.V.Value(), componenets, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("new response for %q status: %w", r.Name, err)
 		}
@@ -200,12 +197,12 @@ type OperationParams struct {
 	Cookie  specification.Map[*CookieParameter]
 }
 
-func NewOperationParams(params specification.OperationParameters) (zero OperationParams, _ Imports, _ error) {
+func NewOperationParams(params specification.OperationParameters, components Components) (zero OperationParams, _ Imports, _ error) {
 	var op OperationParams
 	var imports Imports
 
 	for _, p := range params.Query.List {
-		param, ims, err := NewQueryParameter(p.V)
+		param, ims, err := NewQueryParameter(p.V, components)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new query parameter: %w", err)
 		}
@@ -214,7 +211,7 @@ func NewOperationParams(params specification.OperationParameters) (zero Operatio
 	}
 
 	for _, p := range params.Headers.List {
-		param, ims, err := NewHeaderParameter(p.V)
+		param, ims, err := NewHeaderParameter(p.V, components)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new header parameter: %w", err)
 		}
@@ -223,7 +220,7 @@ func NewOperationParams(params specification.OperationParameters) (zero Operatio
 	}
 
 	for _, p := range params.Path.List {
-		param, ims, err := NewPathParameter(p.V)
+		param, ims, err := NewPathParameter(p.V, components)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new path parameter: %w", err)
 		}

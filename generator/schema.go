@@ -12,41 +12,50 @@ type Schema struct {
 }
 
 type SchemaType interface {
+	Base() SchemaType
+
 	Render
 	Parser
 	Formatter
 }
 
-func NewSchema(s specification.Ref[specification.Schema]) (SchemaType, Imports, error) {
-	if s.Ref() != nil {
-		return NewRef(s.Ref()), nil, nil
+func NewSchema(s specification.Ref[specification.Schema], components Components) (SchemaType, Imports, error) {
+	if ref := s.Ref(); ref != nil {
+		refOut, ok := components.Schemas.Get(ref.V)
+		if !ok {
+			return nil, nil, fmt.Errorf("ref schema %q not found in schemas", ref.Name)
+		}
+		return NewRefSchemaType(ref.Name, refOut), nil, nil
 	}
 
 	spec := s.Value()
 
-	out, ims, err := newSchema(spec)
+	out, ims, err := newSchema(spec, components)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	if specCustom, ok := spec.Custom.Get(); ok {
 		ct, is := NewCustomType(specCustom, out)
-		return ct, append(is, ims...), nil
+
+		out = ct
+		ims = append(ims, is...)
+		// return ct, append(is, ims...), nil
 	}
 
 	return out, ims, nil
 }
 
-func newSchema(spec *specification.Schema) (SchemaType, Imports, error) {
+func newSchema(spec *specification.Schema, components Components) (SchemaType, Imports, error) {
 	if len(spec.AllOf) > 0 {
 		var s StructureType
 		var imports Imports
 		for i, a := range spec.AllOf {
 			if ref := a.Ref(); ref != nil {
-				s.Fields = append(s.Fields, StructureField{Type: NewRef(ref)})
+				s.Fields = append(s.Fields, StructureField{Type: StringRender(ref.Name)})
 			} else {
 				for _, p := range a.Value().Properties {
-					sf, ims, err := NewStructureField(p)
+					sf, ims, err := NewStructureField(p, components)
 					if err != nil {
 						return nil, nil, fmt.Errorf("allOf: %d-th element: new structure field: %w", i, err)
 					}
@@ -61,19 +70,19 @@ func newSchema(spec *specification.Schema) (SchemaType, Imports, error) {
 	switch spec.Type {
 	case "object":
 		if specAdditionalProperties, ok := spec.AdditionalProperties.Get(); ok && len(spec.Properties) == 0 {
-			additional, ims, err := NewSchema(specAdditionalProperties)
+			additional, ims, err := NewSchema(specAdditionalProperties, components)
 			if err != nil {
 				return nil, nil, fmt.Errorf("additional properties: %w", err)
 			}
 			return NewMapType(StringType{}, additional), ims, nil
 		}
-		r, ims, err := NewStructureType(spec)
+		r, ims, err := NewStructureType(spec, components)
 		if err != nil {
 			return nil, nil, fmt.Errorf("'object' type: %w", err)
 		}
 		return r, ims, nil
 	case "array":
-		itemType, is, err := NewSchema(spec.Value().Items)
+		itemType, is, err := NewSchema(spec.Value().Items, components)
 		if err != nil {
 			return nil, nil, fmt.Errorf("items schema: %w", err)
 		}

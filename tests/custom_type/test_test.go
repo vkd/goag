@@ -13,8 +13,8 @@ import (
 
 func TestGetMultiParams(t *testing.T) {
 	ctx := context.Background()
-	testShop := Shop("paw")
-	testPageSchemaRefQuery := pkg.Page("testPage")
+	testShop := pkg.Shop("paw")
+	testPageSchemaRefQuery := PageCustom("testPage")
 	testPageCustomTypeQuery := pkg.PageCustomTypeQuery("testPage2")
 	testShopName := Shop(ShopName(pkg.Page("testPage3")))
 

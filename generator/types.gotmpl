@@ -78,12 +78,42 @@ if err != nil {
 
 {{/* ----------------------------- CustomType ------------------------------------- */}}
 
-{{ define "CustomTypeParserExternal" }}
+{{ define "CustomTypeRenderFormat" }}
+{{- $out := (print .From "." (title .Base.Render)) }}
+{{- if .IsMultivalue }}{{ $out = (print $out "s") }}{{- end }}
+{{- $out = (print $out "()") }}
+{{- .Base.RenderFormat $out }}
+{{- end }}
+
+{{ define "CustomTypeRenderFormatStrings" -}}
+{{- if .IsMultivalue -}}
+cvs := {{ .From }}.{{ title .BaseFunc.Render }}s()
+{{ .Base.RenderFormatStrings "vs" "cvs" true }}
+{{ .To }} {{ if .IsNew }}:{{ end }}= vs
+{{- else -}}
+cv := {{ .From }}.{{ title .BaseFunc.Render }}()
+{{ .To }} {{ if .IsNew }}:{{ end }}= []string{ {{- .Base.RenderFormat "cv" }} }
+{{- end }}
+{{- end }}
+
+{{ define "CustomTypeParseString" }}
 {{- .Base.ParseString "vCustom" .From true .MkErr }}
 {{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
 {{ end -}}
 {
-	err := {{ .To }}.Parse{{ title .Base.Render }}({{"vCustom"}})
+	err := {{ .To }}.Parse{{ title .BaseFunc.Render }}{{ if .IsMultivalue }}s{{ end }}(vCustom)
+	if err != nil {
+		return {{.MkErr.Wrap (print "parse custom type") "err" }}
+	}
+}
+{{- end }}
+
+{{ define "CustomTypeParseStrings" }}
+{{- .Base.ParseStrings "vCustom" .From true .MkErr }}
+{{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
+{{ end -}}
+{
+	err := {{ .To }}.Parse{{ title .BaseFunc.Render }}{{ if .IsMultivalue }}s{{ end }}(vCustom)
 	if err != nil {
 		return {{.MkErr.Wrap (print "parse custom type") "err" }}
 	}
@@ -195,24 +225,39 @@ var {{ .To }} {{ .Self.Render }}
 map[{{ .Key.Render }}]{{ .Value.Render }}
 {{- end }}
 
-{{/* ----------------------------- RefParse ------------------------------------- */}}
 
-{{ define "RefParseQuery" -}}
-{{- if .IsNew }}var {{ .To }} {{ .Type }}
-{{ end -}}
-err := {{ .To }}.ParseStrings({{.From}})
-if err != nil {
-	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
-}
+{{/* ----------------------------- RefSchemaType ------------------------------------- */}}
+
+{{ define "RefSchemaType_RenderFormat" -}}
+{{- $multivalue := "" }}
+{{- if .IsMultivalue }}{{ $multivalue = "s" }}{{ end }}
+{{- .SchemaType.RenderFormat (print .From "." (title .FuncName.Render) $multivalue "()") }}
 {{- end }}
 
-{{ define "RefParseSchema" -}}
-{{- if .IsNew }}var {{ .To }} {{ .Type }}
-{{ end -}}
-err := {{ .To }}.ParseString({{.From}})
-if err != nil {
-	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
-}
+{{ define "RefSchemaType_RenderFormatStrings" -}}
+{{- $multivalue := "" }}
+{{- if .IsMultivalue }}{{ $multivalue = "s" }}{{ end }}
+{{- if .Ref.IsAlias }}
+{{- .Ref.Type.RenderFormatStrings .To .From .IsNew }}
+{{- else }}
+{{- .Ref.Type.RenderFormatStrings .To (print .From "." (title .FuncName.Render) $multivalue "()") .IsNew }}
+{{- end }}
+{{- end }}
+
+{{ define "RefSchemaType_ParseString" -}}
+{{- $varName := (private (print "v" .FuncName.Render)) }}
+{{- .Ref.ParseString $varName .From true .MkErr }}
+{{ .To }} {{ if .IsNew }}:{{ end }}= New{{ .Name }}({{ $varName }})
+{{- end }}
+
+{{ define "RefSchemaType_ParseStrings" -}}
+{{- if .Ref.IsAlias }}
+{{- .Ref.Type.ParseStrings .To .From .IsNew .MkErr }}
+{{- else }}
+{{- $varName := (private (print "v" .FuncName.Render)) }}
+{{- .Ref.Type.ParseStrings $varName .From true .MkErr }}
+{{ .To }} {{ if .IsNew }}:{{ end }}= New{{ .Name }}({{ $varName }})
+{{- end }}
 {{- end }}
 
 

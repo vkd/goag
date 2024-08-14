@@ -16,6 +16,7 @@ func TestGetMultiParams(t *testing.T) {
 	testPage := Page(2)
 	testPageReq := Page(3)
 	testPages := []Page{4}
+	testPagesArray := Pages{5, 6}
 	testRequestID := RequestID("abcdef")
 
 	api := API{
@@ -28,6 +29,7 @@ func TestGetMultiParams(t *testing.T) {
 			assert.Equal(t, Just(testPage), req.Query.Page)
 			assert.Equal(t, testPageReq, req.Query.PageReq)
 			assert.Equal(t, Just(testPages), req.Query.Pages)
+			assert.Equal(t, Just(testPagesArray), req.Query.PagesArray)
 			assert.Equal(t, Just(testRequestID), req.Headers.RequestID)
 			return NewGetShopsShopResponse200()
 		},
@@ -44,9 +46,10 @@ func TestGetMultiParams(t *testing.T) {
 			Shop: testShop,
 		},
 		Query: GetShopsShopParamsQuery{
-			Page:    Just(testPage),
-			PageReq: testPageReq,
-			Pages:   Just(testPages),
+			Page:       Just(testPage),
+			PageReq:    testPageReq,
+			Pages:      Just(testPages),
+			PagesArray: Just(testPagesArray),
 		},
 		Headers: GetShopsShopParamsHeaders{
 			RequestID: Just(testRequestID),

@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/vkd/goag/tests/get_custom_params/pkg"
 )
 
 // ---------------------------------------------
@@ -52,6 +54,8 @@ type GetShopsShopParamsQuery struct {
 	PageReq Page
 
 	Pages Maybe[[]Page]
+
+	PagesArray Maybe[Pages]
 
 	PageCustom Maybe[PageCustom]
 }
@@ -128,12 +132,36 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 			}
 		}
 		{
+			q, ok := query["pages_array"]
+			if ok && len(q) > 0 {
+				vCustom := make([]int32, len(q))
+				for i := range q {
+					vInt, err := strconv.ParseInt(q[i], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "pages_array", Reason: "parse int32", Err: err}
+					}
+					vCustom[i] = int32(vInt)
+				}
+				var v Pages
+				{
+					err := v.ParseInt32s(vCustom)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "pages_array", Reason: "parse custom type", Err: err}
+					}
+				}
+				params.Query.PagesArray.Set(v)
+			}
+		}
+		{
 			q, ok := query["page_custom"]
 			if ok && len(q) > 0 {
-				var v PageCustom
-				err := v.ParseString(q[0])
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_custom", Reason: "parse PageCustom", Err: err}
+				vCustom := q[0]
+				var v pkg.Page
+				{
+					err := v.ParseString(vCustom)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page_custom", Reason: "parse custom type", Err: err}
+					}
 				}
 				params.Query.PageCustom.Set(v)
 			}

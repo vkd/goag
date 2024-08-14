@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 	"text/template"
@@ -35,6 +36,9 @@ func ExecuteTemplate(name string, data any) (string, error) {
 	err := templates.ExecuteTemplate(&bs, name, data)
 	if err != nil {
 		return "", fmt.Errorf("execute template (%s): %w", name, err)
+	}
+	if os.Getenv("TEMPLATE_DEBUG") != "" {
+		return `/** ` + name + ` >>> */` + bs.String() + ` /** <<< ` + name + ` */`, nil
 	}
 	return bs.String(), nil
 }

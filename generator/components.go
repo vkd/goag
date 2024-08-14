@@ -8,7 +8,7 @@ import (
 )
 
 type Components struct {
-	Schemas       []SchemaComponent
+	Schemas       *MappedList[specification.Ref[specification.Schema], SchemaComponent]
 	Headers       []HeaderComponent
 	RequestBodies []RequestBodyComponent
 	Responses     []ResponseComponent
@@ -20,34 +20,37 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 	var cs Components
 	var imports Imports
 
-	schemas := make([]SchemaComponent, len(spec.Schemas.List))
-	schemasMap := make(map[*specification.Object[string, specification.Ref[specification.Schema]]]*SchemaComponent, len(spec.Schemas.List))
-	for i, c := range spec.Schemas.List {
-		schemasMap[c] = &schemas[i]
-	}
-
-	cs.Schemas = schemas
+	cs.Schemas = NewMappedList[specification.Ref[specification.Schema], SchemaComponent](spec.Schemas)
 	for _, c := range spec.Schemas.List {
-		if ref := c.V.Ref(); ref != nil {
-			*schemasMap[c] = SchemaComponent{
-				Name: c.Name,
-				Ref:  Just(schemasMap[ref]),
-				Type: NewRef(ref),
-			}
-			continue
-		}
+		sc := cs.Schemas.m[c.V]
 
-		schema, ims, err := NewSchema(c.V)
+		schema, ims, err := NewSchema(c.V, cs)
 		if err != nil {
 			return zero, nil, fmt.Errorf("parse schema for %q type: %w", c.Name, err)
 		}
 		imports = append(imports, ims...)
 
-		sc := SchemaComponent{
+		if ref := c.V.Ref(); ref != nil {
+			cmp, ok := cs.Schemas.Get(ref.V)
+			if !ok {
+				return zero, nil, fmt.Errorf("cannot find %q ref schema in schemas", ref.Name)
+			}
+			*sc = SchemaComponent{
+				Name: c.Name,
+				Ref:  Just(cmp),
+				Type: NewRefSchemaType(ref.Name, cmp),
+
+				BaseType: StringRender(ref.Name),
+			}
+			continue
+		}
+
+		*sc = SchemaComponent{
 			Name:         c.Name,
 			Description:  c.V.Value().Description,
 			Type:         schema,
 			IsMultivalue: schema.IsMultivalue(),
+			BaseType:     schema.Base(),
 		}
 
 		switch schema := schema.(type) {
@@ -57,44 +60,50 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 			sc.CustomJSONMarshaler = c.V.Value().AdditionalProperties.Set
 		case SliceType:
 			sc.RenderFormatStringsMultiline = schema.RenderFormatStringsMultiline
+			sc.BaseType = schema.Items
+
 			switch items := schema.Items.(type) {
-			case Ref[specification.Schema]:
-				switch tp := items.SchemaType.Value(); tp.Type {
-				case "object":
+			case RefSchemaType:
+				switch items.Base().(type) {
+				case StructureType:
 					sc.IgnoreParseFormat = true
-				case "":
-					if len(tp.AllOf) > 0 {
-						sc.IgnoreParseFormat = true
-					}
+				case MapType:
+					sc.IgnoreParseFormat = true
+					// if len(tp) > 0 {
+					// }
 				}
 			case StructureType:
 				sc.IgnoreParseFormat = true
 			}
 		case CustomType:
+			sc.BaseType = schema
+			sc.IgnoreParseFormat = true
+
 			switch schema.Type {
 			case "any":
 				sc.IgnoreParseFormat = true
 			default:
 				sc.IsAlias = true
 			}
+		case RefSchemaType:
+			sc.BaseType = schema.Ref
+			sc.IsRef = true
 		}
-
-		*schemasMap[c] = sc
 	}
 
 	cs.Headers = make([]HeaderComponent, 0, len(spec.Headers.List))
 	for _, h := range spec.Headers.List {
-		var schema SchemaType
-		if ref := h.V.Ref(); ref != nil {
-			schema = NewRef(ref)
-		} else {
-			s, ims, err := NewSchema(h.V.Value().Schema)
-			if err != nil {
-				return zero, nil, fmt.Errorf("parse header for %q type: %w", h.Name, err)
-			}
-			imports = append(imports, ims...)
-			schema = s
+		var schema Render
+		// if ref := h.V.Ref(); ref != nil {
+		// 	schema = NewRefSchemaType(ref)
+		// } else {
+		s, ims, err := NewSchema(h.V.Value().Schema, cs)
+		if err != nil {
+			return zero, nil, fmt.Errorf("parse header for %q type: %w", h.Name, err)
 		}
+		imports = append(imports, ims...)
+		schema = s
+		// }
 
 		cs.Headers = append(cs.Headers, HeaderComponent{
 			Name:        h.Name,
@@ -109,7 +118,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 			cs.RequestBodies = append(cs.RequestBodies, RequestBodyComponent{
 				Name:        rb.Name,
 				Description: rb.V.Value().Description,
-				Type:        NewRef(ref),
+				Type:        StringRender(ref.Name),
 			})
 		} else {
 			for _, cnt := range rb.V.Value().Content.List {
@@ -120,7 +129,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 				default:
 					name += PublicFieldName(cnt.Name)
 				}
-				schema, ims, err := NewSchema(cnt.V.Schema)
+				schema, ims, err := NewSchema(cnt.V.Schema, cs)
 				if err != nil {
 					return zero, nil, fmt.Errorf("new schema for %q type, %q content: %w", rb.Name, cnt.Name, err)
 				}
@@ -143,7 +152,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 
 		resp := r.V.Value()
 
-		response, ims, err := NewResponse(OperationName(r.Name), "", resp, cfg)
+		response, ims, err := NewResponse(OperationName(r.Name), "", resp, cs, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new %q response: %w", r.Name, err)
 		}
@@ -202,7 +211,7 @@ func (c Components) Render() (string, error) {
 }
 
 func (c Components) LenToRender() int {
-	ln := len(c.Schemas) + len(c.Headers) + len(c.RequestBodies) + len(c.Responses)
+	ln := len(c.Schemas.List) + len(c.Headers) + len(c.RequestBodies) + len(c.Responses)
 	return ln
 }
 
@@ -220,6 +229,9 @@ type SchemaComponent struct {
 	StructureType       StructureType
 
 	Ref Maybe[*SchemaComponent]
+
+	BaseType Render
+	IsRef    bool
 }
 
 func (s SchemaComponent) Base() SchemaType {

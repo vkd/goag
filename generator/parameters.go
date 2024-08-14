@@ -14,7 +14,7 @@ type QueryParameter struct {
 	Type        SchemaType
 }
 
-func NewQueryParameter(refP specification.Ref[specification.QueryParameter]) (zero *QueryParameter, _ Imports, _ error) {
+func NewQueryParameter(refP specification.Ref[specification.QueryParameter], components Components) (zero *QueryParameter, _ Imports, _ error) {
 	s := refP.Value()
 	out := QueryParameter{
 		Description: s.Description,
@@ -24,7 +24,7 @@ func NewQueryParameter(refP specification.Ref[specification.QueryParameter]) (ze
 	out.Required = s.Required
 	var err error
 	var ims Imports
-	out.Type, ims, err = NewSchema(s.Schema)
+	out.Type, ims, err = NewSchema(s.Schema, components)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -52,7 +52,7 @@ type PathParameter struct {
 	Description   string
 }
 
-func NewPathParameter(rs specification.Ref[specification.PathParameter]) (zero *PathParameter, _ Imports, _ error) {
+func NewPathParameter(rs specification.Ref[specification.PathParameter], componenets Components) (zero *PathParameter, _ Imports, _ error) {
 	s := rs.Value()
 	out := PathParameter{Description: s.Description}
 	out.Name = s.Name
@@ -60,7 +60,7 @@ func NewPathParameter(rs specification.Ref[specification.PathParameter]) (zero *
 
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewSchema(s.Schema)
+	out.Type, ims, err = NewSchema(s.Schema, componenets)
 	if err != nil {
 		return nil, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -76,7 +76,7 @@ type HeaderParameter struct {
 	Required      bool
 }
 
-func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter]) (zero *HeaderParameter, _ Imports, _ error) {
+func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter], components Components) (zero *HeaderParameter, _ Imports, _ error) {
 	s := sr.Value()
 	out := HeaderParameter{
 		Description: s.Description,
@@ -86,7 +86,7 @@ func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter]) (ze
 
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewSchema(s.Schema)
+	out.Type, ims, err = NewSchema(s.Schema, components)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
