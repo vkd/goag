@@ -41,7 +41,7 @@ type HandlerTemplate struct {
 	ParametersHeader []HandlerParameterHeaderTemplate
 
 	BodyTypeName Render
-	BodyType     Render
+	BodyType     *StructureType
 
 	PathParsers []Parser
 
@@ -53,6 +53,10 @@ func NewHandlerTemplate(h *Handler) HandlerTemplate {
 	var defaultResponse Maybe[HandlerResponseTemplate]
 	if h.DefaultResponse != nil {
 		defaultResponse = Just(NewHandlerResponseTemplate(*h.DefaultResponse))
+	}
+	var bodyType *StructureType
+	if h.Body.Type.IsSet {
+		bodyType = &h.Body.Type.Value
 	}
 	return HandlerTemplate{
 		Name:        h.Name,
@@ -69,7 +73,7 @@ func NewHandlerTemplate(h *Handler) HandlerTemplate {
 		ParametersHeader: NewHandlerParameterHeaderTemplates(h.Parameters.Header),
 
 		BodyTypeName: h.Body.TypeName,
-		BodyType:     h.Body.Type,
+		BodyType:     bodyType,
 
 		PathParsers: h.PathParsers,
 

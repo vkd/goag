@@ -63,19 +63,101 @@ func (c {{ .Name }}) {{ title .BaseType.Render }}{{ if .IsMultivalue }}s{{ end }
 }
 {{- end }}
 
-{{- if .CustomJSONMarshaler }}
+{{- if .WriteJSONFunc }}
+
 var _ json.Marshaler = (*{{ .Name }})(nil)
 
-func (c *{{ .Name }}) MarshalJSON() ([]byte, error) {
-	m := make(map[string]interface{})
-	for k, v := range c.AdditionalProperties {
-		m[k] = v
+func (c {{ .Name }}) MarshalJSON() ([]byte, error) {
+	var out bytes.Buffer
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
 	}
-    {{- range $_, $f := .StructureType.Fields }}
-	m["{{ .JSONTag }}"] = c.{{ .Name }}
-    {{- end }}
-	return json.Marshal(m)
+
+	write([]byte(`{`))
+    mErr := c.marshalJSONInnerBody(&out)
+    if mErr != nil {
+        err = mErr
+    }
+	write([]byte(`}`))
+
+    if err != nil {
+        return nil, err
+    }
+
+	return out.Bytes(), nil
 }
+
+func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
+	encoder := json.NewEncoder(out)
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+	writeJSON := func(v any) {
+		if err != nil {
+			return
+		}
+		werr := encoder.Encode(v)
+		if werr != nil {
+			err = werr
+		}
+	}
+    _ = writeJSON
+
+    {{- range $i, $f := .StructureType.Fields }}
+        {{- if $i }}
+	write([]byte(`,`))
+        {{- end }}
+
+        {{- if .Embedded }}
+    mErr := c.{{ .Type.Render}}.marshalJSONInnerBody(out)
+    if mErr != nil {
+        err = mErr
+    }
+        {{- else }}
+	write([]byte(`"{{ .JSONTag }}":`))
+    writeJSON(c.{{ .Name }})
+        {{- end }}
+    {{- end }}
+
+    {{- if .StructureType.AdditionalProperties }}
+        {{- if .StructureType.Fields }}
+    write([]byte(`,`))
+        {{- end }}
+
+    {{ $comma := "" }}
+	for k, v := range c.AdditionalProperties {
+        {{- if $comma }}
+        write([]byte(`{{ $comma }}`))
+        {{- end }}
+        write([]byte(`"`+k+`":`))
+        writeJSON(v)
+        {{- $comma = "," }}
+	}
+    {{ end }}
+
+	return err
+}
+{{- end }}
+
+{{- if .CustomJSONMarshaler }}
 
 var _ json.Unmarshaler = (*{{ .Name }})(nil)
 

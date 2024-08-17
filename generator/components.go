@@ -58,6 +58,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 			sc.IgnoreParseFormat = true
 			sc.StructureType = schema
 			sc.CustomJSONMarshaler = c.V.Value().AdditionalProperties.Set
+			sc.WriteJSONFunc = true
 		case SliceType:
 			sc.RenderFormatStringsMultiline = schema.RenderFormatStringsMultiline
 			sc.BaseType = schema.Items
@@ -222,6 +223,7 @@ type SchemaComponent struct {
 	IgnoreParseFormat bool
 	IsMultivalue      bool
 	IsAlias           bool
+	WriteJSONFunc     bool
 
 	RenderFormatStringsMultiline func(to, from string) (string, error)
 

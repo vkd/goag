@@ -32,7 +32,7 @@ type Operation struct {
 
 	Body struct {
 		TypeName Render
-		Type     Render
+		Type     Maybe[StructureType]
 	}
 
 	DefaultResponse *ResponseCode
@@ -116,9 +116,9 @@ func NewOperation(s *specification.Operation, componenets Components, cfg Config
 				}
 				imports = append(imports, ims...)
 
-				switch body.(type) {
+				switch body := body.(type) {
 				case StructureType:
-					o.Body.Type = body
+					o.Body.Type = Just(body)
 				default:
 					o.Body.TypeName = body
 				}

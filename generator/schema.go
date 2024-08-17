@@ -52,7 +52,7 @@ func newSchema(spec *specification.Schema, components Components) (SchemaType, I
 		var imports Imports
 		for i, a := range spec.AllOf {
 			if ref := a.Ref(); ref != nil {
-				s.Fields = append(s.Fields, StructureField{Type: StringRender(ref.Name)})
+				s.Fields = append(s.Fields, StructureField{Type: StringRender(ref.Name), Embedded: true})
 			} else {
 				for _, p := range a.Value().Properties {
 					sf, ims, err := NewStructureField(p, components)

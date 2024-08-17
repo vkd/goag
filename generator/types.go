@@ -479,11 +479,12 @@ func (s StructureType) ParseStrings(to string, from string, isNew bool, mkErr Er
 }
 
 type StructureField struct {
-	Comment string
-	Name    string
-	Type    Render
-	Tags    []StructureFieldTag
-	JSONTag string
+	Comment  string
+	Name     string
+	Type     Render
+	Tags     []StructureFieldTag
+	JSONTag  string
+	Embedded bool
 }
 
 func NewStructureField(s specification.SchemaProperty, components Components) (zero StructureField, _ Imports, _ error) {
