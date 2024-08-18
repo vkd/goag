@@ -543,7 +543,7 @@ func NewRefSchemaType(name string, next *SchemaComponent) RefSchemaType {
 
 func (r RefSchemaType) Kind() SchemaKind { return SchemaKindRef }
 
-func (r RefSchemaType) Base() SchemaType { return r.Ref.Schema.Type }
+func (r RefSchemaType) Base() SchemaType { return r.Ref.Schema.Base() }
 
 func (r RefSchemaType) Render() (string, error) { return r.Name, nil }
 

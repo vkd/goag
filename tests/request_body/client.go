@@ -64,3 +64,39 @@ func (c *Client) PostPets(ctx context.Context, request PostPetsParams) (PostPets
 		return response, nil
 	}
 }
+
+// PostPets2
+// POST /pets2
+func (c *Client) PostPets2(ctx context.Context, request PostPets2Params) (PostPets2Response, error) {
+	var requestURL = c.BaseURL + "/pets2"
+
+	bs, err := json.Marshal(request.Body)
+	if err != nil {
+		return nil, fmt.Errorf("marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, bytes.NewReader(bs))
+	if err != nil {
+		return nil, fmt.Errorf("new request: %w", err)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http client Do(): %w", err)
+	}
+
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	switch resp.StatusCode {
+	case 201:
+		var response PostPets2Response201
+		return response, nil
+	default:
+		var response PostPets2ResponseDefault
+		response.Code = resp.StatusCode
+
+		return response, nil
+	}
+}

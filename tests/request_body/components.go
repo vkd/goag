@@ -79,3 +79,11 @@ func (c NewPet) marshalJSONInnerBody(out io.Writer) error {
 
 	return err
 }
+
+// ------------------------------
+//         RequestBodies
+// ------------------------------
+
+type NewPetJSON NewPet
+
+type Pets2JSON NewPetJSON

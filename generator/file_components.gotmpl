@@ -200,10 +200,10 @@ type {{ .Name }} = {{ .Schema.RenderType }}
 {{ define "HeaderComponent" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} {{ .Type.Render }}
+type {{ .Name }} {{ .Type.RenderType }}
 
 func (h {{ .Name }}) String() string {
-    return {{ .Type.RenderFormat (print .Type.Render "(h)") }}
+    return {{ .Type.RenderFormat (print .Type.RenderType "(h)") }}
 }
 
 func (c *{{ .Name }}) Parse(s string) error {

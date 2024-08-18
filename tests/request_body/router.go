@@ -8,7 +8,8 @@ import (
 )
 
 type API struct {
-	PostPetsHandler PostPetsHandlerFunc
+	PostPetsHandler  PostPetsHandlerFunc
+	PostPets2Handler PostPets2HandlerFunc
 
 	// not found
 	NotFoundHandler http.Handler
@@ -57,6 +58,12 @@ func (rt *API) route(path, method string) (http.Handler, string, bool) {
 			case http.MethodPost:
 				h := http.Handler(rt.PostPetsHandler)
 				return h, "/pets", true
+			}
+		case "/pets2":
+			switch method {
+			case http.MethodPost:
+				h := http.Handler(rt.PostPets2Handler)
+				return h, "/pets2", true
 			}
 		}
 		return nil, "", false

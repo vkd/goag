@@ -34,22 +34,16 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 
 	cs.Headers = make([]HeaderComponent, 0, len(spec.Headers.List))
 	for _, h := range spec.Headers.List {
-		var schema Render
-		// if ref := h.V.Ref(); ref != nil {
-		// 	schema = NewRefSchemaType(ref)
-		// } else {
-		s, ims, err := NewSchemaType(h.V.Value().Schema, cs)
+		s, ims, err := NewSchema(h.V.Value().Schema, cs)
 		if err != nil {
 			return zero, nil, fmt.Errorf("parse header for %q type: %w", h.Name, err)
 		}
 		imports = append(imports, ims...)
-		schema = s
-		// }
 
 		cs.Headers = append(cs.Headers, HeaderComponent{
 			Name:        h.Name,
 			Description: h.V.Value().Description,
-			Type:        schema,
+			Type:        s,
 		})
 	}
 
@@ -57,9 +51,9 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 	for _, rb := range spec.RequestBodies.List {
 		if ref := rb.V.Ref(); ref != nil {
 			cs.RequestBodies = append(cs.RequestBodies, RequestBodyComponent{
-				Name:        rb.Name,
+				Name:        rb.Name + "JSON",
 				Description: rb.V.Value().Description,
-				Type:        StringRender(ref.Name),
+				Type:        StringRender(ref.Name + "JSON"),
 			})
 		} else {
 			for _, cnt := range rb.V.Value().Content.List {
@@ -70,7 +64,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 				default:
 					name += PublicFieldName(cnt.Name)
 				}
-				schema, ims, err := NewSchemaType(cnt.V.Schema, cs)
+				schema, ims, err := NewSchema(cnt.V.Schema, cs)
 				if err != nil {
 					return zero, nil, fmt.Errorf("new schema for %q type, %q content: %w", rb.Name, cnt.Name, err)
 				}
@@ -78,7 +72,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 				cs.RequestBodies = append(cs.RequestBodies, RequestBodyComponent{
 					Name:        name,
 					Description: rb.V.Value().Description,
-					Type:        schema,
+					Type:        schema.TypeRender(),
 				})
 			}
 		}
@@ -267,7 +261,7 @@ func (s SchemaComponent) Render() (string, error) {
 type HeaderComponent struct {
 	Name        string
 	Description string
-	Type        Render
+	Type        Schema
 }
 
 func (s HeaderComponent) Render() (string, error) {

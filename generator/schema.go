@@ -33,9 +33,13 @@ func NewSchema(s specification.Ref[specification.Schema], components Components)
 	}, ims, nil
 }
 
+func (s Schema) Base() SchemaType { return s.Type }
+
 func (s Schema) RenderType() (string, error) {
 	return s.Type.Render()
 }
+
+func (s Schema) TypeRender() Render { return RenderFunc(s.RenderType) }
 
 func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return s.Type.ParseString(to, from, isNew, mkErr)

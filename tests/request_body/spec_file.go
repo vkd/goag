@@ -11,6 +11,13 @@ const SpecFile string = `paths:
       responses:
         '201': {}
         default: {}
+  /pets2:
+    post:
+      requestBody:
+        $ref: '#/components/requestBodies/Pets2'
+      responses:
+        '201': {}
+        default: {}
 components:
   schemas:
     NewPet:
@@ -23,4 +30,12 @@ components:
           type: string
         tag:
           type: string
+  requestBodies:
+    Pets2:
+      $ref: '#/components/requestBodies/NewPet'
+    NewPet:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NewPet'
 `
