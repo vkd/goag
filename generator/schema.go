@@ -62,7 +62,10 @@ func newSchema(spec *specification.Schema, components Components) (SchemaType, I
 		return s, imports, nil
 	}
 
+	// https://datatracker.ietf.org/doc/html/draft-wright-json-schema-00#section-4
 	switch spec.Type {
+	case "boolean":
+		return BoolType{}, nil, nil
 	case "object":
 		if specAdditionalProperties, ok := spec.AdditionalProperties.Get(); ok && len(spec.Properties) == 0 {
 			additional, ims, err := NewSchema(specAdditionalProperties, components)
@@ -82,7 +85,27 @@ func newSchema(spec *specification.Schema, components Components) (SchemaType, I
 			return nil, nil, fmt.Errorf("items schema: %w", err)
 		}
 		return SliceType{Items: itemType}, is, nil
+	case "number":
+		switch spec.Format {
+		case "float":
+			return FloatType{BitSize: 32}, nil, nil
+		case "double", "":
+		default:
+			return nil, nil, fmt.Errorf("unsupported 'number' format %q", spec.Format)
+		}
+		return FloatType{BitSize: 64}, nil, nil
 	case "string":
+		switch spec.Format {
+		case "":
+			return StringType{}, nil, nil
+		case "byte": // base64 encoded characters
+		case "binary": // any sequence of octets
+		case "date": // full-date = 4DIGIT "-" 01-12 "-" 01-31
+		case "date-time": // full-date "T" 00-23 ":" 00-59 ":" 00-60 "Z" / ("+" / "-") 00-23 ":" 00-60
+		case "password":
+		default:
+			return nil, nil, fmt.Errorf("unsupported 'string' format %q", spec.Format)
+		}
 		return StringType{}, nil, nil
 	case "integer":
 		switch spec.Format {
@@ -93,17 +116,6 @@ func newSchema(spec *specification.Schema, components Components) (SchemaType, I
 		default:
 			return IntType{}, nil, nil
 		}
-	case "number":
-		switch spec.Format {
-		case "float":
-			return FloatType{BitSize: 32}, nil, nil
-		case "double", "":
-		default:
-			return nil, nil, fmt.Errorf("unsupported 'number' format %q", spec.Format)
-		}
-		return FloatType{BitSize: 64}, nil, nil
-	case "boolean":
-		return BoolType{}, nil, nil
 	}
 
 	return nil, nil, fmt.Errorf("unknown schema type: %q", spec.Type)
