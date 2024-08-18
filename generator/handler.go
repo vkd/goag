@@ -129,7 +129,7 @@ type HandlerQueryParameter struct {
 func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryParameter, _ Imports, _ error) {
 	var ims Imports
 
-	var tpRender Render = p.Type
+	var tpRender Render = p.Type.TypeRender()
 	var isOptional bool
 	if !p.Required {
 		// switch tp := p.Type.(type) {
@@ -229,7 +229,7 @@ func NewHandlerPathParameter(p *PathParameter) (zero HandlerPathParameter, _ Imp
 	out := HandlerPathParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
-			FieldType:    p.Type,
+			FieldType:    p.Type.TypeRender(),
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
@@ -250,13 +250,16 @@ type HandlerHeaderParameter struct {
 
 func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHeaderParameter, _ Imports, _ error) {
 	var ims Imports
-	tp := p.Type
+	var tp Render = p.Schema.TypeRender()
+	var parser Parser = p.Schema
 
 	if !p.Required {
-		tp = NewOptionalType(tp, cfg)
+		ot := NewOptionalType(p.Schema, cfg)
 		if cfg.Maybe.Import != "" {
 			ims = append(ims, Import(cfg.Maybe.Import))
 		}
+		tp = ot
+		parser = ot
 	}
 
 	fieldName := PublicFieldName(p.Name)
@@ -270,7 +273,7 @@ func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHead
 
 		ParameterName: p.Name,
 		Required:      p.Required,
-		Parser:        tp,
+		Parser:        parser,
 	}
 
 	return out, ims, nil

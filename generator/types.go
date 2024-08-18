@@ -410,14 +410,14 @@ type StructureType struct {
 	SingleValue
 	Fields []StructureField
 
-	AdditionalProperties *SchemaType
+	AdditionalProperties *Render
 }
 
 func NewStructureType(s *specification.Schema, components Components) (zero StructureType, _ Imports, _ error) {
 	var stype StructureType
 	var imports Imports
 	for _, p := range s.Properties {
-		t, ims, err := NewSchemaType(p.Schema, components)
+		t, ims, err := NewSchema(p.Schema, components)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new schema: %w", err)
 		}
@@ -431,13 +431,15 @@ func NewStructureType(s *specification.Schema, components Components) (zero Stru
 		stype.Fields = append(stype.Fields, f)
 	}
 	if additionalProperties, ok := s.AdditionalProperties.Get(); ok {
-		additional, ims, err := NewSchemaType(additionalProperties, components)
+		additional, ims, err := NewSchema(additionalProperties, components)
 		if err != nil {
 			return zero, nil, fmt.Errorf("additional properties: %w", err)
 		}
 		imports = append(imports, ims...)
-		stype.AdditionalProperties = &additional
+		render := additional.TypeRender()
+		stype.AdditionalProperties = &render
 	}
+
 	return stype, imports, nil
 }
 
@@ -496,16 +498,18 @@ type StructureField struct {
 	Comment  string
 	Name     string
 	Type     Render
+	Schema   Schema
 	Tags     []StructureFieldTag
 	JSONTag  string
 	Embedded bool
 }
 
-func NewStructureField(s specification.Ref[specification.Schema], name string, t SchemaType, components Components) (zero StructureField, _ error) {
+func NewStructureField(s specification.Ref[specification.Schema], name string, t Schema, components Components) (zero StructureField, _ error) {
 	return StructureField{
 		Comment: s.Value().Description,
 		Name:    PublicFieldName(name),
-		Type:    t,
+		Type:    t.TypeRender(),
+		Schema:  t,
 		Tags:    []StructureFieldTag{{Key: "json", Values: []string{name}}},
 		JSONTag: name,
 	}, nil
@@ -598,11 +602,11 @@ func (r RefSchemaType) ParseStrings(to, from string, isNew bool, mkErr ErrorRend
 }
 
 type OptionalType struct {
-	V         SchemaType
+	V         Schema
 	MaybeType string
 }
 
-func NewOptionalType(v SchemaType, cfg Config) OptionalType {
+func NewOptionalType(v Schema, cfg Config) OptionalType {
 	typename := cfg.Maybe.Type
 	if typename == "" {
 		typename = "Maybe"
@@ -613,14 +617,14 @@ func NewOptionalType(v SchemaType, cfg Config) OptionalType {
 var _ Render = OptionalType{}
 
 func (p OptionalType) Render() (string, error) {
-	out, err := p.V.Render()
+	out, err := p.V.RenderType()
 	return p.MaybeType + "[" + out + "]", err
 }
 
-func (o OptionalType) Kind() SchemaKind { return o.V.Kind() }
+func (o OptionalType) Kind() SchemaKind { return o.V.Type.Kind() }
 
 func (o OptionalType) Base() SchemaType {
-	return o.V
+	return o.V.Base()
 }
 
 var _ Parser = OptionalType{}

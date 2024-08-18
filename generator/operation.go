@@ -109,13 +109,13 @@ func NewOperation(s *specification.Operation, componenets Components, cfg Config
 			requestBody := rBody.Value()
 			jsonContent, ok := requestBody.Content.Get("application/json")
 			if ok {
-				body, ims, err := NewSchemaType(jsonContent.V.Schema, componenets)
+				body, ims, err := NewSchema(jsonContent.V.Schema, componenets)
 				if err != nil {
 					return nil, nil, fmt.Errorf("request body: %w", err)
 				}
 				imports = append(imports, ims...)
 
-				switch body := body.(type) {
+				switch body := body.Type.(type) {
 				case StructureType:
 					o.Body.Type = Just(body)
 				default:
@@ -161,7 +161,8 @@ func NewOperation(s *specification.Operation, componenets Components, cfg Config
 				FieldName:   "Authorization",
 				Description: sr.Scheme.BearerFormat,
 				Required:    len(o.Security) == 1,
-				Type:        NewPrimitive(StringType{}),
+				Type:        NewSchemaWithType(NewPrimitive(StringType{})),
+				Schema:      NewSchemaWithType(NewPrimitive(StringType{})),
 			})
 		}
 	}

@@ -11,7 +11,7 @@ type QueryParameter struct {
 	Description string
 	FieldName   string
 	Required    bool
-	Type        SchemaType
+	Type        Schema
 }
 
 func NewQueryParameter(refP specification.Ref[specification.QueryParameter], components Components) (zero *QueryParameter, _ Imports, _ error) {
@@ -24,7 +24,7 @@ func NewQueryParameter(refP specification.Ref[specification.QueryParameter], com
 	out.Required = s.Required
 	var err error
 	var ims Imports
-	out.Type, ims, err = NewSchemaType(s.Schema, components)
+	out.Type, ims, err = NewSchema(s.Schema, components)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -48,7 +48,7 @@ type PathParameter struct {
 	Name          string
 	FieldName     string
 	FieldTypeName string
-	Type          SchemaType
+	Type          Schema
 	Description   string
 }
 
@@ -60,7 +60,7 @@ func NewPathParameter(rs specification.Ref[specification.PathParameter], compone
 
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewSchemaType(s.Schema, componenets)
+	out.Type, ims, err = NewSchema(s.Schema, componenets)
 	if err != nil {
 		return nil, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -72,7 +72,8 @@ type HeaderParameter struct {
 	Description   string
 	FieldName     string
 	FieldTypeName string
-	Type          SchemaType
+	Type          Schema
+	Schema        Schema
 	Required      bool
 }
 
@@ -84,12 +85,12 @@ func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter], com
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 
-	var ims Imports
-	var err error
-	out.Type, ims, err = NewSchemaType(s.Schema, components)
+	schema, ims, err := NewSchema(s.Schema, components)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
+	out.Type = schema
+	out.Schema = schema
 	out.Required = s.Required
 	return &out, ims, nil
 }
