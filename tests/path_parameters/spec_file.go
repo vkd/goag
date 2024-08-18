@@ -1,0 +1,39 @@
+package test
+
+const SpecFile string = `openapi: 3.1.0
+info:
+  title: components
+  version: 0.0.1
+
+
+paths:
+  /shops/{shop_string}/{shop_schema}/pets:
+    post:
+      parameters:
+        - $ref: '#/components/parameters/ShopStringPath'
+        - $ref: '#/components/parameters/ShopSchemaPath'
+      responses:
+        200:
+          description: OK response
+
+
+components:
+  schemas:
+    Shop:
+      type: string
+
+  parameters:
+    ShopStringPath:
+      name: shop_string
+      in: path
+      required: true
+      schema:
+        type: string
+
+    ShopSchemaPath:
+      name: shop_schema
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Shop'
+`

@@ -84,11 +84,10 @@ func NewOperation(s *specification.Operation, componenets Components, cfg Config
 	var el OperationPathElement
 	for _, pd := range o.Path.Dirs {
 		if pd.IsVariable {
-			if el.Raw != "" {
-				el.Raw += "/"
-				o.PathBuilder = append(o.PathBuilder, el)
-				el = OperationPathElement{}
-			}
+			el.Raw += "/"
+			o.PathBuilder = append(o.PathBuilder, el)
+			el = OperationPathElement{}
+
 			o.PathBuilder = append(o.PathBuilder, OperationPathElement{
 				Param: Just(pd.Param),
 			})
