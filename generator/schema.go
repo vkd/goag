@@ -6,6 +6,55 @@ import (
 	"github.com/vkd/goag/specification"
 )
 
+type Schema struct {
+	Type   SchemaType
+	Ref    *SchemaComponent
+	Custom Maybe[string]
+}
+
+func NewSchema(s specification.Ref[specification.Schema], components Components) (zero Schema, _ Imports, _ error) {
+	var schemaRef *SchemaComponent
+	if ref := s.Ref(); ref != nil {
+		refOut, ok := components.Schemas.Get(ref.V)
+		if !ok {
+			return zero, nil, fmt.Errorf("ref schema %q not found in schemas", ref.Name)
+		}
+		schemaRef = refOut
+	}
+
+	st, ims, err := NewSchemaType(s, components)
+	if err != nil {
+		return zero, nil, fmt.Errorf("new schema type: %w", err)
+	}
+
+	return Schema{
+		Type: st,
+		Ref:  schemaRef,
+	}, ims, nil
+}
+
+func (s Schema) RenderType() (string, error) {
+	return s.Type.Render()
+}
+
+func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return s.Type.ParseString(to, from, isNew, mkErr)
+}
+
+func (s Schema) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return s.Type.ParseStrings(to, from, isNew, mkErr)
+}
+
+func (s Schema) IsMultivalue() bool { return s.Type.IsMultivalue() }
+
+func (s Schema) RenderFormat(from string) (string, error) {
+	return s.Type.RenderFormat(from)
+}
+
+func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return s.Type.RenderFormatStrings(to, from, isNew)
+}
+
 type SchemaType interface {
 	Base() SchemaType
 
@@ -38,7 +87,7 @@ func NewSchemaType(s specification.Ref[specification.Schema], components Compone
 
 	spec := s.Value()
 
-	out, ims, err := newSchema(spec, components)
+	out, ims, err := newSchemaType(spec, components)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -54,7 +103,7 @@ func NewSchemaType(s specification.Ref[specification.Schema], components Compone
 	return out, ims, nil
 }
 
-func newSchema(spec *specification.Schema, components Components) (SchemaType, Imports, error) {
+func newSchemaType(spec *specification.Schema, components Components) (SchemaType, Imports, error) {
 	if len(spec.AllOf) > 0 {
 		var s StructureType
 		var imports Imports

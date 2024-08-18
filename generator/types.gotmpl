@@ -231,31 +231,31 @@ map[{{ .Key.Render }}]{{ .Value.Render }}
 {{ define "RefSchemaType_RenderFormat" -}}
 {{- $multivalue := "" }}
 {{- if .IsMultivalue }}{{ $multivalue = "s" }}{{ end }}
-{{- .SchemaType.RenderFormat (print .From "." (title .FuncName.Render) $multivalue "()") }}
+{{- .Type.RenderFormat (print .From "." (title .FuncName.Render) $multivalue "()") }}
 {{- end }}
 
 {{ define "RefSchemaType_RenderFormatStrings" -}}
 {{- $multivalue := "" }}
 {{- if .IsMultivalue }}{{ $multivalue = "s" }}{{ end }}
 {{- if .Ref.IsAlias }}
-{{- .Ref.Type.RenderFormatStrings .To .From .IsNew }}
+{{- .Type.RenderFormatStrings .To .From .IsNew }}
 {{- else }}
-{{- .Ref.Type.RenderFormatStrings .To (print .From "." (title .FuncName.Render) $multivalue "()") .IsNew }}
+{{- .Type.RenderFormatStrings .To (print .From "." (title .FuncName.Render) $multivalue "()") .IsNew }}
 {{- end }}
 {{- end }}
 
 {{ define "RefSchemaType_ParseString" -}}
 {{- $varName := (private (print "v" .FuncName.Render)) }}
-{{- .Ref.ParseString $varName .From true .MkErr }}
+{{- .Type.ParseString $varName .From true .MkErr }}
 {{ .To }} {{ if .IsNew }}:{{ end }}= New{{ .Name }}({{ $varName }})
 {{- end }}
 
 {{ define "RefSchemaType_ParseStrings" -}}
 {{- if .Ref.IsAlias }}
-{{- .Ref.Type.ParseStrings .To .From .IsNew .MkErr }}
+{{- .Type.ParseStrings .To .From .IsNew .MkErr }}
 {{- else }}
 {{- $varName := (private (print "v" .FuncName.Render)) }}
-{{- .Ref.Type.ParseStrings $varName .From true .MkErr }}
+{{- .Type.ParseStrings $varName .From true .MkErr }}
 {{ .To }} {{ if .IsNew }}:{{ end }}= New{{ .Name }}({{ $varName }})
 {{- end }}
 {{- end }}

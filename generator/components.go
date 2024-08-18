@@ -157,9 +157,10 @@ func (c Components) LenToRender() int {
 }
 
 type SchemaComponent struct {
-	Name              string
+	Name   string
+	Schema Schema
+
 	Description       string
-	Type              SchemaType
 	IgnoreParseFormat bool
 	IsMultivalue      bool
 	IsAlias           bool
@@ -177,35 +178,38 @@ type SchemaComponent struct {
 }
 
 func NewSchemaComponent(name string, rs specification.Ref[specification.Schema], cs Components) (zero SchemaComponent, imports Imports, _ error) {
+	schema, ims, err := NewSchema(rs, cs)
+	if err != nil {
+		return zero, nil, fmt.Errorf("new schema: %w", err)
+	}
+	imports = append(imports, ims...)
+
 	if ref := rs.Ref(); ref != nil {
 		cmp, ok := cs.Schemas.Get(ref.V)
 		if !ok {
 			return zero, nil, fmt.Errorf("cannot find %q ref schema in schemas", ref.Name)
 		}
 		return SchemaComponent{
-			Name: name,
-			Ref:  Just(cmp),
-			Type: NewRefSchemaType(ref.Name, cmp),
+			Name:   name,
+			Schema: schema,
 
+			Ref:      Just(cmp),
 			BaseType: StringRender(ref.Name),
 		}, imports, nil
 	}
 
-	schema, ims, err := NewSchemaType(rs, cs)
-	if err != nil {
-		return zero, nil, fmt.Errorf("parse schema for %q type: %w", name, err)
-	}
-	imports = append(imports, ims...)
+	schemaType := schema.Type
 
 	sc := SchemaComponent{
-		Name:         name,
+		Name:   name,
+		Schema: schema,
+
 		Description:  rs.Value().Description,
-		Type:         schema,
-		IsMultivalue: schema.IsMultivalue(),
-		BaseType:     schema.Base(),
+		IsMultivalue: schemaType.IsMultivalue(),
+		BaseType:     schemaType.Base(),
 	}
 
-	switch schema := schema.(type) {
+	switch schema := schemaType.(type) {
 	case StructureType:
 		sc.IgnoreParseFormat = true
 		sc.StructureType = schema
@@ -250,7 +254,7 @@ func (s SchemaComponent) Base() SchemaType {
 	if ref, ok := s.Ref.Get(); ok {
 		return ref.Base()
 	}
-	return s.Type
+	return s.Schema.Type
 }
 
 func (s SchemaComponent) Render() (string, error) {

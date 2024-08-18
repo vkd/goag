@@ -543,13 +543,13 @@ func NewRefSchemaType(name string, next *SchemaComponent) RefSchemaType {
 
 func (r RefSchemaType) Kind() SchemaKind { return SchemaKindRef }
 
-func (r RefSchemaType) Base() SchemaType { return r.Ref.Type }
+func (r RefSchemaType) Base() SchemaType { return r.Ref.Schema.Type }
 
 func (r RefSchemaType) Render() (string, error) { return r.Name, nil }
 
 func (r RefSchemaType) RenderFormat(from string) (string, error) {
 	return ExecuteTemplate("RefSchemaType_RenderFormat", TData{
-		"SchemaType":   r.Ref.Type,
+		"Type":         r.Ref.Schema,
 		"From":         from,
 		"FuncName":     BaseFuncName(r),
 		"IsMultivalue": r.IsMultivalue(),
@@ -559,6 +559,7 @@ func (r RefSchemaType) RenderFormat(from string) (string, error) {
 func (r RefSchemaType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
 	return ExecuteTemplate("RefSchemaType_RenderFormatStrings", TData{
 		"Ref":          r.Ref,
+		"Type":         r.Ref.Schema,
 		"From":         from,
 		"To":           to,
 		"IsNew":        isNew,
@@ -573,7 +574,7 @@ func (r RefSchemaType) IsMultivalue() bool {
 
 func (r RefSchemaType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("RefSchemaType_ParseString", TData{
-		"Ref":      r.Ref.Type,
+		"Type":     r.Ref.Schema,
 		"Name":     r.Name,
 		"From":     from,
 		"To":       to,
@@ -586,6 +587,7 @@ func (r RefSchemaType) ParseString(to, from string, isNew bool, mkErr ErrorRende
 func (r RefSchemaType) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("RefSchemaType_ParseStrings", TData{
 		"Ref":      r.Ref,
+		"Type":     r.Ref.Schema,
 		"Name":     r.Name,
 		"From":     from,
 		"To":       to,

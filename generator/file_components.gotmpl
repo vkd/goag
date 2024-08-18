@@ -46,19 +46,19 @@
 {{ define "SchemaComponent" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} {{ .Type.Render }}
+type {{ .Name }} {{ .Schema.RenderType }}
 
 {{- if not .IgnoreParseFormat }}
 
-func New{{ .Name }}(v {{ .Type.Render }}) {{ .Name }} {
+func New{{ .Name }}(v {{ .Schema.RenderType }}) {{ .Name }} {
     return {{ .Name }}(v)
 }
 
-func (c {{ .Name }}) {{ title .BaseType.Render }}{{ if .IsMultivalue }}s{{ end }}() {{ .Type.Render }} {
+func (c {{ .Name }}) {{ title .BaseType.Render }}{{ if .IsMultivalue }}s{{ end }}() {{ .Schema.RenderType }} {
     {{- if .IsRef }}
-    return {{ .Type.Render }}(c).{{ title .Type.Render }}{{ if .IsMultivalue }}s{{ end }}()
+    return {{ .Schema.RenderType }}(c).{{ title .Schema.RenderType }}{{ if .IsMultivalue }}s{{ end }}()
     {{- else }}
-    return {{ .Type.Render }}(c)
+    return {{ .Schema.RenderType }}(c)
     {{- end }}
 }
 {{- end }}
@@ -193,7 +193,7 @@ func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
 {{ define "SchemaComponent_Alias" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} = {{ .Type.Render }}
+type {{ .Name }} = {{ .Schema.RenderType }}
 {{- end }}
 
 {{/* ----------------------------- HeaderComponent ------------------------------------- */}}
