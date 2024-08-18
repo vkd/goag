@@ -27,7 +27,7 @@ const (
 	SchemaKindMap       SchemaKind = "map"
 )
 
-func NewSchema(s specification.Ref[specification.Schema], components Components) (SchemaType, Imports, error) {
+func NewSchemaType(s specification.Ref[specification.Schema], components Components) (SchemaType, Imports, error) {
 	if ref := s.Ref(); ref != nil {
 		refOut, ok := components.Schemas.Get(ref.V)
 		if !ok {
@@ -79,7 +79,7 @@ func newSchema(spec *specification.Schema, components Components) (SchemaType, I
 		return NewPrimitive(BoolType{}), nil, nil
 	case "object":
 		if specAdditionalProperties, ok := spec.AdditionalProperties.Get(); ok && len(spec.Properties) == 0 {
-			additional, ims, err := NewSchema(specAdditionalProperties, components)
+			additional, ims, err := NewSchemaType(specAdditionalProperties, components)
 			if err != nil {
 				return nil, nil, fmt.Errorf("additional properties: %w", err)
 			}
@@ -91,7 +91,7 @@ func newSchema(spec *specification.Schema, components Components) (SchemaType, I
 		}
 		return r, ims, nil
 	case "array":
-		itemType, is, err := NewSchema(spec.Value().Items, components)
+		itemType, is, err := NewSchemaType(spec.Value().Items, components)
 		if err != nil {
 			return nil, nil, fmt.Errorf("items schema: %w", err)
 		}

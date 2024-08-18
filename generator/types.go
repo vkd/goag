@@ -417,7 +417,7 @@ func NewStructureType(s *specification.Schema, components Components) (zero Stru
 	var stype StructureType
 	var imports Imports
 	for _, p := range s.Properties {
-		t, ims, err := NewSchema(p.Schema, components)
+		t, ims, err := NewSchemaType(p.Schema, components)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new schema: %w", err)
 		}
@@ -431,7 +431,7 @@ func NewStructureType(s *specification.Schema, components Components) (zero Stru
 		stype.Fields = append(stype.Fields, f)
 	}
 	if additionalProperties, ok := s.AdditionalProperties.Get(); ok {
-		additional, ims, err := NewSchema(additionalProperties, components)
+		additional, ims, err := NewSchemaType(additionalProperties, components)
 		if err != nil {
 			return zero, nil, fmt.Errorf("additional properties: %w", err)
 		}

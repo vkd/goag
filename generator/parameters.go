@@ -24,7 +24,7 @@ func NewQueryParameter(refP specification.Ref[specification.QueryParameter], com
 	out.Required = s.Required
 	var err error
 	var ims Imports
-	out.Type, ims, err = NewSchema(s.Schema, components)
+	out.Type, ims, err = NewSchemaType(s.Schema, components)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -60,7 +60,7 @@ func NewPathParameter(rs specification.Ref[specification.PathParameter], compone
 
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewSchema(s.Schema, componenets)
+	out.Type, ims, err = NewSchemaType(s.Schema, componenets)
 	if err != nil {
 		return nil, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -86,7 +86,7 @@ func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter], com
 
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewSchema(s.Schema, components)
+	out.Type, ims, err = NewSchemaType(s.Schema, components)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}

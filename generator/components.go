@@ -38,7 +38,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 		// if ref := h.V.Ref(); ref != nil {
 		// 	schema = NewRefSchemaType(ref)
 		// } else {
-		s, ims, err := NewSchema(h.V.Value().Schema, cs)
+		s, ims, err := NewSchemaType(h.V.Value().Schema, cs)
 		if err != nil {
 			return zero, nil, fmt.Errorf("parse header for %q type: %w", h.Name, err)
 		}
@@ -70,7 +70,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 				default:
 					name += PublicFieldName(cnt.Name)
 				}
-				schema, ims, err := NewSchema(cnt.V.Schema, cs)
+				schema, ims, err := NewSchemaType(cnt.V.Schema, cs)
 				if err != nil {
 					return zero, nil, fmt.Errorf("new schema for %q type, %q content: %w", rb.Name, cnt.Name, err)
 				}
@@ -191,7 +191,7 @@ func NewSchemaComponent(name string, rs specification.Ref[specification.Schema],
 		}, imports, nil
 	}
 
-	schema, ims, err := NewSchema(rs, cs)
+	schema, ims, err := NewSchemaType(rs, cs)
 	if err != nil {
 		return zero, nil, fmt.Errorf("parse schema for %q type: %w", name, err)
 	}

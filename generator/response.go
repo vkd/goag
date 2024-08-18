@@ -30,7 +30,7 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 	for _, c := range response.Content.List {
 		switch c.Name {
 		case "application/json":
-			s, ims, err := NewSchema(c.V.Schema, components)
+			s, ims, err := NewSchemaType(c.V.Schema, components)
 			if err != nil {
 				return nil, nil, fmt.Errorf("schema for %q content response: %w", c.Name, err)
 			}
@@ -78,7 +78,7 @@ type ResponseHeader struct {
 }
 
 func NewResponseHeader(name string, ref specification.Ref[specification.Header], components Components, cfg Config) (zero ResponseHeader, _ Imports, _ error) {
-	s, ims, err := NewSchema(ref.Value().Schema, components)
+	s, ims, err := NewSchemaType(ref.Value().Schema, components)
 	if err != nil {
 		return zero, nil, fmt.Errorf("new schema: %w", err)
 	}
