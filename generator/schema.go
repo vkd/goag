@@ -49,14 +49,12 @@ func newSchema(spec *specification.Schema, components Components) (SchemaType, I
 			if ref := a.Ref(); ref != nil {
 				s.Fields = append(s.Fields, StructureField{Type: StringRender(ref.Name), Embedded: true})
 			} else {
-				for _, p := range a.Value().Properties {
-					sf, ims, err := NewStructureField(p, components)
-					if err != nil {
-						return nil, nil, fmt.Errorf("allOf: %d-th element: new structure field: %w", i, err)
-					}
-					s.Fields = append(s.Fields, sf)
-					imports = append(imports, ims...)
+				st, ims, err := NewStructureType(a.Value(), components)
+				if err != nil {
+					return nil, nil, fmt.Errorf("allOf: %d-th element: new structure type: %w", i, err)
 				}
+				imports = append(imports, ims...)
+				s.Fields = append(s.Fields, st.Fields...)
 			}
 		}
 		return s, imports, nil

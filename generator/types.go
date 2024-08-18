@@ -411,12 +411,18 @@ func NewStructureType(s *specification.Schema, components Components) (zero Stru
 	var stype StructureType
 	var imports Imports
 	for _, p := range s.Properties {
-		f, ims, err := NewStructureField(p, components)
+		t, ims, err := NewSchema(p.Schema, components)
+		if err != nil {
+			return zero, nil, fmt.Errorf("new schema: %w", err)
+		}
+		imports = append(imports, ims...)
+
+		f, err := NewStructureField(p.Schema, p.Name, t, components)
 		if err != nil {
 			return zero, nil, fmt.Errorf("field %q: %w", p.Name, err)
 		}
+
 		stype.Fields = append(stype.Fields, f)
-		imports = append(imports, ims...)
 	}
 	if additionalProperties, ok := s.AdditionalProperties.Get(); ok {
 		additional, ims, err := NewSchema(additionalProperties, components)
@@ -487,18 +493,14 @@ type StructureField struct {
 	Embedded bool
 }
 
-func NewStructureField(s specification.SchemaProperty, components Components) (zero StructureField, _ Imports, _ error) {
-	t, ims, err := NewSchema(s.Schema, components)
-	if err != nil {
-		return zero, nil, fmt.Errorf(": %w", err)
-	}
+func NewStructureField(s specification.Ref[specification.Schema], name string, t SchemaType, components Components) (zero StructureField, _ error) {
 	return StructureField{
-		Comment: s.Schema.Value().Description,
-		Name:    PublicFieldName(s.Name),
+		Comment: s.Value().Description,
+		Name:    PublicFieldName(name),
 		Type:    t,
-		Tags:    []StructureFieldTag{{Key: "json", Values: []string{s.Name}}},
-		JSONTag: s.Name,
-	}, ims, nil
+		Tags:    []StructureFieldTag{{Key: "json", Values: []string{name}}},
+		JSONTag: name,
+	}, nil
 }
 
 func (s StructureField) Render() (string, error) { return ExecuteTemplate("StructureField", s) }

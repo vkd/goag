@@ -22,7 +22,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 
 	cs.Schemas = NewMappedList[specification.Ref[specification.Schema], SchemaComponent](spec.Schemas)
 	for _, c := range spec.Schemas.List {
-		s, ims, err := NewSchemaComponent(c, cs)
+		s, ims, err := NewSchemaComponent(c.Name, c.V, cs)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new schema component: %w", err)
 		}
@@ -176,20 +176,14 @@ type SchemaComponent struct {
 	IsRef    bool
 }
 
-func NewSchemaComponent(c *specification.Object[string, specification.Ref[specification.Schema]], cs Components) (zero SchemaComponent, imports Imports, _ error) {
-	schema, ims, err := NewSchema(c.V, cs)
-	if err != nil {
-		return zero, nil, fmt.Errorf("parse schema for %q type: %w", c.Name, err)
-	}
-	imports = append(imports, ims...)
-
-	if ref := c.V.Ref(); ref != nil {
+func NewSchemaComponent(name string, rs specification.Ref[specification.Schema], cs Components) (zero SchemaComponent, imports Imports, _ error) {
+	if ref := rs.Ref(); ref != nil {
 		cmp, ok := cs.Schemas.Get(ref.V)
 		if !ok {
 			return zero, nil, fmt.Errorf("cannot find %q ref schema in schemas", ref.Name)
 		}
 		return SchemaComponent{
-			Name: c.Name,
+			Name: name,
 			Ref:  Just(cmp),
 			Type: NewRefSchemaType(ref.Name, cmp),
 
@@ -197,9 +191,15 @@ func NewSchemaComponent(c *specification.Object[string, specification.Ref[specif
 		}, imports, nil
 	}
 
+	schema, ims, err := NewSchema(rs, cs)
+	if err != nil {
+		return zero, nil, fmt.Errorf("parse schema for %q type: %w", name, err)
+	}
+	imports = append(imports, ims...)
+
 	sc := SchemaComponent{
-		Name:         c.Name,
-		Description:  c.V.Value().Description,
+		Name:         name,
+		Description:  rs.Value().Description,
 		Type:         schema,
 		IsMultivalue: schema.IsMultivalue(),
 		BaseType:     schema.Base(),
@@ -209,7 +209,7 @@ func NewSchemaComponent(c *specification.Object[string, specification.Ref[specif
 	case StructureType:
 		sc.IgnoreParseFormat = true
 		sc.StructureType = schema
-		sc.CustomJSONMarshaler = c.V.Value().AdditionalProperties.Set
+		sc.CustomJSONMarshaler = rs.Value().AdditionalProperties.Set
 		sc.WriteJSONFunc = true
 	case SliceType:
 		sc.RenderFormatStringsMultiline = schema.RenderFormatStringsMultiline
