@@ -30,6 +30,8 @@ func NewPrimitive(v PrimitiveIface) Primitive {
 	}
 }
 
+func (t Primitive) Kind() SchemaKind { return SchemaKindPrimitive }
+
 func (t Primitive) Base() SchemaType {
 	return t
 }
@@ -272,6 +274,8 @@ func (c CustomType) Render() (string, error) {
 	return string(c.Type), nil
 }
 
+func (c CustomType) Kind() SchemaKind { return SchemaKindObject }
+
 func (c CustomType) Base() SchemaType {
 	return c.BaseType
 }
@@ -336,6 +340,8 @@ type SliceType struct {
 	Multivalue
 	Items SchemaType
 }
+
+func (s SliceType) Kind() SchemaKind { return SchemaKindArray }
 
 func (s SliceType) Render() (string, error) { return ExecuteTemplate("SliceType", s) }
 
@@ -446,6 +452,8 @@ func (s StructureType) RenderFormat(from string) (string, error) {
 	})
 }
 
+func (s StructureType) Kind() SchemaKind { return SchemaKindObject }
+
 func (s StructureType) Base() SchemaType {
 	return s
 }
@@ -533,6 +541,8 @@ func NewRefSchemaType(name string, next *SchemaComponent) RefSchemaType {
 	}
 }
 
+func (r RefSchemaType) Kind() SchemaKind { return SchemaKindRef }
+
 func (r RefSchemaType) Base() SchemaType { return r.Ref.Type }
 
 func (r RefSchemaType) Render() (string, error) { return r.Name, nil }
@@ -605,6 +615,8 @@ func (p OptionalType) Render() (string, error) {
 	return p.MaybeType + "[" + out + "]", err
 }
 
+func (o OptionalType) Kind() SchemaKind { return o.V.Kind() }
+
 func (o OptionalType) Base() SchemaType {
 	return o.V
 }
@@ -656,6 +668,8 @@ func NewMapType(k, v SchemaType) MapType {
 }
 
 var _ SchemaType = MapType{}
+
+func (m MapType) Kind() SchemaKind { return SchemaKindMap }
 
 func (m MapType) Render() (string, error) {
 	return ExecuteTemplate("MapType", m)

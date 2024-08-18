@@ -12,7 +12,20 @@ type SchemaType interface {
 	Render
 	Parser
 	Formatter
+
+	Kind() SchemaKind
 }
+
+type SchemaKind string
+
+const (
+	SchemaKindPrimitive SchemaKind = "primitive"
+	SchemaKindArray     SchemaKind = "array"
+	SchemaKindObject    SchemaKind = "object"
+	SchemaKindCustom    SchemaKind = "custom"
+	SchemaKindRef       SchemaKind = "ref"
+	SchemaKindMap       SchemaKind = "map"
+)
 
 func NewSchema(s specification.Ref[specification.Schema], components Components) (SchemaType, Imports, error) {
 	if ref := s.Ref(); ref != nil {
