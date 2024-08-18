@@ -6,11 +6,6 @@ import (
 	"github.com/vkd/goag/specification"
 )
 
-type Schema struct {
-	Spec specification.Ref[specification.Schema]
-	Type SchemaType
-}
-
 type SchemaType interface {
 	Base() SchemaType
 

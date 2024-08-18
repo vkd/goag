@@ -15,7 +15,7 @@ type Response struct {
 	Headers []ResponseHeader
 
 	// Content specification.Map[specification.Ref[SchemaType]]
-	ContentJSON Maybe[Schema]
+	ContentJSON Maybe[ResponseContentSchema]
 }
 
 func NewResponse(handlerName OperationName, status string, response *specification.Response, components Components, cfg Config) (*Response, Imports, error) {
@@ -36,7 +36,7 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 			}
 			imports = append(imports, ims...)
 
-			r.ContentJSON = Just[Schema](Schema{
+			r.ContentJSON = Just(ResponseContentSchema{
 				Spec: c.V.Schema,
 				Type: s,
 			})
@@ -99,4 +99,9 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header],
 		h.IsCustomType = true
 	}
 	return h, ims, nil
+}
+
+type ResponseContentSchema struct {
+	Spec specification.Ref[specification.Schema]
+	Type SchemaType
 }
