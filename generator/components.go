@@ -22,74 +22,14 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 
 	cs.Schemas = NewMappedList[specification.Ref[specification.Schema], SchemaComponent](spec.Schemas)
 	for _, c := range spec.Schemas.List {
-		sc := cs.Schemas.m[c.V]
-
-		schema, ims, err := NewSchema(c.V, cs)
+		s, ims, err := NewSchemaComponent(c, cs)
 		if err != nil {
-			return zero, nil, fmt.Errorf("parse schema for %q type: %w", c.Name, err)
+			return zero, nil, fmt.Errorf("new schema component: %w", err)
 		}
 		imports = append(imports, ims...)
 
-		if ref := c.V.Ref(); ref != nil {
-			cmp, ok := cs.Schemas.Get(ref.V)
-			if !ok {
-				return zero, nil, fmt.Errorf("cannot find %q ref schema in schemas", ref.Name)
-			}
-			*sc = SchemaComponent{
-				Name: c.Name,
-				Ref:  Just(cmp),
-				Type: NewRefSchemaType(ref.Name, cmp),
-
-				BaseType: StringRender(ref.Name),
-			}
-			continue
-		}
-
-		*sc = SchemaComponent{
-			Name:         c.Name,
-			Description:  c.V.Value().Description,
-			Type:         schema,
-			IsMultivalue: schema.IsMultivalue(),
-			BaseType:     schema.Base(),
-		}
-
-		switch schema := schema.(type) {
-		case StructureType:
-			sc.IgnoreParseFormat = true
-			sc.StructureType = schema
-			sc.CustomJSONMarshaler = c.V.Value().AdditionalProperties.Set
-			sc.WriteJSONFunc = true
-		case SliceType:
-			sc.RenderFormatStringsMultiline = schema.RenderFormatStringsMultiline
-			sc.BaseType = schema.Items
-
-			switch items := schema.Items.(type) {
-			case RefSchemaType:
-				switch items.Base().(type) {
-				case StructureType:
-					sc.IgnoreParseFormat = true
-				case MapType:
-					sc.IgnoreParseFormat = true
-					// if len(tp) > 0 {
-					// }
-				}
-			case StructureType:
-				sc.IgnoreParseFormat = true
-			}
-		case CustomType:
-			sc.BaseType = schema
-			sc.IgnoreParseFormat = true
-
-			switch schema.Type {
-			case "any":
-				sc.IgnoreParseFormat = true
-			default:
-				sc.IsAlias = true
-			}
-		case RefSchemaType:
-			sc.BaseType = schema.Ref
-			sc.IsRef = true
-		}
+		sc := cs.Schemas.m[c.V]
+		*sc = s
 	}
 
 	cs.Headers = make([]HeaderComponent, 0, len(spec.Headers.List))
@@ -234,6 +174,76 @@ type SchemaComponent struct {
 
 	BaseType Render
 	IsRef    bool
+}
+
+func NewSchemaComponent(c *specification.Object[string, specification.Ref[specification.Schema]], cs Components) (zero SchemaComponent, imports Imports, _ error) {
+	schema, ims, err := NewSchema(c.V, cs)
+	if err != nil {
+		return zero, nil, fmt.Errorf("parse schema for %q type: %w", c.Name, err)
+	}
+	imports = append(imports, ims...)
+
+	if ref := c.V.Ref(); ref != nil {
+		cmp, ok := cs.Schemas.Get(ref.V)
+		if !ok {
+			return zero, nil, fmt.Errorf("cannot find %q ref schema in schemas", ref.Name)
+		}
+		return SchemaComponent{
+			Name: c.Name,
+			Ref:  Just(cmp),
+			Type: NewRefSchemaType(ref.Name, cmp),
+
+			BaseType: StringRender(ref.Name),
+		}, imports, nil
+	}
+
+	sc := SchemaComponent{
+		Name:         c.Name,
+		Description:  c.V.Value().Description,
+		Type:         schema,
+		IsMultivalue: schema.IsMultivalue(),
+		BaseType:     schema.Base(),
+	}
+
+	switch schema := schema.(type) {
+	case StructureType:
+		sc.IgnoreParseFormat = true
+		sc.StructureType = schema
+		sc.CustomJSONMarshaler = c.V.Value().AdditionalProperties.Set
+		sc.WriteJSONFunc = true
+	case SliceType:
+		sc.RenderFormatStringsMultiline = schema.RenderFormatStringsMultiline
+		sc.BaseType = schema.Items
+
+		switch items := schema.Items.(type) {
+		case RefSchemaType:
+			switch items.Base().(type) {
+			case StructureType:
+				sc.IgnoreParseFormat = true
+			case MapType:
+				sc.IgnoreParseFormat = true
+				// if len(tp) > 0 {
+				// }
+			}
+		case StructureType:
+			sc.IgnoreParseFormat = true
+		}
+	case CustomType:
+		sc.BaseType = schema
+		sc.IgnoreParseFormat = true
+
+		switch schema.Type {
+		case "any":
+			sc.IgnoreParseFormat = true
+		default:
+			sc.IsAlias = true
+		}
+	case RefSchemaType:
+		sc.BaseType = schema.Ref
+		sc.IsRef = true
+	}
+
+	return sc, imports, nil
 }
 
 func (s SchemaComponent) Base() SchemaType {
