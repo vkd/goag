@@ -161,7 +161,7 @@ func NewOperation(s *specification.Operation, componenets Components, cfg Config
 				FieldName:   "Authorization",
 				Description: sr.Scheme.BearerFormat,
 				Required:    len(o.Security) == 1,
-				Type:        StringType{},
+				Type:        NewPrimitive(StringType{}),
 			})
 		}
 	}

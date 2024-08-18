@@ -8,17 +8,45 @@ import (
 	"github.com/vkd/goag/specification"
 )
 
-type BoolType struct {
+type Primitive struct {
 	SingleValue
+
+	PrimitiveIface
+	Type PrimitiveIface
 }
 
-var _ SchemaType = BoolType{}
+type PrimitiveIface interface {
+	Render
+
+	ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error)
+
+	Formatter
+}
+
+func NewPrimitive(v PrimitiveIface) Primitive {
+	return Primitive{
+		PrimitiveIface: v,
+		Type:           v,
+	}
+}
+
+func (t Primitive) Base() SchemaType {
+	return t
+}
+
+func (t Primitive) IsMultivalue() bool {
+	return t.SingleValue.IsMultivalue()
+}
+
+func (t Primitive) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return t.PrimitiveIface.ParseString(to, from+"[0]", isNew, mkErr)
+}
+
+type BoolType struct{}
+
+var _ PrimitiveIface = BoolType{}
 
 func (b BoolType) Render() (string, error) { return "bool", nil }
-
-func (b BoolType) Base() SchemaType {
-	return b
-}
 
 func (b BoolType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("BoolParseString", struct {
@@ -27,10 +55,6 @@ func (b BoolType) ParseString(to string, from string, isNew bool, mkErr ErrorRen
 		MkErr ErrorRender
 		IsNew bool
 	}{from, to, mkErr, isNew})
-}
-
-func (b BoolType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return b.ParseString(to, from+"[0]", isNew, mkErr)
 }
 
 func (b BoolType) RenderFormat(from string) (string, error) {
@@ -49,11 +73,10 @@ func (b BoolType) RenderFormatStrings(to, from string, isNew bool) (string, erro
 }
 
 type IntType struct {
-	SingleValue
 	BitSize int
 }
 
-var _ SchemaType = IntType{}
+var _ PrimitiveIface = IntType{}
 
 func (i IntType) Render() (string, error) {
 	switch i.BitSize {
@@ -66,10 +89,6 @@ func (i IntType) Render() (string, error) {
 	default:
 		return "int" + strconv.Itoa(i.BitSize), nil
 	}
-}
-
-func (i IntType) Base() SchemaType {
-	return i
 }
 
 func (i IntType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -98,10 +117,6 @@ func (i IntType) ParseString(to string, from string, isNew bool, mkErr ErrorRend
 	default:
 		return "", fmt.Errorf("unsupported int bit size %d", i.BitSize)
 	}
-}
-
-func (i IntType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return i.ParseString(to, from+"[0]", isNew, mkErr)
 }
 
 func (i IntType) RenderFormat(from string) (string, error) {
@@ -133,9 +148,10 @@ func (i IntType) RenderFormatStrings(to, from string, isNew bool) (string, error
 }
 
 type FloatType struct {
-	SingleValue
 	BitSize int
 }
+
+var _ PrimitiveIface = FloatType{}
 
 func (f FloatType) Render() (string, error) {
 	switch f.BitSize {
@@ -147,12 +163,6 @@ func (f FloatType) Render() (string, error) {
 		return "float" + strconv.Itoa(f.BitSize), nil
 	}
 }
-
-func (f FloatType) Base() SchemaType {
-	return f
-}
-
-var _ Parser = FloatType{}
 
 func (i FloatType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	switch i.BitSize {
@@ -174,12 +184,6 @@ func (i FloatType) ParseString(to string, from string, isNew bool, mkErr ErrorRe
 		return "", fmt.Errorf("unsupported float bit size %d", i.BitSize)
 	}
 }
-
-func (i FloatType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return i.ParseString(to, from+"[0]", isNew, mkErr)
-}
-
-var _ Formatter = FloatType{}
 
 func (i FloatType) RenderFormat(from string) (string, error) {
 	switch i.BitSize {
@@ -205,17 +209,11 @@ func (i FloatType) RenderFormatStrings(to, from string, isNew bool) (string, err
 	})
 }
 
-type StringType struct {
-	SingleValue
-}
+type StringType struct{}
 
-var _ SchemaType = StringType{}
+var _ PrimitiveIface = StringType{}
 
 func (s StringType) Render() (string, error) { return "string", nil }
-
-func (s StringType) Base() SchemaType {
-	return s
-}
 
 func (_ StringType) RenderFormat(from string) (string, error) {
 	return from, nil
@@ -235,13 +233,6 @@ func (_ StringType) ParseString(to, from string, isNew bool, mkErr ErrorRender) 
 		return to + " := " + from, nil
 	}
 	return to + " = " + from, nil
-}
-
-func (_ StringType) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	if isNew {
-		return to + " := " + from + "[0]", nil
-	}
-	return to + " = " + from + "[0]", nil
 }
 
 type CustomType struct {
@@ -353,17 +344,23 @@ func (s SliceType) Base() SchemaType {
 }
 
 func (s SliceType) RenderFormat(from string) (string, error) {
-	switch s.Items.(type) {
-	case StringType:
-		return from, nil
+	switch items := s.Items.(type) {
+	case Primitive:
+		switch items.Type.(type) {
+		case StringType:
+			return from, nil
+		}
 	}
 	return "", fmt.Errorf(".RenderFormat() function for SliceType is not supported for type %T", s.Items)
 }
 
 func (s SliceType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	switch s.Items.(type) {
-	case StringType:
-		return Assign(to, from, isNew), nil
+	switch items := s.Items.(type) {
+	case Primitive:
+		switch items.Type.(type) {
+		case StringType:
+			return Assign(to, from, isNew), nil
+		}
 	}
 	return ExecuteTemplate("SliceRenderFormatStrings", TData{
 		"From":  from,
@@ -386,9 +383,12 @@ func (s SliceType) ParseString(to string, from string, isNew bool, mkErr ErrorRe
 }
 
 func (s SliceType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	switch s.Items.(type) {
-	case StringType:
-		return Assign(to, from, isNew), nil
+	switch items := s.Items.(type) {
+	case Primitive:
+		switch items.Type.(type) {
+		case StringType:
+			return Assign(to, from, isNew), nil
+		}
 	}
 
 	return ExecuteTemplate("SliceTypeParseStrings", TData{

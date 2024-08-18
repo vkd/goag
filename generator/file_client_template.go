@@ -69,13 +69,6 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 
 			RenderFormatStrings: e.V.Type.RenderFormatStrings,
 		}
-		switch tp := e.V.Type.(type) {
-		case SliceType:
-			switch tp.Items.(type) {
-			case StringType:
-			default:
-			}
-		}
 		c.Queries = append(c.Queries, q)
 	}
 

@@ -63,14 +63,14 @@ func newSchema(spec *specification.Schema, components Components) (SchemaType, I
 	// https://datatracker.ietf.org/doc/html/draft-wright-json-schema-00#section-4
 	switch spec.Type {
 	case "boolean":
-		return BoolType{}, nil, nil
+		return NewPrimitive(BoolType{}), nil, nil
 	case "object":
 		if specAdditionalProperties, ok := spec.AdditionalProperties.Get(); ok && len(spec.Properties) == 0 {
 			additional, ims, err := NewSchema(specAdditionalProperties, components)
 			if err != nil {
 				return nil, nil, fmt.Errorf("additional properties: %w", err)
 			}
-			return NewMapType(StringType{}, additional), ims, nil
+			return NewMapType(NewPrimitive(StringType{}), additional), ims, nil
 		}
 		r, ims, err := NewStructureType(spec, components)
 		if err != nil {
@@ -86,16 +86,16 @@ func newSchema(spec *specification.Schema, components Components) (SchemaType, I
 	case "number":
 		switch spec.Format {
 		case "float":
-			return FloatType{BitSize: 32}, nil, nil
+			return NewPrimitive(FloatType{BitSize: 32}), nil, nil
 		case "double", "":
+			return NewPrimitive(FloatType{BitSize: 64}), nil, nil
 		default:
 			return nil, nil, fmt.Errorf("unsupported 'number' format %q", spec.Format)
 		}
-		return FloatType{BitSize: 64}, nil, nil
 	case "string":
 		switch spec.Format {
 		case "":
-			return StringType{}, nil, nil
+			return NewPrimitive(StringType{}), nil, nil
 		case "byte": // base64 encoded characters
 		case "binary": // any sequence of octets
 		case "date": // full-date = 4DIGIT "-" 01-12 "-" 01-31
@@ -104,15 +104,15 @@ func newSchema(spec *specification.Schema, components Components) (SchemaType, I
 		default:
 			return nil, nil, fmt.Errorf("unsupported 'string' format %q", spec.Format)
 		}
-		return StringType{}, nil, nil
+		return NewPrimitive(StringType{}), nil, nil
 	case "integer":
 		switch spec.Format {
 		case "int32":
-			return IntType{BitSize: 32}, nil, nil
+			return NewPrimitive(IntType{BitSize: 32}), nil, nil
 		case "int64":
-			return IntType{BitSize: 64}, nil, nil
+			return NewPrimitive(IntType{BitSize: 64}), nil, nil
 		default:
-			return IntType{}, nil, nil
+			return NewPrimitive(IntType{}), nil, nil
 		}
 	}
 
