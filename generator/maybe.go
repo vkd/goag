@@ -12,6 +12,8 @@ func Just[T any](v T) Maybe[T] {
 	}
 }
 
+func Nothing[T any]() Maybe[T] { return Maybe[T]{IsSet: false} }
+
 func (m Maybe[T]) Get() (zero T, _ bool) {
 	return m.Value, m.IsSet
 }
