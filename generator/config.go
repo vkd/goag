@@ -20,6 +20,10 @@ type Config struct {
 	CustomTypes struct {
 		Ignore bool `yaml:"ignore"`
 	} `yaml:"customTypes"`
+
+	Experimental struct {
+		CustomJSONImplementation bool `yaml:"custom_json_implementation"`
+	} `yaml:"experimental"`
 }
 
 func LoadConfig(filepath string) (zero Config, _ error) {

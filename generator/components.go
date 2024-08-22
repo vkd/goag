@@ -22,7 +22,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 
 	cs.Schemas = NewMappedList[specification.Ref[specification.Schema], SchemaComponent](spec.Schemas)
 	for _, c := range spec.Schemas.List {
-		s, ims, err := NewSchemaComponent(c.Name, c.V, cs)
+		s, ims, err := NewSchemaComponent(c.Name, c.V, cs, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new schema component: %w", err)
 		}
@@ -171,7 +171,7 @@ type SchemaComponent struct {
 	// IsRef    bool
 }
 
-func NewSchemaComponent(name string, rs specification.Ref[specification.Schema], cs Components) (zero SchemaComponent, imports Imports, _ error) {
+func NewSchemaComponent(name string, rs specification.Ref[specification.Schema], cs Components, cfg Config) (zero SchemaComponent, imports Imports, _ error) {
 	schema, ims, err := NewSchema(rs, cs)
 	if err != nil {
 		return zero, nil, fmt.Errorf("new schema: %w", err)
@@ -208,7 +208,9 @@ func NewSchemaComponent(name string, rs specification.Ref[specification.Schema],
 		sc.IgnoreParseFormat = true
 		sc.StructureType = schema
 		sc.CustomJSONMarshaler = rs.Value().AdditionalProperties.Set
-		sc.WriteJSONFunc = true
+		if cfg.Experimental.CustomJSONImplementation || schema.AdditionalProperties != nil {
+			sc.WriteJSONFunc = true
+		}
 	case SliceType:
 		sc.RenderFormatStringsMultiline = schema.RenderFormatStringsMultiline
 		sc.BaseType = schema.Items
