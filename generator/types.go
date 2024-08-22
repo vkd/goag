@@ -2,346 +2,20 @@ package generator
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/vkd/goag/specification"
 )
 
-type Primitive struct {
-	SingleValue
-
-	PrimitiveIface
-	Type PrimitiveIface
-}
-
-type PrimitiveIface interface {
-	Render
-
-	ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error)
-
-	Formatter
-}
-
-func NewPrimitive(v PrimitiveIface) Primitive {
-	return Primitive{
-		PrimitiveIface: v,
-		Type:           v,
-	}
-}
-
-func (t Primitive) Kind() SchemaKind { return SchemaKindPrimitive }
-
-func (t Primitive) Base() SchemaType {
-	return t
-}
-
-func (t Primitive) IsMultivalue() bool {
-	return t.SingleValue.IsMultivalue()
-}
-
-func (t Primitive) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return t.PrimitiveIface.ParseString(to, from+"[0]", isNew, mkErr)
-}
-
-type BoolType struct{}
-
-var _ PrimitiveIface = BoolType{}
-
-func (b BoolType) Render() (string, error) { return "bool", nil }
-
-func (b BoolType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("BoolParseString", struct {
-		From  string
-		To    string
-		MkErr ErrorRender
-		IsNew bool
-	}{from, to, mkErr, isNew})
-}
-
-func (b BoolType) RenderFormat(from string) (string, error) {
-	return ExecuteTemplate("BoolFormat", struct {
-		From string
-	}{from})
-}
-
-func (b BoolType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return ExecuteTemplate("SliceSingleElementFormatStrings", TData{
-		"Item":  b,
-		"From":  from,
-		"To":    to,
-		"IsNew": isNew,
-	})
-}
-
-type IntType struct {
-	BitSize int
-}
-
-var _ PrimitiveIface = IntType{}
-
-func (i IntType) Render() (string, error) {
-	switch i.BitSize {
-	case 0:
-		return "int", nil
-	case 32:
-		return "int32", nil
-	case 64:
-		return "int64", nil
-	default:
-		return "int" + strconv.Itoa(i.BitSize), nil
-	}
-}
-
-func (i IntType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	switch i.BitSize {
-	case 0:
-		return ExecuteTemplate("IntParser", struct {
-			From  string
-			To    string
-			MkErr ErrorRender
-			IsNew bool
-		}{from, to, mkErr, isNew})
-	case 32:
-		return ExecuteTemplate("Int32Parser", struct {
-			From  string
-			To    string
-			MkErr ErrorRender
-			IsNew bool
-		}{from, to, mkErr, isNew})
-	case 64:
-		return ExecuteTemplate("Int64Parser", struct {
-			From  string
-			To    string
-			MkErr ErrorRender
-			IsNew bool
-		}{from, to, mkErr, isNew})
-	default:
-		return "", fmt.Errorf("unsupported int bit size %d", i.BitSize)
-	}
-}
-
-func (i IntType) RenderFormat(from string) (string, error) {
-	switch i.BitSize {
-	case 0:
-		return ExecuteTemplate("IntFormat", struct {
-			From string
-		}{from})
-	case 32:
-		return ExecuteTemplate("Int32Format", struct {
-			From string
-		}{from})
-	case 64:
-		return ExecuteTemplate("Int64Format", struct {
-			From string
-		}{from})
-	default:
-		return "", fmt.Errorf("unsupported int bit size %d", i.BitSize)
-	}
-}
-
-func (i IntType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return ExecuteTemplate("SliceSingleElementFormatStrings", TData{
-		"Item":  i,
-		"From":  from,
-		"To":    to,
-		"IsNew": isNew,
-	})
-}
-
-type FloatType struct {
-	BitSize int
-}
-
-var _ PrimitiveIface = FloatType{}
-
-func (f FloatType) Render() (string, error) {
-	switch f.BitSize {
-	case 32:
-		return "float32", nil
-	case 64:
-		return "float64", nil
-	default:
-		return "float" + strconv.Itoa(f.BitSize), nil
-	}
-}
-
-func (i FloatType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	switch i.BitSize {
-	case 32:
-		return ExecuteTemplate("Float32Parser", struct {
-			From  string
-			To    string
-			IsNew bool
-			MkErr ErrorRender
-		}{from, to, isNew, mkErr})
-	case 64:
-		return ExecuteTemplate("Float64Parser", struct {
-			From  string
-			To    string
-			IsNew bool
-			MkErr ErrorRender
-		}{from, to, isNew, mkErr})
-	default:
-		return "", fmt.Errorf("unsupported float bit size %d", i.BitSize)
-	}
-}
-
-func (i FloatType) RenderFormat(from string) (string, error) {
-	switch i.BitSize {
-	case 32:
-		return ExecuteTemplate("Float32Format", struct {
-			From string
-		}{from})
-	case 64:
-		return ExecuteTemplate("Float64Format", struct {
-			From string
-		}{from})
-	default:
-		return "", fmt.Errorf("unsupported float bit size %d", i.BitSize)
-	}
-}
-
-func (i FloatType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return ExecuteTemplate("SliceSingleElementFormatStrings", TData{
-		"Item":  i,
-		"From":  from,
-		"To":    to,
-		"IsNew": isNew,
-	})
-}
-
-type StringType struct{}
-
-var _ PrimitiveIface = StringType{}
-
-func (s StringType) Render() (string, error) { return "string", nil }
-
-func (_ StringType) RenderFormat(from string) (string, error) {
-	return from, nil
-}
-
-func (s StringType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return ExecuteTemplate("SliceSingleElementFormatStrings", TData{
-		"Item":  s,
-		"From":  from,
-		"To":    to,
-		"IsNew": isNew,
-	})
-}
-
-func (_ StringType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	if isNew {
-		return to + " := " + from, nil
-	}
-	return to + " = " + from, nil
-}
-
-type CustomType struct {
-	Type   string
-	Import string
-
-	BaseType SchemaType
-}
-
-func NewCustomType(s string, baseSchema SchemaType) (CustomType, Imports) {
-	var customImport, customType string = "", s
-	slIdx := strings.LastIndex(s, "/")
-	if slIdx >= 0 {
-		customImport = s[:slIdx]
-		customType = s[slIdx+1:]
-
-		dotIdx := strings.LastIndex(s, ".")
-		if dotIdx >= 0 {
-			customImport = s[:dotIdx]
-		}
-	}
-
-	return CustomType{
-		Type:     customType,
-		Import:   customImport,
-		BaseType: baseSchema,
-	}, NewImportsS(customImport)
-}
-
-var _ SchemaType = (*CustomType)(nil)
-
-func (c CustomType) IsMultivalue() bool {
-	return c.Base().IsMultivalue()
-}
-
-func (c CustomType) Render() (string, error) {
-	return string(c.Type), nil
-}
-
-func (c CustomType) Kind() SchemaKind { return SchemaKindObject }
-
-func (c CustomType) Base() SchemaType {
-	return c.BaseType
-}
-
-func BaseFuncName(st SchemaType) Render {
-	switch base := st.Base().(type) {
-	case SliceType:
-		return base.Items
-	default:
-		return base
-	}
-}
-
-func (c CustomType) RenderFormat(from string) (string, error) {
-	return ExecuteTemplate("CustomTypeRenderFormat", TData{
-		"From": from,
-		"Base": c.BaseType.Base(),
-
-		"IsMultivalue": c.BaseType.IsMultivalue(),
-	})
-}
-
-func (c CustomType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return ExecuteTemplate("CustomTypeRenderFormatStrings", TData{
-		"To":    to,
-		"From":  from,
-		"IsNew": isNew,
-		"Base":  c.BaseType.Base(),
-
-		"IsMultivalue": c.BaseType.Base().IsMultivalue(),
-		"BaseFunc":     BaseFuncName(c.BaseType),
-	})
-}
-
-func (c CustomType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("CustomTypeParseString", TData{
-		"To":           to,
-		"Type":         c,
-		"From":         from,
-		"IsNew":        isNew,
-		"MkErr":        mkErr,
-		"Base":         c.BaseType.Base(),
-		"IsMultivalue": c.BaseType.IsMultivalue(),
-		"BaseFunc":     BaseFuncName(c.BaseType),
-	})
-}
-
-func (c CustomType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("CustomTypeParseStrings", TData{
-		"To":           to,
-		"Type":         c,
-		"From":         from,
-		"IsNew":        isNew,
-		"MkErr":        mkErr,
-		"Base":         c.BaseType,
-		"IsMultivalue": c.BaseType.IsMultivalue(),
-		"BaseFunc":     BaseFuncName(c.BaseType),
-	})
-}
-
 type SliceType struct {
 	Multivalue
-	Items SchemaType
+	Items Schema
 }
 
 func (s SliceType) Kind() SchemaKind { return SchemaKindArray }
+
+func (s SliceType) FuncTypeName() string {
+	return s.Items.FuncTypeName() + "s"
+}
 
 func (s SliceType) Render() (string, error) { return ExecuteTemplate("SliceType", s) }
 
@@ -350,25 +24,11 @@ func (s SliceType) Base() SchemaType {
 }
 
 func (s SliceType) RenderFormat(from string) (string, error) {
-	switch items := s.Items.(type) {
-	case Primitive:
-		switch items.Type.(type) {
-		case StringType:
-			return from, nil
-		}
-	}
 	return "", fmt.Errorf(".RenderFormat() function for SliceType is not supported for type %T", s.Items)
 }
 
 func (s SliceType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	switch items := s.Items.(type) {
-	case Primitive:
-		switch items.Type.(type) {
-		case StringType:
-			return Assign(to, from, isNew), nil
-		}
-	}
-	return ExecuteTemplate("SliceRenderFormatStrings", TData{
+	return ExecuteTemplate("Slice_RenderFormatStrings", TData{
 		"From":  from,
 		"Items": s.Items,
 		"To":    to,
@@ -377,7 +37,7 @@ func (s SliceType) RenderFormatStrings(to, from string, isNew bool) (string, err
 }
 
 func (s SliceType) RenderFormatStringsMultiline(to, from string) (string, error) {
-	return ExecuteTemplate("SliceTypeRenderFormatMultiline", TData{
+	return ExecuteTemplate("SliceType_RenderFormatMultiline", TData{
 		"To":    to,
 		"From":  from,
 		"Items": s.Items,
@@ -385,19 +45,17 @@ func (s SliceType) RenderFormatStringsMultiline(to, from string) (string, error)
 }
 
 func (s SliceType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return s.ParseStrings(to, from, isNew, mkErr)
+	return ExecuteTemplate("SliceType_ParseString", TData{
+		"From":  from,
+		"To":    to,
+		"Items": s.Items,
+		"MkErr": mkErr,
+		"IsNew": isNew,
+	})
 }
 
 func (s SliceType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	switch items := s.Items.(type) {
-	case Primitive:
-		switch items.Type.(type) {
-		case StringType:
-			return Assign(to, from, isNew), nil
-		}
-	}
-
-	return ExecuteTemplate("SliceTypeParseStrings", TData{
+	return ExecuteTemplate("SliceType_ParseStrings", TData{
 		"From":  from,
 		"To":    to,
 		"Items": s.Items,
@@ -436,7 +94,7 @@ func NewStructureType(s *specification.Schema, components Components) (zero Stru
 			return zero, nil, fmt.Errorf("additional properties: %w", err)
 		}
 		imports = append(imports, ims...)
-		render := additional.TypeRender()
+		render := Render(additional)
 		stype.AdditionalProperties = &render
 	}
 
@@ -444,6 +102,8 @@ func NewStructureType(s *specification.Schema, components Components) (zero Stru
 }
 
 var _ SchemaType = StructureType{}
+
+func (s StructureType) FuncTypeName() string { return "Structure" }
 
 func (s StructureType) Render() (string, error) { return ExecuteTemplate("StructureType", s) }
 func (s StructureType) RenderFormat(from string) (string, error) {
@@ -508,7 +168,7 @@ func NewStructureField(s specification.Ref[specification.Schema], name string, t
 	return StructureField{
 		Comment: s.Value().Description,
 		Name:    PublicFieldName(name),
-		Type:    t.TypeRender(),
+		Type:    t,
 		Schema:  t,
 		Tags:    []StructureFieldTag{{Key: "json", Values: []string{name}}},
 		JSONTag: name,
@@ -531,76 +191,6 @@ type StructureFieldTag struct {
 	Values []string
 }
 
-type RefSchemaType struct {
-	Name string
-	Ref  *SchemaComponent
-}
-
-var _ SchemaType = RefSchemaType{}
-
-func NewRefSchemaType(name string, next *SchemaComponent) RefSchemaType {
-	return RefSchemaType{
-		Name: name,
-		Ref:  next,
-	}
-}
-
-func (r RefSchemaType) Kind() SchemaKind { return SchemaKindRef }
-
-func (r RefSchemaType) Base() SchemaType { return r.Ref.Schema.Base() }
-
-func (r RefSchemaType) Render() (string, error) { return r.Name, nil }
-
-func (r RefSchemaType) RenderFormat(from string) (string, error) {
-	return ExecuteTemplate("RefSchemaType_RenderFormat", TData{
-		"Type":         r.Ref.Schema,
-		"From":         from,
-		"FuncName":     BaseFuncName(r),
-		"IsMultivalue": r.IsMultivalue(),
-	})
-}
-
-func (r RefSchemaType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return ExecuteTemplate("RefSchemaType_RenderFormatStrings", TData{
-		"Ref":          r.Ref,
-		"Type":         r.Ref.Schema,
-		"From":         from,
-		"To":           to,
-		"IsNew":        isNew,
-		"FuncName":     BaseFuncName(r),
-		"IsMultivalue": r.IsMultivalue(),
-	})
-}
-
-func (r RefSchemaType) IsMultivalue() bool {
-	return r.Base().IsMultivalue()
-}
-
-func (r RefSchemaType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("RefSchemaType_ParseString", TData{
-		"Type":     r.Ref.Schema,
-		"Name":     r.Name,
-		"From":     from,
-		"To":       to,
-		"IsNew":    isNew,
-		"MkErr":    mkErr,
-		"FuncName": BaseFuncName(r),
-	})
-}
-
-func (r RefSchemaType) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("RefSchemaType_ParseStrings", TData{
-		"Ref":      r.Ref,
-		"Type":     r.Ref.Schema,
-		"Name":     r.Name,
-		"From":     from,
-		"To":       to,
-		"IsNew":    isNew,
-		"MkErr":    mkErr,
-		"FuncName": BaseFuncName(r),
-	})
-}
-
 type OptionalType struct {
 	V         Schema
 	MaybeType string
@@ -617,14 +207,12 @@ func NewOptionalType(v Schema, cfg Config) OptionalType {
 var _ Render = OptionalType{}
 
 func (p OptionalType) Render() (string, error) {
-	out, err := p.V.RenderType()
+	out, err := p.V.Render()
 	return p.MaybeType + "[" + out + "]", err
 }
 
-func (o OptionalType) Kind() SchemaKind { return o.V.Type.Kind() }
-
 func (o OptionalType) Base() SchemaType {
-	return o.V.Base()
+	return o.V.BaseSchemaType()
 }
 
 var _ Parser = OptionalType{}
@@ -666,16 +254,18 @@ func (p OptionalType) RenderFormatStrings(to, from string, isNew bool) (string, 
 type MapType struct {
 	SingleValue
 	Key   SchemaType
-	Value SchemaType
+	Value Schema
 }
 
-func NewMapType(k, v SchemaType) MapType {
-	return MapType{Key: k, Value: v}
+func NewMapType(v Schema) MapType {
+	return MapType{Key: NewPrimitive(StringType{}), Value: v}
 }
 
 var _ SchemaType = MapType{}
 
 func (m MapType) Kind() SchemaKind { return SchemaKindMap }
+
+func (m MapType) FuncTypeName() string { return "Map" }
 
 func (m MapType) Render() (string, error) {
 	return ExecuteTemplate("MapType", m)

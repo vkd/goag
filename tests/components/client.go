@@ -67,11 +67,11 @@ func (c *Client) PostPets(ctx context.Context, request PostPetsParams) (PostPets
 		var hs []string
 		hs = resp.Header.Values("X-Error-Code")
 		if len(hs) > 0 {
-			vInt, err := strconv.ParseInt(hs[0], 10, 0)
+			vInt64, err := strconv.ParseInt(hs[0], 10, 0)
 			if err != nil {
 				return nil, ErrParseParam{In: "header", Parameter: "X-Error-Code", Reason: "parse int", Err: err}
 			}
-			v := int(vInt)
+			v := int(vInt64)
 			response.Headers.XErrorCode.Set(v)
 		}
 
@@ -123,11 +123,11 @@ func (c *Client) PostShops(ctx context.Context, request PostShopsParams) (PostSh
 		var hs []string
 		hs = resp.Header.Values("X-Error-Code")
 		if len(hs) > 0 {
-			vInt, err := strconv.ParseInt(hs[0], 10, 0)
+			vInt64, err := strconv.ParseInt(hs[0], 10, 0)
 			if err != nil {
 				return nil, ErrParseParam{In: "header", Parameter: "X-Error-Code", Reason: "parse int", Err: err}
 			}
-			v := int(vInt)
+			v := int(vInt64)
 			response.Headers.XErrorCode.Set(v)
 		}
 

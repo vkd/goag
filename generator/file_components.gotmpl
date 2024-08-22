@@ -46,20 +46,16 @@
 {{ define "SchemaComponent" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} {{ .Schema.RenderType }}
+type {{ .Name }} {{ .Schema.Render }}
 
 {{- if not .IgnoreParseFormat }}
 
-func New{{ .Name }}(v {{ .Schema.RenderType }}) {{ .Name }} {
+func New{{ .Name }}(v {{ .Schema.Render }}) {{ .Name }} {
     return {{ .Name }}(v)
 }
 
-func (c {{ .Name }}) {{ title .BaseType.Render }}{{ if .IsMultivalue }}s{{ end }}() {{ .Schema.RenderType }} {
-    {{- if .IsRef }}
-    return {{ .Schema.RenderType }}(c).{{ title .Schema.RenderType }}{{ if .IsMultivalue }}s{{ end }}()
-    {{- else }}
-    return {{ .Schema.RenderType }}(c)
-    {{- end }}
+func (c {{ .Name }}) {{ title .Schema.FuncTypeName }}() {{ .Schema.Render }} {
+    return {{ .Schema.Render }}(c)
 }
 {{- end }}
 
@@ -193,17 +189,17 @@ func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
 {{ define "SchemaComponent_Alias" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} = {{ .Schema.RenderType }}
+type {{ .Name }} = {{ .Schema.Render }}
 {{- end }}
 
 {{/* ----------------------------- HeaderComponent ------------------------------------- */}}
 {{ define "HeaderComponent" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} {{ .Type.RenderType }}
+type {{ .Name }} {{ .Type.Render }}
 
 func (h {{ .Name }}) String() string {
-    return {{ .Type.RenderFormat (print .Type.RenderType "(h)") }}
+    return {{ .Type.RenderFormat (print .Type.Render "(h)") }}
 }
 
 func (c *{{ .Name }}) Parse(s string) error {

@@ -456,11 +456,11 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			vInt, err := strconv.ParseInt(vPath, 10, 32)
+			vInt64, err := strconv.ParseInt(vPath, 10, 32)
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
 			}
-			params.Path.Shop = int32(vInt)
+			params.Path.Shop = int32(vInt64)
 		}
 	}
 
@@ -554,11 +554,11 @@ func newGetShopsShopRTParams(r *http.Request) (zero GetShopsShopRTParams, _ erro
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			vInt, err := strconv.ParseInt(vPath, 10, 32)
+			vInt64, err := strconv.ParseInt(vPath, 10, 32)
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
 			}
-			params.Path.Shop = int32(vInt)
+			params.Path.Shop = int32(vInt64)
 		}
 
 		if !strings.HasPrefix(p, "/") {
@@ -650,11 +650,11 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				vInt64, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt)
+				v := int32(vInt64)
 				params.Query.Page.Set(v)
 			}
 		}
@@ -664,11 +664,11 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 				return zero, fmt.Errorf("query parameter 'page_size': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				vInt64, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_size", Reason: "parse int32", Err: err}
 				}
-				params.Query.PageSize = int32(vInt)
+				params.Query.PageSize = int32(vInt64)
 			}
 		}
 	}
@@ -694,11 +694,11 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			vInt, err := strconv.ParseInt(vPath, 10, 32)
+			vInt64, err := strconv.ParseInt(vPath, 10, 32)
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
 			}
-			params.Path.Shop = int32(vInt)
+			params.Path.Shop = int32(vInt64)
 		}
 
 		if !strings.HasPrefix(p, "/pets") {
@@ -844,11 +844,11 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				vInt64, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt)
+				v := int32(vInt64)
 				params.Query.Page.Set(v)
 			}
 		}
@@ -858,11 +858,11 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'page_size': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				vInt64, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_size", Reason: "parse int32", Err: err}
 				}
-				params.Query.PageSize = int32(vInt)
+				params.Query.PageSize = int32(vInt64)
 			}
 		}
 		{
@@ -877,11 +877,11 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 			if ok && len(q) > 0 {
 				v := make([]int32, len(q))
 				for i := range q {
-					vInt, err := strconv.ParseInt(q[i], 10, 32)
+					vInt64, err := strconv.ParseInt(q[i], 10, 32)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse int32", Err: err}
 					}
-					v[i] = int32(vInt)
+					v[i] = int32(vInt64)
 				}
 				params.Query.Filter.Set(v)
 			}
@@ -930,11 +930,11 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			vInt, err := strconv.ParseInt(vPath, 10, 32)
+			vInt64, err := strconv.ParseInt(vPath, 10, 32)
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
 			}
-			params.Path.Shop = int32(vInt)
+			params.Path.Shop = int32(vInt64)
 		}
 
 		if !strings.HasPrefix(p, "/review") {

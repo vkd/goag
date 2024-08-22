@@ -77,11 +77,11 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				vInt64, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
-				vCustom := int32(vInt)
+				vCustom := int32(vInt64)
 				var v Page
 				{
 					err := v.ParseInt32(vCustom)
@@ -98,11 +98,11 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'page_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				vInt64, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_req", Reason: "parse int32", Err: err}
 				}
-				vCustom := int32(vInt)
+				vCustom := int32(vInt64)
 				{
 					err := params.Query.PageReq.ParseInt32(vCustom)
 					if err != nil {
@@ -116,11 +116,11 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 			if ok && len(q) > 0 {
 				v := make([]Page, len(q))
 				for i := range q {
-					vInt, err := strconv.ParseInt(q[i], 10, 32)
+					vInt64, err := strconv.ParseInt(q[i], 10, 32)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "pages", Reason: "parse int32", Err: err}
 					}
-					vCustom := int32(vInt)
+					vCustom := int32(vInt64)
 					{
 						err := v[i].ParseInt32(vCustom)
 						if err != nil {
@@ -136,11 +136,11 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 			if ok && len(q) > 0 {
 				vCustom := make([]int32, len(q))
 				for i := range q {
-					vInt, err := strconv.ParseInt(q[i], 10, 32)
+					vInt64, err := strconv.ParseInt(q[i], 10, 32)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "pages_array", Reason: "parse int32", Err: err}
 					}
-					vCustom[i] = int32(vInt)
+					vCustom[i] = int32(vInt64)
 				}
 				var v Pages
 				{

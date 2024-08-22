@@ -161,11 +161,11 @@ func (h ErrorCode) String() string {
 }
 
 func (c *ErrorCode) Parse(s string) error {
-	vInt, err := strconv.ParseInt(s, 10, 0)
+	vInt64, err := strconv.ParseInt(s, 10, 0)
 	if err != nil {
 		return fmt.Errorf("parse int: %w", err)
 	}
-	v := int(vInt)
+	v := int(vInt64)
 	*c = ErrorCode(v)
 	return nil
 }

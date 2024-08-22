@@ -72,7 +72,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 				cs.RequestBodies = append(cs.RequestBodies, RequestBodyComponent{
 					Name:        name,
 					Description: rb.V.Value().Description,
-					Type:        schema.TypeRender(),
+					Type:        schema,
 				})
 			}
 		}
@@ -156,19 +156,19 @@ type SchemaComponent struct {
 
 	Description       string
 	IgnoreParseFormat bool
-	IsMultivalue      bool
-	IsAlias           bool
-	WriteJSONFunc     bool
+	// IsMultivalue      bool
+	// IsAlias       bool
+	WriteJSONFunc bool
 
 	RenderFormatStringsMultiline func(to, from string) (string, error)
 
 	CustomJSONMarshaler bool
 	StructureType       StructureType
 
-	Ref Maybe[*SchemaComponent]
+	// Ref Maybe[*SchemaComponent]
 
 	BaseType Render
-	IsRef    bool
+	// IsRef    bool
 }
 
 func NewSchemaComponent(name string, rs specification.Ref[specification.Schema], cs Components) (zero SchemaComponent, imports Imports, _ error) {
@@ -178,32 +178,32 @@ func NewSchemaComponent(name string, rs specification.Ref[specification.Schema],
 	}
 	imports = append(imports, ims...)
 
-	if ref := rs.Ref(); ref != nil {
-		cmp, ok := cs.Schemas.Get(ref.V)
-		if !ok {
-			return zero, nil, fmt.Errorf("cannot find %q ref schema in schemas", ref.Name)
-		}
-		return SchemaComponent{
-			Name:   name,
-			Schema: schema,
+	// if ref := rs.Ref(); ref != nil {
+	// 	_, ok := cs.Schemas.Get(ref.V)
+	// 	if !ok {
+	// 		return zero, nil, fmt.Errorf("cannot find %q ref schema in schemas", ref.Name)
+	// 	}
+	// 	return SchemaComponent{
+	// 		Name:   name,
+	// 		Schema: schema,
 
-			Ref:      Just(cmp),
-			BaseType: StringRender(ref.Name),
-		}, imports, nil
-	}
+	// 		// Ref:      Just(cmp),
+	// 		BaseType: StringRender(ref.Name),
+	// 	}, imports, nil
+	// }
 
-	schemaType := schema.Type
+	schemaType := schema
 
 	sc := SchemaComponent{
 		Name:   name,
 		Schema: schema,
 
-		Description:  rs.Value().Description,
-		IsMultivalue: schemaType.IsMultivalue(),
-		BaseType:     schemaType.Base(),
+		Description: rs.Value().Description,
+		// IsMultivalue: schemaType.IsMultivalue(),
+		BaseType: schemaType.BaseSchemaType(),
 	}
 
-	switch schema := schemaType.(type) {
+	switch schema := schemaType.Type.(type) {
 	case StructureType:
 		sc.IgnoreParseFormat = true
 		sc.StructureType = schema
@@ -213,46 +213,46 @@ func NewSchemaComponent(name string, rs specification.Ref[specification.Schema],
 		sc.RenderFormatStringsMultiline = schema.RenderFormatStringsMultiline
 		sc.BaseType = schema.Items
 
-		switch items := schema.Items.(type) {
-		case RefSchemaType:
-			switch items.Base().(type) {
-			case StructureType:
-				sc.IgnoreParseFormat = true
-			case MapType:
-				sc.IgnoreParseFormat = true
-				// if len(tp) > 0 {
-				// }
-			}
+		switch schema.Items.BaseSchemaType().(type) {
+		// case RefSchemaType:
+		// 	switch items.Base().(type) {
+		// 	case StructureType:
+		// 		sc.IgnoreParseFormat = true
+		// 	case MapType:
+		// 		sc.IgnoreParseFormat = true
+		// 		// if len(tp) > 0 {
+		// 		// }
+		// 	}
 		case StructureType:
 			sc.IgnoreParseFormat = true
 		}
-	case CustomType:
-		sc.BaseType = schema
-		sc.IgnoreParseFormat = true
+		// case CustomType:
+		// 	sc.BaseType = schema
+		// 	sc.IgnoreParseFormat = true
 
-		switch schema.Type {
-		case "any":
-			sc.IgnoreParseFormat = true
-		default:
-			sc.IsAlias = true
-		}
-	case RefSchemaType:
-		sc.BaseType = schema.Ref
-		sc.IsRef = true
+		// 	switch schema.Type {
+		// 	case "any":
+		// 		sc.IgnoreParseFormat = true
+		// 	default:
+		// 		sc.IsAlias = true
+		// 	}
+		// case RefSchemaType:
+		// 	sc.BaseType = schema.Ref
+		// 	sc.IsRef = true
 	}
 
 	return sc, imports, nil
 }
 
-func (s SchemaComponent) Base() SchemaType {
-	if ref, ok := s.Ref.Get(); ok {
-		return ref.Base()
-	}
-	return s.Schema.Type
-}
+// func (s SchemaComponent) Base() SchemaType {
+// 	if ref, ok := s.Ref.Get(); ok {
+// 		return ref.Base()
+// 	}
+// 	return s.Schema.Type
+// }
 
 func (s SchemaComponent) Render() (string, error) {
-	if s.IsAlias {
+	if s.Schema.Custom.IsSet {
 		return ExecuteTemplate("SchemaComponent_Alias", s)
 	}
 	return ExecuteTemplate("SchemaComponent", s)

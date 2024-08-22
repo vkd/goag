@@ -129,7 +129,7 @@ type HandlerQueryParameter struct {
 func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryParameter, _ Imports, _ error) {
 	var ims Imports
 
-	var tpRender Render = p.Type.TypeRender()
+	var tpRender Render = p.Type
 	var isOptional bool
 	if !p.Required {
 		// switch tp := p.Type.(type) {
@@ -229,7 +229,7 @@ func NewHandlerPathParameter(p *PathParameter) (zero HandlerPathParameter, _ Imp
 	out := HandlerPathParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
-			FieldType:    p.Type.TypeRender(),
+			FieldType:    p.Type,
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
@@ -250,7 +250,7 @@ type HandlerHeaderParameter struct {
 
 func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHeaderParameter, _ Imports, _ error) {
 	var ims Imports
-	var tp Render = p.Schema.TypeRender()
+	var tp Render = p.Schema
 	var parser Parser = p.Schema
 
 	if !p.Required {
@@ -322,48 +322,55 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 	if out.IsDefault {
 		out.Struct.Fields = append(out.Struct.Fields, StructureField{
 			Name: "Code",
-			Type: IntType{},
+			Type: StringRender(IntType{}.GoType()),
 		})
 		out.Args = append(out.Args, ResponseArg{
 			FieldName: "Code",
 			ArgName:   "code",
-			Type:      IntType{},
+			Type:      StringRender(IntType{}.GoType()),
 		})
 	}
 
 	if contentJSON, ok := r.ContentJSON.Get(); ok {
 		out.IsBody = true
-		switch contentType := contentJSON.Type.(type) {
-		case RefSchemaType, SliceType, CustomType:
-			out.BodyTypeName = contentType
+		switch {
+		case contentJSON.Type.Ref != nil:
+			out.BodyTypeName = StringRender(contentJSON.Type.Ref.Name)
+		case contentJSON.Type.Custom.IsSet:
+			out.BodyTypeName = contentJSON.Type
 		default:
-			bodyStructName := out.Name + "Body"
-			out.BodyTypeName = StringRender(bodyStructName)
-			bodyType := contentJSON
-			out.Body = bodyType.Type
+			switch contentType := contentJSON.Type.Type.(type) {
+			case SliceType:
+				out.BodyTypeName = contentType
+			default:
+				bodyStructName := out.Name + "Body"
+				out.BodyTypeName = StringRender(bodyStructName)
+				bodyType := contentJSON
+				out.Body = bodyType.Type
 
-			if bodyType.Spec.Value().AdditionalProperties.Set {
-				out.BodyRenders = Renders{
-					StringRender("var _ json.Marshaler = (*" + bodyStructName + ")" + "(nil)"),
-					RenderFunc(func() (string, error) {
-						out := `func (b ` + bodyStructName + `) MarshalJSON() ([]byte, error) {
+				if bodyType.Spec.Value().AdditionalProperties.Set {
+					out.BodyRenders = Renders{
+						StringRender("var _ json.Marshaler = (*" + bodyStructName + ")" + "(nil)"),
+						RenderFunc(func() (string, error) {
+							out := `func (b ` + bodyStructName + `) MarshalJSON() ([]byte, error) {
 							m := make(map[string]interface{})
 							for k, v := range b.AdditionalProperties {
 								m[k] = v
 							}
 							`
-						if st, ok := bodyType.Type.(StructureType); ok {
-							for _, f := range st.Fields {
-								if t, ok := f.GetTag("json"); ok && len(t.Values) > 0 && t.Values[0] != "-" {
-									out += "m[\"" + t.Values[0] + "\"] = b." + f.Name + "\n"
+							if st, ok := bodyType.Type.Type.(StructureType); ok {
+								for _, f := range st.Fields {
+									if t, ok := f.GetTag("json"); ok && len(t.Values) > 0 && t.Values[0] != "-" {
+										out += "m[\"" + t.Values[0] + "\"] = b." + f.Name + "\n"
+									}
 								}
 							}
-						}
-						out += `return json.Marshal(m)
+							out += `return json.Marshal(m)
 
 						}`
-						return out, nil
-					}),
+							return out, nil
+						}),
+					}
 				}
 			}
 		}

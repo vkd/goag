@@ -1,159 +1,34 @@
-{{/* ----------------------------- Bool ------------------------------------- */}}
-
-{{ define "BoolParseString" -}}
-{{- if not .IsNew -}}
-var err error
-{{ end }}
-{{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseBool({{ .From }})
-if err != nil {
-	return {{ .MkErr.Wrap "parse bool" "err" }}
-}
-{{- end }}
-
-{{ define "BoolFormat" }}strconv.FormatBool({{ .From }}){{ end }}
-
-{{/* ----------------------------- Int ------------------------------------- */}}
-
-{{ define "IntParser" -}}
-vInt, err := strconv.ParseInt({{ .From }}, 10, 0)
-if err != nil {
-	return {{ .MkErr.Wrap "parse int" "err" }}
-}
-{{ .To }} {{ if .IsNew }}:{{ end }}= int(vInt)
-{{- end }}
-
-{{ define "IntFormat" }}strconv.FormatInt(int64({{ .From }}), 10){{ end }}
-
-{{/* ----------------------------- Int32 ------------------------------------- */}}
-
-{{ define "Int32Parser" -}}
-vInt, err := strconv.ParseInt({{ .From }}, 10, 32)
-if err != nil {
-	return {{ .MkErr.Wrap "parse int32" "err" }}
-}
-{{ .To }} {{ if .IsNew }}:{{ end }}= int32(vInt)
-{{- end }}
-
-{{ define "Int32Format" }}strconv.FormatInt(int64({{ .From }}), 10){{ end }}
-
-{{/* ----------------------------- Int64 ------------------------------------- */}}
-
-{{ define "Int64Parser" -}}
-{{- if not .IsNew -}}
-var err error
-{{ end }}
-{{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseInt({{ .From }}, 10, 64)
-if err != nil {
-	return {{ .MkErr.Wrap "parse int64" "err" }}
-}
-{{- end }}
-
-{{ define "Int64Format" }}strconv.FormatInt({{ .From }}, 10){{ end }}
-
-{{/* ----------------------------- Float32 ------------------------------------- */}}
-
-{{ define "Float32Parser" -}}
-vFloat, err := strconv.ParseFloat({{ .From }}, 32)
-if err != nil {
-	return {{ .MkErr.Wrap "parse float32" "err" }}
-}
-{{ .To }} {{ if .IsNew }}:{{ end }}= float32(vFloat)
-{{- end }}
-
-{{ define "Float32Format" }}strconv.FormatFloat(float64({{ .From }}), 'e', -1, 32){{ end }}
-
-{{/* ----------------------------- Float64 ------------------------------------- */}}
-
-{{ define "Float64Parser" -}}
-{{- if not .IsNew -}}
-var err error
-{{ end }}
-{{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseFloat({{ .From }}, 64)
-if err != nil {
-	return {{ .MkErr.Wrap "parse float64" "err" }}
-}
-{{- end }}
-
-{{ define "Float64Format" }}strconv.FormatFloat({{ .From }}, 'e', -1, 64){{ end }}
-
-{{/* ----------------------------- CustomType ------------------------------------- */}}
-
-{{ define "CustomTypeRenderFormat" }}
-{{- $out := (print .From "." (title .Base.Render)) }}
-{{- if .IsMultivalue }}{{ $out = (print $out "s") }}{{- end }}
-{{- $out = (print $out "()") }}
-{{- .Base.RenderFormat $out }}
-{{- end }}
-
-{{ define "CustomTypeRenderFormatStrings" -}}
-{{- if .IsMultivalue -}}
-cvs := {{ .From }}.{{ title .BaseFunc.Render }}s()
-{{ .Base.RenderFormatStrings "vs" "cvs" true }}
-{{ .To }} {{ if .IsNew }}:{{ end }}= vs
-{{- else -}}
-cv := {{ .From }}.{{ title .BaseFunc.Render }}()
-{{ .To }} {{ if .IsNew }}:{{ end }}= []string{ {{- .Base.RenderFormat "cv" }} }
-{{- end }}
-{{- end }}
-
-{{ define "CustomTypeParseString" }}
-{{- .Base.ParseString "vCustom" .From true .MkErr }}
-{{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
-{{ end -}}
-{
-	err := {{ .To }}.Parse{{ title .BaseFunc.Render }}{{ if .IsMultivalue }}s{{ end }}(vCustom)
-	if err != nil {
-		return {{.MkErr.Wrap (print "parse custom type") "err" }}
-	}
-}
-{{- end }}
-
-{{ define "CustomTypeParseStrings" }}
-{{- .Base.ParseStrings "vCustom" .From true .MkErr }}
-{{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
-{{ end -}}
-{
-	err := {{ .To }}.Parse{{ title .BaseFunc.Render }}{{ if .IsMultivalue }}s{{ end }}(vCustom)
-	if err != nil {
-		return {{.MkErr.Wrap (print "parse custom type") "err" }}
-	}
-}
-{{- end }}
-
 {{/* ----------------------------- SliceType ------------------------------------- */}}
 
 {{ define "SliceType" }}[]{{ .Items.Render }}{{ end }}
 
-{{ define "SliceTypeRenderFormatMultiline" -}}
-{{ .To }} := make([]string, 0, len({{ .From }}))
-for _, v := range {{ .From }} {
-	{{ .To }} = append({{ .To }}, {{ .Items.RenderFormat "v" }})
-}
-{{- end }}
-
-{{ define "SliceTypeParseString" }}
-{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ .Items.Render }}, 1)
-{{ .Items.ParseString (print .To "[0]") .From  .IsNew .MkErr }}
-{{- end }}
-
-{{ define "SliceTypeParseStrings" }}
-{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ .Items.Render }}, len({{.From}}))
-for i := range {{.From}} {
-	{{ .Items.ParseString (print .To "[i]") (print .From "[i]") false .MkErr }}
-}
-{{- end }}
-
-{{ define "SliceSingleElementFormatStrings" -}}
-{{ .To }} {{ if .IsNew }}:{{ end }}= []string{ {{ .Item.RenderFormat .From }} }
-{{- end }}
-
-{{ define "SliceRenderFormatStrings" -}}
+{{ define "Slice_RenderFormatStrings" -}}
 qv := make([]string, 0, len({{ .From }}))
 for _, v := range {{ .From }} {
 	qv = append(qv, {{ .Items.RenderFormat "v" }})
 }
 {{ .To }} {{ if .IsNew }}:{{ end }}= qv
 {{- end }}
+
+{{ define "SliceType_RenderFormatMultiline" -}}
+{{ .To }} := make([]string, 0, len({{ .From }}))
+for _, v := range {{ .From }} {
+	{{ .To }} = append({{ .To }}, {{ .Items.RenderFormat "v" }})
+}
+{{- end }}
+
+{{ define "SliceType_ParseString" }}
+{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ .Items.Render }}, 1)
+{{ .Items.ParseString (print .To "[0]") .From  .IsNew .MkErr }}
+{{- end }}
+
+{{ define "SliceType_ParseStrings" }}
+{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ .Items.Render }}, len({{.From}}))
+for i := range {{.From}} {
+	{{ .Items.ParseString (print .To "[i]") (print .From "[i]") false .MkErr }}
+}
+{{- end }}
+
 
 {{/* ----------------------------- StructureType ------------------------------------- */}}
 
@@ -223,51 +98,4 @@ var {{ .To }} {{ .Self.Render }}
 
 {{ define "MapType" -}}
 map[{{ .Key.Render }}]{{ .Value.Render }}
-{{- end }}
-
-
-{{/* ----------------------------- RefSchemaType ------------------------------------- */}}
-
-{{ define "RefSchemaType_RenderFormat" -}}
-{{- $multivalue := "" }}
-{{- if .IsMultivalue }}{{ $multivalue = "s" }}{{ end }}
-{{- .Type.RenderFormat (print .From "." (title .FuncName.Render) $multivalue "()") }}
-{{- end }}
-
-{{ define "RefSchemaType_RenderFormatStrings" -}}
-{{- $multivalue := "" }}
-{{- if .IsMultivalue }}{{ $multivalue = "s" }}{{ end }}
-{{- if .Ref.IsAlias }}
-{{- .Type.RenderFormatStrings .To .From .IsNew }}
-{{- else }}
-{{- .Type.RenderFormatStrings .To (print .From "." (title .FuncName.Render) $multivalue "()") .IsNew }}
-{{- end }}
-{{- end }}
-
-{{ define "RefSchemaType_ParseString" -}}
-{{- $varName := (private (print "v" .FuncName.Render)) }}
-{{- .Type.ParseString $varName .From true .MkErr }}
-{{ .To }} {{ if .IsNew }}:{{ end }}= New{{ .Name }}({{ $varName }})
-{{- end }}
-
-{{ define "RefSchemaType_ParseStrings" -}}
-{{- if .Ref.IsAlias }}
-{{- .Type.ParseStrings .To .From .IsNew .MkErr }}
-{{- else }}
-{{- $varName := (private (print "v" .FuncName.Render)) }}
-{{- .Type.ParseStrings $varName .From true .MkErr }}
-{{ .To }} {{ if .IsNew }}:{{ end }}= New{{ .Name }}({{ $varName }})
-{{- end }}
-{{- end }}
-
-
-{{/* ----------------------------- ParserWithError ------------------------------------- */}}
-
-{{ define "ParserWithError" -}}
-{{- if .IsNew }}var {{ .To }} {{ .Type }}
-{{ end -}}
-err := {{ .To }}.{{ .Method }}({{.From}})
-if err != nil {
-	return {{.MkErr.Wrap (print "parse " .Type ) "err" }}
-}
 {{- end }}

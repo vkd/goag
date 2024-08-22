@@ -67,11 +67,11 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				vInt64, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt)
+				v := int32(vInt64)
 				params.Query.Page.Set(v)
 			}
 		}

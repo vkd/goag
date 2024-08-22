@@ -61,11 +61,11 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 		if len(hs) > 0 {
 			response.Headers.XNextTwo = make([]int, len(hs))
 			for i := range hs {
-				vInt, err := strconv.ParseInt(hs[i], 10, 0)
+				vInt64, err := strconv.ParseInt(hs[i], 10, 0)
 				if err != nil {
 					return nil, ErrParseParam{In: "header", Parameter: "x-next-two", Reason: "parse int", Err: err}
 				}
-				response.Headers.XNextTwo[i] = int(vInt)
+				response.Headers.XNextTwo[i] = int(vInt64)
 			}
 		}
 

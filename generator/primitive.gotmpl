@@ -1,0 +1,71 @@
+{{/* ----------------------------- Primitive ------------------------------------- */}}
+
+{{ define "Primitive_RenderFormatStrings" -}}
+{{- .To }} {{ if .IsNew }}:{{ end }}= []string{ {{ .Type.RenderFormat .From }} }
+{{- end }}
+
+{{/* ----------------------------- Bool ------------------------------------- */}}
+
+{{ define "Bool_ParseString" -}}
+{{- if not .IsNew -}}
+var err error
+{{ end }}
+{{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseBool({{ .From }})
+if err != nil {
+	return {{ .MkErr.Wrap "parse bool" "err" }}
+}
+{{- end }}
+
+{{ define "Bool_RenderFormat" }}strconv.FormatBool({{ .From }}){{ end }}
+
+{{/* ----------------------------- Int64 ------------------------------------- */}}
+
+{{ define "Int64_Parser" -}}
+{{- if not .IsNew -}}
+var err error
+{{ end }}
+{{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseInt({{ .From }}, 10, 64)
+if err != nil {
+	return {{ .MkErr.Wrap "parse int64" "err" }}
+}
+{{- end }}
+
+{{ define "Int64_Format" }}strconv.FormatInt({{ .From }}, 10){{ end }}
+
+{{/* ----------------------------- IntX ------------------------------------- */}}
+
+{{ define "IntX_Parser" -}}
+vInt64, err := strconv.ParseInt({{ .From }}, 10, {{ .BitSize }})
+if err != nil {
+	return {{ .MkErr.Wrap (print "parse " .GoType) "err" }}
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= {{ .GoType }}(vInt64)
+{{- end }}
+
+{{ define "IntX_Format" }}strconv.FormatInt(int64({{ .From }}), 10){{ end }}
+
+{{/* ----------------------------- FloatX ------------------------------------- */}}
+
+{{ define "FloatX_Parser" -}}
+vFloat, err := strconv.ParseFloat({{ .From }}, {{ .BitSize }})
+if err != nil {
+	return {{ .MkErr.Wrap (print "parse " .GoType) "err" }}
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= {{ .GoType }}(vFloat)
+{{- end }}
+
+{{ define "FloatX_Format" }}strconv.FormatFloat(float64({{ .From }}), 'e', -1, {{ .BitSize }}){{ end }}
+
+{{/* ----------------------------- Float64 ------------------------------------- */}}
+
+{{ define "Float64_Parser" -}}
+{{- if not .IsNew -}}
+var err error
+{{ end }}
+{{- .To }}, err {{ if .IsNew }}:{{ end }}= strconv.ParseFloat({{ .From }}, 64)
+if err != nil {
+	return {{ .MkErr.Wrap "parse float64" "err" }}
+}
+{{- end }}
+
+{{ define "Float64_Format" }}strconv.FormatFloat({{ .From }}, 'e', -1, 64){{ end }}

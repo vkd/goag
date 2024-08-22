@@ -91,8 +91,8 @@ func newPostShopsShopStringShopSchemaPetsParams(r *http.Request) (zero PostShops
 				return zero, ErrParseParam{In: "path", Parameter: "shop_schema", Reason: "required"}
 			}
 
-			vstring := vPath
-			params.Path.ShopSchema = NewShop(vstring)
+			vString := vPath
+			params.Path.ShopSchema = NewShop(vString)
 		}
 
 		if !strings.HasPrefix(p, "/pets") {

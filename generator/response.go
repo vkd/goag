@@ -38,7 +38,7 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 
 			r.ContentJSON = Just(ResponseContentSchema{
 				Spec: c.V.Schema,
-				Type: s.Base(),
+				Type: s,
 			})
 		default:
 		}
@@ -85,7 +85,7 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header],
 	var s interface {
 		Render
 		Parser
-	} = schema.Base()
+	} = schema
 
 	if !ref.Value().Required {
 		s = NewOptionalType(schema, cfg)
@@ -99,7 +99,7 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header],
 		Required:  ref.Value().Required,
 		Schema:    s,
 	}
-	if _, ok := s.(CustomType); ok {
+	if _, ok := schema.Custom.Get(); ok {
 		h.IsCustomType = true
 	}
 	return h, ims, nil
@@ -107,5 +107,5 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header],
 
 type ResponseContentSchema struct {
 	Spec specification.Ref[specification.Schema]
-	Type SchemaType
+	Type Schema
 }

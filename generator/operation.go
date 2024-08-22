@@ -115,11 +115,15 @@ func NewOperation(s *specification.Operation, componenets Components, cfg Config
 				}
 				imports = append(imports, ims...)
 
-				switch body := body.Type.(type) {
-				case StructureType:
-					o.Body.Type = Just(body)
-				default:
+				if body.Custom.IsSet {
 					o.Body.TypeName = body
+				} else {
+					switch st := body.Type.(type) {
+					case StructureType:
+						o.Body.Type = Just(st)
+					default:
+						o.Body.TypeName = body
+					}
 				}
 			}
 		}

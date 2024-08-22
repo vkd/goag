@@ -98,21 +98,21 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'int_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 0)
+				vInt64, err := strconv.ParseInt(q[0], 10, 0)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int_req", Reason: "parse int", Err: err}
 				}
-				params.Query.IntReq = int(vInt)
+				params.Query.IntReq = int(vInt64)
 			}
 		}
 		{
 			q, ok := query["int"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 0)
+				vInt64, err := strconv.ParseInt(q[0], 10, 0)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int", Reason: "parse int", Err: err}
 				}
-				v := int(vInt)
+				v := int(vInt64)
 				params.Query.Int.Set(v)
 			}
 		}
@@ -122,21 +122,21 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'int32_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				vInt64, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int32_req", Reason: "parse int32", Err: err}
 				}
-				params.Query.Int32Req = int32(vInt)
+				params.Query.Int32Req = int32(vInt64)
 			}
 		}
 		{
 			q, ok := query["int32"]
 			if ok && len(q) > 0 {
-				vInt, err := strconv.ParseInt(q[0], 10, 32)
+				vInt64, err := strconv.ParseInt(q[0], 10, 32)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int32", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt)
+				v := int32(vInt64)
 				params.Query.Int32.Set(v)
 			}
 		}
@@ -238,11 +238,11 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 			if ok && len(q) > 0 {
 				v := make([]int32, len(q))
 				for i := range q {
-					vInt, err := strconv.ParseInt(q[i], 10, 32)
+					vInt64, err := strconv.ParseInt(q[i], 10, 32)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse int32", Err: err}
 					}
-					v[i] = int32(vInt)
+					v[i] = int32(vInt64)
 				}
 				params.Query.Filter.Set(v)
 			}
@@ -291,11 +291,11 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "required"}
 			}
 
-			vInt, err := strconv.ParseInt(vPath, 10, 32)
+			vInt64, err := strconv.ParseInt(vPath, 10, 32)
 			if err != nil {
 				return zero, ErrParseParam{In: "path", Parameter: "shop", Reason: "parse int32", Err: err}
 			}
-			params.Path.Shop = int32(vInt)
+			params.Path.Shop = int32(vInt64)
 		}
 
 		if !strings.HasPrefix(p, "/reviews") {
