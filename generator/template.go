@@ -38,7 +38,7 @@ func ExecuteTemplate(name string, data any) (string, error) {
 		return "", fmt.Errorf("execute template (%s): %w", name, err)
 	}
 	if os.Getenv("TEMPLATE_DEBUG") != "" {
-		return `/** ` + name + ` >>> */` + bs.String() + ` /** <<< ` + name + ` */`, nil
+		return `/** ` + name + ` >>> */` + bs.String() + `/** <<< ` + name + ` */`, nil
 	}
 	return bs.String(), nil
 }
