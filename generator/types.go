@@ -17,10 +17,10 @@ func (s SliceType) FuncTypeName() string {
 	return s.Items.FuncTypeName() + "s"
 }
 
-func (s SliceType) Render() (string, error) { return ExecuteTemplate("SliceType", s) }
-
-func (s SliceType) Base() SchemaType {
-	return s
+func (s SliceType) Render() (string, error) {
+	return ExecuteTemplate("SliceType", TData{
+		"ItemsRender": s.Items.Render,
+	})
 }
 
 func (s SliceType) RenderFormat(from string) (string, error) {
@@ -29,38 +29,35 @@ func (s SliceType) RenderFormat(from string) (string, error) {
 
 func (s SliceType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
 	return ExecuteTemplate("Slice_RenderFormatStrings", TData{
-		"From":  from,
-		"Items": s.Items,
 		"To":    to,
+		"From":  from,
 		"IsNew": isNew,
-	})
-}
 
-func (s SliceType) RenderFormatStringsMultiline(to, from string) (string, error) {
-	return ExecuteTemplate("SliceType_RenderFormatMultiline", TData{
-		"To":    to,
-		"From":  from,
-		"Items": s.Items,
+		"ItemsRenderFormat": s.Items.RenderFormat,
 	})
 }
 
 func (s SliceType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("SliceType_ParseString", TData{
-		"From":  from,
 		"To":    to,
-		"Items": s.Items,
-		"MkErr": mkErr,
+		"From":  from,
 		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"ItemsRender":      s.Items.Render,
+		"ItemsParseString": s.Items.ParseString,
 	})
 }
 
 func (s SliceType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("SliceType_ParseStrings", TData{
-		"From":  from,
 		"To":    to,
-		"Items": s.Items,
-		"MkErr": mkErr,
+		"From":  from,
 		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"ItemsRender":      s.Items.Render,
+		"ItemsParseString": s.Items.ParseString,
 	})
 }
 
@@ -103,55 +100,26 @@ func NewStructureType(s *specification.Schema, components Components) (zero Stru
 
 var _ SchemaType = StructureType{}
 
+func (s StructureType) Kind() SchemaKind { return SchemaKindObject }
+
 func (s StructureType) FuncTypeName() string { return "Structure" }
 
 func (s StructureType) Render() (string, error) { return ExecuteTemplate("StructureType", s) }
+
 func (s StructureType) RenderFormat(from string) (string, error) {
-	return ExecuteTemplate("StructureTypeRenderFormat", TData{
-		"From":  from,
-		"Type":  s,
-		"MkErr": newError{},
-	})
-}
-
-func (s StructureType) Kind() SchemaKind { return SchemaKindObject }
-
-func (s StructureType) Base() SchemaType {
-	return s
+	return "", fmt.Errorf(".RenderFormat() function for StructureType is not supported")
 }
 
 func (s StructureType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return ExecuteTemplate("StructureTypeRenderFormat", TData{
-		"From":  from,
-		"Type":  s,
-		"MkErr": newError{},
-		"To":    to,
-		"IsNew": isNew,
-	})
+	return "", fmt.Errorf(".RenderFormatStrings() function for StructureType is not supported")
 }
 
 func (s StructureType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	if isNew {
-		return "/* isNew == true is not supported */", nil
-	}
-	return ExecuteTemplate("StructureTypeParseString", TData{
-		"To":    to,
-		"From":  from,
-		"IsNew": isNew,
-		"MkErr": mkErr,
-	})
+	return "", fmt.Errorf(".ParseString() function for StructureType is not supported")
 }
 
 func (s StructureType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	if isNew {
-		return "/* isNew == true is not supported */", nil
-	}
-	return ExecuteTemplate("StructureTypeParseString", TData{
-		"To":    to,
-		"From":  from,
-		"IsNew": isNew,
-		"MkErr": mkErr,
-	})
+	return "", fmt.Errorf(".ParseStrings() function for StructureType is not supported")
 }
 
 type StructureField struct {
@@ -211,10 +179,6 @@ func (p OptionalType) Render() (string, error) {
 	return p.MaybeType + "[" + out + "]", err
 }
 
-func (o OptionalType) Base() SchemaType {
-	return o.V.BaseSchemaType()
-}
-
 var _ Parser = OptionalType{}
 
 func (p OptionalType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -269,10 +233,6 @@ func (m MapType) FuncTypeName() string { return "Map" }
 
 func (m MapType) Render() (string, error) {
 	return ExecuteTemplate("MapType", m)
-}
-
-func (m MapType) Base() SchemaType {
-	return m
 }
 
 func (m MapType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {

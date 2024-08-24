@@ -160,8 +160,6 @@ type SchemaComponent struct {
 	// IsAlias       bool
 	WriteJSONFunc bool
 
-	RenderFormatStringsMultiline func(to, from string) (string, error)
-
 	CustomJSONMarshaler bool
 	StructureType       StructureType
 
@@ -212,7 +210,6 @@ func NewSchemaComponent(name string, rs specification.Ref[specification.Schema],
 			sc.WriteJSONFunc = true
 		}
 	case SliceType:
-		sc.RenderFormatStringsMultiline = schema.RenderFormatStringsMultiline
 		sc.BaseType = schema.Items
 
 		switch schema.Items.BaseSchemaType().(type) {

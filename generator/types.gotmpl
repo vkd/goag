@@ -1,31 +1,24 @@
 {{/* ----------------------------- SliceType ------------------------------------- */}}
 
-{{ define "SliceType" }}[]{{ .Items.Render }}{{ end }}
+{{ define "SliceType" }}[]{{ call .ItemsRender }}{{ end }}
 
 {{ define "Slice_RenderFormatStrings" -}}
 qv := make([]string, 0, len({{ .From }}))
 for _, v := range {{ .From }} {
-	qv = append(qv, {{ .Items.RenderFormat "v" }})
+	qv = append(qv, {{ call .ItemsRenderFormat "v" }})
 }
 {{ .To }} {{ if .IsNew }}:{{ end }}= qv
 {{- end }}
 
-{{ define "SliceType_RenderFormatMultiline" -}}
-{{ .To }} := make([]string, 0, len({{ .From }}))
-for _, v := range {{ .From }} {
-	{{ .To }} = append({{ .To }}, {{ .Items.RenderFormat "v" }})
-}
-{{- end }}
-
 {{ define "SliceType_ParseString" }}
-{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ .Items.Render }}, 1)
-{{ .Items.ParseString (print .To "[0]") .From  .IsNew .MkErr }}
+{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ call .ItemsRender }}, 1)
+{{ call .ItemsParseString (print .To "[0]") .From  .IsNew .MkErr }}
 {{- end }}
 
 {{ define "SliceType_ParseStrings" }}
-{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ .Items.Render }}, len({{.From}}))
+{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ call .ItemsRender }}, len({{.From}}))
 for i := range {{.From}} {
-	{{ .Items.ParseString (print .To "[i]") (print .From "[i]") false .MkErr }}
+	{{ call .ItemsParseString (print .To "[i]") (print .From "[i]") false .MkErr }}
 }
 {{- end }}
 
@@ -33,31 +26,16 @@ for i := range {{.From}} {
 {{/* ----------------------------- StructureType ------------------------------------- */}}
 
 {{ define "StructureType" }}
-{{- if.Fields }}struct{
-{{- range $_, $f := .Fields }}
-{{ $f.Render }}
-{{- end }}
-{{- if .AdditionalProperties }}
-AdditionalProperties map[string]{{ .AdditionalProperties.Render }} `json:"-"`
-{{- end }}
+{{- if or .Fields .AdditionalProperties }}struct{
+	{{- range $_, $f := .Fields }}
+	{{ $f.Render }}
+	{{- end }}
+	{{- if .AdditionalProperties }}
+	AdditionalProperties map[string]{{ .AdditionalProperties.Render }} `json:"-"`
+	{{- end }}
 }
 {{- else }}struct{}
 {{- end }}
-{{- end }}
-
-{{ define "StructureTypeRenderFormat" -}}
-bs, err := json.Marshal({{ .From }})
-if err != nil {
-	return {{ .MkErr.Wrap "marshal json" "err" }}
-}
-{{ .To }} {{ if .IsNew }}:{{ end }}= []string{string(bs)}
-{{- end }}
-
-{{ define "StructureTypeParseString" -}}
-err := json.Unmarshal([]byte({{ .From }}), &{{ .To }})
-if err != nil {
-	return {{ .MkErr.Wrap "unmarshal json" "err" }}
-}
 {{- end }}
 
 
