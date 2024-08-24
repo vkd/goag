@@ -57,10 +57,3 @@ type Renders []Render
 func (r Renders) Render() (string, error) {
 	return ExecuteTemplate("Renders", r)
 }
-
-func Assign(to, from string, isNew bool) string {
-	if isNew {
-		return to + " := " + from
-	}
-	return to + " = " + from
-}

@@ -1,7 +1,7 @@
 {{/* ----------------------------- Primitive ------------------------------------- */}}
 
 {{ define "Primitive_RenderFormatStrings" -}}
-{{- .To }} {{ if .IsNew }}:{{ end }}= []string{ {{ .Type.RenderFormat .From }} }
+{{- .To }} {{ if .IsNew }}:{{ end }}= []string{ {{ call .RenderFormat .From }} }
 {{- end }}
 
 {{/* ----------------------------- Bool ------------------------------------- */}}

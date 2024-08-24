@@ -42,7 +42,7 @@ func (t Primitive) RenderFormatStrings(to, from string, isNew bool) (string, err
 		"From":  from,
 		"IsNew": isNew,
 
-		"Type": t.PrimitiveIface,
+		"RenderFormat": t.PrimitiveIface.RenderFormat,
 	})
 }
 
@@ -53,18 +53,18 @@ var _ PrimitiveIface = BoolType{}
 func (b BoolType) GoType() string { return "bool" }
 
 func (b BoolType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("Bool_ParseString", struct {
-		From  string
-		To    string
-		MkErr ErrorRender
-		IsNew bool
-	}{from, to, mkErr, isNew})
+	return ExecuteTemplate("Bool_ParseString", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
 }
 
 func (b BoolType) RenderFormat(from string) (string, error) {
-	return ExecuteTemplate("Bool_RenderFormat", struct {
-		From string
-	}{from})
+	return ExecuteTemplate("Bool_RenderFormat", TData{
+		"From": from,
+	})
 }
 
 type IntType struct {
@@ -111,9 +111,9 @@ func (i IntType) ParseString(to string, from string, isNew bool, mkErr ErrorRend
 func (i IntType) RenderFormat(from string) (string, error) {
 	switch i.BitSize {
 	case 64:
-		return ExecuteTemplate("Int64_Format", struct {
-			From string
-		}{from})
+		return ExecuteTemplate("Int64_Format", TData{
+			"From": from,
+		})
 	default:
 		return ExecuteTemplate("IntX_Format", TData{
 			"From": from,
