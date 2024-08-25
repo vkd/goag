@@ -9,6 +9,8 @@ const SpecFile string = `paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - length
                 properties:
                   length:
                     type: integer
@@ -24,6 +26,9 @@ components:
     Pet:
       type: object
       additionalProperties: true
+      required:
+        - name
+        - custom
       properties:
         name:
           type: string

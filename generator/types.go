@@ -68,25 +68,27 @@ type StructureType struct {
 	AdditionalProperties *Render
 }
 
-func NewStructureType(s *specification.Schema, components Components) (zero StructureType, _ Imports, _ error) {
+func NewStructureType(s *specification.Schema, components Componenter, cfg Config) (zero StructureType, _ Imports, _ error) {
 	var stype StructureType
 	var imports Imports
 	for _, p := range s.Properties {
-		t, ims, err := NewSchema(p.Schema, components)
+		t, ims, err := NewSchema(p.Schema, NamedComponenter{components, p.Name}, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new schema: %w", err)
 		}
 		imports = append(imports, ims...)
 
-		f, err := NewStructureField(p.Schema, p.Name, t, components)
-		if err != nil {
-			return zero, nil, fmt.Errorf("field %q: %w", p.Name, err)
+		if t.Ref == nil && !t.Custom.IsSet && t.Kind() == SchemaKindObject {
+			sc := components.AddSchema(PublicFieldName(p.Name), t, cfg)
+			t.Ref = sc
 		}
+
+		f := NewStructureField(p.Schema, p.Name, t, p.Required, cfg)
 
 		stype.Fields = append(stype.Fields, f)
 	}
 	if additionalProperties, ok := s.AdditionalProperties.Get(); ok {
-		additional, ims, err := NewSchema(additionalProperties, components)
+		additional, ims, err := NewSchema(additionalProperties, NamedComponenter{components, "AdditionalProperties"}, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("additional properties: %w", err)
 		}
@@ -126,21 +128,26 @@ type StructureField struct {
 	Comment  string
 	Name     string
 	Type     Render
-	Schema   Schema
+	Schema   SchemaType
 	Tags     []StructureFieldTag
 	JSONTag  string
 	Embedded bool
 }
 
-func NewStructureField(s specification.Ref[specification.Schema], name string, t Schema, components Components) (zero StructureField, _ error) {
+func NewStructureField(s specification.Ref[specification.Schema], name string, t Schema, required bool, cfg Config) StructureField {
+	var tp SchemaType = t
+	if !required {
+		ot := NewOptionalType(t, cfg)
+		tp = ot
+	}
 	return StructureField{
 		Comment: s.Value().Description,
 		Name:    PublicFieldName(name),
-		Type:    t,
-		Schema:  t,
+		Type:    tp,
+		Schema:  tp,
 		Tags:    []StructureFieldTag{{Key: "json", Values: []string{name}}},
 		JSONTag: name,
-	}, nil
+	}
 }
 
 func (s StructureField) Render() (string, error) { return ExecuteTemplate("StructureField", s) }
@@ -171,6 +178,12 @@ func NewOptionalType(v Schema, cfg Config) OptionalType {
 	}
 	return OptionalType{V: v, MaybeType: typename}
 }
+
+func (p OptionalType) FuncTypeName() string {
+	return p.MaybeType + p.V.FuncTypeName()
+}
+
+func (p OptionalType) Kind() SchemaKind { return p.V.Kind() }
 
 var _ Render = OptionalType{}
 
@@ -213,40 +226,4 @@ func (p OptionalType) RenderFormat(from string) (string, error) {
 
 func (p OptionalType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
 	return p.V.RenderFormatStrings(to, from+".Value", isNew)
-}
-
-type MapType struct {
-	SingleValue
-	Key   SchemaType
-	Value Schema
-}
-
-func NewMapType(v Schema) MapType {
-	return MapType{Key: NewPrimitive(StringType{}), Value: v}
-}
-
-var _ SchemaType = MapType{}
-
-func (m MapType) Kind() SchemaKind { return SchemaKindMap }
-
-func (m MapType) FuncTypeName() string { return "Map" }
-
-func (m MapType) Render() (string, error) {
-	return ExecuteTemplate("MapType", m)
-}
-
-func (m MapType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return "", fmt.Errorf("not implemented")
-}
-
-func (m MapType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return "", fmt.Errorf("not implemented")
-}
-
-func (m MapType) RenderFormat(from string) (string, error) {
-	return "", fmt.Errorf("not implemented")
-}
-
-func (m MapType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return "", fmt.Errorf("not implemented")
 }

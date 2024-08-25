@@ -9,6 +9,6 @@ import (
 // ------------------------
 
 type NewPet struct {
-	Name string     `json:"name"`
-	Tag  pkg.PetTag `json:"tag"`
+	Name string                `json:"name"`
+	Tag  pkg.Maybe[pkg.PetTag] `json:"tag"`
 }

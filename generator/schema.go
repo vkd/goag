@@ -8,26 +8,37 @@ import (
 )
 
 type Schema struct {
+	Description string
+
 	Type   SchemaType
 	Ref    *SchemaComponent
 	Custom Maybe[string]
 }
 
-func NewSchema(s specification.Ref[specification.Schema], components Components) (zero Schema, _ Imports, _ error) {
+type Componenter interface {
+	GetSchema(string) (*SchemaComponent, bool)
+	AddSchema(string, Schema, Config) *SchemaComponent
+}
+
+func NewSchemaRef(sc *SchemaComponent) Schema {
+	return Schema{
+		Type:   nil,
+		Ref:    sc,
+		Custom: Nothing[string](),
+	}
+}
+
+func NewSchema(s specification.Ref[specification.Schema], components Componenter, cfg Config) (zero Schema, _ Imports, _ error) {
 	var schemaRef *SchemaComponent
 	if ref := s.Ref(); ref != nil {
-		refOut, ok := components.Schemas.Get(ref.V)
+		refOut, ok := components.GetSchema(ref.Name)
 		if !ok {
 			return zero, nil, fmt.Errorf("ref schema %q not found in schemas", ref.Name)
 		}
-		return Schema{
-			Type:   nil,
-			Ref:    refOut,
-			Custom: Nothing[string](),
-		}, nil, nil
+		return NewSchemaRef(refOut), nil, nil
 	}
 
-	st, ims, err := NewSchemaType(s.Value(), components)
+	st, ims, err := NewSchemaType(s.Value(), components, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("new schema type: %w", err)
 	}
@@ -51,6 +62,8 @@ func NewSchema(s specification.Ref[specification.Schema], components Components)
 	}
 
 	return Schema{
+		Description: s.Value().Description,
+
 		Type:   st,
 		Ref:    schemaRef,
 		Custom: custom,
@@ -85,6 +98,13 @@ func (s Schema) FuncTypeName() string {
 		return strings.ReplaceAll(custom, ".", "")
 	}
 	return s.Type.FuncTypeName()
+}
+
+func (s Schema) Kind() SchemaKind {
+	if s.Ref != nil {
+		return SchemaKindRef
+	}
+	return s.Type.Kind()
 }
 
 func (s Schema) Render() (string, error) {
@@ -227,6 +247,7 @@ type SchemaType interface {
 	Formatter
 
 	FuncTypeName() string
+	Kind() SchemaKind
 }
 
 type SchemaKind string
@@ -235,13 +256,12 @@ const (
 	SchemaKindPrimitive SchemaKind = "primitive"
 	SchemaKindArray     SchemaKind = "array"
 	SchemaKindObject    SchemaKind = "object"
-	SchemaKindCustom    SchemaKind = "custom"
-	SchemaKindRef       SchemaKind = "ref"
-	SchemaKindMap       SchemaKind = "map"
+	// SchemaKindCustom    SchemaKind = "custom"
+	SchemaKindRef SchemaKind = "ref"
 )
 
-func NewSchemaType(s *specification.Schema, components Components) (SchemaType, Imports, error) {
-	out, ims, err := newSchemaType(s, components)
+func NewSchemaType(s *specification.Schema, components Componenter, cfg Config) (SchemaType, Imports, error) {
+	out, ims, err := newSchemaType(s, components, cfg)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -249,7 +269,7 @@ func NewSchemaType(s *specification.Schema, components Components) (SchemaType, 
 	return out, ims, nil
 }
 
-func newSchemaType(spec *specification.Schema, components Components) (SchemaType, Imports, error) {
+func newSchemaType(spec *specification.Schema, components Componenter, cfg Config) (SchemaType, Imports, error) {
 	if len(spec.AllOf) > 0 {
 		var s StructureType
 		var imports Imports
@@ -257,7 +277,7 @@ func newSchemaType(spec *specification.Schema, components Components) (SchemaTyp
 			if ref := a.Ref(); ref != nil {
 				s.Fields = append(s.Fields, StructureField{Type: StringRender(ref.Name), Embedded: true})
 			} else {
-				st, ims, err := NewStructureType(a.Value(), components)
+				st, ims, err := NewStructureType(a.Value(), components, cfg)
 				if err != nil {
 					return nil, nil, fmt.Errorf("allOf: %d-th element: new structure type: %w", i, err)
 				}
@@ -273,20 +293,13 @@ func newSchemaType(spec *specification.Schema, components Components) (SchemaTyp
 	case "boolean":
 		return NewPrimitive(BoolType{}), nil, nil
 	case "object":
-		if specAdditionalProperties, ok := spec.AdditionalProperties.Get(); ok && len(spec.Properties) == 0 {
-			additional, ims, err := NewSchema(specAdditionalProperties, components)
-			if err != nil {
-				return nil, nil, fmt.Errorf("additional properties: %w", err)
-			}
-			return NewMapType(additional), ims, nil
-		}
-		r, ims, err := NewStructureType(spec, components)
+		r, ims, err := NewStructureType(spec, components, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("'object' type: %w", err)
 		}
 		return r, ims, nil
 	case "array":
-		itemType, is, err := NewSchema(spec.Value().Items, components)
+		itemType, is, err := NewSchema(spec.Value().Items, components, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("items schema: %w", err)
 		}

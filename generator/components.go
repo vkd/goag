@@ -8,7 +8,7 @@ import (
 )
 
 type Components struct {
-	Schemas       *MappedList[specification.Ref[specification.Schema], SchemaComponent]
+	Schemas       []*SchemaComponent
 	Headers       []HeaderComponent
 	RequestBodies []RequestBodyComponent
 	Responses     []ResponseComponent
@@ -17,24 +17,34 @@ type Components struct {
 }
 
 func NewComponents(spec specification.Components, cfg Config) (zero Components, _ Imports, _ error) {
-	var cs Components
+	var components Components
+	cs := &components
+
 	var imports Imports
 
-	cs.Schemas = NewMappedList[specification.Ref[specification.Schema], SchemaComponent](spec.Schemas)
+	cs.Schemas = make([]*SchemaComponent, len(spec.Schemas.List))
+	cacheSchemas := make(map[specification.Ref[specification.Schema]]*SchemaComponent, len(spec.Schemas.List))
+	for i, c := range spec.Schemas.List {
+		cs.Schemas[i] = &SchemaComponent{}
+		cs.Schemas[i].Name = c.Name
+		cacheSchemas[c.V] = cs.Schemas[i]
+	}
 	for _, c := range spec.Schemas.List {
-		s, ims, err := NewSchemaComponent(c.Name, c.V, cs, cfg)
+		schema, ims, err := NewSchema(c.V, NamedComponenter{cs, c.Name}, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new schema component: %w", err)
 		}
 		imports = append(imports, ims...)
 
-		sc := cs.Schemas.m[c.V]
+		s := NewSchemaComponent(c.Name, schema, cs, cfg)
+
+		sc := cacheSchemas[c.V]
 		*sc = s
 	}
 
 	cs.Headers = make([]HeaderComponent, 0, len(spec.Headers.List))
 	for _, h := range spec.Headers.List {
-		s, ims, err := NewSchema(h.V.Value().Schema, cs)
+		s, ims, err := NewSchema(h.V.Value().Schema, cs, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("parse header for %q type: %w", h.Name, err)
 		}
@@ -64,7 +74,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 				default:
 					name += PublicFieldName(cnt.Name)
 				}
-				schema, ims, err := NewSchema(cnt.V.Schema, cs)
+				schema, ims, err := NewSchema(cnt.V.Schema, cs, cfg)
 				if err != nil {
 					return zero, nil, fmt.Errorf("new schema for %q type, %q content: %w", rb.Name, cnt.Name, err)
 				}
@@ -138,7 +148,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 		})
 	}
 
-	return cs, imports, nil
+	return components, imports, nil
 }
 
 func (c Components) Render() (string, error) {
@@ -146,8 +156,32 @@ func (c Components) Render() (string, error) {
 }
 
 func (c Components) LenToRender() int {
-	ln := len(c.Schemas.List) + len(c.Headers) + len(c.RequestBodies) + len(c.Responses)
+	ln := len(c.Schemas) + len(c.Headers) + len(c.RequestBodies) + len(c.Responses)
 	return ln
+}
+
+func (c Components) GetSchema(key string) (*SchemaComponent, bool) {
+	for i, s := range c.Schemas {
+		if s.Name == key {
+			return c.Schemas[i], true
+		}
+	}
+	return nil, false
+}
+
+func (c *Components) AddSchema(name string, s Schema, cfg Config) *SchemaComponent {
+	sc := NewSchemaComponent(name, s, c, cfg)
+	c.Schemas = append(c.Schemas, &sc)
+	return c.Schemas[len(c.Schemas)-1]
+}
+
+type NamedComponenter struct {
+	Componenter
+	Name string
+}
+
+func (n NamedComponenter) AddSchema(name string, s Schema, cfg Config) *SchemaComponent {
+	return n.Componenter.AddSchema(n.Name+name, s, cfg)
 }
 
 type SchemaComponent struct {
@@ -160,8 +194,7 @@ type SchemaComponent struct {
 	// IsAlias       bool
 	WriteJSONFunc bool
 
-	CustomJSONMarshaler bool
-	StructureType       StructureType
+	StructureType StructureType
 
 	// Ref Maybe[*SchemaComponent]
 
@@ -169,13 +202,7 @@ type SchemaComponent struct {
 	// IsRef    bool
 }
 
-func NewSchemaComponent(name string, rs specification.Ref[specification.Schema], cs Components, cfg Config) (zero SchemaComponent, imports Imports, _ error) {
-	schema, ims, err := NewSchema(rs, cs)
-	if err != nil {
-		return zero, nil, fmt.Errorf("new schema: %w", err)
-	}
-	imports = append(imports, ims...)
-
+func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) SchemaComponent {
 	// if ref := rs.Ref(); ref != nil {
 	// 	_, ok := cs.Schemas.Get(ref.V)
 	// 	if !ok {
@@ -196,7 +223,7 @@ func NewSchemaComponent(name string, rs specification.Ref[specification.Schema],
 		Name:   name,
 		Schema: schema,
 
-		Description: rs.Value().Description,
+		Description: schema.Description,
 		// IsMultivalue: schemaType.IsMultivalue(),
 		BaseType: schemaType.BaseSchemaType(),
 	}
@@ -205,7 +232,6 @@ func NewSchemaComponent(name string, rs specification.Ref[specification.Schema],
 	case StructureType:
 		sc.IgnoreParseFormat = true
 		sc.StructureType = schema
-		sc.CustomJSONMarshaler = rs.Value().AdditionalProperties.Set
 		if cfg.Experimental.CustomJSONImplementation || schema.AdditionalProperties != nil {
 			sc.WriteJSONFunc = true
 		}
@@ -240,7 +266,7 @@ func NewSchemaComponent(name string, rs specification.Ref[specification.Schema],
 		// 	sc.IsRef = true
 	}
 
-	return sc, imports, nil
+	return sc
 }
 
 // func (s SchemaComponent) Base() SchemaType {

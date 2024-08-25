@@ -14,7 +14,7 @@ type QueryParameter struct {
 	Type        Schema
 }
 
-func NewQueryParameter(refP specification.Ref[specification.QueryParameter], components Components) (zero *QueryParameter, _ Imports, _ error) {
+func NewQueryParameter(refP specification.Ref[specification.QueryParameter], components Componenter, cfg Config) (zero *QueryParameter, _ Imports, _ error) {
 	s := refP.Value()
 	out := QueryParameter{
 		Description: s.Description,
@@ -24,7 +24,7 @@ func NewQueryParameter(refP specification.Ref[specification.QueryParameter], com
 	out.Required = s.Required
 	var err error
 	var ims Imports
-	out.Type, ims, err = NewSchema(s.Schema, components)
+	out.Type, ims, err = NewSchema(s.Schema, components, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -52,7 +52,7 @@ type PathParameter struct {
 	Description   string
 }
 
-func NewPathParameter(rs specification.Ref[specification.PathParameter], componenets Components) (zero *PathParameter, _ Imports, _ error) {
+func NewPathParameter(rs specification.Ref[specification.PathParameter], components Componenter, cfg Config) (zero *PathParameter, _ Imports, _ error) {
 	s := rs.Value()
 	out := PathParameter{Description: s.Description}
 	out.Name = s.Name
@@ -60,7 +60,7 @@ func NewPathParameter(rs specification.Ref[specification.PathParameter], compone
 
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewSchema(s.Schema, componenets)
+	out.Type, ims, err = NewSchema(s.Schema, components, cfg)
 	if err != nil {
 		return nil, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -77,7 +77,7 @@ type HeaderParameter struct {
 	Required      bool
 }
 
-func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter], components Components) (zero *HeaderParameter, _ Imports, _ error) {
+func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter], components Componenter, cfg Config) (zero *HeaderParameter, _ Imports, _ error) {
 	s := sr.Value()
 	out := HeaderParameter{
 		Description: s.Description,
@@ -85,7 +85,7 @@ func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter], com
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 
-	schema, ims, err := NewSchema(s.Schema, components)
+	schema, ims, err := NewSchema(s.Schema, components, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}

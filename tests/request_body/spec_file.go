@@ -23,8 +23,8 @@ components:
     NewPet:
       type: object
       required:
-        - id
         - name
+        - tag
       properties:
         name:
           type: string

@@ -6,7 +6,7 @@
 //         Schemas
 // ------------------------
 
-{{range $_, $s := .Schemas.List}}
+{{range $_, $s := .Schemas}}
 {{ $s.Render }}
 {{end}}
 {{- end}}
@@ -151,9 +151,6 @@ func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
 
 	return err
 }
-{{- end }}
-
-{{- if .CustomJSONMarshaler }}
 
 var _ json.Unmarshaler = (*{{ .Name }})(nil)
 

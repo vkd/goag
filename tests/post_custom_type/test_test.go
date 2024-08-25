@@ -23,7 +23,7 @@ func TestPostBody(t *testing.T) {
 				return NewPostShopsShopPetsResponseDefault(400)
 			}
 			assert.Equal(t, "testshop", req.Path.Shop.V)
-			assert.Equal(t, "tiger", req.Body.Tag.V)
+			assert.Equal(t, "tiger", req.Body.Tag.Value.V)
 			return NewPostShopsShopPetsResponse201()
 
 		},
@@ -31,7 +31,7 @@ func TestPostBody(t *testing.T) {
 
 	cli := NewClient("", api)
 
-	resp, err := cli.PostShopsShopPets(ctx, PostShopsShopPetsParams{Path: struct{ Shop pkg.ShopType }{Shop: pkg.ShopType{V: "testshop"}}, Body: NewPet{Tag: pkg.PetTag{V: "tiger"}}})
+	resp, err := cli.PostShopsShopPets(ctx, PostShopsShopPetsParams{Path: struct{ Shop pkg.ShopType }{Shop: pkg.ShopType{V: "testshop"}}, Body: NewPet{Tag: pkg.Just(pkg.PetTag{V: "tiger"})}})
 	require.NoError(t, err)
 	_, ok := resp.(PostShopsShopPetsResponse201)
 	assert.True(t, ok)

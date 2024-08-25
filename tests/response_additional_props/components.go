@@ -1,5 +1,12 @@
 package test
 
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+)
+
 // ------------------------
 //         Schemas
 // ------------------------
@@ -9,3 +16,90 @@ type Pet struct {
 }
 
 type Pets []Pet
+
+type GetPetResponse200JSONBodyGroups struct {
+	AdditionalProperties map[string]Pets `json:"-"`
+}
+
+var _ json.Marshaler = (*GetPetResponse200JSONBodyGroups)(nil)
+
+func (c GetPetResponse200JSONBodyGroups) MarshalJSON() ([]byte, error) {
+	var out bytes.Buffer
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+
+	write([]byte(`{`))
+	mErr := c.marshalJSONInnerBody(&out)
+	if mErr != nil {
+		err = mErr
+	}
+	write([]byte(`}`))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Bytes(), nil
+}
+
+func (c GetPetResponse200JSONBodyGroups) marshalJSONInnerBody(out io.Writer) error {
+	encoder := json.NewEncoder(out)
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+	writeJSON := func(v any) {
+		if err != nil {
+			return
+		}
+		werr := encoder.Encode(v)
+		if werr != nil {
+			err = werr
+		}
+	}
+	_ = writeJSON
+
+	for k, v := range c.AdditionalProperties {
+		write([]byte(`"` + k + `":`))
+		writeJSON(v)
+	}
+
+	return err
+}
+
+var _ json.Unmarshaler = (*GetPetResponse200JSONBodyGroups)(nil)
+
+func (c *GetPetResponse200JSONBodyGroups) UnmarshalJSON(bs []byte) error {
+	m := make(map[string]json.RawMessage)
+	err := json.Unmarshal(bs, &m)
+	if err != nil {
+		return fmt.Errorf("raw key/value map: %w", err)
+	}
+	for k, bs := range m {
+		var v Pets
+		err = json.Unmarshal(bs, &v)
+		if err != nil {
+			return fmt.Errorf("additional property %q: %w", k, err)
+		}
+		c.AdditionalProperties[k] = v
+	}
+	return nil
+}

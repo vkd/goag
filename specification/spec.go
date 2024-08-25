@@ -127,12 +127,24 @@ func NewSchema(schema *openapi3.Schema, components Sourcer[Schema], opts SchemaO
 		}
 		out.Items = items
 	}
+	required := make(map[string]struct{})
+	for _, r := range schema.Required {
+		required[r] = struct{}{}
+	}
 	for _, name := range sortedKeys(schema.Properties) {
 		s, err := NewSchemaRef(schema.Properties[name], components, opts)
 		if err != nil {
 			return nil, fmt.Errorf("new schema ref for properties: %w", err)
 		}
-		out.Properties = append(out.Properties, SchemaProperty{Name: name, Schema: s})
+		var req bool
+		if _, ok := required[name]; ok {
+			req = true
+		}
+		out.Properties = append(out.Properties, SchemaProperty{
+			Name:     name,
+			Schema:   s,
+			Required: req,
+		})
 	}
 	for _, a := range schema.AllOf {
 		s, err := NewSchemaRef(a, components, opts)
@@ -173,8 +185,9 @@ var _ Ref[Schema] = (*Schema)(nil)
 func (s *Schema) Value() *Schema { return s }
 
 type SchemaProperty struct {
-	Name   string
-	Schema Ref[Schema]
+	Name     string
+	Schema   Ref[Schema]
+	Required bool
 }
 
 func sortedKeys[T any](m map[string]T) (out []string) {

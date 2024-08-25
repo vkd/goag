@@ -727,7 +727,7 @@ func NewGetShopsShopPetsResponse200JSON(body GetShopsShopPetsResponse200JSONBody
 
 // GetShopsShopPetsResponse200JSONBody - List of pets
 type GetShopsShopPetsResponse200JSONBody struct {
-	Groups map[string]Pets `json:"groups"`
+	Groups GetShopsShopPetsResponse200JSONBodyGroups `json:"groups"`
 }
 
 // GetShopsShopPetsResponse200JSON - List of pets

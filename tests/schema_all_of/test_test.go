@@ -11,7 +11,7 @@ import (
 
 func TestSchemaAllOf(t *testing.T) {
 	handler := GetPetHandlerFunc(func(_ context.Context, _ GetPetRequest) GetPetResponse {
-		return NewGetPetResponse200JSON(Pet{ID: 1, NewPet: NewPet{Name: "mike", Tag: "cat"}})
+		return NewGetPetResponse200JSON(Pet{ID: 1, NewPet: NewPet{Name: "mike", Tag: Just("cat")}})
 	})
 
 	w := httptest.NewRecorder()
@@ -23,5 +23,5 @@ func TestSchemaAllOf(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), pet.ID)
 	assert.Equal(t, "mike", pet.Name)
-	assert.Equal(t, "cat", pet.Tag)
+	assert.Equal(t, Just("cat"), pet.Tag)
 }

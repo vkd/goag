@@ -39,7 +39,7 @@ type Operation struct {
 	Responses       []*ResponseCode
 }
 
-func NewOperation(s *specification.Operation, componenets Components, cfg Config) (zero *Operation, _ Imports, _ error) {
+func NewOperation(s *specification.Operation, componenets Componenter, cfg Config) (zero *Operation, _ Imports, _ error) {
 	path, err := NewPath(s.PathRaw)
 	if err != nil {
 		return zero, nil, fmt.Errorf("parse raw path: %w", err)
@@ -63,7 +63,7 @@ func NewOperation(s *specification.Operation, componenets Components, cfg Config
 	}
 
 	var imports Imports
-	o.Params, imports, err = NewOperationParams(s.Parameters, componenets)
+	o.Params, imports, err = NewOperationParams(s.Parameters, componenets, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("new operation params: %w", err)
 	}
@@ -109,7 +109,7 @@ func NewOperation(s *specification.Operation, componenets Components, cfg Config
 			requestBody := rBody.Value()
 			jsonContent, ok := requestBody.Content.Get("application/json")
 			if ok {
-				body, ims, err := NewSchema(jsonContent.V.Schema, componenets)
+				body, ims, err := NewSchema(jsonContent.V.Schema, componenets, cfg)
 				if err != nil {
 					return nil, nil, fmt.Errorf("request body: %w", err)
 				}
@@ -201,12 +201,12 @@ type OperationParams struct {
 	Cookie  specification.Map[*CookieParameter]
 }
 
-func NewOperationParams(params specification.OperationParameters, components Components) (zero OperationParams, _ Imports, _ error) {
+func NewOperationParams(params specification.OperationParameters, components Componenter, cfg Config) (zero OperationParams, _ Imports, _ error) {
 	var op OperationParams
 	var imports Imports
 
 	for _, p := range params.Query.List {
-		param, ims, err := NewQueryParameter(p.V, components)
+		param, ims, err := NewQueryParameter(p.V, components, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new query parameter: %w", err)
 		}
@@ -215,7 +215,7 @@ func NewOperationParams(params specification.OperationParameters, components Com
 	}
 
 	for _, p := range params.Headers.List {
-		param, ims, err := NewHeaderParameter(p.V, components)
+		param, ims, err := NewHeaderParameter(p.V, components, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new header parameter: %w", err)
 		}
@@ -224,7 +224,7 @@ func NewOperationParams(params specification.OperationParameters, components Com
 	}
 
 	for _, p := range params.Path.List {
-		param, ims, err := NewPathParameter(p.V, components)
+		param, ims, err := NewPathParameter(p.V, components, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new path parameter: %w", err)
 		}

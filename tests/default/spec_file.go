@@ -55,6 +55,8 @@ const SpecFile string = `paths:
             application/json:
               schema:
                 type: object
+                required:
+                - groups
                 properties:
                   groups:
                     type: object
@@ -143,6 +145,8 @@ components:
   schemas:
     Error:
       type: object
+      required:
+        - message
       properties:
         message:
           type: string
@@ -150,8 +154,8 @@ components:
     NewPet:
       type: object
       required:
-        - id
         - name
+        - tag
       properties:
         name:
           type: string

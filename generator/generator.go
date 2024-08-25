@@ -16,7 +16,7 @@ type Generator struct {
 	Paths      []*PathItem
 
 	Client     ClientTemplate
-	Components Components
+	Components *Components
 
 	Router Router
 
@@ -54,7 +54,7 @@ func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Gen
 	if err != nil {
 		return nil, fmt.Errorf("file components: %w", err)
 	}
-	g.Components = components
+	g.Components = &components
 	g.Imports = append(g.Imports, ims...)
 
 	// ---
@@ -64,7 +64,7 @@ func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Gen
 			PathItem: pi,
 		}
 		for _, o := range pi.Operations {
-			operation, ims, err := NewOperation(o, components, cfg)
+			operation, ims, err := NewOperation(o, g.Components, cfg)
 			if err != nil {
 				return nil, fmt.Errorf(": %w", err)
 			}

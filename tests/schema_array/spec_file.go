@@ -25,6 +25,10 @@ components:
   schemas:
     Pet:
       type: object
+      required:
+        - id
+        - name
+        - tag
       properties:
         id:
           type: integer

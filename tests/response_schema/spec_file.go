@@ -13,6 +13,9 @@ components:
   schemas:
     Pet:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
           type: integer

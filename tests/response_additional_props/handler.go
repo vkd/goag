@@ -62,7 +62,7 @@ func NewGetPetResponse200JSON(body GetPetResponse200JSONBody) GetPetResponse {
 }
 
 type GetPetResponse200JSONBody struct {
-	Groups map[string]Pets `json:"groups"`
+	Groups GetPetResponse200JSONBodyGroups `json:"groups"`
 }
 
 type GetPetResponse200JSON struct {

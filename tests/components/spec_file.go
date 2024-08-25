@@ -43,6 +43,9 @@ components:
 
     Pet:
       type: object
+      required:
+      - id
+      - name
       properties:
         id:
           type: integer
@@ -52,6 +55,8 @@ components:
 
     Error:
       type: object
+      required:
+        - detail
       properties:
         detail:
           type: string
@@ -73,6 +78,8 @@ components:
         application/json:
           schema:
             type: object
+            required:
+            - name
             properties:
               name:
                 type: string

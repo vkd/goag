@@ -9,6 +9,8 @@ const SpecFile string = `paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - groups
                 properties:
                   groups:
                     type: object
@@ -23,6 +25,8 @@ components:
         $ref: '#/components/schemas/Pet'
     Pet:
       type: object
+      required:
+        - name
       properties:
         name:
           type: string

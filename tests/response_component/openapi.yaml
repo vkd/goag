@@ -21,11 +21,16 @@ components:
   schemas:
     Error:
       type: object
+      required:
+      - message
       properties:
         message:
           type: string
     Pet:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
           type: integer
