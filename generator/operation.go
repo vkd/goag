@@ -39,7 +39,7 @@ type Operation struct {
 	Responses       []*ResponseCode
 }
 
-func NewOperation(s *specification.Operation, componenets Componenter, cfg Config) (zero *Operation, _ Imports, _ error) {
+func NewOperation(s *specification.Operation, components Componenter, cfg Config) (zero *Operation, _ Imports, _ error) {
 	path, err := NewPath(s.PathRaw)
 	if err != nil {
 		return zero, nil, fmt.Errorf("parse raw path: %w", err)
@@ -63,7 +63,7 @@ func NewOperation(s *specification.Operation, componenets Componenter, cfg Confi
 	}
 
 	var imports Imports
-	o.Params, imports, err = NewOperationParams(s.Parameters, componenets, cfg)
+	o.Params, imports, err = NewOperationParams(s.Parameters, components, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("new operation params: %w", err)
 	}
@@ -109,7 +109,7 @@ func NewOperation(s *specification.Operation, componenets Componenter, cfg Confi
 			requestBody := rBody.Value()
 			jsonContent, ok := requestBody.Content.Get("application/json")
 			if ok {
-				body, ims, err := NewSchema(jsonContent.V.Schema, componenets, cfg)
+				body, ims, err := NewSchema(jsonContent.V.Schema, components, cfg)
 				if err != nil {
 					return nil, nil, fmt.Errorf("request body: %w", err)
 				}
@@ -130,7 +130,7 @@ func NewOperation(s *specification.Operation, componenets Componenter, cfg Confi
 	}
 
 	for _, r := range s.Responses.List {
-		resp, ims, err := NewResponse(name, r.Name, r.V.Value(), componenets, cfg)
+		resp, ims, err := NewResponse(name, r.Name, r.V.Value(), components, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("new response for %q status: %w", r.Name, err)
 		}
