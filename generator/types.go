@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/vkd/goag/specification"
 )
@@ -78,7 +79,7 @@ func NewStructureType(s *specification.Schema, components Componenter, cfg Confi
 		}
 		imports = append(imports, ims...)
 
-		if t.Ref == nil && !t.Custom.IsSet && t.Kind() == SchemaKindObject {
+		if t.Ref == nil && !t.IsCustom() && t.Kind() == SchemaKindObject {
 			sc := components.AddSchema(PublicFieldName(p.Name), t, cfg)
 			t.Ref = sc
 		}
@@ -164,6 +165,89 @@ func (sf StructureField) GetTag(k string) (zero StructureFieldTag, _ bool) {
 type StructureFieldTag struct {
 	Key    string
 	Values []string
+}
+
+type CustomType struct {
+	Value string
+	Type  SchemaType
+}
+
+func NewCustomType(specCustom string, st SchemaType) (CustomType, Imports) {
+	var customImport, customType string = "", specCustom
+	slIdx := strings.LastIndex(specCustom, "/")
+	if slIdx >= 0 {
+		customImport = specCustom[:slIdx]
+		customType = specCustom[slIdx+1:]
+
+		dotIdx := strings.LastIndex(specCustom, ".")
+		if dotIdx >= 0 {
+			customImport = specCustom[:dotIdx]
+		}
+	}
+
+	return CustomType{
+		Value: customType,
+		Type:  st,
+	}, NewImportsS(customImport)
+}
+
+var _ SchemaType = (*CustomType)(nil)
+
+func (c CustomType) Kind() SchemaKind { return c.Type.Kind() }
+
+func (c CustomType) FuncTypeName() string { return strings.ReplaceAll(c.Value, ".", "") }
+
+var _ Render = (*CustomType)(nil)
+
+func (c CustomType) Render() (string, error) {
+	return c.Value, nil
+}
+
+var _ Parser = (*CustomType)(nil)
+
+func (c CustomType) IsMultivalue() bool { return c.Type.IsMultivalue() }
+
+func (c CustomType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("CustomType_ParseString", TData{
+		"Base":         c.Type,
+		"Type":         StringRender(c.Value),
+		"FuncTypeName": c.Type.FuncTypeName(),
+
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
+}
+
+func (c CustomType) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("CustomType_ParseStrings", TData{
+		"Base":         c.Type,
+		"Type":         StringRender(c.Value),
+		"FuncTypeName": c.Type.FuncTypeName(),
+
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
+}
+
+var _ Formatter = (*CustomType)(nil)
+
+func (c CustomType) RenderFormat(from string) (string, error) {
+	return c.Type.RenderFormat(from + "." + c.Type.FuncTypeName() + "()")
+}
+
+func (c CustomType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return ExecuteTemplate("CustomType_RenderFormatStrings", TData{
+		"Base":         c.Type,
+		"IsMultivalue": c.Type.IsMultivalue(),
+
+		"To":    to,
+		"From":  from + "." + c.Type.FuncTypeName() + "()",
+		"IsNew": isNew,
+	})
 }
 
 type OptionalType struct {

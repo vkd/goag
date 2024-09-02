@@ -53,6 +53,46 @@ for i := range {{.From}} {
 {{- end }}{{ end }}
 
 
+{{/* ----------------------------- CustomType ------------------------------------- */}}
+
+{{ define "CustomType_ParseString" }}
+{{- .Base.ParseString "vCustom" .From true .MkErr }}
+{{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
+{{ end -}}
+{
+	err := {{ .To }}.Parse{{ .FuncTypeName }}(vCustom)
+	if err != nil {
+		return {{.MkErr.Wrap (print "parse custom type") "err" }}
+	}
+}
+{{- end }}
+
+
+{{ define "CustomType_ParseStrings" }}
+{{- .Base.ParseStrings "vCustom" .From true .MkErr }}
+{{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
+{{ end -}}
+{
+	err := {{ .To }}.Parse{{ .FuncTypeName }}(vCustom)
+	if err != nil {
+		return {{.MkErr.Wrap (print "parse custom type") "err" }}
+	}
+}
+{{- end }}
+
+
+{{ define "CustomType_RenderFormatStrings" -}}
+{{- if .IsMultivalue -}}
+cvs := {{ .From }}
+{{ .Base.RenderFormatStrings "vs" "cvs" true }}
+{{ .To }} {{ if .IsNew }}:{{ end }}= vs
+{{- else -}}
+cv := {{ .From }}
+{{ .To }} {{ if .IsNew }}:{{ end }}= []string{ {{- .Base.RenderFormat "cv" }} }
+{{- end }}
+{{- end }}
+
+
 {{/* ----------------------------- OptionalType ------------------------------------- */}}
 
 {{ define "OptionalTypeParseString" -}}

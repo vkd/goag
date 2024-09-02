@@ -115,7 +115,7 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 				}
 				imports = append(imports, ims...)
 
-				if body.Custom.IsSet {
+				if body.IsCustom() {
 					o.Body.TypeName = body
 				} else {
 					switch st := body.Type.(type) {

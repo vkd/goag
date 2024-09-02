@@ -99,9 +99,7 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header],
 		Required:  ref.Value().Required,
 		Schema:    s,
 	}
-	if _, ok := schema.Custom.Get(); ok {
-		h.IsCustomType = true
-	}
+	h.IsCustomType = schema.IsCustom()
 	return h, ims, nil
 }
 

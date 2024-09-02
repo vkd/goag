@@ -277,7 +277,7 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 // }
 
 func (s SchemaComponent) Render() (string, error) {
-	if s.Schema.Custom.IsSet {
+	if s.Schema.IsCustom() {
 		return ExecuteTemplate("SchemaComponent_Alias", s)
 	}
 	return ExecuteTemplate("SchemaComponent", s)

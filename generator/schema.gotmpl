@@ -11,18 +11,6 @@
 {{ .To }} {{ if .IsNew }}:{{ end }}= New{{ .Name }}({{ $varName }})
 {{- end }}
 
-{{ define "Schema_Custom_ParseString" }}
-{{- .Base.ParseString "vCustom" .From true .MkErr }}
-{{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
-{{ end -}}
-{
-	err := {{ .To }}.Parse{{ .FuncTypeName }}(vCustom)
-	if err != nil {
-		return {{.MkErr.Wrap (print "parse custom type") "err" }}
-	}
-}
-{{- end }}
-
 
 {{ define "Schema_Ref_ParseStrings" -}}
 {{- if .IsCustom }}
@@ -31,29 +19,5 @@
 {{- $varName := (print "v" .FuncName) }}
 {{- .Type.ParseStrings $varName .From true .MkErr }}
 {{ .To }} {{ if .IsNew }}:{{ end }}= New{{ .Name }}({{ $varName }})
-{{- end }}
-{{- end }}
-
-{{ define "Schema_Custom_ParseStrings" }}
-{{- .Base.ParseStrings "vCustom" .From true .MkErr }}
-{{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
-{{ end -}}
-{
-	err := {{ .To }}.Parse{{ .FuncTypeName }}(vCustom)
-	if err != nil {
-		return {{.MkErr.Wrap (print "parse custom type") "err" }}
-	}
-}
-{{- end }}
-
-
-{{ define "Schema_Custom_RenderFormatStrings" -}}
-{{- if .IsMultivalue -}}
-cvs := {{ .From }}
-{{ .Base.RenderFormatStrings "vs" "cvs" true }}
-{{ .To }} {{ if .IsNew }}:{{ end }}= vs
-{{- else -}}
-cv := {{ .From }}
-{{ .To }} {{ if .IsNew }}:{{ end }}= []string{ {{- .Base.RenderFormat "cv" }} }
 {{- end }}
 {{- end }}

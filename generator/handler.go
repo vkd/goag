@@ -336,7 +336,7 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 		switch {
 		case contentJSON.Type.Ref != nil:
 			out.BodyTypeName = StringRender(contentJSON.Type.Ref.Name)
-		case contentJSON.Type.Custom.IsSet:
+		case contentJSON.Type.IsCustom():
 			out.BodyTypeName = contentJSON.Type
 		default:
 			switch contentType := contentJSON.Type.Type.(type) {
