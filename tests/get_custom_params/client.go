@@ -49,13 +49,12 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 		query["pages"] = qv
 	}
 	if request.Query.PagesArray.IsSet {
-		cvs := request.Query.PagesArray.Value.Int32s()
-		qv := make([]string, 0, len(cvs))
-		for _, v := range cvs {
+		cv := request.Query.PagesArray.Value.Int32s()
+		qv := make([]string, 0, len(cv))
+		for _, v := range cv {
 			qv = append(qv, strconv.FormatInt(int64(v), 10))
 		}
-		vs := qv
-		query["pages_array"] = vs
+		query["pages_array"] = qv
 	}
 	if request.Query.PageCustom.IsSet {
 		cv := request.Query.PageCustom.Value.String()

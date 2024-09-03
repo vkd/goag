@@ -209,9 +209,8 @@ func (c CustomType) IsMultivalue() bool { return c.Type.IsMultivalue() }
 
 func (c CustomType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("CustomType_ParseString", TData{
-		"Base":         c.Type,
-		"Type":         StringRender(c.Value),
-		"FuncTypeName": c.Type.FuncTypeName(),
+		"Base":       c.Type,
+		"CustomType": c.Value,
 
 		"To":    to,
 		"From":  from,
@@ -222,9 +221,8 @@ func (c CustomType) ParseString(to, from string, isNew bool, mkErr ErrorRender) 
 
 func (c CustomType) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("CustomType_ParseStrings", TData{
-		"Base":         c.Type,
-		"Type":         StringRender(c.Value),
-		"FuncTypeName": c.Type.FuncTypeName(),
+		"Base":       c.Type,
+		"CustomType": c.Value,
 
 		"To":    to,
 		"From":  from,
@@ -241,11 +239,10 @@ func (c CustomType) RenderFormat(from string) (string, error) {
 
 func (c CustomType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
 	return ExecuteTemplate("CustomType_RenderFormatStrings", TData{
-		"Base":         c.Type,
-		"IsMultivalue": c.Type.IsMultivalue(),
+		"Base": c.Type,
 
 		"To":    to,
-		"From":  from + "." + c.Type.FuncTypeName() + "()",
+		"From":  from,
 		"IsNew": isNew,
 	})
 }

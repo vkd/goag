@@ -57,10 +57,10 @@ for i := range {{.From}} {
 
 {{ define "CustomType_ParseString" }}
 {{- .Base.ParseString "vCustom" .From true .MkErr }}
-{{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
+{{ if .IsNew }}var {{ .To }} {{ .CustomType }}
 {{ end -}}
 {
-	err := {{ .To }}.Parse{{ .FuncTypeName }}(vCustom)
+	err := {{ .To }}.Parse{{ .Base.FuncTypeName }}(vCustom)
 	if err != nil {
 		return {{.MkErr.Wrap (print "parse custom type") "err" }}
 	}
@@ -70,10 +70,10 @@ for i := range {{.From}} {
 
 {{ define "CustomType_ParseStrings" }}
 {{- .Base.ParseStrings "vCustom" .From true .MkErr }}
-{{ if .IsNew }}var {{ .To }} {{ .Type.Render }}
+{{ if .IsNew }}var {{ .To }} {{ .CustomType }}
 {{ end -}}
 {
-	err := {{ .To }}.Parse{{ .FuncTypeName }}(vCustom)
+	err := {{ .To }}.Parse{{ .Base.FuncTypeName }}(vCustom)
 	if err != nil {
 		return {{.MkErr.Wrap (print "parse custom type") "err" }}
 	}
@@ -82,14 +82,8 @@ for i := range {{.From}} {
 
 
 {{ define "CustomType_RenderFormatStrings" -}}
-{{- if .IsMultivalue -}}
-cvs := {{ .From }}
-{{ .Base.RenderFormatStrings "vs" "cvs" true }}
-{{ .To }} {{ if .IsNew }}:{{ end }}= vs
-{{- else -}}
-cv := {{ .From }}
-{{ .To }} {{ if .IsNew }}:{{ end }}= []string{ {{- .Base.RenderFormat "cv" }} }
-{{- end }}
+cv := {{ .From }}.{{ .Base.FuncTypeName }}()
+{{ .Base.RenderFormatStrings .To "cv" .IsNew }}
 {{- end }}
 
 
