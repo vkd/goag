@@ -64,6 +64,10 @@ func NewPathParameter(rs specification.Ref[specification.PathParameter], compone
 	if err != nil {
 		return nil, nil, fmt.Errorf("schema: %w", err)
 	}
+	bt := out.Type.BaseSchemaType()
+	if bt.Kind() != SchemaKindPrimitive {
+		return nil, nil, fmt.Errorf("path parameter could only be a primitive type, found %q", bt.Kind())
+	}
 	return &out, ims, nil
 }
 
