@@ -97,6 +97,9 @@ func (s Schema) IsCustom() bool {
 
 func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	if s.Ref != nil {
+		if s.Ref.Schema.IsCustom() {
+			return s.Ref.Schema.ParseString(to, from, isNew, mkErr)
+		}
 		return ExecuteTemplate("Schema_Ref_ParseString", TData{
 			"FuncName": s.Ref.Schema.FuncTypeName(),
 			"Type":     s.Ref.Schema,
@@ -113,8 +116,10 @@ func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (str
 
 func (s Schema) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	if s.Ref != nil {
+		if s.Ref.Schema.IsCustom() {
+			return s.Ref.Schema.ParseStrings(to, from, isNew, mkErr)
+		}
 		return ExecuteTemplate("Schema_Ref_ParseStrings", TData{
-			"IsCustom": s.Ref.Schema.IsCustom(),
 			"FuncName": s.Ref.Schema.FuncTypeName(),
 			"Type":     s.Ref.Schema,
 			"Name":     s.Ref.Name,
