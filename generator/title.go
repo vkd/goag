@@ -38,7 +38,7 @@ func PrivateFieldName(name string) string {
 	return strings.ToLower(name[:1]) + name[1:]
 }
 
-var undCaser = cases.Title(language.Und)
+var undCaser = cases.Title(language.Und, cases.NoLower)
 
 func stringsTitle(s string) string {
 	return undCaser.String(s)

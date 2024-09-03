@@ -195,7 +195,7 @@ var _ SchemaType = (*CustomType)(nil)
 
 func (c CustomType) Kind() SchemaKind { return c.Type.Kind() }
 
-func (c CustomType) FuncTypeName() string { return strings.ReplaceAll(c.Value, ".", "") }
+func (c CustomType) FuncTypeName() string { return stringsTitle(strings.ReplaceAll(c.Value, ".", "")) }
 
 var _ Render = (*CustomType)(nil)
 
