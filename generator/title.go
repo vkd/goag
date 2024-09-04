@@ -22,14 +22,13 @@ func Title(s string) string {
 		}
 		return strings.Join(ss, "")
 	}
-	lower := strings.ToLower(s)
 	switch {
-	case strings.HasSuffix(lower, "id"):
-		return stringsTitle(strings.TrimSuffix(lower, "id")) + "ID"
-	case strings.HasSuffix(lower, "ids"):
-		return stringsTitle(strings.TrimSuffix(lower, "ids")) + "IDs"
+	case strings.HasSuffix(s, "id"):
+		return stringsTitle(strings.TrimSuffix(s, "id")) + "ID"
+	case strings.HasSuffix(s, "ids"):
+		return stringsTitle(strings.TrimSuffix(s, "ids")) + "IDs"
 	}
-	return stringsTitle(strings.ToLower(s))
+	return stringsTitle(s)
 }
 
 func PrivateFieldName(name string) string {

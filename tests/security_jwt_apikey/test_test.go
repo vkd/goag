@@ -23,7 +23,7 @@ func TestDefault(t *testing.T) {
 			}
 			return r.WithContext(context.WithValue(r.Context(), mykey{}, "my-value")), true
 		},
-		SecurityAPIKeyAuth: func(r *http.Request, token string) (*http.Request, bool) {
+		SecurityAPIKeyAuthAccessToken: func(r *http.Request, token string) (*http.Request, bool) {
 			if token != "personal access token" {
 				return nil, false
 			}

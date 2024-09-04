@@ -136,6 +136,7 @@ type AuthMiddleware interface {
 }
 
 type AuthMiddlewareFunc func(*http.Request) (*http.Request, bool)
+
 type SecurityBearerAuthMiddleware func(r *http.Request, token string) (*http.Request, bool)
 
 func (s SecurityBearerAuthMiddleware) Auth(r *http.Request) (*http.Request, bool) {
