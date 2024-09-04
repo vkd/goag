@@ -93,6 +93,7 @@ type Schema struct {
 	Properties  []SchemaProperty
 	AllOf       []Ref[Schema]
 	Description string
+	Nullable    bool
 
 	AdditionalProperties Maybe[Ref[Schema]]
 
@@ -119,6 +120,7 @@ func NewSchema(schema *openapi3.Schema, components Sourcer[Schema], opts SchemaO
 		Type:        schema.Type,
 		Format:      schema.Format,
 		Description: schema.Description,
+		Nullable:    schema.Nullable,
 	}
 	if schema.Items != nil {
 		items, err := NewSchemaRef(schema.Items, components, opts)

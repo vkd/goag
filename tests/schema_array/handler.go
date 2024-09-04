@@ -169,6 +169,23 @@ func (m *Maybe[T]) Set(v T) {
 	m.Value = v
 }
 
+type Nullable[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func Ptr[T any](v T) Nullable[T] {
+	return Nullable[T]{
+		IsSet: true,
+		Value: v,
+	}
+}
+
+func (m *Nullable[T]) Set(v T) {
+	m.IsSet = true
+	m.Value = v
+}
+
 type ErrParseParam struct {
 	In        string
 	Parameter string

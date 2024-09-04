@@ -3,8 +3,9 @@ package generator
 type HandlersFileTemplate struct {
 	Handlers []HandlerTemplate
 
-	IsWriteJSONFunc bool
-	IsCustomMaybe   bool
+	IsWriteJSONFunc  bool
+	IsCustomMaybe    bool
+	IsCustomNullable bool
 }
 
 func NewHandlersFileTemplate(hs []*Handler, isWriteJSONFunc bool, cfg Config) HandlersFileTemplate {
@@ -17,8 +18,9 @@ func NewHandlersFileTemplate(hs []*Handler, isWriteJSONFunc bool, cfg Config) Ha
 	return HandlersFileTemplate{
 		Handlers: handlers,
 
-		IsWriteJSONFunc: isWriteJSONFunc,
-		IsCustomMaybe:   cfg.Maybe.Type != "",
+		IsWriteJSONFunc:  isWriteJSONFunc,
+		IsCustomMaybe:    cfg.Maybe.Type != "",
+		IsCustomNullable: cfg.Nullable.Type != "",
 	}
 }
 

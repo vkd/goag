@@ -308,3 +308,65 @@ func (p OptionalType) RenderFormat(from string) (string, error) {
 func (p OptionalType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
 	return p.V.RenderFormatStrings(to, from+".Value", isNew)
 }
+
+type NullableType struct {
+	V        SchemaType
+	TypeName string
+}
+
+func NewNullableType(v SchemaType, cfg Config) NullableType {
+	typename := cfg.Nullable.Type
+	if typename == "" {
+		typename = "Nullable"
+	}
+	return NullableType{V: v, TypeName: typename}
+}
+
+func (n NullableType) FuncTypeName() string {
+	return strings.ReplaceAll(n.TypeName, ".", "") + n.V.FuncTypeName()
+}
+
+func (n NullableType) Kind() SchemaKind { return n.V.Kind() }
+
+var _ Render = NullableType{}
+
+func (n NullableType) Render() (string, error) {
+	out, err := n.V.Render()
+	return n.TypeName + "[" + out + "]", err
+}
+
+var _ Parser = NullableType{}
+
+func (n NullableType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("NullableTypeParseString", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+		"Self":  n,
+		"Type":  n.V,
+	})
+}
+
+func (n NullableType) IsMultivalue() bool { return n.V.IsMultivalue() }
+
+func (n NullableType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("NullableTypeParseStrings", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+		"Self":  n,
+		"Type":  n.V,
+	})
+}
+
+var _ Formatter = NullableType{}
+
+func (n NullableType) RenderFormat(from string) (string, error) {
+	return n.V.RenderFormat(from + ".Value")
+}
+
+func (n NullableType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	return n.V.RenderFormatStrings(to, from+".Value", isNew)
+}

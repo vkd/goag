@@ -168,6 +168,23 @@ var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
 }
 
+type Nullable[T any] struct {
+	IsSet bool
+	Value T
+}
+
+func Ptr[T any](v T) Nullable[T] {
+	return Nullable[T]{
+		IsSet: true,
+		Value: v,
+	}
+}
+
+func (m *Nullable[T]) Set(v T) {
+	m.IsSet = true
+	m.Value = v
+}
+
 type ErrParseParam struct {
 	In        string
 	Parameter string

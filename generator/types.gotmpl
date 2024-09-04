@@ -106,6 +106,26 @@ var {{ .To }} {{ .Self.Render }}
 {{- end }}
 
 
+{{/* ----------------------------- NullableType ------------------------------------- */}}
+
+{{ define "NullableTypeParseString" -}}
+{{ .Type.ParseString "v" .From true .MkErr }}
+{{- if .IsNew }}
+var {{ .To }} {{ .Self.Render }}
+{{- end }}
+{{ .To }}.Set(v)
+{{- end }}
+
+{{ define "NullableTypeParseStrings" -}}
+{{ .Type.ParseStrings "v" .From true .MkErr }}
+{{- if .IsNew }}
+var {{ .To }} {{ .Self.Render }}
+{{- end }}
+{{ .To }}.Set(v)
+{{- end }}
+
+
+
 {{/* ----------------------------- MapType ------------------------------------- */}}
 
 {{ define "MapType" -}}

@@ -91,8 +91,14 @@ func (s Schema) Render() (string, error) {
 
 // TODO: refactor to remove the method
 func (s Schema) IsCustom() bool {
-	_, ok := s.Type.(CustomType)
-	return ok
+	switch tp := s.Type.(type) {
+	case CustomType:
+		return true
+	case NullableType:
+		_, ok := tp.V.(CustomType)
+		return ok
+	}
+	return false
 }
 
 func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -216,6 +222,10 @@ func NewSchemaType(s *specification.Schema, components Componenter, cfg Config) 
 		ct, is := NewCustomType(specCustom, out)
 		out = ct
 		ims = append(ims, is...)
+	}
+
+	if s.Nullable {
+		out = NewNullableType(out, cfg)
 	}
 
 	return out, ims, nil

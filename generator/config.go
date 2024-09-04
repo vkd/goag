@@ -12,6 +12,10 @@ type Config struct {
 		Import string `yaml:"import"`
 		Type   string `yaml:"type"`
 	} `yaml:"maybe"`
+	Nullable struct {
+		Import string `yaml:"import"`
+		Type   string `yaml:"type"`
+	} `yaml:"nullable"`
 
 	Cors struct {
 		Enable bool `yaml:"enable"`
