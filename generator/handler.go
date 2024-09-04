@@ -262,7 +262,7 @@ func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHead
 		parser = ot
 	}
 
-	fieldName := PublicFieldName(p.Name)
+	fieldName := Title(p.Name)
 
 	out := HandlerHeaderParameter{
 		HandlerParameter: HandlerParameter{

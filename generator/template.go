@@ -73,5 +73,5 @@ func commentFunc(s string) (string, error) {
 }
 
 func titleFunc(s string) (string, error) {
-	return stringsTitle(s), nil
+	return Title(s), nil
 }

@@ -154,20 +154,32 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 
 	if len(o.Security) > 0 {
 		for _, sr := range o.Security {
-			if sr.Scheme.Type != specification.SecuritySchemeTypeHTTP {
-				continue
+			switch sr.Scheme.Type {
+			case specification.SecuritySchemeTypeHTTP:
+				switch sr.Scheme.Scheme {
+				case "bearer":
+					o.Params.Headers.Add("Authorization", &HeaderParameter{
+						Name:        "Authorization",
+						FieldName:   "Authorization",
+						Description: sr.Scheme.BearerFormat,
+						Required:    len(o.Security) == 1,
+						Type:        NewSchemaWithType(NewPrimitive(StringType{})),
+						Schema:      NewSchemaWithType(NewPrimitive(StringType{})),
+					})
+				}
+			case specification.SecuritySchemeTypeApiKey:
+				switch sr.Scheme.In {
+				case "header":
+					o.Params.Headers.Add(Title(sr.Scheme.Name), &HeaderParameter{
+						Name:        sr.Scheme.Name,
+						FieldName:   Title(sr.Scheme.Name),
+						Description: sr.Scheme.BearerFormat,
+						Required:    len(o.Security) == 1,
+						Type:        NewSchemaWithType(NewPrimitive(StringType{})),
+						Schema:      NewSchemaWithType(NewPrimitive(StringType{})),
+					})
+				}
 			}
-			if sr.Scheme.Scheme != "bearer" {
-				continue
-			}
-			o.Params.Headers.Add("Authorization", &HeaderParameter{
-				Name:        "Authorization",
-				FieldName:   "Authorization",
-				Description: sr.Scheme.BearerFormat,
-				Required:    len(o.Security) == 1,
-				Type:        NewSchemaWithType(NewPrimitive(StringType{})),
-				Schema:      NewSchemaWithType(NewPrimitive(StringType{})),
-			})
 		}
 	}
 

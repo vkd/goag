@@ -19,6 +19,8 @@ type API struct {
 	Middlewares []func(h http.Handler) http.Handler
 
 	SecurityBearerAuth SecurityBearerAuthMiddleware
+
+	SecurityAPIKeyAuth SecurityAPIKeyAuthMiddleware
 }
 
 func (rt *API) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
@@ -67,6 +69,7 @@ func (rt *API) route(path, method string) (http.Handler, string, bool) {
 				h := http.Handler(rt.PostShopsHandler)
 				h = middlewares(h, authMiddlewareOr(
 					rt.SecurityBearerAuth,
+					rt.SecurityAPIKeyAuth,
 				))
 				return h, "/shops", true
 			}
@@ -147,6 +150,19 @@ func (s SecurityBearerAuthMiddleware) Auth(r *http.Request) (*http.Request, bool
 	token = hs[0]
 
 	token = strings.TrimPrefix(token, "Bearer ")
+
+	return s(r, token)
+}
+
+type SecurityAPIKeyAuthMiddleware func(r *http.Request, token string) (*http.Request, bool)
+
+func (s SecurityAPIKeyAuthMiddleware) Auth(r *http.Request) (*http.Request, bool) {
+	var token string
+	hs := r.Header.Values("Access-Token")
+	if len(hs) == 0 {
+		return nil, false
+	}
+	token = hs[0]
 
 	return s(r, token)
 }

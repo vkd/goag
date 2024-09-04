@@ -17,7 +17,9 @@ type Router struct {
 	Operations []*Operation
 	Routes     []*Route
 
-	JWT  bool
+	JWT     bool
+	APIKeys []string
+
 	Cors bool
 }
 
@@ -31,6 +33,13 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 
 		Cors: opt.IsCors,
 	}
+
+	for _, sec := range s.Components.SecuritySchemes.List {
+		if sec.V.Value().Type == specification.SecuritySchemeTypeApiKey && sec.V.Value().In == "header" {
+			r.APIKeys = append(r.APIKeys, sec.V.Value().Name)
+		}
+	}
+
 	for _, pi := range ps {
 		p := &RouterPathItem{
 			RawPath:    pi.RawPath,
@@ -62,17 +71,38 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 							headers = append(headers, key)
 						}
 					}
+					if sec.Scheme.Type == specification.SecuritySchemeTypeApiKey && sec.Scheme.In == "header" {
+						key := http.CanonicalHeaderKey(sec.Scheme.Name)
+
+						if _, ok := headersMap[key]; !ok {
+							headersMap[key] = struct{}{}
+							headers = append(headers, key)
+						}
+					}
 				}
 			}
 		}
 
 		for _, o := range pi.Operations {
-			p.Operations = append(p.Operations, RouterPathItemOperation{
+			op := RouterPathItemOperation{
 				Name:     o.Name,
 				Method:   o.Method,
 				PathSpec: o.PathItem.RawPath,
 				Handler:  string(o.Name) + "Handler",
-			})
+			}
+
+			for _, s := range o.Security {
+				if s.Scheme.Type == specification.SecuritySchemeTypeHTTP && s.Scheme.Scheme == "bearer" {
+					r.JWT = true
+					p.JWT = true
+				}
+				if s.Scheme.Type == specification.SecuritySchemeTypeApiKey && s.Scheme.In == "header" {
+					op.APIKeys = append(op.APIKeys, s.Scheme.Name)
+				}
+			}
+
+			p.Operations = append(p.Operations, op)
+
 			if !p.HasOptions && opt.IsCors {
 				p.Operations = append(p.Operations, RouterPathItemOperation{
 					PathSpec: o.PathItem.RawPath,
@@ -82,15 +112,6 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 					CORSHeaders: headers,
 				})
 				p.HasOptions = true
-			}
-		}
-
-		for _, o := range pi.Operations {
-			for _, s := range o.Security {
-				if s.Scheme.Type == specification.SecuritySchemeTypeHTTP && s.Scheme.Scheme == "bearer" {
-					r.JWT = true
-					p.JWT = true
-				}
 			}
 		}
 
@@ -132,6 +153,8 @@ type RouterPathItemOperation struct {
 	IsCORS      bool
 	CORSMethods []string
 	CORSHeaders []string
+
+	APIKeys []string
 }
 
 type Route struct {

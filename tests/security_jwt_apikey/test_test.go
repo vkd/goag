@@ -23,6 +23,12 @@ func TestDefault(t *testing.T) {
 			}
 			return r.WithContext(context.WithValue(r.Context(), mykey{}, "my-value")), true
 		},
+		SecurityAPIKeyAuth: func(r *http.Request, token string) (*http.Request, bool) {
+			if token != "personal access token" {
+				return nil, false
+			}
+			return r.WithContext(context.WithValue(r.Context(), mykey{}, "my-value-2")), true
+		},
 	}
 
 	for _, tt := range []struct {
@@ -55,6 +61,21 @@ func TestDefault(t *testing.T) {
 		})
 	}
 
+	for _, tt := range []struct {
+		path         string
+		responseCode int
+	}{
+		{"/login", 200},
+		{"/shops", 200},
+	} {
+		t.Run("auth_header|"+tt.path, func(t *testing.T) {
+			req := httptest.NewRequest("POST", tt.path, nil)
+			req.Header.Set("Access-Token", "personal access token")
+			resp, err := api.Do(req)
+			require.NoError(t, err)
+			assert.Equal(t, tt.responseCode, resp.StatusCode)
+		})
+	}
 }
 
 func (a API) Do(req *http.Request) (*http.Response, error) {

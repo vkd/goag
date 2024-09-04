@@ -19,6 +19,10 @@ type API struct {
 
 	SecurityBearerAuth SecurityBearerAuthMiddleware
 	{{- end }}
+	{{- range $_, $api := .APIKeys }}
+
+	SecurityAPIKeyAuth{{ title $api }} SecurityAPIKeyAuth{{ title $api }}Middleware
+	{{- end }}
 }
 {{- if .Cors }}
 
@@ -80,8 +84,80 @@ func SpecFileHandler() http.Handler {
 	})
 }
 
+{{- if or .JWT .APIKeys }}
+type Middleware interface {
+	Middleware(http.Handler) http.Handler
+}
+
+type MiddlewareFunc func(http.Handler) http.Handler
+
+func (m MiddlewareFunc) Middleware(next http.Handler) http.Handler {
+	return m(next)
+}
+
+func middlewares(h http.Handler, ms ...Middleware) http.Handler {
+	for i := len(ms) - 1; i >= 0; i-- {
+		h = ms[i].Middleware(h)
+	}
+	return h
+}
+
+func authMiddlewareOr(fns ...AuthMiddleware) MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for _, fn := range fns {
+				authReq, ok := fn.Auth(r)
+				if ok {
+					next.ServeHTTP(w, authReq)
+					return
+				}
+			}
+			w.WriteHeader(401)
+		})
+	}
+}
+
+type AuthMiddleware interface {
+	Auth(r *http.Request) (*http.Request, bool)
+}
+
+type AuthMiddlewareFunc func(*http.Request) (*http.Request, bool)
+
+{{- end }}
+
 {{- if .JWT }}
-{{ template "JWTMiddleware" . }}
+
+type SecurityBearerAuthMiddleware func(r *http.Request, token string) (*http.Request, bool)
+
+func (s SecurityBearerAuthMiddleware) Auth(r *http.Request) (*http.Request, bool) {
+	var token string
+	hs := r.Header.Values("Authorization")
+	if len(hs) == 0 {
+		return nil, false
+	}
+	token = hs[0]
+
+	token = strings.TrimPrefix(token, "Bearer ")
+
+	return s(r, token)
+}
+{{- end }}
+
+{{- range $_, $api := .APIKeys }}
+
+type SecurityAPIKeyAuth{{ title $api }}Middleware func(r *http.Request, token string) (*http.Request, bool)
+
+func (s SecurityAPIKeyAuth{{ title $api }}Middleware) Auth(r *http.Request) (*http.Request, bool) {
+	var token string
+	hs := r.Header.Values("{{ $api }}")
+	if len(hs) == 0 {
+		return nil, false
+	}
+	token = hs[0]
+
+	return s(r, token)
+}
+
 {{- end }}
 
 func splitPath(s string) (string, string) {
@@ -134,8 +210,13 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string, bool) 
 					{{- else }}
 			case http.Method{{ .Method }}:
 				h := http.Handler(rt.{{ $m.Handler }})
-						{{- if $h.RouterPathItem.JWT }}
-				h = middlewares(h, rt.SecurityBearerAuth)
+						{{- if or $h.RouterPathItem.JWT $m.APIKeys }}
+				h = middlewares(h, authMiddlewareOr(
+							{{ if $h.RouterPathItem.JWT }}rt.SecurityBearerAuth,{{ end }}
+							{{- range $_, $api := $m.APIKeys }}
+							rt.SecurityAPIKeyAuth{{ title $api }},
+							{{- end }}
+				))
 						{{- end }}
 				return h, "{{.PathSpec}}", true
 					{{- end }}
@@ -146,7 +227,7 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string, bool) 
 		{{- end}}
 		{{- if .Variable}}
 		switch method {
-            {{- $jwt := .Variable.JWT }}
+            {{- $variable := .Variable }}
 			{{- range $_, $o := .Variable.Operations}}
 				{{- if .IsCORS }}
 		case http.MethodOptions:
@@ -158,8 +239,13 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string, bool) 
 				{{- else }}
 		case http.Method{{$o.Method}}:
 			h := http.Handler(rt.{{ $o.Handler }})
-					{{- if $jwt }}
-			h = middlewares(h, rt.SecurityBearerAuth)
+					{{- if or $variable.JWT $o.APIKeys }}
+			h = middlewares(h, authMiddlewareOr(
+						{{ if $variable.JWT }}rt.SecurityBearerAuth,{{ end }}
+						{{- range $_, $api := $o.APIKeys }}
+						rt.SecurityAPIKeyAuth{{ title $api }},
+						{{- end }}
+			))
 					{{- end }}
 			return h, "{{.PathSpec}}", true
 				{{- end }}
@@ -197,32 +283,5 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string, bool) 
 	{{- else}}
 	return nil, "", false
 	{{- end}}
-}
-{{- end }}
-
-
-{{/* ----------------------------- JWTMiddleware ------------------------------------- */}}
-{{ define "JWTMiddleware" }}
-func middlewares(h http.Handler, ms ...interface {
-	Middleware(http.Handler) http.Handler
-}) http.Handler {
-	for i := len(ms) - 1; i >= 0; i-- {
-		h = ms[i].Middleware(h)
-	}
-	return h
-}
-
-type SecurityBearerAuthMiddleware func(w http.ResponseWriter, r *http.Request, token string, next http.Handler)
-
-func (m SecurityBearerAuthMiddleware) Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var token string
-		hs := r.Header.Values("Authorization")
-		if len(hs) > 0 {
-			token = strings.TrimPrefix(hs[0], "Bearer ")
-		}
-
-		m(w, r, token, next)
-	})
 }
 {{- end }}
