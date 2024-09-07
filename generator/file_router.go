@@ -17,8 +17,9 @@ type Router struct {
 	Operations []*Operation
 	Routes     []*Route
 
-	JWT     bool
-	APIKeys []string
+	JWT          bool
+	APIKeys      []string
+	APIKeysQuery []string
 
 	Cors bool
 }
@@ -37,6 +38,9 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 	for _, sec := range s.Components.SecuritySchemes.List {
 		if sec.V.Value().Type == specification.SecuritySchemeTypeApiKey && sec.V.Value().In == "header" {
 			r.APIKeys = append(r.APIKeys, sec.V.Value().Name)
+		}
+		if sec.V.Value().Type == specification.SecuritySchemeTypeApiKey && sec.V.Value().In == "query" {
+			r.APIKeysQuery = append(r.APIKeysQuery, sec.V.Value().Name)
 		}
 	}
 
@@ -99,6 +103,9 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 				if s.Scheme.Type == specification.SecuritySchemeTypeApiKey && s.Scheme.In == "header" {
 					op.APIKeys = append(op.APIKeys, s.Scheme.Name)
 				}
+				if s.Scheme.Type == specification.SecuritySchemeTypeApiKey && s.Scheme.In == "query" {
+					op.APIKeys = append(op.APIKeys, s.Scheme.Name)
+				}
 			}
 
 			p.Operations = append(p.Operations, op)
@@ -154,7 +161,8 @@ type RouterPathItemOperation struct {
 	CORSMethods []string
 	CORSHeaders []string
 
-	APIKeys []string
+	APIKeys      []string
+	APIKeysQuery []string
 }
 
 type Route struct {

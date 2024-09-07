@@ -23,6 +23,10 @@ type API struct {
 
 	SecurityAPIKeyAuth{{ title $api }} SecurityAPIKeyAuth{{ title $api }}Middleware
 	{{- end }}
+	{{- range $_, $api := .APIKeysQuery }}
+
+	SecurityAPIKeyAuth{{ title $api }} SecurityAPIKeyAuth{{ title $api }}Middleware
+	{{- end }}
 }
 {{- if .Cors }}
 
@@ -162,6 +166,22 @@ func (s SecurityAPIKeyAuth{{ title $api }}Middleware) Auth(r *http.Request) (*ht
 }
 
 {{- end }}
+{{- range $_, $api := .APIKeysQuery }}
+
+type SecurityAPIKeyAuth{{ title $api }}Middleware func(r *http.Request, token string) (*http.Request, bool)
+
+func (s SecurityAPIKeyAuth{{ title $api }}Middleware) Auth(r *http.Request) (*http.Request, bool) {
+	var token string
+	vs := r.URL.Query()["{{ $api }}"]
+	if len(vs) == 0 {
+		return nil, false
+	}
+	token = vs[0]
+
+	return s(r, token)
+}
+
+{{- end }}
 
 func splitPath(s string) (string, string) {
 	if !strings.HasPrefix(s, "/") {
@@ -213,10 +233,13 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string, bool) 
 					{{- else }}
 			case http.Method{{ .Method }}:
 				h := http.Handler(rt.{{ $m.Handler }})
-						{{- if or $h.RouterPathItem.JWT $m.APIKeys }}
+						{{- if or $h.RouterPathItem.JWT $m.APIKeys $m.APIKeysQuery }}
 				h = middlewares(h, authMiddlewareOr(
 							{{ if $h.RouterPathItem.JWT }}rt.SecurityBearerAuth,{{ end }}
 							{{- range $_, $api := $m.APIKeys }}
+							rt.SecurityAPIKeyAuth{{ title $api }},
+							{{- end }}
+							{{- range $_, $api := $m.APIKeysQuery }}
 							rt.SecurityAPIKeyAuth{{ title $api }},
 							{{- end }}
 				))
@@ -242,10 +265,13 @@ func (rt *API) route{{.Name}}(path, method string) (http.Handler, string, bool) 
 				{{- else }}
 		case http.Method{{$o.Method}}:
 			h := http.Handler(rt.{{ $o.Handler }})
-					{{- if or $variable.JWT $o.APIKeys }}
+					{{- if or $variable.JWT $o.APIKeys $o.APIKeysQuery }}
 			h = middlewares(h, authMiddlewareOr(
 						{{ if $variable.JWT }}rt.SecurityBearerAuth,{{ end }}
 						{{- range $_, $api := $o.APIKeys }}
+						rt.SecurityAPIKeyAuth{{ title $api }},
+						{{- end }}
+						{{- range $_, $api := $o.APIKeysQuery }}
 						rt.SecurityAPIKeyAuth{{ title $api }},
 						{{- end }}
 			))
