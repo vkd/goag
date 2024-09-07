@@ -123,6 +123,9 @@ func authMiddlewareOr(fns ...AuthMiddleware) MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			for _, fn := range fns {
+				if fn == nil {
+					continue
+				}
 				authReq, ok := fn.Auth(r)
 				if ok {
 					next.ServeHTTP(w, authReq)
