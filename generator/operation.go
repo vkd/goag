@@ -170,7 +170,6 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 						Description: sr.Scheme.BearerFormat,
 						Required:    isRequired,
 						Type:        tp,
-						Schema:      schema,
 					})
 				}
 			case specification.SecuritySchemeTypeApiKey:
@@ -188,7 +187,6 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 						Description: sr.Scheme.BearerFormat,
 						Required:    isRequired,
 						Type:        tp,
-						Schema:      schema,
 					})
 				}
 			}
