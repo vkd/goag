@@ -169,6 +169,7 @@ func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
         delete(m, "{{ .JSONTag }}")
     }
     {{- end }}
+    {{- if .StructureType.AdditionalProperties }}
 	for k, bs := range m {
         var v {{ .StructureType.AdditionalProperties.RenderGoType }}
         err = json.Unmarshal(bs, &v)
@@ -177,6 +178,7 @@ func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
         }
 		c.AdditionalProperties[k] = v
 	}
+    {{- end }}
 	return nil
 }
 {{- end }}
