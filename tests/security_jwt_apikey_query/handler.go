@@ -2,7 +2,9 @@ package test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 )
@@ -53,20 +55,30 @@ type PostLoginResponse interface {
 	writePostLogin(http.ResponseWriter)
 }
 
-func NewPostLoginResponse200() PostLoginResponse {
-	var out PostLoginResponse200
+func NewPostLoginResponse200JSON(body PostLoginResponse200JSONBody) PostLoginResponse {
+	var out PostLoginResponse200JSON
+	out.Body = body
 	return out
 }
 
-// PostLoginResponse200 - OK
-type PostLoginResponse200 struct{}
+// PostLoginResponse200JSONBody - OK
+type PostLoginResponse200JSONBody struct {
+	Output string `json:"output"`
+}
 
-func (r PostLoginResponse200) writePostLogin(w http.ResponseWriter) {
+// PostLoginResponse200JSON - OK
+type PostLoginResponse200JSON struct {
+	Body PostLoginResponse200JSONBody
+}
+
+func (r PostLoginResponse200JSON) writePostLogin(w http.ResponseWriter) {
 	r.Write(w)
 }
 
-func (r PostLoginResponse200) Write(w http.ResponseWriter) {
+func (r PostLoginResponse200JSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+	writeJSON(w, r.Body, "PostLoginResponse200JSON")
 }
 
 func NewPostLoginResponse401() PostLoginResponse {
@@ -159,20 +171,30 @@ type PostShopsResponse interface {
 	writePostShops(http.ResponseWriter)
 }
 
-func NewPostShopsResponse200() PostShopsResponse {
-	var out PostShopsResponse200
+func NewPostShopsResponse200JSON(body PostShopsResponse200JSONBody) PostShopsResponse {
+	var out PostShopsResponse200JSON
+	out.Body = body
 	return out
 }
 
-// PostShopsResponse200 - OK
-type PostShopsResponse200 struct{}
+// PostShopsResponse200JSONBody - OK
+type PostShopsResponse200JSONBody struct {
+	Output string `json:"output"`
+}
 
-func (r PostShopsResponse200) writePostShops(w http.ResponseWriter) {
+// PostShopsResponse200JSON - OK
+type PostShopsResponse200JSON struct {
+	Body PostShopsResponse200JSONBody
+}
+
+func (r PostShopsResponse200JSON) writePostShops(w http.ResponseWriter) {
 	r.Write(w)
 }
 
-func (r PostShopsResponse200) Write(w http.ResponseWriter) {
+func (r PostShopsResponse200JSON) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+	writeJSON(w, r.Body, "PostShopsResponse200JSON")
 }
 
 func NewPostShopsResponse401() PostShopsResponse {
@@ -193,6 +215,13 @@ func (r PostShopsResponse401) Write(w http.ResponseWriter) {
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
+}
+
+func writeJSON(w io.Writer, v interface{}, name string) {
+	err := json.NewEncoder(w).Encode(v)
+	if err != nil {
+		LogError(fmt.Errorf("write json response %q: %w", name, err))
+	}
 }
 
 type Maybe[T any] struct {

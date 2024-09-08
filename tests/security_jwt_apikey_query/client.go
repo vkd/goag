@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -48,7 +49,11 @@ func (c *Client) PostLogin(ctx context.Context, request PostLoginParams) (PostLo
 
 	switch resp.StatusCode {
 	case 200:
-		var response PostLoginResponse200
+		var response PostLoginResponse200JSON
+		err := json.NewDecoder(resp.Body).Decode(&response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("decode 'PostLoginResponse200JSON' response body: %w", err)
+		}
 		return response, nil
 	case 401:
 		var response PostLoginResponse401
@@ -86,7 +91,11 @@ func (c *Client) PostShops(ctx context.Context, request PostShopsParams) (PostSh
 
 	switch resp.StatusCode {
 	case 200:
-		var response PostShopsResponse200
+		var response PostShopsResponse200JSON
+		err := json.NewDecoder(resp.Body).Decode(&response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("decode 'PostShopsResponse200JSON' response body: %w", err)
+		}
 		return response, nil
 	case 401:
 		var response PostShopsResponse401

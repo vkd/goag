@@ -17,6 +17,15 @@ paths:
       responses:
         200:
           description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - output
+                properties:
+                  output:
+                    type: string
         401:
           description: "Unauthorized"
 
@@ -25,6 +34,15 @@ paths:
       responses:
         200:
           description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - output
+                properties:
+                  output:
+                    type: string
         401:
           description: "Unauthorized"
 
