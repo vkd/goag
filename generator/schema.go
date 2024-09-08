@@ -164,6 +164,26 @@ func (s Schema) RenderFormat(from string) (string, error) {
 	return s.Type.RenderFormat(from)
 }
 
+func (s Schema) RenderConvertToBaseSchema(from string) (string, error) {
+	if s.Ref != nil {
+		if !s.Ref.Schema.IsCustom() {
+			from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
+		}
+		return s.Ref.Schema.RenderConvertToBaseSchema(from)
+	}
+
+	switch tp := s.Type.(type) {
+	case CustomType:
+		return tp.RenderConvertToBaseSchema(from)
+	case NullableType:
+		ct, ok := tp.V.(CustomType)
+		if ok {
+			return ct.RenderConvertToBaseSchema(from)
+		}
+	}
+	return from, nil
+}
+
 func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error) {
 	if s.Ref != nil {
 		if !s.Ref.Schema.IsCustom() {

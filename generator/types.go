@@ -129,7 +129,8 @@ type StructureField struct {
 	Comment  string
 	Name     string
 	GoTypeFn GoTypeRenderFunc
-	Schema   SchemaType
+	Type     SchemaType
+	Schema   Schema
 	Tags     []StructureFieldTag
 	JSONTag  string
 	Embedded bool
@@ -144,7 +145,8 @@ func NewStructureField(s specification.Ref[specification.Schema], name string, t
 	return StructureField{
 		Comment:  s.Value().Description,
 		Name:     PublicFieldName(name),
-		Schema:   tp,
+		Type:     tp,
+		Schema:   t,
 		Tags:     []StructureFieldTag{{Key: "json", Values: []string{name}}},
 		JSONTag:  name,
 		GoTypeFn: tp.RenderGoType,
@@ -245,6 +247,10 @@ func (c CustomType) RenderFormatStrings(to, from string, isNew bool) (string, er
 		"From":  from,
 		"IsNew": isNew,
 	})
+}
+
+func (c CustomType) RenderConvertToBaseSchema(from string) (string, error) {
+	return from + "." + c.Type.FuncTypeName() + "()", nil
 }
 
 type OptionalType struct {

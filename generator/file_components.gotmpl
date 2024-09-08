@@ -129,7 +129,11 @@ func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
     }
         {{- else }}
 	write([]byte(`"{{ .JSONTag }}":`))
+            {{- if eq ( .Schema.Base.Kind ) "object" }}
     writeJSON(c.{{ .Name }})
+            {{- else }}
+    writeJSON({{ .Schema.RenderConvertToBaseSchema (print "c." .Name) }})
+            {{- end }}
         {{- end }}
     {{- end }}
 
