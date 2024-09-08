@@ -42,8 +42,8 @@ type HandlerTemplate struct {
 	ParametersPath   []HandlerParameterPathTemplate
 	ParametersHeader []HandlerParameterHeaderTemplate
 
-	BodyTypeName Render
-	BodyType     *StructureType
+	GoTypeFn GoTypeRenderFunc
+	BodyType *StructureType
 
 	PathParsers []Parser
 
@@ -74,8 +74,8 @@ func NewHandlerTemplate(h *Handler) HandlerTemplate {
 		ParametersPath:   NewHandlerParameterPathTemplates(h.Parameters.Path),
 		ParametersHeader: NewHandlerParameterHeaderTemplates(h.Parameters.Header),
 
-		BodyTypeName: h.Body.TypeName,
-		BodyType:     bodyType,
+		GoTypeFn: h.Body.GoTypeFn,
+		BodyType: bodyType,
 
 		PathParsers: h.PathParsers,
 
@@ -104,7 +104,7 @@ func NewHandlerParameterQueryTemplate(p HandlerQueryParameter) HandlerParameterQ
 		Required:         p.Required,
 		IsOptional:       p.IsOptional,
 
-		ParseStrings: p.ParseStrings,
+		ParseStrings: p.Parser.ParseStrings,
 	}
 }
 
@@ -163,14 +163,14 @@ func NewHandlerParameterHeaderTemplates(ps []HandlerHeaderParameter) []HandlerPa
 type HandlerParameterTemplate struct {
 	FieldName    string
 	FieldComment string
-	FieldType    Render
+	GoTypeFn     GoTypeRenderFunc
 }
 
 func NewHandlerParameterTemplate(h HandlerParameter) HandlerParameterTemplate {
 	return HandlerParameterTemplate{
 		FieldName:    h.FieldName,
 		FieldComment: h.FieldComment,
-		FieldType:    h.FieldType,
+		GoTypeFn:     h.GoTypeFn,
 	}
 }
 
@@ -188,13 +188,14 @@ type HandlerResponseTemplate struct {
 
 	UsedIn []ResponseUsedIn
 
-	IsBody       bool
-	BodyTypeName Render
-	Body         Render
-	BodyRenders  Renders
-	ContentType  string
+	IsBody      bool
+	GoTypeFn    GoTypeRenderFunc
+	Body        GoTypeRender
+	BodyRenders Renders
+	ContentType string
 
-	Struct StructureType
+	Struct         StructureType
+	StructGoTypeFn GoTypeRenderFunc
 
 	Args    []ResponseArg
 	Headers []ResponseHeader
@@ -213,13 +214,14 @@ func NewHandlerResponseTemplate(r HandlerResponse) HandlerResponseTemplate {
 
 		UsedIn: r.UsedIn,
 
-		IsBody:       r.IsBody,
-		BodyTypeName: r.BodyTypeName,
-		Body:         r.Body,
-		BodyRenders:  r.BodyRenders,
-		ContentType:  r.ContentType,
+		IsBody:      r.IsBody,
+		GoTypeFn:    r.GoTypeFn,
+		Body:        r.Body,
+		BodyRenders: r.BodyRenders,
+		ContentType: r.ContentType,
 
-		Struct: r.Struct,
+		Struct:         r.Struct,
+		StructGoTypeFn: r.StructGoTypeFn,
 
 		Args:    r.Args,
 		Headers: r.Headers,

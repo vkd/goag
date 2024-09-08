@@ -71,7 +71,7 @@ type ResponseHeader struct {
 	Key       string
 	Required  bool
 	Schema    interface {
-		Render
+		GoTypeRender
 		Parser
 	}
 	IsCustomType bool
@@ -83,7 +83,7 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header],
 		return zero, nil, fmt.Errorf("new schema: %w", err)
 	}
 	var s interface {
-		Render
+		GoTypeRender
 		Parser
 	} = schema
 

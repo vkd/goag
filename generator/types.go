@@ -18,9 +18,9 @@ func (s SliceType) FuncTypeName() string {
 	return s.Items.FuncTypeName() + "s"
 }
 
-func (s SliceType) Render() (string, error) {
-	return ExecuteTemplate("SliceType", TData{
-		"ItemsRender": s.Items.Render,
+func (s SliceType) RenderGoType() (string, error) {
+	return ExecuteTemplate("SliceType_GoType", TData{
+		"GoTypeFn": s.Items.RenderGoType,
 	})
 }
 
@@ -34,7 +34,7 @@ func (s SliceType) RenderFormatStrings(to, from string, isNew bool) (string, err
 		"From":  from,
 		"IsNew": isNew,
 
-		"ItemsRenderFormat": s.Items.RenderFormat,
+		"ItemsRenderFormatFn": s.Items.RenderFormat,
 	})
 }
 
@@ -45,7 +45,7 @@ func (s SliceType) ParseString(to string, from string, isNew bool, mkErr ErrorRe
 		"IsNew": isNew,
 		"MkErr": mkErr,
 
-		"ItemsRender":      s.Items.Render,
+		"GoTypeFn":         s.Items.RenderGoType,
 		"ItemsParseString": s.Items.ParseString,
 	})
 }
@@ -57,7 +57,7 @@ func (s SliceType) ParseStrings(to string, from string, isNew bool, mkErr ErrorR
 		"IsNew": isNew,
 		"MkErr": mkErr,
 
-		"ItemsRender":      s.Items.Render,
+		"GoTypeFn":         s.Items.RenderGoType,
 		"ItemsParseString": s.Items.ParseString,
 	})
 }
@@ -66,7 +66,7 @@ type StructureType struct {
 	SingleValue
 	Fields []StructureField
 
-	AdditionalProperties *Render
+	AdditionalProperties *GoTypeRender
 }
 
 func NewStructureType(s *specification.Schema, components Componenter, cfg Config) (zero StructureType, _ Imports, _ error) {
@@ -94,7 +94,7 @@ func NewStructureType(s *specification.Schema, components Componenter, cfg Confi
 			return zero, nil, fmt.Errorf("additional properties: %w", err)
 		}
 		imports = append(imports, ims...)
-		render := Render(additional)
+		render := GoTypeRender(additional)
 		stype.AdditionalProperties = &render
 	}
 
@@ -107,7 +107,7 @@ func (s StructureType) Kind() SchemaKind { return SchemaKindObject }
 
 func (s StructureType) FuncTypeName() string { return "Structure" }
 
-func (s StructureType) Render() (string, error) { return ExecuteTemplate("StructureType", s) }
+func (s StructureType) RenderGoType() (string, error) { return ExecuteTemplate("StructureType", s) }
 
 func (s StructureType) RenderFormat(from string) (string, error) {
 	return "", fmt.Errorf(".RenderFormat() function for StructureType is not supported")
@@ -128,7 +128,7 @@ func (s StructureType) ParseStrings(to string, from string, isNew bool, mkErr Er
 type StructureField struct {
 	Comment  string
 	Name     string
-	Type     Render
+	GoTypeFn GoTypeRenderFunc
 	Schema   SchemaType
 	Tags     []StructureFieldTag
 	JSONTag  string
@@ -142,12 +142,12 @@ func NewStructureField(s specification.Ref[specification.Schema], name string, t
 		tp = ot
 	}
 	return StructureField{
-		Comment: s.Value().Description,
-		Name:    PublicFieldName(name),
-		Type:    tp,
-		Schema:  tp,
-		Tags:    []StructureFieldTag{{Key: "json", Values: []string{name}}},
-		JSONTag: name,
+		Comment:  s.Value().Description,
+		Name:     PublicFieldName(name),
+		Schema:   tp,
+		Tags:     []StructureFieldTag{{Key: "json", Values: []string{name}}},
+		JSONTag:  name,
+		GoTypeFn: tp.RenderGoType,
 	}
 }
 
@@ -197,9 +197,9 @@ func (c CustomType) Kind() SchemaKind { return c.Type.Kind() }
 
 func (c CustomType) FuncTypeName() string { return stringsTitle(strings.ReplaceAll(c.Value, ".", "")) }
 
-var _ Render = (*CustomType)(nil)
+var _ GoTypeRender = (*CustomType)(nil)
 
-func (c CustomType) Render() (string, error) {
+func (c CustomType) RenderGoType() (string, error) {
 	return c.Value, nil
 }
 
@@ -266,10 +266,10 @@ func (p OptionalType) FuncTypeName() string {
 
 func (p OptionalType) Kind() SchemaKind { return p.V.Kind() }
 
-var _ Render = OptionalType{}
+var _ GoTypeRender = OptionalType{}
 
-func (p OptionalType) Render() (string, error) {
-	out, err := p.V.Render()
+func (p OptionalType) RenderGoType() (string, error) {
+	out, err := p.V.RenderGoType()
 	return p.MaybeType + "[" + out + "]", err
 }
 
@@ -306,7 +306,13 @@ func (p OptionalType) RenderFormat(from string) (string, error) {
 }
 
 func (p OptionalType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return p.V.RenderFormatStrings(to, from+".Value", isNew)
+	return ExecuteTemplate("OptionalType_RenderFormatStrings", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"Self":  p,
+		"Type":  p.V,
+	})
 }
 
 type NullableType struct {
@@ -328,10 +334,10 @@ func (n NullableType) FuncTypeName() string {
 
 func (n NullableType) Kind() SchemaKind { return n.V.Kind() }
 
-var _ Render = NullableType{}
+var _ GoTypeRender = NullableType{}
 
-func (n NullableType) Render() (string, error) {
-	out, err := n.V.Render()
+func (n NullableType) RenderGoType() (string, error) {
+	out, err := n.V.RenderGoType()
 	return n.TypeName + "[" + out + "]", err
 }
 

@@ -1,22 +1,22 @@
 {{/* ----------------------------- SliceType ------------------------------------- */}}
 
-{{ define "SliceType" }}[]{{ call .ItemsRender }}{{ end }}
+{{ define "SliceType_GoType" }}[]{{ call .GoTypeFn }}{{ end }}
 
 {{ define "Slice_RenderFormatStrings" -}}
 qv := make([]string, 0, len({{ .From }}))
 for _, v := range {{ .From }} {
-	qv = append(qv, {{ call .ItemsRenderFormat "v" }})
+	qv = append(qv, {{ call .ItemsRenderFormatFn "v" }})
 }
 {{ .To }} {{ if .IsNew }}:{{ end }}= qv
 {{- end }}
 
 {{ define "SliceType_ParseString" }}
-{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ call .ItemsRender }}, 1)
+{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ call .GoTypeFn }}, 1)
 {{ call .ItemsParseString (print .To "[0]") .From  .IsNew .MkErr }}
 {{- end }}
 
 {{ define "SliceType_ParseStrings" }}
-{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ call .ItemsRender }}, len({{.From}}))
+{{- .To}} {{ if .IsNew }}:{{ end }}= make([]{{ call .GoTypeFn }}, len({{.From}}))
 for i := range {{.From}} {
 	{{ call .ItemsParseString (print .To "[i]") (print .From "[i]") false .MkErr }}
 }
@@ -31,7 +31,7 @@ for i := range {{.From}} {
 	{{ $f.Render }}
 	{{- end }}
 	{{- if .AdditionalProperties }}
-	AdditionalProperties map[string]{{ .AdditionalProperties.Render }} `json:"-"`
+	AdditionalProperties map[string]{{ .AdditionalProperties.RenderGoType }} `json:"-"`
 	{{- end }}
 }
 {{- else }}struct{}
@@ -44,7 +44,7 @@ for i := range {{.From}} {
 {{ define "StructureField" }}
 {{- if .Comment }}// {{ .Comment }}
 {{ end -}}
-{{ .Name }} {{ .Type.Render }} {{ if .Tags -}}
+{{ .Name }} {{ call .GoTypeFn }} {{ if .Tags -}}
 `
 {{- range $ti, $t := .Tags }}{{ $t.Key }}:"
 {{- range $vi, $v := $t.Values }}{{ $v }}{{ if $vi }},{{ end }}{{ end -}}
@@ -103,6 +103,10 @@ var {{ .To }} {{ .Self.Render }}
 var {{ .To }} {{ .Self.Render }}
 {{- end }}
 {{ .To }}.Set(v)
+{{- end }}
+
+{{ define "OptionalType_RenderFormatStrings" -}}
+{{ .Type.RenderFormatStrings .To (print .From ".Value") .IsNew }}
 {{- end }}
 
 

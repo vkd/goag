@@ -26,7 +26,7 @@ func NewPrimitive(v PrimitiveIface) Primitive {
 
 func (t Primitive) Kind() SchemaKind { return SchemaKindPrimitive }
 
-func (t Primitive) Render() (string, error) {
+func (t Primitive) RenderGoType() (string, error) {
 	return t.GoType(), nil
 }
 

@@ -46,16 +46,16 @@
 {{ define "SchemaComponent" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} {{ .Schema.Render }}
+type {{ .Name }} {{ call .GoTypeFn }}
 
 {{- if not .IgnoreParseFormat }}
 
-func New{{ .Name }}(v {{ .Schema.Render }}) {{ .Name }} {
+func New{{ .Name }}(v {{ call .GoTypeFn }}) {{ .Name }} {
     return {{ .Name }}(v)
 }
 
-func (c {{ .Name }}) {{ title .Schema.FuncTypeName }}() {{ .Schema.Render }} {
-    return {{ .Schema.Render }}(c)
+func (c {{ .Name }}) {{ title .FuncTypeName }}() {{ call .GoTypeFn }} {
+    return {{ call .GoTypeFn }}(c)
 }
 {{- end }}
 
@@ -170,7 +170,7 @@ func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
     }
     {{- end }}
 	for k, bs := range m {
-        var v {{ .StructureType.AdditionalProperties.Render }}
+        var v {{ .StructureType.AdditionalProperties.RenderGoType }}
         err = json.Unmarshal(bs, &v)
         if err != nil {
             return fmt.Errorf("additional property %q: %w", k, err)
@@ -186,17 +186,17 @@ func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
 {{ define "SchemaComponent_Alias" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} = {{ .Schema.Render }}
+type {{ .Name }} = {{ call .GoTypeFn }}
 {{- end }}
 
 {{/* ----------------------------- HeaderComponent ------------------------------------- */}}
 {{ define "HeaderComponent" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} {{ .Type.Render }}
+type {{ .Name }} {{ call .GoTypeRenderFn }}
 
 func (h {{ .Name }}) String() string {
-    return {{ .Type.RenderFormat (print .Type.Render "(h)") }}
+    return {{ .Type.RenderFormat (print (call .GoTypeRenderFn) "(h)") }}
 }
 
 func (c *{{ .Name }}) Parse(s string) error {
@@ -210,13 +210,13 @@ func (c *{{ .Name }}) Parse(s string) error {
 {{ define "RequestBodyComponent" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} {{ .Type.Render }}
+type {{ .Name }} {{ call .GoTypeFn }}
 {{- end }}
 
 {{/* ----------------------------- ResponseComponent ------------------------------------- */}}
 {{ define "ResponseComponent" -}}
 {{- $response := . -}}
-func New{{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.Type.Render}}{{end}}) {{.HandlerName}}Response {
+func New{{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{call $a.GoTypeFn}}{{end}}) {{.HandlerName}}Response {
 	var out {{.Name}}
 	{{- range $_, $a := .Args}}
 	out.{{if .IsHeader}}Headers.{{end}}{{.FieldName}} = {{.ArgName}}
@@ -225,16 +225,16 @@ func New{{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.
 }
 
 {{- if .Body }}
-{{ if .Description }}// {{.BodyTypeName.Render}} - {{ comment .Description }}
+{{ if .Description }}// {{ call .GoTypeFn }} - {{ comment .Description }}
 {{ end -}}
-type {{.BodyTypeName.Render}} {{ .Body.Render }}
+type {{ call .GoTypeFn }} {{ .Body.RenderGoType }}
 {{- if .BodyRenders }}
 {{ .BodyRenders.Render }}
 {{- end }}
 {{- end }}
 
 {{ if .Description }}// {{ .Name }} - {{ comment .Description }}{{ end }}
-type {{.Name}} {{.Struct.Render}}
+type {{.Name}} {{ call .StructGoTypeFn }}
 
 {{ range $_, $oName := .UsedIn }}
 func (r {{ $response.Name }}) write{{ $oName.OperationName }}(w http.ResponseWriter) {
@@ -268,7 +268,7 @@ func (r {{.Name}}) Write(w http.ResponseWriter{{ if and (not .IsDefault) .IsComp
 {{/* ----------------------------- ResponseComponentAlias ------------------------------------- */}}
 {{ define "ResponseComponentAlias" -}}
 {{ if .Description }}// New{{ .Name }} - {{ comment .Description }}{{ end }}
-func New{{ .Name }}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{$a.Type.Render}}{{end}}) {{.HandlerName}}Response {
+func New{{ .Name }}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{call $a.GoTypeFn}}{{end}}) {{.HandlerName}}Response {
 	return New{{ .Alias }}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}}{{end}})
 }
 

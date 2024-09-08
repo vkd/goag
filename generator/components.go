@@ -51,9 +51,10 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 		imports = append(imports, ims...)
 
 		cs.Headers = append(cs.Headers, HeaderComponent{
-			Name:        h.Name,
-			Description: h.V.Value().Description,
-			Type:        s,
+			Name:           h.Name,
+			Description:    h.V.Value().Description,
+			Type:           s,
+			GoTypeRenderFn: s.RenderGoType,
 		})
 	}
 
@@ -63,7 +64,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 			cs.RequestBodies = append(cs.RequestBodies, RequestBodyComponent{
 				Name:        rb.Name + "JSON",
 				Description: rb.V.Value().Description,
-				Type:        StringRender(ref.Name + "JSON"),
+				GoTypeFn:    StringRender(ref.Name + "JSON").Render,
 			})
 		} else {
 			for _, cnt := range rb.V.Value().Content.List {
@@ -82,7 +83,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 				cs.RequestBodies = append(cs.RequestBodies, RequestBodyComponent{
 					Name:        name,
 					Description: rb.V.Value().Description,
-					Type:        schema,
+					GoTypeFn:    schema.RenderGoType,
 				})
 			}
 		}
@@ -198,8 +199,11 @@ type SchemaComponent struct {
 
 	// Ref Maybe[*SchemaComponent]
 
-	BaseType Render
+	BaseType GoTypeRender
 	// IsRef    bool
+
+	GoTypeFn     GoTypeRenderFunc
+	FuncTypeName string
 }
 
 func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) SchemaComponent {
@@ -226,6 +230,9 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 		Description: schema.Description,
 		// IsMultivalue: schemaType.IsMultivalue(),
 		BaseType: schemaType.BaseSchemaType(),
+
+		GoTypeFn:     schema.RenderGoType,
+		FuncTypeName: schema.FuncTypeName(),
 	}
 
 	switch schema := schemaType.Type.(type) {
@@ -269,13 +276,6 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 	return sc
 }
 
-// func (s SchemaComponent) Base() SchemaType {
-// 	if ref, ok := s.Ref.Get(); ok {
-// 		return ref.Base()
-// 	}
-// 	return s.Schema.Type
-// }
-
 func (s SchemaComponent) Render() (string, error) {
 	if s.Schema.IsCustom() {
 		return ExecuteTemplate("SchemaComponent_Alias", s)
@@ -284,9 +284,10 @@ func (s SchemaComponent) Render() (string, error) {
 }
 
 type HeaderComponent struct {
-	Name        string
-	Description string
-	Type        Schema
+	Name           string
+	Description    string
+	Type           Schema
+	GoTypeRenderFn GoTypeRenderFunc
 }
 
 func (s HeaderComponent) Render() (string, error) {
@@ -296,7 +297,7 @@ func (s HeaderComponent) Render() (string, error) {
 type RequestBodyComponent struct {
 	Name        string
 	Description string
-	Type        Render
+	GoTypeFn    GoTypeRenderFunc
 }
 
 func (s RequestBodyComponent) Render() (string, error) {

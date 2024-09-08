@@ -82,11 +82,11 @@ func (s Schema) Kind() SchemaKind {
 	return s.Type.Kind()
 }
 
-func (s Schema) Render() (string, error) {
+func (s Schema) RenderGoType() (string, error) {
 	if s.Ref != nil {
 		return s.Ref.Name, nil
 	}
-	return s.Type.Render()
+	return s.Type.RenderGoType()
 }
 
 // TODO: refactor to remove the method
@@ -194,7 +194,7 @@ func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error)
 }
 
 type SchemaType interface {
-	Render
+	GoTypeRender
 	Parser
 	Formatter
 
@@ -237,7 +237,7 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		var imports Imports
 		for i, a := range spec.AllOf {
 			if ref := a.Ref(); ref != nil {
-				s.Fields = append(s.Fields, StructureField{Type: StringRender(ref.Name), Embedded: true})
+				s.Fields = append(s.Fields, StructureField{GoTypeFn: StringRender(ref.Name).Render, Embedded: true})
 			} else {
 				st, ims, err := NewStructureType(a.Value(), components, cfg)
 				if err != nil {

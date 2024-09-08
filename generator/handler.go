@@ -27,7 +27,7 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 		HandlerFuncName: string(o.Name) + "HandlerFunc",
 		BasePathPrefix:  basePathPrefix,
 
-		CanParseError: len(o.Params.Query.List) > 0 || len(o.Params.Path.List) > 0 || len(o.Params.Headers.List) > 0 || o.Body.TypeName != nil || o.Body.Type.IsSet,
+		CanParseError: len(o.Params.Query.List) > 0 || len(o.Params.Path.List) > 0 || len(o.Params.Headers.List) > 0 || o.Body.GoTypeFn != nil || o.Body.Type.IsSet,
 	}
 	ps, imports, err := NewHandlerParameters(o.Params, cfg)
 	if err != nil {
@@ -109,7 +109,7 @@ func NewHandlerParameters(p OperationParams, cfg Config) (zero HandlerParameters
 
 type HandlerParameter struct {
 	FieldName    string
-	FieldType    Render
+	GoTypeFn     GoTypeRenderFunc
 	FieldComment string
 }
 
@@ -129,7 +129,7 @@ type HandlerQueryParameter struct {
 func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryParameter, _ Imports, _ error) {
 	var ims Imports
 
-	var tpRender Render = p.Type
+	var tpRender GoTypeRender = p.Type
 	var isOptional bool
 	if !p.Required {
 		// switch tp := p.Type.(type) {
@@ -147,7 +147,7 @@ func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryP
 	out := HandlerQueryParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
-			FieldType:    tpRender,
+			GoTypeFn:     tpRender.RenderGoType,
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
@@ -158,23 +158,6 @@ func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryP
 	}
 
 	return out, ims, nil
-}
-
-func (p HandlerQueryParameter) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	// switch parser := p.Parser.(type) {
-	// case SliceType:
-	// 	return parser.ParseStrings(to, from, isNew, mkErr)
-	// case Ref[specification.Schema]:
-	// 	if parser.SchemaType.Value().Type == "array" {
-	// 		return parser.ParseQuery(to, from, isNew, mkErr)
-	// 	}
-	// 	return parser.ParseSchema(to, from+"[0]", isNew, mkErr)
-	// case Ref[specification.QueryParameter]:
-	// 	return parser.ParseQuery(to, from, isNew, mkErr)
-	// case CustomType:
-	// 	return parser.ParseStrings(to, from, isNew, mkErr)
-	// }
-	return p.Parser.ParseStrings(to, from, isNew, mkErr)
 }
 
 type PathParserConstant struct {
@@ -229,7 +212,7 @@ func NewHandlerPathParameter(p *PathParameter) (zero HandlerPathParameter, _ Imp
 	out := HandlerPathParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
-			FieldType:    p.Type,
+			GoTypeFn:     p.Type.RenderGoType,
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
@@ -250,7 +233,7 @@ type HandlerHeaderParameter struct {
 
 func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHeaderParameter, _ Imports, _ error) {
 	var ims Imports
-	var tp Render = p.Schema
+	var tp GoTypeRender = p.Schema
 	var parser Parser = p.Schema
 
 	if !p.Required {
@@ -267,7 +250,7 @@ func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHead
 	out := HandlerHeaderParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    fieldName,
-			FieldType:    tp,
+			GoTypeFn:     tp.RenderGoType,
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
@@ -291,14 +274,15 @@ type HandlerResponse struct {
 
 	UsedIn []ResponseUsedIn
 
-	IsBody       bool
-	BodyTypeName Render
-	Body         Render
-	BodyRenders  Renders
-	ContentType  string
+	IsBody      bool
+	GoTypeFn    GoTypeRenderFunc
+	Body        GoTypeRender
+	BodyRenders Renders
+	ContentType string
 	// Headers     []ResponseHeader
 
-	Struct StructureType
+	Struct         StructureType
+	StructGoTypeFn GoTypeRenderFunc
 
 	Args []ResponseArg
 }
@@ -321,13 +305,13 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 
 	if out.IsDefault {
 		out.Struct.Fields = append(out.Struct.Fields, StructureField{
-			Name: "Code",
-			Type: StringRender(IntType{}.GoType()),
+			Name:     "Code",
+			GoTypeFn: StringRender(IntType{}.GoType()).Render,
 		})
 		out.Args = append(out.Args, ResponseArg{
 			FieldName: "Code",
 			ArgName:   "code",
-			Type:      StringRender(IntType{}.GoType()),
+			GoTypeFn:  StringRender(IntType{}.GoType()).Render,
 		})
 	}
 
@@ -335,23 +319,23 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 		out.IsBody = true
 		switch {
 		case contentJSON.Type.Ref != nil:
-			out.BodyTypeName = StringRender(contentJSON.Type.Ref.Name)
+			out.GoTypeFn = StringRender(contentJSON.Type.Ref.Name).Render
 		case contentJSON.Type.IsCustom():
-			out.BodyTypeName = contentJSON.Type
+			out.GoTypeFn = contentJSON.Type.RenderGoType
 		default:
 			switch contentType := contentJSON.Type.Type.(type) {
 			case SliceType:
-				out.BodyTypeName = contentType
+				out.GoTypeFn = contentType.RenderGoType
 			default:
 				bodyStructName := out.Name + "Body"
-				out.BodyTypeName = StringRender(bodyStructName)
+				out.GoTypeFn = StringRender(bodyStructName).Render
 				bodyType := contentJSON
 				out.Body = bodyType.Type
 
 				if bodyType.Spec.Value().AdditionalProperties.Set {
 					out.BodyRenders = Renders{
 						StringRender("var _ json.Marshaler = (*" + bodyStructName + ")" + "(nil)"),
-						RenderFunc(func() (string, error) {
+						GoTypeRenderFunc(func() (string, error) {
 							out := `func (b ` + bodyStructName + `) MarshalJSON() ([]byte, error) {
 							m := make(map[string]interface{})
 							for k, v := range b.AdditionalProperties {
@@ -376,37 +360,38 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 		}
 
 		out.Struct.Fields = append(out.Struct.Fields, StructureField{
-			Name: "Body",
-			Type: out.BodyTypeName,
+			Name:     "Body",
+			GoTypeFn: out.GoTypeFn,
 		})
 		out.Args = append(out.Args, ResponseArg{
 			FieldName: "Body",
 			ArgName:   "body",
-			Type:      out.BodyTypeName,
+			GoTypeFn:  out.GoTypeFn,
 		})
 	}
 
 	var headersStruct StructureType
 	for _, h := range r.Headers {
 		headersStruct.Fields = append(headersStruct.Fields, StructureField{
-			Name: h.FieldName,
-			Type: h.Schema,
+			Name:     h.FieldName,
+			GoTypeFn: h.Schema.RenderGoType,
 		})
 		out.Args = append(out.Args, ResponseArg{
 			FieldName: h.FieldName,
 			ArgName:   PrivateFieldName(h.FieldName),
 			IsHeader:  true,
-			Type:      h.Schema,
+			GoTypeFn:  h.Schema.RenderGoType,
 		})
 	}
 	if len(headersStruct.Fields) > 0 {
 		out.Struct.Fields = append(out.Struct.Fields, StructureField{
-			Name: "Headers",
-			Type: headersStruct,
+			Name:     "Headers",
+			GoTypeFn: headersStruct.RenderGoType,
 		})
 	}
 
 	out.UsedIn = ifaceNames
+	out.StructGoTypeFn = out.Struct.RenderGoType
 
 	return out
 }
@@ -423,7 +408,7 @@ type ResponseArg struct {
 	FieldName string
 	ArgName   string
 	IsHeader  bool
-	Type      Render
+	GoTypeFn  GoTypeRenderFunc
 }
 
 type ResponseUsedIn struct {

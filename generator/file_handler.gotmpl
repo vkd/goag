@@ -112,8 +112,8 @@ type {{$request}} struct {
 	Headers {{$request}}Headers
 	{{ end }}
 
-	{{ if $h.BodyTypeName }}
-	Body {{ $h.BodyTypeName.Render }}
+	{{ if $h.GoTypeFn }}
+	Body {{ call $h.GoTypeFn }}
 	{{- else if $h.BodyType }}
 	Body {{$request}}Body
 	{{- end }}
@@ -148,7 +148,7 @@ type {{$request}}Headers struct{
 
 {{- if $h.BodyType }}
 
-type {{$request}}Body {{ $h.BodyType.Render }}
+type {{$request}}Body {{ $h.BodyType.RenderGoType }}
 {{- end }}
 
 func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseError }}, _ error{{ end }}) {
@@ -222,7 +222,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 	}
 	{{ end }}
 
-	{{- if or $h.BodyTypeName $h.BodyType }}
+	{{- if or $h.GoTypeFn $h.BodyType }}
 
 	defer r.Body.Close()
 	err := json.NewDecoder(r.Body).Decode(&params.Body)
@@ -255,7 +255,7 @@ type {{ $responseWriter }} interface {
 {{ define "HandlerParameter" }}
 {{- if .FieldComment }}// {{ .FieldName }} - {{ comment .FieldComment }}
 {{end}}
-{{- .FieldName }} {{ .FieldType.Render }}
+{{- .FieldName }} {{ call .GoTypeFn }}
 {{- end }}
 
 

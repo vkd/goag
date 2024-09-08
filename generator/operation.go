@@ -31,7 +31,7 @@ type Operation struct {
 	Params OperationParams
 
 	Body struct {
-		TypeName Render
+		GoTypeFn GoTypeRenderFunc
 		Type     Maybe[StructureType]
 	}
 
@@ -103,7 +103,7 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 	if rBody, ok := s.RequestBody.Get(); ok {
 		if ref := rBody.Ref(); ref != nil && ref.Name != "" {
 			if _, ok := ref.V.Value().Content.Get("application/json"); ok {
-				o.Body.TypeName = StringRender(ref.Name + "JSON")
+				o.Body.GoTypeFn = StringRender(ref.Name + "JSON").Render
 			}
 		} else {
 			requestBody := rBody.Value()
@@ -116,13 +116,13 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 				imports = append(imports, ims...)
 
 				if body.IsCustom() {
-					o.Body.TypeName = body
+					o.Body.GoTypeFn = body.RenderGoType
 				} else {
 					switch st := body.Type.(type) {
 					case StructureType:
 						o.Body.Type = Just(st)
 					default:
-						o.Body.TypeName = body
+						o.Body.GoTypeFn = body.RenderGoType
 					}
 				}
 			}

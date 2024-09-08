@@ -8,13 +8,17 @@ type RenderFunc func() (string, error)
 
 func (r RenderFunc) Render() (string, error) { return r() }
 
+type GoTypeRender interface {
+	RenderGoType() (string, error)
+}
+
+type GoTypeRenderFunc func() (string, error)
+
+func (r GoTypeRenderFunc) Render() (string, error) { return r() }
+
 type StringRender string
 
 func (s StringRender) Render() (string, error) { return string(s), nil }
-
-type QuotedRender string
-
-func (s QuotedRender) Render() (string, error) { return string(`"` + s + `"`), nil }
 
 type ErrorRender interface {
 	Wrap(reason string, errVar string) string
