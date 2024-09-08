@@ -55,15 +55,12 @@ func NewSchemaWithType(s SchemaType) Schema {
 }
 
 func (s Schema) BaseSchemaType() SchemaType {
-	if s.Ref != nil {
-		return s.Ref.Schema.BaseSchemaType()
-	}
-	return s.Type
+	return s.Base().Type
 }
 
 func (s Schema) Base() Schema {
 	if s.Ref != nil {
-		return s.Ref.Schema
+		return s.Ref.Schema.Base()
 	}
 	return s
 }
