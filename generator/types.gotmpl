@@ -92,7 +92,7 @@ cv := {{ .From }}.{{ .Base.FuncTypeName }}()
 {{ define "OptionalTypeParseString" -}}
 {{ .Type.ParseString "v" .From true .MkErr }}
 {{- if .IsNew }}
-var {{ .To }} {{ .Self.Render }}
+var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
 {{ .To }}.Set(v)
 {{- end }}
@@ -100,7 +100,7 @@ var {{ .To }} {{ .Self.Render }}
 {{ define "OptionalTypeParseStrings" -}}
 {{ .Type.ParseStrings "v" .From true .MkErr }}
 {{- if .IsNew }}
-var {{ .To }} {{ .Self.Render }}
+var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
 {{ .To }}.Set(v)
 {{- end }}
@@ -115,7 +115,7 @@ var {{ .To }} {{ .Self.Render }}
 {{ define "NullableTypeParseString" -}}
 {{ .Type.ParseString "v" .From true .MkErr }}
 {{- if .IsNew }}
-var {{ .To }} {{ .Self.Render }}
+var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
 {{ .To }}.Set(v)
 {{- end }}
@@ -123,7 +123,7 @@ var {{ .To }} {{ .Self.Render }}
 {{ define "NullableTypeParseStrings" -}}
 {{ .Type.ParseStrings "v" .From true .MkErr }}
 {{- if .IsNew }}
-var {{ .To }} {{ .Self.Render }}
+var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
 {{ .To }}.Set(v)
 {{- end }}

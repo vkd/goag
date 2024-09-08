@@ -50,7 +50,7 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 		{{- $field := (print "request.Query." .FieldName) }}
 		{{- if not .Required }}
 	if request.Query.{{ .FieldName }}.IsSet {
-			{{- $field = (print "request.Query." .FieldName ".Value") }}
+			{{- $field = (print "request.Query." .FieldName) }}
 		{{- end }}
 		{{ call .RenderFormatStrings (print "query[\"" $q.Name "\"]") $field false }}
 		{{- if not .Required }}

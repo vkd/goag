@@ -166,12 +166,7 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
             }
             {{end -}}
             if ok && len(q) > 0 {
-			{{- if not .IsOptional }}
-                {{ (call .ParseStrings (print "params.Query." .HandlerParameter.FieldName) "q" false (returns "zero" (parseError "query" .ParameterName))) }}
-			{{- else }}
-                {{ (call .ParseStrings "v" "q" true (returns "zero" (parseError "query" .ParameterName))) }}
-				params.Query.{{ .HandlerParameter.FieldName }}.Set(v)
-			{{- end }}
+				{{ (call .ParseStrings (print "params.Query." .HandlerParameter.FieldName) "q" false (returns "zero" (parseError "query" .ParameterName))) }}
             }
 		}
 		{{- end }}

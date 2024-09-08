@@ -11,7 +11,7 @@ type QueryParameter struct {
 	Description string
 	FieldName   string
 	Required    bool
-	Type        Schema
+	Type        SchemaType
 }
 
 func NewQueryParameter(refP specification.Ref[specification.QueryParameter], components Componenter, cfg Config) (zero *QueryParameter, _ Imports, _ error) {
@@ -22,11 +22,13 @@ func NewQueryParameter(refP specification.Ref[specification.QueryParameter], com
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 	out.Required = s.Required
-	var err error
-	var ims Imports
-	out.Type, ims, err = NewSchema(s.Schema, components, cfg)
+	schema, ims, err := NewSchema(s.Schema, components, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
+	}
+	out.Type = schema
+	if !s.Required {
+		out.Type = NewOptionalType(schema, cfg)
 	}
 	return &out, ims, nil
 }

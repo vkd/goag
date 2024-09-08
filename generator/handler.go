@@ -122,7 +122,6 @@ type HandlerQueryParameter struct {
 
 	ParameterName string
 	Required      bool
-	IsOptional    bool
 	Parser        Parser
 }
 
@@ -130,18 +129,10 @@ func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryP
 	var ims Imports
 
 	var tpRender GoTypeRender = p.Type
-	var isOptional bool
 	if !p.Required {
-		// switch tp := p.Type.(type) {
-		// case CustomType:
-		// default:
-		tpRender = NewOptionalType(p.Type, cfg)
 		if cfg.Maybe.Import != "" {
 			ims = append(ims, Import(cfg.Maybe.Import))
 		}
-		// tp = NewOptionalType(p.Type)
-		// }
-		isOptional = true
 	}
 
 	out := HandlerQueryParameter{
@@ -154,7 +145,6 @@ func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryP
 		ParameterName: p.Name,
 		Required:      p.Required,
 		Parser:        p.Type,
-		IsOptional:    isOptional,
 	}
 
 	return out, ims, nil
