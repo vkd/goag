@@ -93,6 +93,11 @@ func (c *GetPetResponse200JSONBodyGroups) UnmarshalJSON(bs []byte) error {
 	if err != nil {
 		return fmt.Errorf("raw key/value map: %w", err)
 	}
+	return c.unmarshalJSONInnerBody(m)
+}
+
+func (c *GetPetResponse200JSONBodyGroups) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
+	var err error
 	for k, bs := range m {
 		var v Pets
 		err = json.Unmarshal(bs, &v)

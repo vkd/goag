@@ -95,18 +95,27 @@ func (c *Pet) UnmarshalJSON(bs []byte) error {
 	if err != nil {
 		return fmt.Errorf("raw key/value map: %w", err)
 	}
-	if v, ok := m["custom"]; ok {
-		err = json.Unmarshal(v, &c.Custom)
+	return c.unmarshalJSONInnerBody(m)
+}
+
+func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
+	var err error
+	if raw, ok := m["custom"]; ok {
+		var v PetCustom
+		err = json.Unmarshal(raw, &v)
 		if err != nil {
 			return fmt.Errorf("'custom' field: %w", err)
 		}
+		c.Custom = v
 		delete(m, "custom")
 	}
-	if v, ok := m["name"]; ok {
-		err = json.Unmarshal(v, &c.Name)
+	if raw, ok := m["name"]; ok {
+		var v string
+		err = json.Unmarshal(raw, &v)
 		if err != nil {
 			return fmt.Errorf("'name' field: %w", err)
 		}
+		c.Name = v
 		delete(m, "name")
 	}
 	for k, bs := range m {

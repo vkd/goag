@@ -44,7 +44,7 @@ for i := range {{.From}} {
 {{ define "StructureField" }}
 {{- if .Comment }}// {{ .Comment }}
 {{ end -}}
-{{ .Name }} {{ call .GoTypeFn }} {{ if .Tags -}}
+{{ if not .Embedded }}{{ .Name }} {{end }}{{ call .GoTypeFn }} {{ if .Tags -}}
 `
 {{- range $ti, $t := .Tags }}{{ $t.Key }}:"
 {{- range $vi, $v := $t.Values }}{{ $v }}{{ if $vi }},{{ end }}{{ end -}}

@@ -123,7 +123,7 @@ func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
         {{- end }}
 
         {{- if .Embedded }}
-    mErr := c.{{ .Type.Render}}.marshalJSONInnerBody(out)
+    mErr := c.{{ call .GoTypeFn }}.marshalJSONInnerBody(out)
     if mErr != nil {
         err = mErr
     }
@@ -160,14 +160,28 @@ func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
     if err != nil {
         return fmt.Errorf("raw key/value map: %w", err)
     }
+	return c.unmarshalJSONInnerBody(m)
+}
+
+func (c *{{ .Name }}) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
+    var err error
     {{- range $_, $f := .StructureType.Fields }}
-    if v, ok := m["{{ .JSONTag }}"]; ok {
-        err = json.Unmarshal(v, &c.{{ .Name }})
+        {{- if .Embedded }}
+    err = c.{{ .Name }}.unmarshalJSONInnerBody(m)
+    if err != nil {
+        return fmt.Errorf("embedded '{{ .Name }}' field: %w", err)
+    }
+        {{- else }}
+    if raw, ok := m["{{ .JSONTag }}"]; ok {
+        var v {{ call .GoTypeFn }}
+        err = json.Unmarshal(raw, &v)
         if err != nil {
             return fmt.Errorf("'{{ .JSONTag }}' field: %w", err)
         }
+        c.{{ .Name }} = v
         delete(m, "{{ .JSONTag }}")
     }
+        {{- end }}
     {{- end }}
     {{- if .StructureType.AdditionalProperties }}
 	for k, bs := range m {

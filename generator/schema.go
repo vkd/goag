@@ -234,7 +234,7 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		var imports Imports
 		for i, a := range spec.AllOf {
 			if ref := a.Ref(); ref != nil {
-				s.Fields = append(s.Fields, StructureField{GoTypeFn: StringRender(ref.Name).Render, Embedded: true})
+				s.Fields = append(s.Fields, StructureField{GoTypeFn: StringRender(ref.Name).Render, Name: ref.Name, Embedded: true})
 			} else {
 				st, ims, err := NewStructureType(a.Value(), components, cfg)
 				if err != nil {
