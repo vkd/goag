@@ -158,25 +158,37 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 			case specification.SecuritySchemeTypeHTTP:
 				switch sr.Scheme.Scheme {
 				case "bearer":
+					isRequired := len(o.Security) == 1
+					schema := NewSchemaWithType(NewPrimitive(StringType{}))
+					tp := SchemaType(schema)
+					if !isRequired {
+						tp = NewOptionalType(schema, cfg)
+					}
 					o.Params.Headers.Add("Authorization", &HeaderParameter{
 						Name:        "Authorization",
 						FieldName:   "Authorization",
 						Description: sr.Scheme.BearerFormat,
-						Required:    len(o.Security) == 1,
-						Type:        NewSchemaWithType(NewPrimitive(StringType{})),
-						Schema:      NewSchemaWithType(NewPrimitive(StringType{})),
+						Required:    isRequired,
+						Type:        tp,
+						Schema:      schema,
 					})
 				}
 			case specification.SecuritySchemeTypeApiKey:
 				switch sr.Scheme.In {
 				case "header":
+					isRequired := len(o.Security) == 1
+					schema := NewSchemaWithType(NewPrimitive(StringType{}))
+					tp := SchemaType(schema)
+					if !isRequired {
+						tp = NewOptionalType(schema, cfg)
+					}
 					o.Params.Headers.Add(Title(sr.Scheme.Name), &HeaderParameter{
 						Name:        sr.Scheme.Name,
 						FieldName:   Title(sr.Scheme.Name),
 						Description: sr.Scheme.BearerFormat,
-						Required:    len(o.Security) == 1,
-						Type:        NewSchemaWithType(NewPrimitive(StringType{})),
-						Schema:      NewSchemaWithType(NewPrimitive(StringType{})),
+						Required:    isRequired,
+						Type:        tp,
+						Schema:      schema,
 					})
 				}
 			}

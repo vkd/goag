@@ -78,7 +78,7 @@ type HeaderParameter struct {
 	Description   string
 	FieldName     string
 	FieldTypeName string
-	Type          Schema
+	Type          SchemaType
 	Schema        Schema
 	Required      bool
 }
@@ -96,6 +96,9 @@ func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter], com
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
 	out.Type = schema
+	if !s.Required {
+		out.Type = NewOptionalType(schema, cfg)
+	}
 	out.Schema = schema
 	out.Required = s.Required
 	return &out, ims, nil

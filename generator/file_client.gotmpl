@@ -75,7 +75,7 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 	{{- range $_, $h := .Headers }}
 		{{- if not $h.Required }}
 	if request.Headers.{{ $h.FieldName }}.IsSet {
-		req.Header.Set("{{ $h.Name }}", {{ $h.Type.RenderFormat (print "request.Headers." $h.FieldName ".Value") }})
+		req.Header.Set("{{ $h.Name }}", {{ $h.Type.RenderFormat (print "request.Headers." $h.FieldName) }})
 	}
 		{{- else }}
 	req.Header.Set("{{ $h.Name }}", {{ $h.Type.RenderFormat (print "request.Headers." $h.FieldName) }})

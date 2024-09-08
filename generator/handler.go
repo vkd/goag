@@ -223,17 +223,8 @@ type HandlerHeaderParameter struct {
 
 func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHeaderParameter, _ Imports, _ error) {
 	var ims Imports
-	var tp GoTypeRender = p.Schema
-	var parser Parser = p.Schema
-
-	if !p.Required {
-		ot := NewOptionalType(p.Schema, cfg)
-		if cfg.Maybe.Import != "" {
-			ims = append(ims, Import(cfg.Maybe.Import))
-		}
-		tp = ot
-		parser = ot
-	}
+	var tp GoTypeRender = p.Type
+	var parser Parser = p.Type
 
 	fieldName := Title(p.Name)
 
