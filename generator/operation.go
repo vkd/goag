@@ -109,7 +109,7 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 			requestBody := rBody.Value()
 			jsonContent, ok := requestBody.Content.Get("application/json")
 			if ok {
-				body, ims, err := NewSchema(jsonContent.V.Schema, components, cfg)
+				body, ims, err := NewSchema(jsonContent.V.Schema, false, components, cfg)
 				if err != nil {
 					return nil, nil, fmt.Errorf("request body: %w", err)
 				}

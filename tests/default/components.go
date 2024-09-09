@@ -65,31 +65,36 @@ func (c GetShopsShopPetsResponse200JSONBodyGroups) MarshalJSON() ([]byte, error)
 func (c GetShopsShopPetsResponse200JSONBodyGroups) marshalJSONInnerBody(out io.Writer) error {
 	encoder := json.NewEncoder(out)
 	var err error
-	write := func(bs []byte) {
-		if err != nil {
+	var comma string
+	write := func(s string) {
+		if err != nil || len(s) == 0 {
 			return
 		}
-		n, werr := out.Write(bs)
+		n, werr := out.Write([]byte(s))
 		if werr != nil {
 			err = werr
-		} else if len(bs) != n {
+		} else if len(s) != n {
 			err = fmt.Errorf("wrong len of written body")
 		}
 	}
-	writeJSON := func(v any) {
+	writeProperty := func(name string, v any) {
 		if err != nil {
 			return
 		}
-		werr := encoder.Encode(v)
-		if werr != nil {
-			err = werr
+		if v == nil {
+			write(comma + `"` + name + `":null`)
+		} else {
+			write(comma + `"` + name + `":`)
+			werr := encoder.Encode(v)
+			if werr != nil {
+				err = werr
+			}
 		}
+		comma = ","
 	}
-	_ = writeJSON
-
+	_ = writeProperty
 	for k, v := range c.AdditionalProperties {
-		write([]byte(`"` + k + `":`))
-		writeJSON(v)
+		writeProperty(k, v)
 	}
 
 	return err

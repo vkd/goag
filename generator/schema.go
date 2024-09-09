@@ -9,8 +9,12 @@ import (
 type Schema struct {
 	Description string
 
-	Type SchemaType
 	Ref  *SchemaComponent
+	Type SchemaType
+
+	Nullable   string
+	CustomType string
+	Optional   bool
 }
 
 type Componenter interface {
@@ -25,7 +29,7 @@ func NewSchemaRef(sc *SchemaComponent) Schema {
 	}
 }
 
-func NewSchema(s specification.Ref[specification.Schema], components Componenter, cfg Config) (zero Schema, _ Imports, _ error) {
+func NewSchema(s specification.Ref[specification.Schema], optional bool, components Componenter, cfg Config) (zero Schema, _ Imports, _ error) {
 	var schemaRef *SchemaComponent
 	if ref := s.Ref(); ref != nil {
 		refOut, ok := components.GetSchema(ref.Name)
@@ -35,9 +39,27 @@ func NewSchema(s specification.Ref[specification.Schema], components Componenter
 		return NewSchemaRef(refOut), nil, nil
 	}
 
-	st, ims, err := NewSchemaType(s.Value(), components, cfg)
+	schema := s.Value()
+
+	st, ims, err := newSchemaType(schema, components, cfg)
 	if err != nil {
-		return zero, nil, fmt.Errorf("new schema type: %w", err)
+		return zero, nil, err
+	}
+
+	var customType string
+	if specCustom, ok := schema.Value().Custom.Get(); ok {
+		ct, is := NewCustomType(specCustom, st)
+		customType = ct.Value
+		ims = append(ims, is...)
+	}
+
+	var nullable string
+	if schema.Nullable {
+		nullable = "Nullable"
+		if cfg.Nullable.Type != "" {
+			nullable = cfg.Nullable.Type
+			ims = append(ims, Import(cfg.Nullable.Import))
+		}
 	}
 
 	return Schema{
@@ -45,6 +67,10 @@ func NewSchema(s specification.Ref[specification.Schema], components Componenter
 
 		Type: st,
 		Ref:  schemaRef,
+
+		Nullable:   nullable,
+		CustomType: customType,
+		Optional:   optional,
 	}, ims, nil
 }
 
@@ -83,19 +109,19 @@ func (s Schema) RenderGoType() (string, error) {
 	if s.Ref != nil {
 		return s.Ref.Name, nil
 	}
-	return s.Type.RenderGoType()
+	tp := s.Type
+	if s.CustomType != "" {
+		tp = CustomType{Value: s.CustomType, Type: s.Type}
+	}
+	if s.Nullable != "" {
+		tp = NullableType{V: tp, TypeName: s.Nullable}
+	}
+	return tp.RenderGoType()
 }
 
 // TODO: refactor to remove the method
 func (s Schema) IsCustom() bool {
-	switch tp := s.Type.(type) {
-	case CustomType:
-		return true
-	case NullableType:
-		_, ok := tp.V.(CustomType)
-		return ok
-	}
-	return false
+	return s.CustomType != ""
 }
 
 func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -114,7 +140,14 @@ func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (str
 			"MkErr": mkErr,
 		})
 	}
-	return s.Type.ParseString(to, from, isNew, mkErr)
+	tp := s.Type
+	if s.CustomType != "" {
+		tp = CustomType{Value: s.CustomType, Type: s.Type}
+	}
+	if s.Nullable != "" {
+		tp = NullableType{V: tp, TypeName: s.Nullable}
+	}
+	return tp.ParseString(to, from, isNew, mkErr)
 }
 
 func (s Schema) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -149,7 +182,14 @@ func (s Schema) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (st
 			}
 		}
 	}
-	return s.Type.ParseStrings(to, from, isNew, mkErr)
+	tp := s.Type
+	if s.CustomType != "" {
+		tp = CustomType{Value: s.CustomType, Type: s.Type}
+	}
+	if s.Nullable != "" {
+		tp = NullableType{V: tp, TypeName: s.Nullable}
+	}
+	return tp.ParseStrings(to, from, isNew, mkErr)
 }
 
 func (s Schema) IsMultivalue() bool { return s.Type.IsMultivalue() }
@@ -161,7 +201,14 @@ func (s Schema) RenderFormat(from string) (string, error) {
 		}
 		return s.Ref.Schema.RenderFormat(from)
 	}
-	return s.Type.RenderFormat(from)
+	tp := s.Type
+	if s.CustomType != "" {
+		tp = CustomType{Value: s.CustomType, Type: s.Type}
+	}
+	if s.Nullable != "" {
+		tp = NullableType{V: tp, TypeName: s.Nullable}
+	}
+	return tp.RenderFormat(from)
 }
 
 func (s Schema) RenderConvertToBaseSchema(from string) (string, error) {
@@ -172,14 +219,8 @@ func (s Schema) RenderConvertToBaseSchema(from string) (string, error) {
 		return s.Ref.Schema.RenderConvertToBaseSchema(from)
 	}
 
-	switch tp := s.Type.(type) {
-	case CustomType:
-		return tp.RenderConvertToBaseSchema(from)
-	case NullableType:
-		ct, ok := tp.V.(CustomType)
-		if ok {
-			return ct.RenderConvertToBaseSchema(from)
-		}
+	if s.CustomType != "" {
+		from = from + "." + s.Type.FuncTypeName() + "()"
 	}
 	return from, nil
 }
@@ -207,7 +248,11 @@ func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error)
 			}
 		}
 	}
-	return s.Type.RenderFormatStrings(to, from, isNew)
+	tp := s.Type
+	if s.CustomType != "" {
+		tp = CustomType{Value: s.CustomType, Type: s.Type}
+	}
+	return tp.RenderFormatStrings(to, from, isNew)
 }
 
 type SchemaType interface {
@@ -225,28 +270,8 @@ const (
 	SchemaKindPrimitive SchemaKind = "primitive"
 	SchemaKindArray     SchemaKind = "array"
 	SchemaKindObject    SchemaKind = "object"
-	// SchemaKindCustom    SchemaKind = "custom"
-	SchemaKindRef SchemaKind = "ref"
+	SchemaKindRef       SchemaKind = "ref"
 )
-
-func NewSchemaType(s *specification.Schema, components Componenter, cfg Config) (SchemaType, Imports, error) {
-	out, ims, err := newSchemaType(s, components, cfg)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if specCustom, ok := s.Value().Custom.Get(); ok {
-		ct, is := NewCustomType(specCustom, out)
-		out = ct
-		ims = append(ims, is...)
-	}
-
-	if s.Nullable {
-		out = NewNullableType(out, cfg)
-	}
-
-	return out, ims, nil
-}
 
 func newSchemaType(spec *specification.Schema, components Componenter, cfg Config) (SchemaType, Imports, error) {
 	if len(spec.AllOf) > 0 {
@@ -278,7 +303,7 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		}
 		return r, ims, nil
 	case "array":
-		itemType, is, err := NewSchema(spec.Value().Items, components, cfg)
+		itemType, is, err := NewSchema(spec.Value().Items, false, components, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("items schema: %w", err)
 		}
@@ -300,7 +325,7 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		case "binary": // any sequence of octets
 		case "date": // full-date = 4DIGIT "-" 01-12 "-" 01-31
 		case "date-time": // full-date "T" 00-23 ":" 00-59 ":" 00-60 "Z" / ("+" / "-") 00-23 ":" 00-60
-			return NewPrimitive(DateTime{GoLayout: "time.RFC3339"}), nil, nil
+			return NewPrimitive(DateTime{GoLayout: "time.RFC3339"}), Imports{Import("time")}, nil
 		case "password":
 		default:
 			return nil, nil, fmt.Errorf("unsupported 'string' format %q", spec.Format)

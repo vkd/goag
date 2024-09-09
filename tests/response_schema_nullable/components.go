@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"time"
 )
 
 // ------------------------
@@ -12,9 +13,9 @@ import (
 // ------------------------
 
 type Pet struct {
-	Custom               PetCustom                  `json:"custom"`
-	Name                 string                     `json:"name"`
-	AdditionalProperties map[string]json.RawMessage `json:"-"`
+	CreatedAt Maybe[Nullable[time.Time]] `json:"created_at"`
+	ID        int64                      `json:"id"`
+	Name      string                     `json:"name"`
 }
 
 var _ json.Marshaler = (*Pet)(nil)
@@ -79,11 +80,15 @@ func (c Pet) marshalJSONInnerBody(out io.Writer) error {
 		comma = ","
 	}
 	_ = writeProperty
-	writeProperty("custom", c.Custom)
-	writeProperty("name", c.Name)
-	for k, v := range c.AdditionalProperties {
-		writeProperty(k, v)
+	if maybe, ok := c.CreatedAt.Get(); ok {
+		if ptr, ok := maybe.Get(); ok {
+			writeProperty("created_at", ptr)
+		} else {
+			writeProperty("created_at", nil)
+		}
 	}
+	writeProperty("id", c.ID)
+	writeProperty("name", c.Name)
 
 	return err
 }
@@ -101,14 +106,23 @@ func (c *Pet) UnmarshalJSON(bs []byte) error {
 
 func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
-	if raw, ok := m["custom"]; ok {
-		var v PetCustom
+	if raw, ok := m["created_at"]; ok {
+		var v Maybe[Nullable[time.Time]]
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("'custom' field: %w", err)
+			return fmt.Errorf("'created_at' field: %w", err)
 		}
-		c.Custom = v
-		delete(m, "custom")
+		c.CreatedAt = v
+		delete(m, "created_at")
+	}
+	if raw, ok := m["id"]; ok {
+		var v int64
+		err = json.Unmarshal(raw, &v)
+		if err != nil {
+			return fmt.Errorf("'id' field: %w", err)
+		}
+		c.ID = v
+		delete(m, "id")
 	}
 	if raw, ok := m["name"]; ok {
 		var v string
@@ -119,17 +133,5 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		c.Name = v
 		delete(m, "name")
 	}
-	for k, bs := range m {
-		var v json.RawMessage
-		err = json.Unmarshal(bs, &v)
-		if err != nil {
-			return fmt.Errorf("additional property %q: %w", k, err)
-		}
-		c.AdditionalProperties[k] = v
-	}
 	return nil
 }
-
-type PetCustom = json.RawMessage
-
-type Pets []Pet

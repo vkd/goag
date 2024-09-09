@@ -1,6 +1,8 @@
 package test
 
-import "time"
+import (
+	"time"
+)
 
 // ------------------------
 //         Schemas

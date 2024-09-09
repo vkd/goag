@@ -30,7 +30,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 		cacheSchemas[c.V] = cs.Schemas[i]
 	}
 	for _, c := range spec.Schemas.List {
-		schema, ims, err := NewSchema(c.V, NamedComponenter{cs, c.Name}, cfg)
+		schema, ims, err := NewSchema(c.V, false, NamedComponenter{cs, c.Name}, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new schema component: %w", err)
 		}
@@ -44,7 +44,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 
 	cs.Headers = make([]HeaderComponent, 0, len(spec.Headers.List))
 	for _, h := range spec.Headers.List {
-		s, ims, err := NewSchema(h.V.Value().Schema, cs, cfg)
+		s, ims, err := NewSchema(h.V.Value().Schema, !h.V.Value().Required, cs, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("parse header for %q type: %w", h.Name, err)
 		}
@@ -75,7 +75,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 				default:
 					name += PublicFieldName(cnt.Name)
 				}
-				schema, ims, err := NewSchema(cnt.V.Schema, cs, cfg)
+				schema, ims, err := NewSchema(cnt.V.Schema, false, cs, cfg)
 				if err != nil {
 					return zero, nil, fmt.Errorf("new schema for %q type, %q content: %w", rb.Name, cnt.Name, err)
 				}

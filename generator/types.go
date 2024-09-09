@@ -73,7 +73,7 @@ func NewStructureType(s *specification.Schema, components Componenter, cfg Confi
 	var stype StructureType
 	var imports Imports
 	for _, p := range s.Properties {
-		t, ims, err := NewSchema(p.Schema, NamedComponenter{components, p.Name}, cfg)
+		t, ims, err := NewSchema(p.Schema, !p.Required, NamedComponenter{components, p.Name}, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("new schema: %w", err)
 		}
@@ -89,7 +89,7 @@ func NewStructureType(s *specification.Schema, components Componenter, cfg Confi
 		stype.Fields = append(stype.Fields, f)
 	}
 	if additionalProperties, ok := s.AdditionalProperties.Get(); ok {
-		additional, ims, err := NewSchema(additionalProperties, NamedComponenter{components, "AdditionalProperties"}, cfg)
+		additional, ims, err := NewSchema(additionalProperties, false, NamedComponenter{components, "AdditionalProperties"}, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("additional properties: %w", err)
 		}
@@ -318,6 +318,14 @@ func (p OptionalType) RenderFormatStrings(to, from string, isNew bool) (string, 
 		"IsNew": isNew,
 		"Self":  p,
 		"Type":  p.V,
+	})
+}
+
+func (p OptionalType) RenderConvertToBaseSchema(from string) (string, error) {
+	return ExecuteTemplate("OptionalType_RenderConvertToBaseSchema", TData{
+		"From": from,
+		"Self": p,
+		"Type": p.V,
 	})
 }
 
