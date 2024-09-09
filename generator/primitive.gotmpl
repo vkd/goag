@@ -69,3 +69,17 @@ if err != nil {
 {{- end }}
 
 {{ define "Float64_Format" }}strconv.FormatFloat({{ .From }}, 'e', -1, 64){{ end }}
+
+{{/* ----------------------------- DateTime ------------------------------------- */}}
+
+{{ define "DateTime_ParseString" -}}
+{{- if not .IsNew -}}
+var err error
+{{ end }}
+{{- .To }}, err {{ if .IsNew }}:{{ end }}= time.Parse({{ .Layout }}, {{ .From }})
+if err != nil {
+	return {{ .MkErr.Wrap "parse time.Time" "err" }}
+}
+{{- end }}
+
+{{ define "DateTime_RenderFormat" }}{{ .From }}.Format({{ .Layout }}){{ end }}

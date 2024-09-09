@@ -15,6 +15,7 @@ func Title(s string) string {
 		return "IDs"
 	}
 	s = strings.ReplaceAll(s, "-", "_")
+	s = strings.ReplaceAll(s, ".", "_")
 	ss := strings.Split(s, "_")
 	if len(ss) > 1 {
 		for i, v := range ss {

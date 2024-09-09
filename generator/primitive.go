@@ -31,7 +31,7 @@ func (t Primitive) RenderGoType() (string, error) {
 }
 
 func (t Primitive) FuncTypeName() string {
-	return stringsTitle(t.GoType())
+	return Title(t.GoType())
 }
 
 func (t Primitive) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -192,4 +192,46 @@ func (_ StringType) ParseString(to, from string, isNew bool, mkErr ErrorRender) 
 		return to + " := " + from, nil
 	}
 	return to + " = " + from, nil
+}
+
+type DateTime struct {
+	GoLayout   string
+	TextLayout string
+}
+
+var _ PrimitiveIface = DateTime{}
+
+func (DateTime) GoType() string { return "time.Time" }
+
+func (d DateTime) RenderFormat(from string) (string, error) {
+	layout := "time.RFC3339"
+	if d.GoLayout != "" {
+		layout = d.GoLayout
+	}
+	if d.TextLayout != "" {
+		layout = `"` + d.TextLayout + `"`
+	}
+	return ExecuteTemplate("DateTime_RenderFormat", TData{
+		"From": from,
+
+		"Layout": layout,
+	})
+}
+
+func (d DateTime) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	layout := "time.RFC3339"
+	if d.GoLayout != "" {
+		layout = d.GoLayout
+	}
+	if d.TextLayout != "" {
+		layout = `"` + d.TextLayout + `"`
+	}
+	return ExecuteTemplate("DateTime_ParseString", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"Layout": layout,
+	})
 }
