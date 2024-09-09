@@ -26,7 +26,7 @@ type Config struct {
 	} `yaml:"customTypes"`
 
 	Experimental struct {
-		CustomJSONImplementation bool `yaml:"custom_json_implementation"`
+		CustomJSONImplementation bool `yaml:"customJsonImplementation"`
 	} `yaml:"experimental"`
 }
 
