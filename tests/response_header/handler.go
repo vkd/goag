@@ -101,11 +101,22 @@ type Maybe[T any] struct {
 	Value T
 }
 
+func Nothing[T any]() Maybe[T] {
+	return Maybe[T]{}
+}
+
 func Just[T any](v T) Maybe[T] {
 	return Maybe[T]{
 		IsSet: true,
 		Value: v,
 	}
+}
+
+func (m Maybe[T]) Get() (zero T, _ bool) {
+	if m.IsSet {
+		return m.Value, true
+	}
+	return zero, false
 }
 
 func (m *Maybe[T]) Set(v T) {
@@ -118,11 +129,22 @@ type Nullable[T any] struct {
 	Value T
 }
 
-func Ptr[T any](v T) Nullable[T] {
+func Null[T any]() Nullable[T] {
+	return Nullable[T]{}
+}
+
+func Pointer[T any](v T) Nullable[T] {
 	return Nullable[T]{
 		IsSet: true,
 		Value: v,
 	}
+}
+
+func (m Nullable[T]) Get() (zero T, _ bool) {
+	if m.IsSet {
+		return m.Value, true
+	}
+	return zero, false
 }
 
 func (m *Nullable[T]) Set(v T) {
