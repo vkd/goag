@@ -5,8 +5,6 @@ import (
 )
 
 type Primitive struct {
-	SingleValue
-
 	PrimitiveIface
 }
 

@@ -192,8 +192,6 @@ func (s Schema) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (st
 	return tp.ParseStrings(to, from, isNew, mkErr)
 }
 
-func (s Schema) IsMultivalue() bool { return s.Type.IsMultivalue() }
-
 func (s Schema) RenderFormat(from string) (string, error) {
 	if s.Ref != nil {
 		if !s.Ref.Schema.IsCustom() {

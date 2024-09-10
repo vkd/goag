@@ -8,7 +8,6 @@ import (
 )
 
 type SliceType struct {
-	Multivalue
 	Items Schema
 }
 
@@ -63,7 +62,6 @@ func (s SliceType) ParseStrings(to string, from string, isNew bool, mkErr ErrorR
 }
 
 type StructureType struct {
-	SingleValue
 	Fields []StructureField
 
 	AdditionalProperties *GoTypeRender
@@ -207,8 +205,6 @@ func (c CustomType) RenderGoType() (string, error) {
 
 var _ Parser = (*CustomType)(nil)
 
-func (c CustomType) IsMultivalue() bool { return c.Type.IsMultivalue() }
-
 func (c CustomType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("CustomType_ParseString", TData{
 		"Base":       c.Type,
@@ -292,8 +288,6 @@ func (p OptionalType) ParseString(to string, from string, isNew bool, mkErr Erro
 	})
 }
 
-func (p OptionalType) IsMultivalue() bool { return p.V.IsMultivalue() }
-
 func (p OptionalType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("OptionalTypeParseStrings", TData{
 		"To":    to,
@@ -367,8 +361,6 @@ func (n NullableType) ParseString(to string, from string, isNew bool, mkErr Erro
 		"Type":  n.V,
 	})
 }
-
-func (n NullableType) IsMultivalue() bool { return n.V.IsMultivalue() }
 
 func (n NullableType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("NullableTypeParseStrings", TData{

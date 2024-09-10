@@ -191,7 +191,6 @@ type SchemaComponent struct {
 
 	Description       string
 	IgnoreParseFormat bool
-	// IsMultivalue      bool
 	// IsAlias       bool
 	WriteJSONFunc bool
 
@@ -228,8 +227,7 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 		Schema: schema,
 
 		Description: schema.Description,
-		// IsMultivalue: schemaType.IsMultivalue(),
-		BaseType: schemaType.BaseSchemaType(),
+		BaseType:    schemaType.BaseSchemaType(),
 
 		GoTypeFn:     schema.RenderGoType,
 		FuncTypeName: schema.FuncTypeName(),

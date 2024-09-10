@@ -151,7 +151,6 @@ func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryP
 }
 
 type PathParserConstant struct {
-	SingleValue
 	Prefix   string
 	FullPath string
 }
@@ -165,7 +164,6 @@ func (p PathParserConstant) ParseStrings(_, _ string, _ bool, _ ErrorRender) (st
 }
 
 type PathParserVariable struct {
-	SingleValue
 	FieldName string
 	Name      string
 	Convert   Parser

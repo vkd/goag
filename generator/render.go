@@ -28,17 +28,8 @@ type ErrorRender interface {
 // Parser parses 'string' to '<type>'.
 type Parser interface {
 	ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error)
-	IsMultivalue() bool
 	ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
-
-type SingleValue struct{}
-
-func (SingleValue) IsMultivalue() bool { return false }
-
-type Multivalue struct{}
-
-func (Multivalue) IsMultivalue() bool { return true }
 
 type ParserFunc func(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 
