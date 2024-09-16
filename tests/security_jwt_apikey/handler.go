@@ -135,15 +135,15 @@ func newPostShopsParams(r *http.Request) (zero PostShopsParams, _ error) {
 		{
 			hs := header.Values("Authorization")
 			if len(hs) > 0 {
-				v := hs[0]
-				params.Headers.Authorization.Set(v)
+				vOpt := hs[0]
+				params.Headers.Authorization.Set(vOpt)
 			}
 		}
 		{
 			hs := header.Values("Access-Token")
 			if len(hs) > 0 {
-				v := hs[0]
-				params.Headers.AccessToken.Set(v)
+				vOpt := hs[0]
+				params.Headers.AccessToken.Set(vOpt)
 			}
 		}
 	}

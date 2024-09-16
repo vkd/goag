@@ -141,12 +141,20 @@ func NewSchema(schema *openapi3.Schema, components Sourcer[Schema], opts SchemaO
 		var req bool
 		if _, ok := required[name]; ok {
 			req = true
+			delete(required, name)
 		}
 		out.Properties = append(out.Properties, SchemaProperty{
 			Name:     name,
 			Schema:   s,
 			Required: req,
 		})
+	}
+	if len(required) > 0 {
+		var rs []string
+		for r := range required {
+			rs = append(rs, r)
+		}
+		return nil, fmt.Errorf("unnecessary required fields - %v: not found in 'properties'", rs)
 	}
 	for _, a := range schema.AllOf {
 		s, err := NewSchemaRef(a, components, opts)

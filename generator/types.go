@@ -71,23 +71,16 @@ func NewStructureType(s *specification.Schema, components Componenter, cfg Confi
 	var stype StructureType
 	var imports Imports
 	for _, p := range s.Properties {
-		t, ims, err := NewSchema(p.Schema, !p.Required, NamedComponenter{components, p.Name}, cfg)
+		f, ims, err := NewStructureField(p, components, cfg)
 		if err != nil {
-			return zero, nil, fmt.Errorf("new schema: %w", err)
+			return zero, nil, fmt.Errorf("new structure field %q: %w", p.Name, err)
 		}
 		imports = append(imports, ims...)
-
-		if t.Ref == nil && !t.IsCustom() && t.Kind() == SchemaKindObject {
-			sc := components.AddSchema(PublicFieldName(p.Name), t, cfg)
-			t.Ref = sc
-		}
-
-		f := NewStructureField(p.Schema, p.Name, t, p.Required, cfg)
 
 		stype.Fields = append(stype.Fields, f)
 	}
 	if additionalProperties, ok := s.AdditionalProperties.Get(); ok {
-		additional, ims, err := NewSchema(additionalProperties, false, NamedComponenter{components, "AdditionalProperties"}, cfg)
+		additional, ims, err := NewSchema(additionalProperties, NamedComponenter{components, "AdditionalProperties"}, cfg)
 		if err != nil {
 			return zero, nil, fmt.Errorf("additional properties: %w", err)
 		}
@@ -99,7 +92,7 @@ func NewStructureType(s *specification.Schema, components Componenter, cfg Confi
 	return stype, imports, nil
 }
 
-var _ SchemaType = StructureType{}
+var _ InternalSchemaType = StructureType{}
 
 func (s StructureType) Kind() SchemaKind { return SchemaKindObject }
 
@@ -128,27 +121,43 @@ type StructureField struct {
 	Name     string
 	GoTypeFn GoTypeRenderFunc
 	Type     SchemaType
-	Schema   Schema
+	Schema   SchemaType
 	Tags     []StructureFieldTag
 	JSONTag  string
 	Embedded bool
+
+	RenderBaseFromFn func(prefix, from, suffix string) (string, error)
 }
 
-func NewStructureField(s specification.Ref[specification.Schema], name string, t Schema, required bool, cfg Config) StructureField {
-	var tp SchemaType = t
-	if !required {
-		ot := NewOptionalType(t, cfg)
-		tp = ot
+func NewStructureField(p specification.SchemaProperty, components Componenter, cfg Config) (zero StructureField, _ Imports, _ error) {
+	schema, ims, err := NewSchema(p.Schema, NamedComponenter{components, p.Name}, cfg)
+	if err != nil {
+		return zero, nil, fmt.Errorf("new schema: %w", err)
 	}
+
+	if schema.Ref == nil && !schema.IsCustom() && schema.Kind() == SchemaKindObject {
+		sc := components.AddSchema(PublicFieldName(p.Name), schema, cfg)
+		schema.Ref = sc
+	}
+
+	var st SchemaType = schema
+	if !p.Required {
+		st = NewOptionalType(schema, cfg)
+	}
+
+	name := p.Name
+
 	return StructureField{
-		Comment:  s.Value().Description,
+		Comment:  p.Schema.Value().Description,
 		Name:     PublicFieldName(name),
-		Type:     tp,
-		Schema:   t,
+		Type:     st,
+		Schema:   st,
 		Tags:     []StructureFieldTag{{Key: "json", Values: []string{name}}},
 		JSONTag:  name,
-		GoTypeFn: tp.RenderGoType,
-	}
+		GoTypeFn: st.RenderGoType,
+
+		RenderBaseFromFn: st.RenderBaseFrom,
+	}, ims, nil
 }
 
 func (s StructureField) Render() (string, error) { return ExecuteTemplate("StructureField", s) }
@@ -169,10 +178,10 @@ type StructureFieldTag struct {
 
 type CustomType struct {
 	Value string
-	Type  SchemaType
+	Type  InternalSchemaType
 }
 
-func NewCustomType(specCustom string, st SchemaType) (CustomType, Imports) {
+func NewCustomType(specCustom string, st InternalSchemaType) (CustomType, Imports) {
 	var customImport, customType string = "", specCustom
 	slIdx := strings.LastIndex(specCustom, "/")
 	if slIdx >= 0 {
@@ -191,7 +200,7 @@ func NewCustomType(specCustom string, st SchemaType) (CustomType, Imports) {
 	}, NewImportsS(customImport)
 }
 
-var _ SchemaType = (*CustomType)(nil)
+var _ InternalSchemaType = (*CustomType)(nil)
 
 func (c CustomType) Kind() SchemaKind { return c.Type.Kind() }
 
@@ -250,11 +259,11 @@ func (c CustomType) RenderConvertToBaseSchema(from string) (string, error) {
 }
 
 type OptionalType struct {
-	V         Schema
+	V         SchemaType
 	MaybeType string
 }
 
-func NewOptionalType(v Schema, cfg Config) OptionalType {
+func NewOptionalType(v SchemaType, cfg Config) OptionalType {
 	typename := cfg.Maybe.Type
 	if typename == "" {
 		typename = "Maybe"
@@ -273,6 +282,18 @@ var _ GoTypeRender = OptionalType{}
 func (p OptionalType) RenderGoType() (string, error) {
 	out, err := p.V.RenderGoType()
 	return p.MaybeType + "[" + out + "]", err
+}
+
+var _ SchemaType = OptionalType{}
+
+func (p OptionalType) RenderBaseFrom(prefix, from, suffix string) (string, error) {
+	return ExecuteTemplate("OptionalType_RenderBaseFrom", TData{
+		"From":   from,
+		"Prefix": prefix,
+		"Suffix": suffix,
+		"Self":   p,
+		"Type":   p.V,
+	})
 }
 
 var _ Parser = OptionalType{}
@@ -324,11 +345,11 @@ func (p OptionalType) RenderConvertToBaseSchema(from string) (string, error) {
 }
 
 type NullableType struct {
-	V        SchemaType
+	V        InternalSchemaType
 	TypeName string
 }
 
-func NewNullableType(v SchemaType, cfg Config) NullableType {
+func NewNullableType(v InternalSchemaType, cfg Config) NullableType {
 	typename := cfg.Nullable.Type
 	if typename == "" {
 		typename = "Nullable"
@@ -344,9 +365,23 @@ func (n NullableType) Kind() SchemaKind { return n.V.Kind() }
 
 var _ GoTypeRender = NullableType{}
 
+func (n NullableType) GoType(from string) string {
+	return n.TypeName + "[" + from + "]"
+}
+
 func (n NullableType) RenderGoType() (string, error) {
 	out, err := n.V.RenderGoType()
-	return n.TypeName + "[" + out + "]", err
+	return n.GoType(out), err
+}
+
+func (n NullableType) RenderBaseFrom(prefix, from, suffix string) (string, error) {
+	return ExecuteTemplate("NullableType_RenderBaseFrom", TData{
+		"From":   from,
+		"Prefix": prefix,
+		"Suffix": suffix,
+		"Self":   n,
+		"Type":   n.V,
+	})
 }
 
 var _ Parser = NullableType{}

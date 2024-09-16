@@ -22,14 +22,15 @@ func NewQueryParameter(refP specification.Ref[specification.QueryParameter], com
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 	out.Required = s.Required
-	schema, ims, err := NewSchema(s.Schema, !s.Required, components, cfg)
+	schema, ims, err := NewSchema(s.Schema, components, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
-	out.Type = schema
+	var st SchemaType = schema
 	if !s.Required {
-		out.Type = NewOptionalType(schema, cfg)
+		st = NewOptionalType(schema, cfg)
 	}
+	out.Type = st
 	return &out, ims, nil
 }
 
@@ -62,7 +63,7 @@ func NewPathParameter(rs specification.Ref[specification.PathParameter], compone
 
 	var ims Imports
 	var err error
-	out.Type, ims, err = NewSchema(s.Schema, false, components, cfg)
+	out.Type, ims, err = NewSchema(s.Schema, components, cfg)
 	if err != nil {
 		return nil, nil, fmt.Errorf("schema: %w", err)
 	}
@@ -90,14 +91,15 @@ func NewHeaderParameter(sr specification.Ref[specification.HeaderParameter], com
 	out.Name = s.Name
 	out.FieldName = PublicFieldName(s.Name)
 
-	schema, ims, err := NewSchema(s.Schema, !s.Required, components, cfg)
+	schema, ims, err := NewSchema(s.Schema, components, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
 	}
-	out.Type = schema
+	var st SchemaType = schema
 	if !s.Required {
-		out.Type = NewOptionalType(schema, cfg)
+		st = NewOptionalType(st, cfg)
 	}
+	out.Type = st
 	out.Required = s.Required
 	return &out, ims, nil
 }

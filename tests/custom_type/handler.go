@@ -67,28 +67,28 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 			q, ok := query["page_schema_ref_query"]
 			if ok && len(q) > 0 {
 				vCustom := q[0]
-				var v pkg.Page
+				var vOpt pkg.Page
 				{
-					err := v.ParseString(vCustom)
+					err := vOpt.ParseString(vCustom)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "page_schema_ref_query", Reason: "parse custom type", Err: err}
 					}
 				}
-				params.Query.PageSchemaRefQuery.Set(v)
+				params.Query.PageSchemaRefQuery.Set(vOpt)
 			}
 		}
 		{
 			q, ok := query["page_custom_type_query"]
 			if ok && len(q) > 0 {
 				vCustom := q[0]
-				var v pkg.PageCustomTypeQuery
+				var vOpt pkg.PageCustomTypeQuery
 				{
-					err := v.ParseString(vCustom)
+					err := vOpt.ParseString(vCustom)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "page_custom_type_query", Reason: "parse custom type", Err: err}
 					}
 				}
-				params.Query.PageCustomTypeQuery.Set(v)
+				params.Query.PageCustomTypeQuery.Set(vOpt)
 			}
 		}
 	}

@@ -87,8 +87,8 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page_int", Reason: "parse int", Err: err}
 				}
-				v := int(vInt64)
-				params.Query.PageInt.Set(v)
+				vOpt := int(vInt64)
+				params.Query.PageInt.Set(vOpt)
 			}
 		}
 		{
@@ -99,8 +99,8 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 					return zero, ErrParseParam{In: "query", Parameter: "page_schema", Reason: "parse int32", Err: err}
 				}
 				vInt32 := int32(vInt64)
-				v := NewPage(vInt32)
-				params.Query.PageSchema.Set(v)
+				vOpt := NewPage(vInt32)
+				params.Query.PageSchema.Set(vOpt)
 			}
 		}
 		{
@@ -114,8 +114,8 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 					}
 					vInt32s[i] = int32(vInt64)
 				}
-				v := NewPages(vInt32s)
-				params.Query.PagesSchema.Set(v)
+				vOpt := NewPages(vInt32s)
+				params.Query.PagesSchema.Set(vOpt)
 			}
 		}
 		{
@@ -157,8 +157,8 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				if err != nil {
 					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Int", Reason: "parse int", Err: err}
 				}
-				v := int(vInt64)
-				params.Headers.XOrganizationInt.Set(v)
+				vOpt := int(vInt64)
+				params.Headers.XOrganizationInt.Set(vOpt)
 			}
 		}
 		{
@@ -169,8 +169,8 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema", Reason: "parse int", Err: err}
 				}
 				vInt := int(vInt64)
-				v := NewOrganization(vInt)
-				params.Headers.XOrganizationSchema.Set(v)
+				vOpt := NewOrganization(vInt)
+				params.Headers.XOrganizationSchema.Set(vOpt)
 			}
 		}
 		{

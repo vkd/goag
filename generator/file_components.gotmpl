@@ -131,27 +131,11 @@ func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
         err = mErr
     }
         {{- else }}
-            {{- if eq ( .Schema.Base.Kind ) "object" }}
+            {{- if eq ( .Schema.Kind ) "object" }}
     writeProperty("{{ .JSONTag }}", c.{{ .Name }})
             {{- else }}
                 {{- $field := (print "c." .Name) }}
-                {{- if .Schema.Optional }}
-    if maybe, ok := {{ $field }}.Get(); ok {
-                    {{- $field = "maybe" }}
-                {{- end }}
-                {{- if .Schema.Nullable }}
-        if ptr, ok := {{ $field }}.Get(); ok {
-                    {{- $field = "ptr" }}
-                {{- end }}
-            writeProperty("{{ .JSONTag }}", {{ .Schema.RenderConvertToBaseSchema $field }})
-                {{- if .Schema.Nullable }}
-        } else {
-            writeProperty("{{ .JSONTag }}", nil)
-        }
-                {{- end }}
-                {{- if .Schema.Optional }}
-    }
-                {{- end }}
+            {{ call .RenderBaseFromFn (print "writeProperty(\"" .JSONTag "\", ") $field ")" }}
             {{- end }}
         {{- end }}
     {{- end }}

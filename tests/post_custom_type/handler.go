@@ -66,14 +66,14 @@ func newPostShopsShopPetsParams(r *http.Request) (zero PostShopsShopPetsParams, 
 			q, ok := query["filter"]
 			if ok && len(q) > 0 {
 				vCustom := q[0]
-				var v pkg.ShopType
+				var vOpt pkg.ShopType
 				{
-					err := v.ParseString(vCustom)
+					err := vOpt.ParseString(vCustom)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse custom type", Err: err}
 					}
 				}
-				params.Query.Filter.Set(v)
+				params.Query.Filter.Set(vOpt)
 			}
 		}
 	}

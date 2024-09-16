@@ -56,22 +56,22 @@ func newGetPetsParams(r *http.Request) (zero GetPetsParams, _ error) {
 		{
 			q, ok := query["tag"]
 			if ok && len(q) > 0 {
-				v := q
-				params.Query.Tag.Set(v)
+				vOpt := q
+				params.Query.Tag.Set(vOpt)
 			}
 		}
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				v := make([]int64, len(q))
+				vOpt := make([]int64, len(q))
 				for i := range q {
 					var err error
-					v[i], err = strconv.ParseInt(q[i], 10, 64)
+					vOpt[i], err = strconv.ParseInt(q[i], 10, 64)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int64", Err: err}
 					}
 				}
-				params.Query.Page.Set(v)
+				params.Query.Page.Set(vOpt)
 			}
 		}
 	}

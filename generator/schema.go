@@ -10,11 +10,10 @@ type Schema struct {
 	Description string
 
 	Ref  *SchemaComponent
-	Type SchemaType
+	Type InternalSchemaType
 
 	Nullable   string
 	CustomType string
-	Optional   bool
 }
 
 type Componenter interface {
@@ -29,7 +28,7 @@ func NewSchemaRef(sc *SchemaComponent) Schema {
 	}
 }
 
-func NewSchema(s specification.Ref[specification.Schema], optional bool, components Componenter, cfg Config) (zero Schema, _ Imports, _ error) {
+func NewSchema(s specification.Ref[specification.Schema], components Componenter, cfg Config) (zero Schema, _ Imports, _ error) {
 	var schemaRef *SchemaComponent
 	if ref := s.Ref(); ref != nil {
 		refOut, ok := components.GetSchema(ref.Name)
@@ -70,17 +69,16 @@ func NewSchema(s specification.Ref[specification.Schema], optional bool, compone
 
 		Nullable:   nullable,
 		CustomType: customType,
-		Optional:   optional,
 	}, ims, nil
 }
 
-func NewSchemaWithType(s SchemaType) Schema {
+func NewSchemaWithType(s InternalSchemaType) Schema {
 	return Schema{
 		Type: s,
 	}
 }
 
-func (s Schema) BaseSchemaType() SchemaType {
+func (s Schema) BaseSchemaType() InternalSchemaType {
 	return s.Base().Type
 }
 
@@ -89,6 +87,16 @@ func (s Schema) Base() Schema {
 		return s.Ref.Schema.Base()
 	}
 	return s
+}
+
+func (s Schema) RenderBaseFrom(prefix, from, suffix string) (string, error) {
+	if s.CustomType != "" {
+		from = from + "." + s.FuncTypeName() + "()"
+	}
+	if s.Nullable != "" {
+		return NullableType{V: s.Type, TypeName: s.Nullable}.RenderBaseFrom(prefix, from, suffix)
+	}
+	return prefix + from + suffix, nil
 }
 
 func (s Schema) FuncTypeName() string {
@@ -107,9 +115,13 @@ func (s Schema) Kind() SchemaKind {
 
 func (s Schema) RenderGoType() (string, error) {
 	if s.Ref != nil {
-		return s.Ref.Name, nil
+		tp := s.Ref.Name
+		if s.Base().Nullable != "" {
+			tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
+		}
+		return tp, nil
 	}
-	tp := s.Type
+	tp := InternalSchemaType(s.Type)
 	if s.CustomType != "" {
 		tp = CustomType{Value: s.CustomType, Type: s.Type}
 	}
@@ -140,7 +152,7 @@ func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (str
 			"MkErr": mkErr,
 		})
 	}
-	tp := s.Type
+	tp := InternalSchemaType(s.Type)
 	if s.CustomType != "" {
 		tp = CustomType{Value: s.CustomType, Type: s.Type}
 	}
@@ -228,7 +240,8 @@ func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error)
 		if !s.Ref.Schema.IsCustom() {
 			from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
 		}
-		return s.Ref.Schema.RenderFormatStrings(to, from, isNew)
+		tp := SchemaType(s.Ref.Schema)
+		return tp.RenderFormatStrings(to, from, isNew)
 	}
 	switch st := s.Type.(type) {
 	case SliceType:
@@ -246,17 +259,31 @@ func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error)
 			}
 		}
 	}
-	tp := s.Type
+	tp := InternalSchemaType(s.Type)
 	if s.CustomType != "" {
 		tp = CustomType{Value: s.CustomType, Type: s.Type}
 	}
+	if s.Nullable != "" {
+		tp = NullableType{V: tp, TypeName: s.Nullable}
+	}
 	return tp.RenderFormatStrings(to, from, isNew)
+}
+
+type InternalSchemaType interface {
+	GoTypeRender
+	Parser
+	Formatter
+
+	FuncTypeName() string
+	Kind() SchemaKind
 }
 
 type SchemaType interface {
 	GoTypeRender
 	Parser
 	Formatter
+
+	RenderBaseFrom(prefix, from, suffix string) (string, error)
 
 	FuncTypeName() string
 	Kind() SchemaKind
@@ -271,7 +298,7 @@ const (
 	SchemaKindRef       SchemaKind = "ref"
 )
 
-func newSchemaType(spec *specification.Schema, components Componenter, cfg Config) (SchemaType, Imports, error) {
+func newSchemaType(spec *specification.Schema, components Componenter, cfg Config) (InternalSchemaType, Imports, error) {
 	if len(spec.AllOf) > 0 {
 		var s StructureType
 		var imports Imports
@@ -301,7 +328,7 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		}
 		return r, ims, nil
 	case "array":
-		itemType, is, err := NewSchema(spec.Value().Items, false, components, cfg)
+		itemType, is, err := NewSchema(spec.Value().Items, components, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("items schema: %w", err)
 		}

@@ -82,14 +82,14 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
 				vCustom := int32(vInt64)
-				var v Page
+				var vOpt Page
 				{
-					err := v.ParseInt32(vCustom)
+					err := vOpt.ParseInt32(vCustom)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse custom type", Err: err}
 					}
 				}
-				params.Query.Page.Set(v)
+				params.Query.Page.Set(vOpt)
 			}
 		}
 		{
@@ -114,7 +114,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["pages"]
 			if ok && len(q) > 0 {
-				v := make([]Page, len(q))
+				vOpt := make([]Page, len(q))
 				for i := range q {
 					vInt64, err := strconv.ParseInt(q[i], 10, 32)
 					if err != nil {
@@ -122,13 +122,13 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 					}
 					vCustom := int32(vInt64)
 					{
-						err := v[i].ParseInt32(vCustom)
+						err := vOpt[i].ParseInt32(vCustom)
 						if err != nil {
 							return zero, ErrParseParam{In: "query", Parameter: "pages", Reason: "parse custom type", Err: err}
 						}
 					}
 				}
-				params.Query.Pages.Set(v)
+				params.Query.Pages.Set(vOpt)
 			}
 		}
 		{
@@ -142,28 +142,28 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 					}
 					vCustom[i] = int32(vInt64)
 				}
-				var v Pages
+				var vOpt Pages
 				{
-					err := v.ParseInt32s(vCustom)
+					err := vOpt.ParseInt32s(vCustom)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "pages_array", Reason: "parse custom type", Err: err}
 					}
 				}
-				params.Query.PagesArray.Set(v)
+				params.Query.PagesArray.Set(vOpt)
 			}
 		}
 		{
 			q, ok := query["page_custom"]
 			if ok && len(q) > 0 {
 				vCustom := q[0]
-				var v pkg.Page
+				var vOpt pkg.Page
 				{
-					err := v.ParseString(vCustom)
+					err := vOpt.ParseString(vCustom)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "page_custom", Reason: "parse custom type", Err: err}
 					}
 				}
-				params.Query.PageCustom.Set(v)
+				params.Query.PageCustom.Set(vOpt)
 			}
 		}
 	}
@@ -175,14 +175,14 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
 				vCustom := hs[0]
-				var v RequestID
+				var vOpt RequestID
 				{
-					err := v.ParseString(vCustom)
+					err := vOpt.ParseString(vCustom)
 					if err != nil {
 						return zero, ErrParseParam{In: "header", Parameter: "request-id", Reason: "parse custom type", Err: err}
 					}
 				}
-				params.Headers.RequestID.Set(v)
+				params.Headers.RequestID.Set(vOpt)
 			}
 		}
 	}

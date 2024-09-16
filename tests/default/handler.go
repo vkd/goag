@@ -654,8 +654,8 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt64)
-				params.Query.Page.Set(v)
+				vOpt := int32(vInt64)
+				params.Query.Page.Set(vOpt)
 			}
 		}
 		{
@@ -848,8 +848,8 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt64)
-				params.Query.Page.Set(v)
+				vOpt := int32(vInt64)
+				params.Query.Page.Set(vOpt)
 			}
 		}
 		{
@@ -868,22 +868,22 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 		{
 			q, ok := query["tag"]
 			if ok && len(q) > 0 {
-				v := q
-				params.Query.Tag.Set(v)
+				vOpt := q
+				params.Query.Tag.Set(vOpt)
 			}
 		}
 		{
 			q, ok := query["filter"]
 			if ok && len(q) > 0 {
-				v := make([]int32, len(q))
+				vOpt := make([]int32, len(q))
 				for i := range q {
 					vInt64, err := strconv.ParseInt(q[i], 10, 32)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse int32", Err: err}
 					}
-					v[i] = int32(vInt64)
+					vOpt[i] = int32(vInt64)
 				}
-				params.Query.Filter.Set(v)
+				params.Query.Filter.Set(vOpt)
 			}
 		}
 	}
@@ -894,8 +894,8 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 		{
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
-				v := hs[0]
-				params.Headers.RequestID.Set(v)
+				vOpt := hs[0]
+				params.Headers.RequestID.Set(vOpt)
 			}
 		}
 		{

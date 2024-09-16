@@ -71,8 +71,8 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt64)
-				params.Query.Page.Set(v)
+				vOpt := int32(vInt64)
+				params.Query.Page.Set(vOpt)
 			}
 		}
 	}
@@ -83,8 +83,8 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
-				v := hs[0]
-				params.Headers.RequestID.Set(v)
+				vOpt := hs[0]
+				params.Headers.RequestID.Set(vOpt)
 			}
 		}
 	}

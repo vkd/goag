@@ -128,17 +128,10 @@ type HandlerQueryParameter struct {
 func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryParameter, _ Imports, _ error) {
 	var ims Imports
 
-	var tpRender GoTypeRender = p.Type
-	if !p.Required {
-		if cfg.Maybe.Import != "" {
-			ims = append(ims, Import(cfg.Maybe.Import))
-		}
-	}
-
 	out := HandlerQueryParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
-			GoTypeFn:     tpRender.RenderGoType,
+			GoTypeFn:     p.Type.RenderGoType,
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 

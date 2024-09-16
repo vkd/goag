@@ -65,8 +65,8 @@ func newListPetsParams(r *http.Request) (zero ListPetsParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "limit", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt64)
-				params.Query.Limit.Set(v)
+				vOpt := int32(vInt64)
+				params.Query.Limit.Set(vOpt)
 			}
 		}
 	}

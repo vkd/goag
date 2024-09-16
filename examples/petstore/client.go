@@ -62,8 +62,8 @@ func (c *Client) ListPets(ctx context.Context, request ListPetsParams) (ListPets
 		var hs []string
 		hs = resp.Header.Values("x-next")
 		if len(hs) > 0 {
-			v := hs[0]
-			response.Headers.XNext.Set(v)
+			vOpt := hs[0]
+			response.Headers.XNext.Set(vOpt)
 		}
 
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)

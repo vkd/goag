@@ -30,7 +30,7 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 	for _, c := range response.Content.List {
 		switch c.Name {
 		case "application/json":
-			s, ims, err := NewSchema(c.V.Schema, false, NamedComponenter{Componenter: components, Name: string(handlerName) + "Response" + status + "JSONBody"}, cfg)
+			s, ims, err := NewSchema(c.V.Schema, NamedComponenter{Componenter: components, Name: string(handlerName) + "Response" + status + "JSONBody"}, cfg)
 			if err != nil {
 				return nil, nil, fmt.Errorf("schema for %q content response: %w", c.Name, err)
 			}
@@ -78,7 +78,7 @@ type ResponseHeader struct {
 }
 
 func NewResponseHeader(name string, ref specification.Ref[specification.Header], components Componenter, cfg Config) (zero ResponseHeader, _ Imports, _ error) {
-	schema, ims, err := NewSchema(ref.Value().Schema, !ref.Value().Required, components, cfg)
+	schema, ims, err := NewSchema(ref.Value().Schema, components, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("new schema: %w", err)
 	}
@@ -86,7 +86,6 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header],
 		GoTypeRender
 		Parser
 	} = schema
-
 	if !ref.Value().Required {
 		s = NewOptionalType(schema, cfg)
 	}

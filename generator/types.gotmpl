@@ -89,20 +89,26 @@ cv := {{ .From }}.{{ .Base.FuncTypeName }}()
 
 {{/* ----------------------------- OptionalType ------------------------------------- */}}
 
+{{ define "OptionalType_RenderBaseFrom" -}}
+if maybe, ok := {{ .From }}.Get(); ok {
+	{{ .Type.RenderBaseFrom .Prefix "maybe" .Suffix }}
+}
+{{- end }}
+
 {{ define "OptionalTypeParseString" -}}
-{{ .Type.ParseString "v" .From true .MkErr }}
+{{ .Type.ParseString "vOpt" .From true .MkErr }}
 {{- if .IsNew }}
 var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
-{{ .To }}.Set(v)
+{{ .To }}.Set(vOpt)
 {{- end }}
 
 {{ define "OptionalTypeParseStrings" -}}
-{{ .Type.ParseStrings "v" .From true .MkErr }}
+{{ .Type.ParseStrings "vOpt" .From true .MkErr }}
 {{- if .IsNew }}
 var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
-{{ .To }}.Set(v)
+{{ .To }}.Set(vOpt)
 {{- end }}
 
 {{ define "OptionalType_RenderFormatStrings" -}}
@@ -112,20 +118,28 @@ var {{ .To }} {{ .Self.RenderGoType }}
 
 {{/* ----------------------------- NullableType ------------------------------------- */}}
 
+{{ define "NullableType_RenderBaseFrom" -}}
+if ptr, ok := {{ .From }}.Get(); ok {
+	{{ .Prefix }}ptr{{ .Suffix }}
+} else {
+	{{ .Prefix }}nil{{ .Suffix }}
+}
+{{- end }}
+
 {{ define "NullableTypeParseString" -}}
-{{ .Type.ParseString "v" .From true .MkErr }}
+{{ .Type.ParseString "vPtr" .From true .MkErr }}
 {{- if .IsNew }}
 var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
-{{ .To }}.Set(v)
+{{ .To }}.Set(vPtr)
 {{- end }}
 
 {{ define "NullableTypeParseStrings" -}}
-{{ .Type.ParseStrings "v" .From true .MkErr }}
+{{ .Type.ParseStrings "vPtr" .From true .MkErr }}
 {{- if .IsNew }}
 var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
-{{ .To }}.Set(v)
+{{ .To }}.Set(vPtr)
 {{- end }}
 
 

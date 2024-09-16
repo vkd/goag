@@ -112,8 +112,8 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int", Reason: "parse int", Err: err}
 				}
-				v := int(vInt64)
-				params.Query.Int.Set(v)
+				vOpt := int(vInt64)
+				params.Query.Int.Set(vOpt)
 			}
 		}
 		{
@@ -136,8 +136,8 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int32", Reason: "parse int32", Err: err}
 				}
-				v := int32(vInt64)
-				params.Query.Int32.Set(v)
+				vOpt := int32(vInt64)
+				params.Query.Int32.Set(vOpt)
 			}
 		}
 		{
@@ -156,11 +156,11 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 		{
 			q, ok := query["int64"]
 			if ok && len(q) > 0 {
-				v, err := strconv.ParseInt(q[0], 10, 64)
+				vOpt, err := strconv.ParseInt(q[0], 10, 64)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "int64", Reason: "parse int64", Err: err}
 				}
-				params.Query.Int64.Set(v)
+				params.Query.Int64.Set(vOpt)
 			}
 		}
 		{
@@ -183,8 +183,8 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "float32", Reason: "parse float32", Err: err}
 				}
-				v := float32(vFloat)
-				params.Query.Float32.Set(v)
+				vOpt := float32(vFloat)
+				params.Query.Float32.Set(vOpt)
 			}
 		}
 		{
@@ -203,11 +203,11 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 		{
 			q, ok := query["float64"]
 			if ok && len(q) > 0 {
-				v, err := strconv.ParseFloat(q[0], 64)
+				vOpt, err := strconv.ParseFloat(q[0], 64)
 				if err != nil {
 					return zero, ErrParseParam{In: "query", Parameter: "float64", Reason: "parse float64", Err: err}
 				}
-				params.Query.Float64.Set(v)
+				params.Query.Float64.Set(vOpt)
 			}
 		}
 		{
@@ -222,29 +222,29 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 		{
 			q, ok := query["string"]
 			if ok && len(q) > 0 {
-				v := q[0]
-				params.Query.String.Set(v)
+				vOpt := q[0]
+				params.Query.String.Set(vOpt)
 			}
 		}
 		{
 			q, ok := query["tag"]
 			if ok && len(q) > 0 {
-				v := q
-				params.Query.Tag.Set(v)
+				vOpt := q
+				params.Query.Tag.Set(vOpt)
 			}
 		}
 		{
 			q, ok := query["filter"]
 			if ok && len(q) > 0 {
-				v := make([]int32, len(q))
+				vOpt := make([]int32, len(q))
 				for i := range q {
 					vInt64, err := strconv.ParseInt(q[i], 10, 32)
 					if err != nil {
 						return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "parse int32", Err: err}
 					}
-					v[i] = int32(vInt64)
+					vOpt[i] = int32(vInt64)
 				}
-				params.Query.Filter.Set(v)
+				params.Query.Filter.Set(vOpt)
 			}
 		}
 	}
@@ -255,8 +255,8 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 		{
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
-				v := hs[0]
-				params.Headers.RequestID.Set(v)
+				vOpt := hs[0]
+				params.Headers.RequestID.Set(vOpt)
 			}
 		}
 		{
