@@ -23,6 +23,10 @@ func (s SliceType) RenderGoType() (string, error) {
 	})
 }
 
+func (s SliceType) RenderToBaseType(to, from string) (string, error) {
+	return to + " = " + from, nil
+}
+
 func (s SliceType) RenderFormat(from string) (string, error) {
 	return "", fmt.Errorf(".RenderFormat() function for SliceType is not supported for type %T", s.Items)
 }
@@ -96,9 +100,13 @@ var _ InternalSchemaType = StructureType{}
 
 func (s StructureType) Kind() SchemaKind { return SchemaKindObject }
 
-func (s StructureType) FuncTypeName() string { return "Structure" }
+func (s StructureType) FuncTypeName() string { return "" }
 
 func (s StructureType) RenderGoType() (string, error) { return ExecuteTemplate("StructureType", s) }
+
+func (s StructureType) RenderToBaseType(to, from string) (string, error) {
+	return to + " = " + from, nil
+}
 
 func (s StructureType) RenderFormat(from string) (string, error) {
 	return "", fmt.Errorf(".RenderFormat() function for StructureType is not supported")
@@ -125,8 +133,9 @@ type StructureField struct {
 	Tags     []StructureFieldTag
 	JSONTag  string
 	Embedded bool
+	Required bool
 
-	RenderBaseFromFn func(prefix, from, suffix string) (string, error)
+	RenderToBaseTypeFn func(to, from string) (string, error)
 }
 
 func NewStructureField(p specification.SchemaProperty, components Componenter, cfg Config) (zero StructureField, _ Imports, _ error) {
@@ -151,12 +160,14 @@ func NewStructureField(p specification.SchemaProperty, components Componenter, c
 		Comment:  p.Schema.Value().Description,
 		Name:     PublicFieldName(name),
 		Type:     st,
-		Schema:   st,
+		Schema:   schema,
 		Tags:     []StructureFieldTag{{Key: "json", Values: []string{name}}},
 		JSONTag:  name,
 		GoTypeFn: st.RenderGoType,
+		Required: p.Required,
 
-		RenderBaseFromFn: st.RenderBaseFrom,
+		// RenderBaseFromFn:   schema.RenderBaseFrom,
+		RenderToBaseTypeFn: schema.RenderToBaseType,
 	}, ims, nil
 }
 
@@ -244,6 +255,15 @@ func (c CustomType) RenderFormat(from string) (string, error) {
 	return c.Type.RenderFormat(from + "." + c.Type.FuncTypeName() + "()")
 }
 
+func (c CustomType) RenderToBaseType(to, from string) (string, error) {
+	switch c.Type.Kind() {
+	case SchemaKindObject:
+	default:
+		from = from + "." + c.Type.FuncTypeName() + "()"
+	}
+	return c.Type.RenderToBaseType(to, from)
+}
+
 func (c CustomType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
 	return ExecuteTemplate("CustomType_RenderFormatStrings", TData{
 		"Base": c.Type,
@@ -321,6 +341,14 @@ func (p OptionalType) ParseStrings(to string, from string, isNew bool, mkErr Err
 }
 
 var _ Formatter = OptionalType{}
+
+func (p OptionalType) RenderToBaseType(to, from string) (string, error) {
+	return ExecuteTemplate("OptionalType_RenderToBaseType", TData{
+		"To":   to,
+		"From": from,
+		"Type": p.V,
+	})
+}
 
 func (p OptionalType) RenderFormat(from string) (string, error) {
 	return p.V.RenderFormat(from + ".Value")
@@ -409,6 +437,14 @@ func (n NullableType) ParseStrings(to string, from string, isNew bool, mkErr Err
 }
 
 var _ Formatter = NullableType{}
+
+func (n NullableType) RenderToBaseType(to, from string) (string, error) {
+	return ExecuteTemplate("NullableType_RenderToBaseType", TData{
+		"To":   to,
+		"From": from,
+		"Type": n.V,
+	})
+}
 
 func (n NullableType) RenderFormat(from string) (string, error) {
 	return n.V.RenderFormat(from + ".Value")

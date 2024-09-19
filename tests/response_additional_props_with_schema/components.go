@@ -79,8 +79,16 @@ func (c Pet) marshalJSONInnerBody(out io.Writer) error {
 		comma = ","
 	}
 	_ = writeProperty
-	writeProperty("custom", c.Custom)
-	writeProperty("name", c.Name)
+	{
+		var v any
+		v = c.Custom
+		writeProperty("custom", v)
+	}
+	{
+		var v any
+		v = c.Name
+		writeProperty("name", v)
+	}
 	for k, v := range c.AdditionalProperties {
 		writeProperty(k, v)
 	}

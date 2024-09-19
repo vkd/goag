@@ -11,8 +11,10 @@ type Primitive struct {
 type PrimitiveIface interface {
 	GoType() string
 
+	// ParseBaseType(to, from string, isNew bool, mkErr ErrorRender)
 	ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 
+	RenderToBaseType(from string) (string, error)
 	RenderFormat(from string) (string, error)
 }
 
@@ -34,6 +36,11 @@ func (t Primitive) FuncTypeName() string {
 
 func (t Primitive) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return t.PrimitiveIface.ParseString(to, from+"[0]", isNew, mkErr)
+}
+
+func (t Primitive) RenderToBaseType(to, from string) (string, error) {
+	out, err := t.PrimitiveIface.RenderToBaseType(from)
+	return to + " = " + out, err
 }
 
 func (t Primitive) RenderFormatStrings(to, from string, isNew bool) (string, error) {
@@ -59,6 +66,10 @@ func (b BoolType) ParseString(to string, from string, isNew bool, mkErr ErrorRen
 		"IsNew": isNew,
 		"MkErr": mkErr,
 	})
+}
+
+func (_ BoolType) RenderToBaseType(from string) (string, error) {
+	return from, nil
 }
 
 func (b BoolType) RenderFormat(from string) (string, error) {
@@ -106,6 +117,10 @@ func (i IntType) ParseString(to string, from string, isNew bool, mkErr ErrorRend
 			"BitSize": i.BitSize,
 		})
 	}
+}
+
+func (_ IntType) RenderToBaseType(from string) (string, error) {
+	return from, nil
 }
 
 func (i IntType) RenderFormat(from string) (string, error) {
@@ -160,6 +175,10 @@ func (i FloatType) ParseString(to string, from string, isNew bool, mkErr ErrorRe
 	}
 }
 
+func (_ FloatType) RenderToBaseType(from string) (string, error) {
+	return from, nil
+}
+
 func (i FloatType) RenderFormat(from string) (string, error) {
 	switch i.BitSize {
 	case 64:
@@ -181,6 +200,10 @@ var _ PrimitiveIface = StringType{}
 
 func (s StringType) GoType() string { return "string" }
 
+func (_ StringType) RenderToBaseType(from string) (string, error) {
+	return from, nil
+}
+
 func (_ StringType) RenderFormat(from string) (string, error) {
 	return from, nil
 }
@@ -200,6 +223,10 @@ type DateTime struct {
 var _ PrimitiveIface = DateTime{}
 
 func (DateTime) GoType() string { return "time.Time" }
+
+func (d DateTime) RenderToBaseType(from string) (string, error) {
+	return d.RenderFormat(from)
+}
 
 func (d DateTime) RenderFormat(from string) (string, error) {
 	layout := "time.RFC3339"

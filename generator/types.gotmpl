@@ -115,6 +115,12 @@ var {{ .To }} {{ .Self.RenderGoType }}
 {{ .Type.RenderFormatStrings .To (print .From ".Value") .IsNew }}
 {{- end }}
 
+{{ define "OptionalType_RenderToBaseType" -}}
+if vOpt, ok := {{ .From }}.Get(); ok {
+	{{ .Type.RenderToBaseType .To "vOpt" }}
+}
+{{- end }}
+
 
 {{/* ----------------------------- NullableType ------------------------------------- */}}
 
@@ -141,6 +147,13 @@ var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
 {{ .To }}.Set(vPtr)
 {{- end }}
+
+{{ define "NullableType_RenderToBaseType" -}}
+if vPtr, ok := {{ .From }}.Get(); ok {
+	{{ .Type.RenderToBaseType .To "vPtr" }}
+}
+{{- end }}
+
 
 
 

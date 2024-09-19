@@ -80,15 +80,23 @@ func (c Pet) marshalJSONInnerBody(out io.Writer) error {
 		comma = ","
 	}
 	_ = writeProperty
-	if maybe, ok := c.CreatedAt.Get(); ok {
-		if ptr, ok := maybe.Get(); ok {
-			writeProperty("created_at", ptr)
-		} else {
-			writeProperty("created_at", nil)
+	if vOpt, ok := c.CreatedAt.Get(); ok {
+		var v any = nil
+		if vPtr, ok := vOpt.Get(); ok {
+			v = vPtr.Format(time.RFC3339)
 		}
+		writeProperty("created_at", v)
 	}
-	writeProperty("id", c.ID)
-	writeProperty("name", c.Name)
+	{
+		var v any
+		v = c.ID
+		writeProperty("id", v)
+	}
+	{
+		var v any
+		v = c.Name
+		writeProperty("name", v)
+	}
 
 	return err
 }
