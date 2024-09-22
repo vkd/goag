@@ -21,6 +21,8 @@ type PetTag struct {
 	V string
 }
 
+func (p PetTag) String() string { return p.V }
+
 func (p PetTag) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.V)
 }
@@ -50,4 +52,11 @@ func Just[T any](v T) Maybe[T] {
 func (m *Maybe[T]) Set(v T) {
 	m.IsSet = true
 	m.Value = v
+}
+
+func (m Maybe[T]) Get() (zero T, _ bool) {
+	if m.IsSet {
+		return m.Value, true
+	}
+	return zero, false
 }

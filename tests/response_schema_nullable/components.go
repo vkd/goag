@@ -118,7 +118,7 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v Maybe[Nullable[time.Time]]
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("'created_at' field: %w", err)
+			return fmt.Errorf("unmarshal 'created_at' field: %w", err)
 		}
 		c.CreatedAt = v
 		delete(m, "created_at")
@@ -127,19 +127,23 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v int64
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("'id' field: %w", err)
+			return fmt.Errorf("unmarshal 'id' field: %w", err)
 		}
 		c.ID = v
 		delete(m, "id")
+	} else {
+		return fmt.Errorf("'id' key is missing")
 	}
 	if raw, ok := m["name"]; ok {
 		var v string
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("'name' field: %w", err)
+			return fmt.Errorf("unmarshal 'name' field: %w", err)
 		}
 		c.Name = v
 		delete(m, "name")
+	} else {
+		return fmt.Errorf("'name' key is missing")
 	}
 	return nil
 }
