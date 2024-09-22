@@ -195,7 +195,7 @@ func (c *{{ .Name }}) unmarshalJSONInnerBody(m map[string]json.RawMessage) error
         if err != nil {
             return fmt.Errorf("unmarshal '{{ .JSONTag }}' field: %w", err)
         }
-        c.{{ .Name }} = Just(v)
+        c.{{ .Name }}.Set(v)
         delete(m, "{{ .JSONTag }}")
     }
         {{- end }}

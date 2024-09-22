@@ -120,7 +120,7 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		if err != nil {
 			return fmt.Errorf("unmarshal 'created_at' field: %w", err)
 		}
-		c.CreatedAt = Just(v)
+		c.CreatedAt.Set(v)
 		delete(m, "created_at")
 	}
 	if raw, ok := m["id"]; ok {
