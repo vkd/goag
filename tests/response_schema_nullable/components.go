@@ -83,7 +83,7 @@ func (c Pet) marshalJSONInnerBody(out io.Writer) error {
 	if vOpt, ok := c.CreatedAt.Get(); ok {
 		var v any = nil
 		if vPtr, ok := vOpt.Get(); ok {
-			v = vPtr.Format(time.RFC3339)
+			v = vPtr
 		}
 		writeProperty("created_at", v)
 	}

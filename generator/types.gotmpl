@@ -150,7 +150,7 @@ var {{ .To }} {{ .Self.RenderGoType }}
 
 {{ define "NullableType_RenderToBaseType" -}}
 if vPtr, ok := {{ .From }}.Get(); ok {
-	{{ .Type.RenderToBaseType .To "vPtr" }}
+	{{ .To }} = vPtr
 }
 {{- end }}
 

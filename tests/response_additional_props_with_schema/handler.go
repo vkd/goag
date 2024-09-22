@@ -1,6 +1,7 @@
 package test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -68,14 +69,109 @@ type GetPetResponse200JSONBody struct {
 
 var _ json.Marshaler = (*GetPetResponse200JSONBody)(nil)
 
-func (b GetPetResponse200JSONBody) MarshalJSON() ([]byte, error) {
-	m := make(map[string]interface{})
-	for k, v := range b.AdditionalProperties {
-		m[k] = v
+func (c GetPetResponse200JSONBody) MarshalJSON() ([]byte, error) {
+	var out bytes.Buffer
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
 	}
-	m["length"] = b.Length
-	return json.Marshal(m)
 
+	write([]byte(`{`))
+	mErr := c.marshalJSONInnerBody(&out)
+	if mErr != nil {
+		err = mErr
+	}
+	write([]byte(`}`))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Bytes(), nil
+}
+
+func (c GetPetResponse200JSONBody) marshalJSONInnerBody(out io.Writer) error {
+	encoder := json.NewEncoder(out)
+	var err error
+	var comma string
+	write := func(s string) {
+		if err != nil || len(s) == 0 {
+			return
+		}
+		n, werr := out.Write([]byte(s))
+		if werr != nil {
+			err = werr
+		} else if len(s) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+	writeProperty := func(name string, v any) {
+		if err != nil {
+			return
+		}
+		if v == nil {
+			write(comma + `"` + name + `":null`)
+		} else {
+			write(comma + `"` + name + `":`)
+			werr := encoder.Encode(v)
+			if werr != nil {
+				err = werr
+			}
+		}
+		comma = ","
+	}
+	_ = writeProperty
+	{
+		var v any
+		v = c.Length
+		writeProperty("length", v)
+	}
+	for k, v := range c.AdditionalProperties {
+		writeProperty(k, v)
+	}
+
+	return err
+}
+
+var _ json.Unmarshaler = (*GetPetResponse200JSONBody)(nil)
+
+func (c *GetPetResponse200JSONBody) UnmarshalJSON(bs []byte) error {
+	m := make(map[string]json.RawMessage)
+	err := json.Unmarshal(bs, &m)
+	if err != nil {
+		return fmt.Errorf("raw key/value map: %w", err)
+	}
+	return c.unmarshalJSONInnerBody(m)
+}
+
+func (c *GetPetResponse200JSONBody) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
+	var err error
+	if raw, ok := m["length"]; ok {
+		var v int
+		err = json.Unmarshal(raw, &v)
+		if err != nil {
+			return fmt.Errorf("'length' field: %w", err)
+		}
+		c.Length = v
+		delete(m, "length")
+	}
+	for k, bs := range m {
+		var v Pets
+		err = json.Unmarshal(bs, &v)
+		if err != nil {
+			return fmt.Errorf("additional property %q: %w", k, err)
+		}
+		c.AdditionalProperties[k] = v
+	}
+	return nil
 }
 
 type GetPetResponse200JSON struct {

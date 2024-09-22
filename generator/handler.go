@@ -20,7 +20,7 @@ type Handler struct {
 	Responses       []HandlerResponse
 }
 
-func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler, _ Imports, _ error) {
+func NewHandler(o *Operation, basePathPrefix string, components Componenter, cfg Config) (zero *Handler, _ Imports, _ error) {
 	out := &Handler{
 		Operation: o,
 
@@ -54,13 +54,13 @@ func NewHandler(o *Operation, basePathPrefix string, cfg Config) (zero *Handler,
 
 	if o.DefaultResponse != nil {
 		if o.DefaultResponse.ComponentRef == nil {
-			resp := NewHandlerResponse(o.DefaultResponse.Response, o.Name, o.DefaultResponse.StatusCode, ResponseUsedIn{OperationName: o.Name, Status: o.DefaultResponse.StatusCode})
+			resp := NewHandlerResponse(o.DefaultResponse.Response, o.Name, o.DefaultResponse.StatusCode, components, cfg, ResponseUsedIn{OperationName: o.Name, Status: o.DefaultResponse.StatusCode})
 			out.DefaultResponse = &resp
 		}
 	}
 	for _, r := range o.Responses {
 		if r.ComponentRef == nil {
-			out.Responses = append(out.Responses, NewHandlerResponse(r.Response, o.Name, r.StatusCode, ResponseUsedIn{OperationName: o.Name, Status: r.StatusCode}))
+			out.Responses = append(out.Responses, NewHandlerResponse(r.Response, o.Name, r.StatusCode, components, cfg, ResponseUsedIn{OperationName: o.Name, Status: r.StatusCode}))
 		}
 	}
 
@@ -248,7 +248,7 @@ type HandlerResponse struct {
 
 	IsBody      bool
 	GoTypeFn    GoTypeRenderFunc
-	Body        GoTypeRender
+	Body        *SchemaComponent
 	BodyRenders Renders
 	ContentType string
 	// Headers     []ResponseHeader
@@ -259,7 +259,7 @@ type HandlerResponse struct {
 	Args []ResponseArg
 }
 
-func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNames ...ResponseUsedIn) HandlerResponse {
+func NewHandlerResponse(r *Response, name OperationName, status string, components Componenter, cfg Config, ifaceNames ...ResponseUsedIn) HandlerResponse {
 	out := HandlerResponse{
 		Response: r,
 
@@ -302,32 +302,9 @@ func NewHandlerResponse(r *Response, name OperationName, status string, ifaceNam
 				bodyStructName := out.Name + "Body"
 				out.GoTypeFn = StringRender(bodyStructName).Render
 				bodyType := contentJSON
-				out.Body = bodyType.Type
-
-				if bodyType.Spec.Value().AdditionalProperties.Set {
-					out.BodyRenders = Renders{
-						StringRender("var _ json.Marshaler = (*" + bodyStructName + ")" + "(nil)"),
-						GoTypeRenderFunc(func() (string, error) {
-							out := `func (b ` + bodyStructName + `) MarshalJSON() ([]byte, error) {
-							m := make(map[string]interface{})
-							for k, v := range b.AdditionalProperties {
-								m[k] = v
-							}
-							`
-							if st, ok := bodyType.Type.Type.(StructureType); ok {
-								for _, f := range st.Fields {
-									if t, ok := f.GetTag("json"); ok && len(t.Values) > 0 && t.Values[0] != "-" {
-										out += "m[\"" + t.Values[0] + "\"] = b." + f.Name + "\n"
-									}
-								}
-							}
-							out += `return json.Marshal(m)
-
-						}`
-							return out, nil
-						}),
-					}
-				}
+				// out.Body = bodyType.Type
+				sc := NewSchemaComponent(bodyStructName, bodyType.Type, components, cfg)
+				out.Body = &sc
 			}
 		}
 

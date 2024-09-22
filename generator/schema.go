@@ -102,18 +102,19 @@ func (s Schema) RenderBaseFrom(prefix, from, suffix string) (string, error) {
 func (s Schema) RenderToBaseType(to, from string) (string, error) {
 	if s.Ref != nil {
 		if !s.Ref.Schema.IsCustom() {
-			from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
+			// from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
 		}
-		return s.Ref.Schema.RenderToBaseType(to, from)
+		return to + " = " + from, nil
+		// return s.Ref.Schema.RenderToBaseType(to, from)
 	}
-	tp := s.Type
+	tp := func(to, from string) (string, error) { return to + " = " + from, nil }
 	if s.CustomType != "" {
-		tp = CustomType{Value: s.CustomType, Type: s.Type}
+		tp = CustomType{Value: s.CustomType, Type: s.Type}.RenderToBaseType
 	}
 	if s.Nullable != "" {
-		tp = NullableType{V: tp, TypeName: s.Nullable}
+		tp = NullableType{V: nil, TypeName: s.Nullable}.RenderToBaseType
 	}
-	return tp.RenderToBaseType(to, from)
+	return tp(to, from)
 }
 
 func (s Schema) FuncTypeName() string {

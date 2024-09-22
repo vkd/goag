@@ -32,7 +32,7 @@ type Operation struct {
 
 	Body struct {
 		GoTypeFn GoTypeRenderFunc
-		Type     Maybe[StructureType]
+		Type     Maybe[SchemaComponent]
 	}
 
 	DefaultResponse *ResponseCode
@@ -118,9 +118,10 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 				if body.IsCustom() {
 					o.Body.GoTypeFn = body.RenderGoType
 				} else {
-					switch st := body.Type.(type) {
+					switch body.Type.(type) {
 					case StructureType:
-						o.Body.Type = Just(st)
+						sc := NewSchemaComponent(string(name)+"ParamsBody", body, components, cfg)
+						o.Body.Type = Just(sc)
 					default:
 						o.Body.GoTypeFn = body.RenderGoType
 					}

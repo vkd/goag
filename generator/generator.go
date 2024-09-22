@@ -78,7 +78,7 @@ func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Gen
 
 	var isWriteJSONFunc bool
 	for _, o := range g.Operations {
-		h, ims, err := NewHandler(o, g.Options.BasePath, cfg)
+		h, ims, err := NewHandler(o, g.Options.BasePath, g.Components, cfg)
 		if err != nil {
 			return nil, fmt.Errorf("handler %q: %w", o.Name, err)
 		}

@@ -261,7 +261,8 @@ func (c CustomType) RenderToBaseType(to, from string) (string, error) {
 	default:
 		from = from + "." + c.Type.FuncTypeName() + "()"
 	}
-	return c.Type.RenderToBaseType(to, from)
+	return to + " = " + from, nil
+	// return c.Type.RenderToBaseType(to, from)
 }
 
 func (c CustomType) RenderFormatStrings(to, from string, isNew bool) (string, error) {

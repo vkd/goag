@@ -43,7 +43,7 @@ type HandlerTemplate struct {
 	ParametersHeader []HandlerParameterHeaderTemplate
 
 	GoTypeFn GoTypeRenderFunc
-	BodyType *StructureType
+	BodyType *SchemaComponent
 
 	PathParsers []Parser
 
@@ -56,7 +56,7 @@ func NewHandlerTemplate(h *Handler) HandlerTemplate {
 	if h.DefaultResponse != nil {
 		defaultResponse = Just(NewHandlerResponseTemplate(*h.DefaultResponse))
 	}
-	var bodyType *StructureType
+	var bodyType *SchemaComponent
 	if h.Body.Type.IsSet {
 		bodyType = &h.Body.Type.Value
 	}
@@ -188,7 +188,7 @@ type HandlerResponseTemplate struct {
 
 	IsBody      bool
 	GoTypeFn    GoTypeRenderFunc
-	Body        GoTypeRender
+	Body        *SchemaComponent
 	BodyRenders Renders
 	ContentType string
 

@@ -170,7 +170,7 @@ type {{$request}}Headers struct{
 
 {{- if $h.BodyType }}
 
-type {{$request}}Body {{ $h.BodyType.RenderGoType }}
+{{ $h.BodyType.Render }}
 {{- end }}
 
 func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseError }}, _ error{{ end }}) {

@@ -61,7 +61,6 @@ func NewPostLoginResponse200JSON(body PostLoginResponse200JSONBody) PostLoginRes
 	return out
 }
 
-// PostLoginResponse200JSONBody - OK
 type PostLoginResponse200JSONBody struct {
 	Output string `json:"output"`
 }
@@ -177,7 +176,6 @@ func NewPostShopsResponse200JSON(body PostShopsResponse200JSONBody) PostShopsRes
 	return out
 }
 
-// PostShopsResponse200JSONBody - OK
 type PostShopsResponse200JSONBody struct {
 	Output string `json:"output"`
 }

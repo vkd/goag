@@ -130,10 +130,9 @@ func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
     if mErr != nil {
         err = mErr
     }
+        comma = ","
         {{- else }}
-            {{- if eq ( .Schema.Kind ) "object" }}
-    writeProperty("{{ .JSONTag }}", c.{{ .Name }})
-            {{- else if .Required }}
+            {{- if .Required }}
     {
         var v any
         {{ call .RenderToBaseTypeFn "v" (print "c." .Name) }}
@@ -247,9 +246,7 @@ func New{{.Name}}({{range $i,$a := .Args}}{{if $i}}, {{end}}{{$a.ArgName}} {{cal
 }
 
 {{- if .Body }}
-{{ if .Description }}// {{ call .GoTypeFn }} - {{ comment .Description }}
-{{ end -}}
-type {{ call .GoTypeFn }} {{ .Body.RenderGoType }}
+{{ .Body.Render }}
 {{- if .BodyRenders }}
 {{ .BodyRenders.Render }}
 {{- end }}
