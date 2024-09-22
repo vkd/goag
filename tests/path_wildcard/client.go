@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"strconv"
 )
 
@@ -60,4 +61,12 @@ func (c *Client) GetPetsPetID(ctx context.Context, request GetPetsPetIDParams) (
 	default:
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
 	}
+}
+
+func (a API) TestClient() *Client {
+	return NewClient("", HTTPClientFunc(func(r *http.Request) (*http.Response, error) {
+		w := httptest.NewRecorder()
+		a.ServeHTTP(w, r)
+		return w.Result(), nil
+	}))
 }

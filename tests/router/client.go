@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 )
 
 type Client struct {
@@ -277,4 +278,12 @@ func (c *Client) GetShopsShopPetsMikePaws(ctx context.Context, request GetShopsS
 
 		return response, nil
 	}
+}
+
+func (a API) TestClient() *Client {
+	return NewClient("", HTTPClientFunc(func(r *http.Request) (*http.Response, error) {
+		w := httptest.NewRecorder()
+		a.ServeHTTP(w, r)
+		return w.Result(), nil
+	}))
 }

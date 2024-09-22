@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strconv"
 )
@@ -96,4 +97,12 @@ func (c *Client) GetReviews(ctx context.Context, request GetReviewsParams) (GetR
 
 		return response, nil
 	}
+}
+
+func (a API) TestClient() *Client {
+	return NewClient("", HTTPClientFunc(func(r *http.Request) (*http.Response, error) {
+		w := httptest.NewRecorder()
+		a.ServeHTTP(w, r)
+		return w.Result(), nil
+	}))
 }

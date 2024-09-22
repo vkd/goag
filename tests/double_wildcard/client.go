@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 )
 
 type Client struct {
@@ -83,4 +84,12 @@ func (c *Client) GetPetsPetIDShops(ctx context.Context, request GetPetsPetIDShop
 	default:
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
 	}
+}
+
+func (a API) TestClient() *Client {
+	return NewClient("", HTTPClientFunc(func(r *http.Request) (*http.Response, error) {
+		w := httptest.NewRecorder()
+		a.ServeHTTP(w, r)
+		return w.Result(), nil
+	}))
 }

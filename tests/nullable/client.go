@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 )
 
 type Client struct {
@@ -31,17 +30,10 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// PostShopsShopPets
-// POST /shops/{shop}/pets
-func (c *Client) PostShopsShopPets(ctx context.Context, request PostShopsShopPetsParams) (PostShopsShopPetsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String() + "/pets"
-
-	query := make(url.Values, 1)
-	if request.Query.Filter.IsSet {
-		cv := request.Query.Filter.Value.String()
-		query["filter"] = []string{cv}
-	}
-	requestURL += "?" + query.Encode()
+// PostPets
+// POST /pets
+func (c *Client) PostPets(ctx context.Context, request PostPetsParams) (PostPetsResponse, error) {
+	var requestURL = c.BaseURL + "/pets"
 
 	bs, err := json.Marshal(request.Body)
 	if err != nil {
@@ -63,14 +55,16 @@ func (c *Client) PostShopsShopPets(ctx context.Context, request PostShopsShopPet
 	}
 
 	switch resp.StatusCode {
-	case 201:
-		var response PostShopsShopPetsResponse201
+	case 200:
+		var response PetResponse
+		err := json.NewDecoder(resp.Body).Decode(&response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("decode 'PetResponse' response body: %w", err)
+		}
 		return response, nil
-	default:
-		var response PostShopsShopPetsResponseDefault
-		response.Code = resp.StatusCode
 
-		return response, nil
+	default:
+		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
 	}
 }
 
