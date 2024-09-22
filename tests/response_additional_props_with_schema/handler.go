@@ -257,6 +257,30 @@ func (m *Nullable[T]) Set(v T) {
 	m.Value = v
 }
 
+var _ json.Marshaler = (*Nullable[any])(nil)
+
+func (m Nullable[T]) MarshalJSON() ([]byte, error) {
+	if m.IsSet {
+		return json.Marshal(&m.Value)
+	}
+	return []byte(nullValue), nil
+}
+
+var _ json.Unmarshaler = (*Nullable[any])(nil)
+
+const nullValue = "null"
+
+var nullValueBs = []byte(nullValue)
+
+func (m *Nullable[T]) UnmarshalJSON(bs []byte) error {
+	if bytes.Equal(bs, nullValueBs) {
+		m.IsSet = false
+		return nil
+	}
+	m.IsSet = true
+	return json.Unmarshal(bs, &m.Value)
+}
+
 type ErrParseParam struct {
 	In        string
 	Parameter string
