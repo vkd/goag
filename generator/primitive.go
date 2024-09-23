@@ -56,15 +56,7 @@ func (t Primitive) ParseString(to, from string, isNew bool, mkErr ErrorRender) (
 }
 
 func (t Primitive) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("Primitive_ParseStrings", TData{
-		"To":    to,
-		"From":  from,
-		"IsNew": isNew,
-		"MkErr": mkErr,
-
-		"Self":               t,
-		"RenderStringParser": t.PrimitiveIface.RenderStringParser,
-	})
+	return t.PrimitiveIface.RenderStringParser(to, from+"[0]", isNew, mkErr)
 }
 
 type BoolType struct{}

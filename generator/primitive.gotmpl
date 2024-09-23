@@ -4,10 +4,6 @@
 {{- .To }} {{ if .IsNew }}:{{ end }}= []string{ {{ call .RenderFormat .From }} }
 {{- end }}
 
-{{ define "Primitive_ParseStrings" -}}
-{{ call .RenderStringParser .To (print .From "[0]") .IsNew .MkErr }}
-{{- end }}
-
 {{/* ----------------------------- Bool ------------------------------------- */}}
 
 {{ define "Bool_RenderStringParser" -}}
