@@ -234,6 +234,10 @@ type DateTime struct {
 	TextLayout string
 }
 
+func NewDateTime(layout string) (DateTime, Imports) {
+	return DateTime{GoLayout: layout}, Imports{Import("time")}
+}
+
 var _ PrimitiveIface = DateTime{}
 
 func (DateTime) GoType() string { return "time.Time" }
