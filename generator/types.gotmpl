@@ -104,7 +104,7 @@ var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
 
 {{ define "OptionalTypeParseStrings" -}}
-{{ .Type.ParseStrings "vOpt" .From true .MkErr }}
+{{- .Type.ParseStrings "vOpt" .From true .MkErr }}
 {{- if .IsNew }}
 var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}

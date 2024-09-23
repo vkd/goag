@@ -4,9 +4,13 @@
 {{- .To }} {{ if .IsNew }}:{{ end }}= []string{ {{ call .RenderFormat .From }} }
 {{- end }}
 
+{{ define "Primitive_ParseStrings" -}}
+{{ call .RenderStringParser .To (print .From "[0]") .IsNew .MkErr }}
+{{- end }}
+
 {{/* ----------------------------- Bool ------------------------------------- */}}
 
-{{ define "Bool_ParseString" -}}
+{{ define "Bool_RenderStringParser" -}}
 {{- if not .IsNew -}}
 var err error
 {{ end }}
@@ -16,11 +20,11 @@ if err != nil {
 }
 {{- end }}
 
-{{ define "Bool_RenderFormat" }}strconv.FormatBool({{ .From }}){{ end }}
+{{ define "Bool_RenderToString" }}strconv.FormatBool({{ .From }}){{ end }}
 
 {{/* ----------------------------- Int64 ------------------------------------- */}}
 
-{{ define "Int64_Parser" -}}
+{{ define "Int64_RenderStringParser" -}}
 {{- if not .IsNew -}}
 var err error
 {{ end }}
@@ -30,11 +34,11 @@ if err != nil {
 }
 {{- end }}
 
-{{ define "Int64_Format" }}strconv.FormatInt({{ .From }}, 10){{ end }}
+{{ define "Int64_RenderToString" }}strconv.FormatInt({{ .From }}, 10){{ end }}
 
 {{/* ----------------------------- IntX ------------------------------------- */}}
 
-{{ define "IntX_Parser" -}}
+{{ define "IntX_RenderStringParser" -}}
 vInt64, err := strconv.ParseInt({{ .From }}, 10, {{ .BitSize }})
 if err != nil {
 	return {{ .MkErr.Wrap (print "parse " .GoType) "err" }}
@@ -42,11 +46,11 @@ if err != nil {
 {{ .To }} {{ if .IsNew }}:{{ end }}= {{ .GoType }}(vInt64)
 {{- end }}
 
-{{ define "IntX_Format" }}strconv.FormatInt(int64({{ .From }}), 10){{ end }}
+{{ define "IntX_RenderToString" }}strconv.FormatInt(int64({{ .From }}), 10){{ end }}
 
 {{/* ----------------------------- FloatX ------------------------------------- */}}
 
-{{ define "FloatX_Parser" -}}
+{{ define "FloatX_RenderStringParser" -}}
 vFloat, err := strconv.ParseFloat({{ .From }}, {{ .BitSize }})
 if err != nil {
 	return {{ .MkErr.Wrap (print "parse " .GoType) "err" }}
@@ -54,11 +58,11 @@ if err != nil {
 {{ .To }} {{ if .IsNew }}:{{ end }}= {{ .GoType }}(vFloat)
 {{- end }}
 
-{{ define "FloatX_Format" }}strconv.FormatFloat(float64({{ .From }}), 'e', -1, {{ .BitSize }}){{ end }}
+{{ define "FloatX_RenderToString" }}strconv.FormatFloat(float64({{ .From }}), 'e', -1, {{ .BitSize }}){{ end }}
 
 {{/* ----------------------------- Float64 ------------------------------------- */}}
 
-{{ define "Float64_Parser" -}}
+{{ define "Float64_RenderStringParser" -}}
 {{- if not .IsNew -}}
 var err error
 {{ end }}
@@ -68,11 +72,11 @@ if err != nil {
 }
 {{- end }}
 
-{{ define "Float64_Format" }}strconv.FormatFloat({{ .From }}, 'e', -1, 64){{ end }}
+{{ define "Float64_RenderToString" }}strconv.FormatFloat({{ .From }}, 'e', -1, 64){{ end }}
 
 {{/* ----------------------------- DateTime ------------------------------------- */}}
 
-{{ define "DateTime_ParseString" -}}
+{{ define "DateTime_RenderStringParser" -}}
 {{- if not .IsNew -}}
 var err error
 {{ end }}
@@ -82,4 +86,4 @@ if err != nil {
 }
 {{- end }}
 
-{{ define "DateTime_RenderFormat" }}{{ .From }}.Format({{ .Layout }}){{ end }}
+{{ define "DateTime_RenderToString" }}{{ .From }}.Format({{ .Layout }}){{ end }}

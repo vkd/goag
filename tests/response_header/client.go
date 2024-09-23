@@ -68,6 +68,8 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 				}
 				response.Headers.XNextTwo[i] = int(vInt64)
 			}
+		} else {
+			return nil, fmt.Errorf("response header 'x-next-two' is required")
 		}
 
 		return response, nil

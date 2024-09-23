@@ -11,11 +11,9 @@ type Primitive struct {
 type PrimitiveIface interface {
 	GoType() string
 
-	// ParseBaseType(to, from string, isNew bool, mkErr ErrorRender)
-	ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error)
-
 	RenderToBaseType(from string) (string, error)
-	RenderFormat(from string) (string, error)
+	RenderToString(from string) (string, error)
+	RenderStringParser(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
 
 func NewPrimitive(v PrimitiveIface) Primitive {
@@ -34,13 +32,13 @@ func (t Primitive) FuncTypeName() string {
 	return Title(t.GoType())
 }
 
-func (t Primitive) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return t.PrimitiveIface.ParseString(to, from+"[0]", isNew, mkErr)
-}
-
 func (t Primitive) RenderToBaseType(to, from string) (string, error) {
 	out, err := t.PrimitiveIface.RenderToBaseType(from)
 	return to + " = " + out, err
+}
+
+func (t Primitive) RenderFormat(from string) (string, error) {
+	return t.PrimitiveIface.RenderToString(from)
 }
 
 func (t Primitive) RenderFormatStrings(to, from string, isNew bool) (string, error) {
@@ -49,7 +47,23 @@ func (t Primitive) RenderFormatStrings(to, from string, isNew bool) (string, err
 		"From":  from,
 		"IsNew": isNew,
 
-		"RenderFormat": t.PrimitiveIface.RenderFormat,
+		"RenderFormat": t.PrimitiveIface.RenderToString,
+	})
+}
+
+func (t Primitive) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return t.PrimitiveIface.RenderStringParser(to, from, isNew, mkErr)
+}
+
+func (t Primitive) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("Primitive_ParseStrings", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"Self":               t,
+		"RenderStringParser": t.PrimitiveIface.RenderStringParser,
 	})
 }
 
@@ -59,8 +73,8 @@ var _ PrimitiveIface = BoolType{}
 
 func (b BoolType) GoType() string { return "bool" }
 
-func (b BoolType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return ExecuteTemplate("Bool_ParseString", TData{
+func (b BoolType) RenderStringParser(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("Bool_RenderStringParser", TData{
 		"To":    to,
 		"From":  from,
 		"IsNew": isNew,
@@ -72,8 +86,8 @@ func (_ BoolType) RenderToBaseType(from string) (string, error) {
 	return from, nil
 }
 
-func (b BoolType) RenderFormat(from string) (string, error) {
-	return ExecuteTemplate("Bool_RenderFormat", TData{
+func (b BoolType) RenderToString(from string) (string, error) {
+	return ExecuteTemplate("Bool_RenderToString", TData{
 		"From": from,
 	})
 }
@@ -97,17 +111,17 @@ func (i IntType) GoType() string {
 	}
 }
 
-func (i IntType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+func (i IntType) RenderStringParser(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	switch i.BitSize {
 	case 64:
-		return ExecuteTemplate("Int64_Parser", TData{
+		return ExecuteTemplate("Int64_RenderStringParser", TData{
 			"To":    to,
 			"From":  from,
 			"IsNew": isNew,
 			"MkErr": mkErr,
 		})
 	default:
-		return ExecuteTemplate("IntX_Parser", TData{
+		return ExecuteTemplate("IntX_RenderStringParser", TData{
 			"To":    to,
 			"From":  from,
 			"IsNew": isNew,
@@ -123,14 +137,14 @@ func (_ IntType) RenderToBaseType(from string) (string, error) {
 	return from, nil
 }
 
-func (i IntType) RenderFormat(from string) (string, error) {
+func (i IntType) RenderToString(from string) (string, error) {
 	switch i.BitSize {
 	case 64:
-		return ExecuteTemplate("Int64_Format", TData{
+		return ExecuteTemplate("Int64_RenderToString", TData{
 			"From": from,
 		})
 	default:
-		return ExecuteTemplate("IntX_Format", TData{
+		return ExecuteTemplate("IntX_RenderToString", TData{
 			"From": from,
 		})
 	}
@@ -153,17 +167,17 @@ func (f FloatType) GoType() string {
 	}
 }
 
-func (i FloatType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+func (i FloatType) RenderStringParser(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	switch i.BitSize {
 	case 64:
-		return ExecuteTemplate("Float64_Parser", TData{
+		return ExecuteTemplate("Float64_RenderStringParser", TData{
 			"To":    to,
 			"From":  from,
 			"IsNew": isNew,
 			"MkErr": mkErr,
 		})
 	default:
-		return ExecuteTemplate("FloatX_Parser", TData{
+		return ExecuteTemplate("FloatX_RenderStringParser", TData{
 			"To":    to,
 			"From":  from,
 			"IsNew": isNew,
@@ -179,14 +193,14 @@ func (_ FloatType) RenderToBaseType(from string) (string, error) {
 	return from, nil
 }
 
-func (i FloatType) RenderFormat(from string) (string, error) {
+func (i FloatType) RenderToString(from string) (string, error) {
 	switch i.BitSize {
 	case 64:
-		return ExecuteTemplate("Float64_Format", TData{
+		return ExecuteTemplate("Float64_RenderToString", TData{
 			"From": from,
 		})
 	default:
-		return ExecuteTemplate("FloatX_Format", TData{
+		return ExecuteTemplate("FloatX_RenderToString", TData{
 			"From": from,
 
 			"BitSize": i.BitSize,
@@ -204,11 +218,11 @@ func (_ StringType) RenderToBaseType(from string) (string, error) {
 	return from, nil
 }
 
-func (_ StringType) RenderFormat(from string) (string, error) {
+func (_ StringType) RenderToString(from string) (string, error) {
 	return from, nil
 }
 
-func (_ StringType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+func (_ StringType) RenderStringParser(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	if isNew {
 		return to + " := " + from, nil
 	}
@@ -225,10 +239,10 @@ var _ PrimitiveIface = DateTime{}
 func (DateTime) GoType() string { return "time.Time" }
 
 func (d DateTime) RenderToBaseType(from string) (string, error) {
-	return d.RenderFormat(from)
+	return d.RenderToString(from)
 }
 
-func (d DateTime) RenderFormat(from string) (string, error) {
+func (d DateTime) RenderToString(from string) (string, error) {
 	layout := "time.RFC3339"
 	if d.GoLayout != "" {
 		layout = d.GoLayout
@@ -236,14 +250,14 @@ func (d DateTime) RenderFormat(from string) (string, error) {
 	if d.TextLayout != "" {
 		layout = `"` + d.TextLayout + `"`
 	}
-	return ExecuteTemplate("DateTime_RenderFormat", TData{
+	return ExecuteTemplate("DateTime_RenderToString", TData{
 		"From": from,
 
 		"Layout": layout,
 	})
 }
 
-func (d DateTime) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+func (d DateTime) RenderStringParser(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	layout := "time.RFC3339"
 	if d.GoLayout != "" {
 		layout = d.GoLayout
@@ -251,7 +265,7 @@ func (d DateTime) ParseString(to, from string, isNew bool, mkErr ErrorRender) (s
 	if d.TextLayout != "" {
 		layout = `"` + d.TextLayout + `"`
 	}
-	return ExecuteTemplate("DateTime_ParseString", TData{
+	return ExecuteTemplate("DateTime_RenderStringParser", TData{
 		"To":    to,
 		"From":  from,
 		"IsNew": isNew,
