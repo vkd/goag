@@ -101,20 +101,21 @@ func (s Schema) RenderBaseFrom(prefix, from, suffix string) (string, error) {
 
 func (s Schema) RenderToBaseType(to, from string) (string, error) {
 	if s.Ref != nil {
-		if !s.Ref.Schema.IsCustom() {
-			// from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
+		isStruct := s.Ref.Schema.Kind() == SchemaKindObject
+		isArray := s.Ref.Schema.Kind() == SchemaKindArray
+		if !s.Ref.Schema.IsCustom() && !isStruct && !isArray {
+			from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
 		}
-		return to + " = " + from, nil
-		// return s.Ref.Schema.RenderToBaseType(to, from)
+		return s.Ref.Schema.RenderToBaseType(to, from)
 	}
-	tp := func(to, from string) (string, error) { return to + " = " + from, nil }
+	tp := s.Type
 	if s.CustomType != "" {
-		tp = CustomType{Value: s.CustomType, Type: s.Type}.RenderToBaseType
+		tp = CustomType{Value: s.CustomType, Type: s.Type}
 	}
 	if s.Nullable != "" {
-		tp = NullableType{V: nil, TypeName: s.Nullable}.RenderToBaseType
+		tp = NullableType{V: tp, TypeName: s.Nullable}
 	}
-	return tp(to, from)
+	return tp.RenderToBaseType(to, from)
 }
 
 func (s Schema) FuncTypeName() string {
@@ -224,7 +225,9 @@ func (s Schema) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (st
 
 func (s Schema) RenderFormat(from string) (string, error) {
 	if s.Ref != nil {
-		if !s.Ref.Schema.IsCustom() {
+		isStruct := s.Ref.Schema.Kind() == SchemaKindObject
+		isArray := s.Ref.Schema.Kind() == SchemaKindArray
+		if !s.Ref.Schema.IsCustom() && !isStruct && !isArray {
 			from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
 		}
 		return s.Ref.Schema.RenderFormat(from)
