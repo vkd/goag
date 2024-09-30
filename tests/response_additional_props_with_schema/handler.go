@@ -158,7 +158,7 @@ func (c *GetPetResponse200JSONBody) unmarshalJSONInnerBody(m map[string]json.Raw
 		var v int
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'length' field: %w", err)
+			return fmt.Errorf("'length' field: unmarshal int: %w", err)
 		}
 		c.Length = v
 		delete(m, "length")

@@ -181,7 +181,7 @@ func (c *{{ .Name }}) unmarshalJSONInnerBody(m map[string]json.RawMessage) error
         var v {{ call .GoTypeFn }}
         err = json.Unmarshal(raw, &v)
         if err != nil {
-            return fmt.Errorf("unmarshal '{{ .JSONTag }}' field: %w", err)
+            return fmt.Errorf("'{{ .JSONTag }}' field: unmarshal {{ call .GoTypeFn }}: %w", err)
         }
         c.{{ .Name }} = v
         delete(m, "{{ .JSONTag }}")
@@ -193,7 +193,7 @@ func (c *{{ .Name }}) unmarshalJSONInnerBody(m map[string]json.RawMessage) error
         var v {{ .Schema.RenderGoType }}
         err = json.Unmarshal(raw, &v)
         if err != nil {
-            return fmt.Errorf("unmarshal '{{ .JSONTag }}' field: %w", err)
+            return fmt.Errorf("'{{ .JSONTag }}' field: unmarshal {{ .Schema.RenderGoType }}: %w", err)
         }
         c.{{ .Name }}.Set(v)
         delete(m, "{{ .JSONTag }}")

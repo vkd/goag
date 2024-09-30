@@ -118,7 +118,7 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v Nullable[time.Time]
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'created_at' field: %w", err)
+			return fmt.Errorf("'created_at' field: unmarshal Nullable[time.Time]: %w", err)
 		}
 		c.CreatedAt.Set(v)
 		delete(m, "created_at")
@@ -127,7 +127,7 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v int64
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'id' field: %w", err)
+			return fmt.Errorf("'id' field: unmarshal int64: %w", err)
 		}
 		c.ID = v
 		delete(m, "id")
@@ -138,7 +138,7 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v string
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'name' field: %w", err)
+			return fmt.Errorf("'name' field: unmarshal string: %w", err)
 		}
 		c.Name = v
 		delete(m, "name")

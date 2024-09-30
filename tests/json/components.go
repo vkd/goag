@@ -111,7 +111,7 @@ func (c *Metadata) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v string
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'owner' field: %w", err)
+			return fmt.Errorf("'owner' field: unmarshal string: %w", err)
 		}
 		c.Owner = v
 		delete(m, "owner")
@@ -122,7 +122,7 @@ func (c *Metadata) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v Tags
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'tags' field: %w", err)
+			return fmt.Errorf("'tags' field: unmarshal Tags: %w", err)
 		}
 		c.Tags.Set(v)
 		delete(m, "tags")
@@ -250,7 +250,7 @@ func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v time.Time
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'birthday' field: %w", err)
+			return fmt.Errorf("'birthday' field: unmarshal time.Time: %w", err)
 		}
 		c.Birthday = v
 		delete(m, "birthday")
@@ -261,7 +261,7 @@ func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v Metadata
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'metadata' field: %w", err)
+			return fmt.Errorf("'metadata' field: unmarshal Metadata: %w", err)
 		}
 		c.Metadata.Set(v)
 		delete(m, "metadata")
@@ -270,7 +270,7 @@ func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v string
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'name' field: %w", err)
+			return fmt.Errorf("'name' field: unmarshal string: %w", err)
 		}
 		c.Name = v
 		delete(m, "name")
@@ -281,7 +281,7 @@ func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v Nullable[string]
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'tag' field: %w", err)
+			return fmt.Errorf("'tag' field: unmarshal Nullable[string]: %w", err)
 		}
 		c.Tag = v
 		delete(m, "tag")
@@ -292,7 +292,7 @@ func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v Nullable[string]
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'tago' field: %w", err)
+			return fmt.Errorf("'tago' field: unmarshal Nullable[string]: %w", err)
 		}
 		c.Tago.Set(v)
 		delete(m, "tago")
@@ -402,7 +402,7 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v int64
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'id' field: %w", err)
+			return fmt.Errorf("'id' field: unmarshal int64: %w", err)
 		}
 		c.ID = v
 		delete(m, "id")
@@ -510,7 +510,7 @@ func (c *Tag) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v string
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'name' field: %w", err)
+			return fmt.Errorf("'name' field: unmarshal string: %w", err)
 		}
 		c.Name = v
 		delete(m, "name")
@@ -521,7 +521,7 @@ func (c *Tag) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		var v string
 		err = json.Unmarshal(raw, &v)
 		if err != nil {
-			return fmt.Errorf("unmarshal 'value' field: %w", err)
+			return fmt.Errorf("'value' field: unmarshal string: %w", err)
 		}
 		c.Value = v
 		delete(m, "value")
