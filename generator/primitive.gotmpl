@@ -4,6 +4,18 @@
 {{- .To }} {{ if .IsNew }}:{{ end }}= []string{ {{ call .RenderFormat .From }} }
 {{- end }}
 
+{{/* ----------------------------- String ------------------------------------- */}}
+
+{{ define "String_RenderUnmarshalJSON" -}}
+{{- if .IsNew }}var {{ .To }} string
+{{ end -}}
+err = json.Unmarshal({{ .From }}, &{{ .To }})
+if err != nil {
+	return {{ .MkErr.Wrap "unmarshal string" "err" }}
+}
+{{- end }}
+
+
 {{/* ----------------------------- Bool ------------------------------------- */}}
 
 {{ define "Bool_RenderStringParser" -}}
@@ -17,6 +29,15 @@ if err != nil {
 {{- end }}
 
 {{ define "Bool_RenderToString" }}strconv.FormatBool({{ .From }}){{ end }}
+
+{{ define "Bool_RenderUnmarshalJSON" -}}
+var v bool
+err = json.Unmarshal({{ .From }}, &v)
+if err != nil {
+	return {{ .MkErr.Wrap "unmarshal bool" "err" }}
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= v
+{{- end }}
 
 {{/* ----------------------------- Int64 ------------------------------------- */}}
 
@@ -32,6 +53,15 @@ if err != nil {
 
 {{ define "Int64_RenderToString" }}strconv.FormatInt({{ .From }}, 10){{ end }}
 
+{{ define "Int64_RenderUnmarshalJSON" -}}
+var v int64
+err = json.Unmarshal({{ .From }}, &v)
+if err != nil {
+	return {{ .MkErr.Wrap "unmarshal int64" "err" }}
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= v
+{{- end }}
+
 {{/* ----------------------------- IntX ------------------------------------- */}}
 
 {{ define "IntX_RenderStringParser" -}}
@@ -44,6 +74,15 @@ if err != nil {
 
 {{ define "IntX_RenderToString" }}strconv.FormatInt(int64({{ .From }}), 10){{ end }}
 
+{{ define "IntX_RenderUnmarshalJSON" -}}
+var v {{ .GoType }}
+err = json.Unmarshal({{ .From }}, &v)
+if err != nil {
+	return {{ .MkErr.Wrap (print "unmarshal " .GoType) "err" }}
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= v
+{{- end }}
+
 {{/* ----------------------------- FloatX ------------------------------------- */}}
 
 {{ define "FloatX_RenderStringParser" -}}
@@ -55,6 +94,15 @@ if err != nil {
 {{- end }}
 
 {{ define "FloatX_RenderToString" }}strconv.FormatFloat(float64({{ .From }}), 'e', -1, {{ .BitSize }}){{ end }}
+
+{{ define "FloatX_RenderUnmarshalJSON" -}}
+var v float64
+err = json.Unmarshal({{ .From }}, &v)
+if err != nil {
+	return {{ .MkErr.Wrap "unmarshal float64" "err" }}
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= {{ .GoType }}(v)
+{{- end }}
 
 {{/* ----------------------------- Float64 ------------------------------------- */}}
 
@@ -70,6 +118,15 @@ if err != nil {
 
 {{ define "Float64_RenderToString" }}strconv.FormatFloat({{ .From }}, 'e', -1, 64){{ end }}
 
+{{ define "Float64_RenderUnmarshalJSON" -}}
+var v float64
+err = json.Unmarshal({{ .From }}, &v)
+if err != nil {
+	return {{ .MkErr.Wrap "unmarshal float64" "err" }}
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= v
+{{- end }}
+
 {{/* ----------------------------- DateTime ------------------------------------- */}}
 
 {{ define "DateTime_RenderStringParser" -}}
@@ -83,3 +140,15 @@ if err != nil {
 {{- end }}
 
 {{ define "DateTime_RenderToString" }}{{ .From }}.Format({{ .Layout }}){{ end }}
+
+{{ define "DateTime_RenderUnmarshalJSON" -}}
+var s string
+err = json.Unmarshal({{ .From }}, &s)
+if err != nil {
+	return {{ .MkErr.Wrap "unmarshal string" "err" }}
+}
+{{ .To }}, err {{- if .IsNew }}:{{ end }}= time.Parse({{ .Layout }}, s)
+if err != nil {
+	return {{ .MkErr.Wrap "parse time" "err" }}
+}
+{{- end }}

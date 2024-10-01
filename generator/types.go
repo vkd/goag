@@ -65,6 +65,19 @@ func (s SliceType) ParseStrings(to string, from string, isNew bool, mkErr ErrorR
 	})
 }
 
+func (s SliceType) RenderUnmarshalJSON(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("SliceType_RenderUnmarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"Self":             s,
+		"GoTypeFn":         s.Items.RenderGoType,
+		"ItemsParseString": s.Items.ParseString,
+	})
+}
+
 type StructureType struct {
 	Fields []StructureField
 
@@ -124,12 +137,23 @@ func (s StructureType) ParseStrings(to string, from string, isNew bool, mkErr Er
 	return "", fmt.Errorf(".ParseStrings() function for StructureType is not supported")
 }
 
+func (s StructureType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("StructureType_RenderUnmarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"Self": s,
+	})
+}
+
 type StructureField struct {
 	Comment  string
 	Name     string
 	GoTypeFn GoTypeRenderFunc
 	Type     SchemaType
-	Schema   SchemaType
+	Schema   Schema
 	Tags     []StructureFieldTag
 	JSONTag  string
 	Embedded bool
@@ -279,6 +303,11 @@ func (c CustomType) RenderConvertToBaseSchema(from string) (string, error) {
 	return from + "." + c.Type.FuncTypeName() + "()", nil
 }
 
+func (c CustomType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	from = from + "." + c.Type.FuncTypeName() + "()"
+	return c.Type.RenderUnmarshalJSON(to, from, isNew, mkErr)
+}
+
 type OptionalType struct {
 	V         SchemaType
 	MaybeType string
@@ -373,6 +402,18 @@ func (p OptionalType) RenderConvertToBaseSchema(from string) (string, error) {
 	})
 }
 
+func (p OptionalType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("OptionalType_RenderUnmarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"V":    p.V,
+		"Self": p,
+	})
+}
+
 type NullableType struct {
 	V        InternalSchemaType
 	TypeName string
@@ -453,4 +494,16 @@ func (n NullableType) RenderFormat(from string) (string, error) {
 
 func (n NullableType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
 	return n.V.RenderFormatStrings(to, from+".Value", isNew)
+}
+
+func (n NullableType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("NullableType_RenderUnmarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"V":    n.V,
+		"Self": n,
+	})
 }

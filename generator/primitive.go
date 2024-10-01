@@ -14,6 +14,8 @@ type PrimitiveIface interface {
 	RenderToBaseType(from string) (string, error)
 	RenderToString(from string) (string, error)
 	RenderStringParser(to, from string, isNew bool, mkErr ErrorRender) (string, error)
+
+	RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
 
 func NewPrimitive(v PrimitiveIface) Primitive {
@@ -59,6 +61,10 @@ func (t Primitive) ParseStrings(to string, from string, isNew bool, mkErr ErrorR
 	return t.PrimitiveIface.RenderStringParser(to, from+"[0]", isNew, mkErr)
 }
 
+func (t Primitive) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return t.PrimitiveIface.RenderUnmarshalJSON(to, from, isNew, mkErr)
+}
+
 type BoolType struct{}
 
 var _ PrimitiveIface = BoolType{}
@@ -81,6 +87,15 @@ func (_ BoolType) RenderToBaseType(from string) (string, error) {
 func (b BoolType) RenderToString(from string) (string, error) {
 	return ExecuteTemplate("Bool_RenderToString", TData{
 		"From": from,
+	})
+}
+
+func (_ BoolType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("Bool_RenderUnmarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
 	})
 }
 
@@ -138,6 +153,27 @@ func (i IntType) RenderToString(from string) (string, error) {
 	default:
 		return ExecuteTemplate("IntX_RenderToString", TData{
 			"From": from,
+		})
+	}
+}
+
+func (i IntType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	switch i.BitSize {
+	case 64:
+		return ExecuteTemplate("Int64_RenderUnmarshalJSON", TData{
+			"To":    to,
+			"From":  from,
+			"IsNew": isNew,
+			"MkErr": mkErr,
+		})
+	default:
+		return ExecuteTemplate("IntX_RenderUnmarshalJSON", TData{
+			"To":    to,
+			"From":  from,
+			"IsNew": isNew,
+			"MkErr": mkErr,
+
+			"GoType": i.GoType(),
 		})
 	}
 }
@@ -200,6 +236,27 @@ func (i FloatType) RenderToString(from string) (string, error) {
 	}
 }
 
+func (i FloatType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	switch i.BitSize {
+	case 64:
+		return ExecuteTemplate("Float64_RenderUnmarshalJSON", TData{
+			"To":    to,
+			"From":  from,
+			"IsNew": isNew,
+			"MkErr": mkErr,
+		})
+	default:
+		return ExecuteTemplate("FloatX_RenderUnmarshalJSON", TData{
+			"To":    to,
+			"From":  from,
+			"IsNew": isNew,
+			"MkErr": mkErr,
+
+			"GoType": i.GoType(),
+		})
+	}
+}
+
 type StringType struct{}
 
 var _ PrimitiveIface = StringType{}
@@ -219,6 +276,15 @@ func (_ StringType) RenderStringParser(to, from string, isNew bool, mkErr ErrorR
 		return to + " := " + from, nil
 	}
 	return to + " = " + from, nil
+}
+
+func (_ StringType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("String_RenderUnmarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
 }
 
 type DateTime struct {
@@ -262,6 +328,24 @@ func (d DateTime) RenderStringParser(to, from string, isNew bool, mkErr ErrorRen
 		layout = `"` + d.TextLayout + `"`
 	}
 	return ExecuteTemplate("DateTime_RenderStringParser", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"Layout": layout,
+	})
+}
+
+func (d DateTime) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	layout := "time.RFC3339"
+	if d.GoLayout != "" {
+		layout = d.GoLayout
+	}
+	if d.TextLayout != "" {
+		layout = `"` + d.TextLayout + `"`
+	}
+	return ExecuteTemplate("DateTime_RenderUnmarshalJSON", TData{
 		"To":    to,
 		"From":  from,
 		"IsNew": isNew,

@@ -115,12 +115,21 @@ func (c *Pet) UnmarshalJSON(bs []byte) error {
 func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
 	if raw, ok := m["created_at"]; ok {
-		var v Nullable[time.Time]
-		err = json.Unmarshal(raw, &v)
-		if err != nil {
-			return fmt.Errorf("'created_at' field: unmarshal Nullable[time.Time]: %w", err)
+		if string(raw) != "null" {
+			var s string
+			err = json.Unmarshal(raw, &s)
+			if err != nil {
+				return fmt.Errorf("'created_at' field: unmarshal string: %w", err)
+			}
+			v, err := time.Parse(time.RFC3339, s)
+			if err != nil {
+				return fmt.Errorf("'created_at' field: parse time: %w", err)
+			}
+			var vPtr Nullable[time.Time]
+			vPtr.Set(v)
+			c.CreatedAt.Value = vPtr
 		}
-		c.CreatedAt.Set(v)
+		c.CreatedAt.IsSet = true
 		delete(m, "created_at")
 	}
 	if raw, ok := m["id"]; ok {
@@ -135,12 +144,10 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		return fmt.Errorf("'id' key is missing")
 	}
 	if raw, ok := m["name"]; ok {
-		var v string
-		err = json.Unmarshal(raw, &v)
+		err = json.Unmarshal(raw, &c.Name)
 		if err != nil {
 			return fmt.Errorf("'name' field: unmarshal string: %w", err)
 		}
-		c.Name = v
 		delete(m, "name")
 	} else {
 		return fmt.Errorf("'name' key is missing")

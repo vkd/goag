@@ -42,6 +42,45 @@ func TestAPI(t *testing.T) {
 				},
 			},
 		},
+		{"skip-nullable",
+			PostPetsParams{
+				Body: NewPet{
+					Name:     "test_name",
+					Tag:      Null[string](),
+					Tago:     Just(Null[string]()),
+					Birthday: time.Date(2005, 12, 13, 14, 31, 11, 0, time.UTC),
+					Metadata: Just(Metadata{
+						Owner: "test_metadata_owner",
+						Tags:  Just(Tags{Tag{Name: "test_metadata_tags_0_name", Value: "test_metadata_tags_0_value"}}),
+					}),
+				},
+			},
+		},
+		{"skip-optional",
+			PostPetsParams{
+				Body: NewPet{
+					Name:     "test_name",
+					Tag:      Null[string](),
+					Tago:     Nothing[Nullable[string]](),
+					Birthday: time.Date(2005, 12, 13, 14, 31, 11, 0, time.UTC),
+					Metadata: Just(Metadata{
+						Owner: "test_metadata_owner",
+						Tags:  Nothing[Tags](),
+					}),
+				},
+			},
+		},
+		{"skip-optional-struct",
+			PostPetsParams{
+				Body: NewPet{
+					Name:     "test_name",
+					Tag:      Null[string](),
+					Tago:     Nothing[Nullable[string]](),
+					Birthday: time.Date(2005, 12, 13, 14, 31, 11, 0, time.UTC),
+					Metadata: Nothing[Metadata](),
+				},
+			},
+		},
 	} {
 		t.Run(tt.Name, func(t *testing.T) {
 			resp, err := client.PostPets(ctx, tt.Params)

@@ -110,23 +110,19 @@ func (c *Pet) UnmarshalJSON(bs []byte) error {
 func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
 	if raw, ok := m["custom"]; ok {
-		var v PetCustom
-		err = json.Unmarshal(raw, &v)
+		err = c.Custom.UnmarshalJSON(raw)
 		if err != nil {
-			return fmt.Errorf("'custom' field: unmarshal PetCustom: %w", err)
+			return fmt.Errorf("'custom' field: unmarshal object: %w", err)
 		}
-		c.Custom = v
 		delete(m, "custom")
 	} else {
 		return fmt.Errorf("'custom' key is missing")
 	}
 	if raw, ok := m["name"]; ok {
-		var v string
-		err = json.Unmarshal(raw, &v)
+		err = json.Unmarshal(raw, &c.Name)
 		if err != nil {
 			return fmt.Errorf("'name' field: unmarshal string: %w", err)
 		}
-		c.Name = v
 		delete(m, "name")
 	} else {
 		return fmt.Errorf("'name' key is missing")

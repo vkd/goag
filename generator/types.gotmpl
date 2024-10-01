@@ -22,6 +22,15 @@ for i := range {{.From}} {
 }
 {{- end }}
 
+{{ define "SliceType_RenderUnmarshalJSON" }}
+var vs {{ .Self.RenderGoType }}
+err = json.Unmarshal({{ .From }}, &vs)
+if err != nil {
+	return {{ .MkErr.Wrap "unmarshal slice" "err" }}
+}
+{{ .To }} = vs
+{{- end }}
+
 
 {{/* ----------------------------- StructureType ------------------------------------- */}}
 
@@ -36,6 +45,13 @@ for i := range {{.From}} {
 }
 {{- else }}struct{}
 {{- end }}
+{{- end }}
+
+{{ define "StructureType_RenderUnmarshalJSON" -}}
+err = {{ .To }}.UnmarshalJSON({{ .From }})
+if err != nil {
+	return {{ .MkErr.Wrap "unmarshal object" "err" }}
+}
 {{- end }}
 
 
@@ -121,6 +137,11 @@ if vOpt, ok := {{ .From }}.Get(); ok {
 }
 {{- end }}
 
+{{ define "OptionalType_RenderUnmarshalJSON" -}}
+{{ .V.RenderUnmarshalJSON (print .To ".Value") .From false .MkErr }}
+{{ .To }}.IsSet = true
+{{- end }}
+
 
 {{/* ----------------------------- NullableType ------------------------------------- */}}
 
@@ -151,6 +172,15 @@ var {{ .To }} {{ .Self.RenderGoType }}
 {{ define "NullableType_RenderToBaseType" -}}
 if vPtr, ok := {{ .From }}.Get(); ok {
 	{{ .To }} = vPtr
+}
+{{- end }}
+
+{{ define "NullableType_RenderUnmarshalJSON" -}}
+if string({{ .From }}) != "null" {
+	{{ .V.RenderUnmarshalJSON "v" .From true .MkErr }}
+	var vPtr {{ .Self.RenderGoType }}
+	vPtr.Set(v)
+	{{ .To }} {{ if .IsNew }}:{{ end }}= vPtr
 }
 {{- end }}
 

@@ -176,27 +176,14 @@ func (c *{{ .Name }}) unmarshalJSONInnerBody(m map[string]json.RawMessage) error
     if err != nil {
         return fmt.Errorf("embedded '{{ .Name }}' field: %w", err)
     }
-        {{- else if .Required }}
-    if raw, ok := m["{{ .JSONTag }}"]; ok {
-        var v {{ call .GoTypeFn }}
-        err = json.Unmarshal(raw, &v)
-        if err != nil {
-            return fmt.Errorf("'{{ .JSONTag }}' field: unmarshal {{ call .GoTypeFn }}: %w", err)
-        }
-        c.{{ .Name }} = v
-        delete(m, "{{ .JSONTag }}")
-    } else {
-        return fmt.Errorf("'{{ .JSONTag }}' key is missing")
-    }
         {{- else }}
     if raw, ok := m["{{ .JSONTag }}"]; ok {
-        var v {{ .Schema.RenderGoType }}
-        err = json.Unmarshal(raw, &v)
-        if err != nil {
-            return fmt.Errorf("'{{ .JSONTag }}' field: unmarshal {{ .Schema.RenderGoType }}: %w", err)
-        }
-        c.{{ .Name }}.Set(v)
+        {{ .Type.RenderUnmarshalJSON (print "c." .Name) "raw" false (prefixError (print "'" .JSONTag "' field")) }}
         delete(m, "{{ .JSONTag }}")
+    {{- if .Required }}
+    } else {
+        return fmt.Errorf("'{{ .JSONTag }}' key is missing")
+    {{- end }}
     }
         {{- end }}
     {{- end }}

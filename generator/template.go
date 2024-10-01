@@ -25,6 +25,8 @@ func init() {
 				"returns":    newReturnsFunc,
 				"comment":    commentFunc,
 				"title":      titleFunc,
+
+				"prefixError": prefixErrorFunc,
 			}).
 			ParseFS(templatesFS, "*.gotmpl"),
 	)
@@ -74,4 +76,8 @@ func commentFunc(s string) (string, error) {
 
 func titleFunc(s string) (string, error) {
 	return Title(s), nil
+}
+
+func prefixErrorFunc(prefix string) (ErrorRender, error) {
+	return prefixError{prefix: prefix}, nil
 }

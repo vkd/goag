@@ -108,23 +108,23 @@ func (c *Metadata) UnmarshalJSON(bs []byte) error {
 func (c *Metadata) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
 	if raw, ok := m["owner"]; ok {
-		var v string
-		err = json.Unmarshal(raw, &v)
+		err = json.Unmarshal(raw, &c.Owner)
 		if err != nil {
 			return fmt.Errorf("'owner' field: unmarshal string: %w", err)
 		}
-		c.Owner = v
 		delete(m, "owner")
 	} else {
 		return fmt.Errorf("'owner' key is missing")
 	}
 	if raw, ok := m["tags"]; ok {
-		var v Tags
-		err = json.Unmarshal(raw, &v)
+
+		var vs []Tag
+		err = json.Unmarshal(raw, &vs)
 		if err != nil {
-			return fmt.Errorf("'tags' field: unmarshal Tags: %w", err)
+			return fmt.Errorf("'tags' field: unmarshal slice: %w", err)
 		}
-		c.Tags.Set(v)
+		c.Tags.Value = vs
+		c.Tags.IsSet = true
 		delete(m, "tags")
 	}
 	return nil
@@ -247,54 +247,63 @@ func (c *NewPet) UnmarshalJSON(bs []byte) error {
 func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
 	if raw, ok := m["birthday"]; ok {
-		var v time.Time
-		err = json.Unmarshal(raw, &v)
+		var s string
+		err = json.Unmarshal(raw, &s)
 		if err != nil {
-			return fmt.Errorf("'birthday' field: unmarshal time.Time: %w", err)
+			return fmt.Errorf("'birthday' field: unmarshal string: %w", err)
 		}
-		c.Birthday = v
+		c.Birthday, err = time.Parse(time.RFC3339, s)
+		if err != nil {
+			return fmt.Errorf("'birthday' field: parse time: %w", err)
+		}
 		delete(m, "birthday")
 	} else {
 		return fmt.Errorf("'birthday' key is missing")
 	}
 	if raw, ok := m["metadata"]; ok {
-		var v Metadata
-		err = json.Unmarshal(raw, &v)
+		err = c.Metadata.Value.UnmarshalJSON(raw)
 		if err != nil {
-			return fmt.Errorf("'metadata' field: unmarshal Metadata: %w", err)
+			return fmt.Errorf("'metadata' field: unmarshal object: %w", err)
 		}
-		c.Metadata.Set(v)
+		c.Metadata.IsSet = true
 		delete(m, "metadata")
 	}
 	if raw, ok := m["name"]; ok {
-		var v string
-		err = json.Unmarshal(raw, &v)
+		err = json.Unmarshal(raw, &c.Name)
 		if err != nil {
 			return fmt.Errorf("'name' field: unmarshal string: %w", err)
 		}
-		c.Name = v
 		delete(m, "name")
 	} else {
 		return fmt.Errorf("'name' key is missing")
 	}
 	if raw, ok := m["tag"]; ok {
-		var v Nullable[string]
-		err = json.Unmarshal(raw, &v)
-		if err != nil {
-			return fmt.Errorf("'tag' field: unmarshal Nullable[string]: %w", err)
+		if string(raw) != "null" {
+			var v string
+			err = json.Unmarshal(raw, &v)
+			if err != nil {
+				return fmt.Errorf("'tag' field: unmarshal string: %w", err)
+			}
+			var vPtr Nullable[string]
+			vPtr.Set(v)
+			c.Tag = vPtr
 		}
-		c.Tag = v
 		delete(m, "tag")
 	} else {
 		return fmt.Errorf("'tag' key is missing")
 	}
 	if raw, ok := m["tago"]; ok {
-		var v Nullable[string]
-		err = json.Unmarshal(raw, &v)
-		if err != nil {
-			return fmt.Errorf("'tago' field: unmarshal Nullable[string]: %w", err)
+		if string(raw) != "null" {
+			var v string
+			err = json.Unmarshal(raw, &v)
+			if err != nil {
+				return fmt.Errorf("'tago' field: unmarshal string: %w", err)
+			}
+			var vPtr Nullable[string]
+			vPtr.Set(v)
+			c.Tago.Value = vPtr
 		}
-		c.Tago.Set(v)
+		c.Tago.IsSet = true
 		delete(m, "tago")
 	}
 	return nil
@@ -507,23 +516,19 @@ func (c *Tag) UnmarshalJSON(bs []byte) error {
 func (c *Tag) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
 	if raw, ok := m["name"]; ok {
-		var v string
-		err = json.Unmarshal(raw, &v)
+		err = json.Unmarshal(raw, &c.Name)
 		if err != nil {
 			return fmt.Errorf("'name' field: unmarshal string: %w", err)
 		}
-		c.Name = v
 		delete(m, "name")
 	} else {
 		return fmt.Errorf("'name' key is missing")
 	}
 	if raw, ok := m["value"]; ok {
-		var v string
-		err = json.Unmarshal(raw, &v)
+		err = json.Unmarshal(raw, &c.Value)
 		if err != nil {
 			return fmt.Errorf("'value' field: unmarshal string: %w", err)
 		}
-		c.Value = v
 		delete(m, "value")
 	} else {
 		return fmt.Errorf("'value' key is missing")

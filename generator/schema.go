@@ -290,6 +290,24 @@ func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error)
 	return tp.RenderFormatStrings(to, from, isNew)
 }
 
+func (s Schema) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	if s.Ref != nil {
+		// if !s.Ref.Schema.IsCustom() {
+		// 	from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
+		// }
+		return s.Ref.Schema.RenderUnmarshalJSON(to, from, isNew, mkErr)
+	}
+
+	var tp InternalSchemaType = s.Type
+	// if s.CustomType != "" {
+	// 	from = from + "." + s.Type.FuncTypeName() + "()"
+	// }
+	if s.Nullable != "" {
+		tp = NullableType{V: tp, TypeName: s.Nullable}
+	}
+	return tp.RenderUnmarshalJSON(to, from, isNew, mkErr)
+}
+
 type InternalSchemaType interface {
 	GoTypeRender
 	Parser
@@ -299,6 +317,8 @@ type InternalSchemaType interface {
 
 	FuncTypeName() string
 	Kind() SchemaKind
+
+	RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
 
 type SchemaType interface {
@@ -311,6 +331,8 @@ type SchemaType interface {
 
 	FuncTypeName() string
 	Kind() SchemaKind
+
+	RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
 
 type SchemaKind string

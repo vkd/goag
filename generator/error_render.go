@@ -23,6 +23,18 @@ func (p newError) New(reason string) string {
 	return `errors.New("` + reason + `")`
 }
 
+type prefixError struct {
+	prefix string
+}
+
+func (p prefixError) Wrap(reason string, errVar string) string {
+	return `fmt.Errorf("` + p.prefix + ": " + reason + `: %w", ` + errVar + `)`
+}
+
+func (p prefixError) New(reason string) string {
+	return `errors.New("` + p.prefix + ": " + reason + `")`
+}
+
 type wrappedError struct {
 	Orig  ErrorRender
 	Inner ErrorRender
