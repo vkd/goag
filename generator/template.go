@@ -71,7 +71,7 @@ func newReturnsFunc(returns string, e ErrorRender) (ErrorRender, error) {
 }
 
 func commentFunc(s string) (string, error) {
-	return strings.ReplaceAll(s, "\n", "\n// "), nil
+	return strings.ReplaceAll(strings.TrimRight(s, "\n"), "\n", "\n// "), nil
 }
 
 func titleFunc(s string) (string, error) {

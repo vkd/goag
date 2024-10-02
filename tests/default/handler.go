@@ -777,7 +777,8 @@ func (r GetShopsShopPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 }
 
 // ---------------------------------------------
-// ReviewShop -
+// ReviewShop - Review shop.
+// Returns a current pet.
 // ---------------------------------------------
 
 type ReviewShopHandlerFunc func(ctx context.Context, r ReviewShopRequest) ReviewShopResponse

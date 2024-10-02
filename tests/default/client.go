@@ -309,7 +309,8 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 	}
 }
 
-// ReviewShop
+// ReviewShop - Review shop.
+// Returns a current pet.
 // POST /shops/{shop}/review
 func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (ReviewShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/review"

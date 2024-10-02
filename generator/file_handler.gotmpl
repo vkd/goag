@@ -116,7 +116,7 @@ func (m *Nullable[T]) UnmarshalJSON(bs []byte) error {
 {{- $newParams := print "new" $name "Params" }}
 {{- $responseWriter := print $name "Response" }}
 // ---------------------------------------------
-// {{$name}} - {{$h.Description}}
+// {{$name}} - {{ comment $h.Description }}
 // ---------------------------------------------
 
 {{if $h.Summary}}// {{$handlerFunc}} - {{$h.Summary}}{{end}}

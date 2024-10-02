@@ -70,6 +70,9 @@ const SpecFile string = `paths:
   /shops/{shop}/review:
     post:
       operationId: reviewShop
+      description: |
+        Review shop.
+        Returns a current pet.
       parameters:
         - $ref: '#/components/parameters/ShopPathRequired'
         - $ref: '#/components/parameters/PageQuery'
