@@ -154,6 +154,7 @@ func (c *GetPetResponse200JSONBody) UnmarshalJSON(bs []byte) error {
 
 func (c *GetPetResponse200JSONBody) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
+	_ = err
 	if raw, ok := m["length"]; ok {
 		var v int
 		err = json.Unmarshal(raw, &v)

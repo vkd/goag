@@ -170,6 +170,7 @@ func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
 
 func (c *{{ .Name }}) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
     var err error
+    _ = err
     {{- range $_, $f := .StructureType.Fields }}
         {{- if .Embedded }}
     err = c.{{ .Name }}.unmarshalJSONInnerBody(m)

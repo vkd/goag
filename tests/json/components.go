@@ -107,6 +107,7 @@ func (c *Metadata) UnmarshalJSON(bs []byte) error {
 
 func (c *Metadata) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
+	_ = err
 	if raw, ok := m["owner"]; ok {
 		err = json.Unmarshal(raw, &c.Owner)
 		if err != nil {
@@ -246,6 +247,7 @@ func (c *NewPet) UnmarshalJSON(bs []byte) error {
 
 func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
+	_ = err
 	if raw, ok := m["birthday"]; ok {
 		var s string
 		err = json.Unmarshal(raw, &s)
@@ -403,6 +405,7 @@ func (c *Pet) UnmarshalJSON(bs []byte) error {
 
 func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
+	_ = err
 	err = c.NewPet.unmarshalJSONInnerBody(m)
 	if err != nil {
 		return fmt.Errorf("embedded 'NewPet' field: %w", err)
@@ -515,6 +518,7 @@ func (c *Tag) UnmarshalJSON(bs []byte) error {
 
 func (c *Tag) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
+	_ = err
 	if raw, ok := m["name"]; ok {
 		err = json.Unmarshal(raw, &c.Name)
 		if err != nil {

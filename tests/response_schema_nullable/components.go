@@ -114,6 +114,7 @@ func (c *Pet) UnmarshalJSON(bs []byte) error {
 
 func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
+	_ = err
 	if raw, ok := m["created_at"]; ok {
 		if string(raw) != "null" {
 			var s string

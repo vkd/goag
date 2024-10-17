@@ -109,6 +109,7 @@ func (c *Pet) UnmarshalJSON(bs []byte) error {
 
 func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
+	_ = err
 	if raw, ok := m["custom"]; ok {
 		var cv json.RawMessage
 		err = cv.UnmarshalJSON(raw)
@@ -236,6 +237,7 @@ func (c *PetCustomSchema) UnmarshalJSON(bs []byte) error {
 
 func (c *PetCustomSchema) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
+	_ = err
 	if raw, ok := m["field1"]; ok {
 		err = json.Unmarshal(raw, &c.Field1.Value)
 		if err != nil {
