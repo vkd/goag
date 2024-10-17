@@ -96,10 +96,27 @@ if err != nil {
 }
 {{- end }}
 
-
 {{ define "CustomType_RenderFormatStrings" -}}
 cv := {{ .From }}.{{ .Base.FuncTypeName }}()
 {{ .Base.RenderFormatStrings .To "cv" .IsNew }}
+{{- end }}
+
+{{ define "CustomType_RenderUnmarshalJSON_Object" -}}
+var cv {{ .CustomType }}
+{{ .Base.RenderUnmarshalJSON "cv" .From false .MkErr }}
+{{ .To }} {{ if .IsNew }}:{{ end }}= cv
+{{- end }}
+
+
+{{ define "CustomType_RenderUnmarshalJSON" -}}
+var cv {{ .Base.RenderGoType }}
+{{ .Base.RenderUnmarshalJSON "cv" .From .IsNew .MkErr }}
+var v {{ .CustomType }}
+err = v.Set(cv)
+if err != nil {
+	return {{ .MkErr.Wrap "parse" "err" }}
+}
+{{ .To }} = v
 {{- end }}
 
 

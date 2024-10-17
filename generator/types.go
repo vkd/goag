@@ -113,7 +113,7 @@ var _ InternalSchemaType = StructureType{}
 
 func (s StructureType) Kind() SchemaKind { return SchemaKindObject }
 
-func (s StructureType) FuncTypeName() string { return "" }
+func (s StructureType) FuncTypeName() string { return "struct{}" }
 
 func (s StructureType) RenderGoType() (string, error) { return ExecuteTemplate("StructureType", s) }
 
@@ -304,8 +304,27 @@ func (c CustomType) RenderConvertToBaseSchema(from string) (string, error) {
 }
 
 func (c CustomType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	from = from + "." + c.Type.FuncTypeName() + "()"
-	return c.Type.RenderUnmarshalJSON(to, from, isNew, mkErr)
+	// from = from + "." + c.Type.FuncTypeName() + "()"
+	if c.Type.Kind() == SchemaKindObject {
+		return ExecuteTemplate("CustomType_RenderUnmarshalJSON_Object", TData{
+			"Base":       c.Type,
+			"CustomType": c.Value,
+
+			"To":    to,
+			"From":  from,
+			"IsNew": isNew,
+			"MkErr": mkErr,
+		})
+	}
+	return ExecuteTemplate("CustomType_RenderUnmarshalJSON", TData{
+		"Base":       c.Type,
+		"CustomType": c.Value,
+
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
 }
 
 type OptionalType struct {

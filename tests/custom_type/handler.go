@@ -46,6 +46,8 @@ type GetShopsShopParams struct {
 	Query GetShopsShopParamsQuery
 
 	Path GetShopsShopParamsPath
+
+	Body GetShop
 }
 
 type GetShopsShopParamsQuery struct {
@@ -125,6 +127,12 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		}
 	}
 
+	defer r.Body.Close()
+	err := json.NewDecoder(r.Body).Decode(&params.Body)
+	if err != nil {
+		return zero, fmt.Errorf("decode request body: %w", err)
+	}
+
 	return params, nil
 }
 
@@ -142,6 +150,7 @@ func NewGetShopsShopResponse200JSON(body Shop) GetShopsShopResponse {
 	return out
 }
 
+// GetShopsShopResponse200JSON - Shop response
 type GetShopsShopResponse200JSON struct {
 	Body Shop
 }
@@ -162,6 +171,7 @@ func NewGetShopsShopResponseDefault(code int) GetShopsShopResponse {
 	return out
 }
 
+// GetShopsShopResponseDefault - Error response
 type GetShopsShopResponseDefault struct {
 	Code int
 }

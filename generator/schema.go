@@ -78,6 +78,16 @@ func NewSchemaWithType(s InternalSchemaType) Schema {
 	}
 }
 
+func (s Schema) CopyBase() Schema {
+	return Schema{
+		Description: s.Description,
+		Ref:         s.Ref,
+		Type:        s.Type,
+		Nullable:    s.Nullable,
+		CustomType:  "",
+	}
+}
+
 func (s Schema) BaseSchemaType() InternalSchemaType {
 	return s.Base().Type
 }
@@ -144,6 +154,21 @@ func (s Schema) RenderGoType() (string, error) {
 	if s.CustomType != "" {
 		tp = CustomType{Value: s.CustomType, Type: s.Type}
 	}
+	if s.Nullable != "" {
+		tp = NullableType{V: tp, TypeName: s.Nullable}
+	}
+	return tp.RenderGoType()
+}
+
+func (s Schema) RenderBaseGoType() (string, error) {
+	if s.Ref != nil {
+		tp := s.Ref.Name
+		if s.Base().Nullable != "" {
+			tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
+		}
+		return tp, nil
+	}
+	tp := InternalSchemaType(s.Type)
 	if s.Nullable != "" {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
 	}
@@ -299,9 +324,10 @@ func (s Schema) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRend
 	}
 
 	var tp InternalSchemaType = s.Type
-	// if s.CustomType != "" {
-	// 	from = from + "." + s.Type.FuncTypeName() + "()"
-	// }
+	if s.CustomType != "" {
+		// from = from + "." + s.Type.FuncTypeName() + "()"
+		tp = CustomType{Value: s.CustomType, Type: tp}
+	}
 	if s.Nullable != "" {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
 	}

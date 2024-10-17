@@ -7,3 +7,5 @@ import "encoding/json"
 // ------------------------
 
 type RawResponse = json.RawMessage
+
+type RawResponseSchema struct{}

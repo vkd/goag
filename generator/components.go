@@ -229,12 +229,14 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 		Description: schema.Description,
 		BaseType:    schemaType.BaseSchemaType(),
 
-		GoTypeFn:     schema.RenderGoType,
+		GoTypeFn:     schema.RenderBaseGoType,
 		FuncTypeName: schema.FuncTypeName(),
 	}
 
 	if schema.IsCustom() {
 		sc.GoTypeFn = StringRender(schema.CustomType).Render
+
+		cs.AddSchema(name+"Schema", schema.CopyBase(), cfg)
 	}
 
 	switch schema := schemaType.Type.(type) {

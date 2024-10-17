@@ -1,5 +1,10 @@
 package pkg
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 type Page string
 
 func (s Page) String() string { return string(s) }
@@ -27,4 +32,21 @@ func (s *Shop) ParseString(str string) error {
 
 func (s Shop) String() string {
 	return string(s)
+}
+
+type Metadata struct {
+	InternalID string
+}
+
+var _ json.Unmarshaler = (*Metadata)(nil)
+
+func (m *Metadata) UnmarshalJSON(bs []byte) error {
+	type tp Metadata
+	var v tp
+	err := json.Unmarshal(bs, &v)
+	if err != nil {
+		return fmt.Errorf("unmarshal metadata: %w", err)
+	}
+	*m = Metadata(v)
+	return nil
 }

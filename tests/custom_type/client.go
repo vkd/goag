@@ -1,6 +1,7 @@
 package test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -46,7 +47,12 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	}
 	requestURL += "?" + query.Encode()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	bs, err := json.Marshal(request.Body)
+	if err != nil {
+		return nil, fmt.Errorf("marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, bytes.NewReader(bs))
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}

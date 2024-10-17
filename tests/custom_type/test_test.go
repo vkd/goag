@@ -17,6 +17,9 @@ func TestGetMultiParams(t *testing.T) {
 	testPageSchemaRefQuery := PageCustom("testPage")
 	testPageCustomTypeQuery := pkg.PageCustomTypeQuery("testPage2")
 	testShopName := Shop(ShopName(pkg.Page("testPage3")))
+	testMetadata := pkg.Metadata{
+		InternalID: "body_metadata_internal_id",
+	}
 
 	api := API{
 		GetShopsShopHandler: func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse {
@@ -28,6 +31,7 @@ func TestGetMultiParams(t *testing.T) {
 			assert.Equal(t, testShop, req.Path.Shop)
 			assert.Equal(t, Just(testPageSchemaRefQuery), req.Query.PageSchemaRefQuery)
 			assert.Equal(t, Just(testPageCustomTypeQuery), req.Query.PageCustomTypeQuery)
+			assert.Equal(t, testMetadata, req.Body.Metadata)
 
 			return NewGetShopsShopResponse200JSON(Shop(testShopName))
 		},
@@ -43,6 +47,9 @@ func TestGetMultiParams(t *testing.T) {
 	params.Path.Shop = testShop
 	params.Query.PageSchemaRefQuery = Just(testPageSchemaRefQuery)
 	params.Query.PageCustomTypeQuery = Just(testPageCustomTypeQuery)
+	params.Body = GetShop{
+		Metadata: testMetadata,
+	}
 	resp, err := client.GetShopsShop(ctx, params)
 	require.NoError(t, err)
 
