@@ -109,14 +109,14 @@ var cv {{ .CustomType }}
 
 
 {{ define "CustomType_RenderUnmarshalJSON" -}}
-var cv {{ .Base.RenderGoType }}
-{{ .Base.RenderUnmarshalJSON "cv" .From .IsNew .MkErr }}
-var v {{ .CustomType }}
-err = v.Set(cv)
+var baseV {{ .Base.RenderGoType }}
+{{ .Base.RenderUnmarshalJSON "baseV" .From false .MkErr }}
+var cv {{ .CustomType }}
+err = cv.Set(baseV)
 if err != nil {
 	return {{ .MkErr.Wrap "parse" "err" }}
 }
-{{ .To }} = v
+{{ .To }} {{ if .IsNew }}:{{ end }}= cv
 {{- end }}
 
 
