@@ -61,6 +61,10 @@ components:
       properties:
         metadata:
           $ref: "#/components/schemas/Metadata"
+        settings:
+          $ref: "#/components/schemas/Settings"
+        environments:
+          $ref: "#/components/schemas/Environments"
 
     Metadata:
       type: object
@@ -68,4 +72,30 @@ components:
         inner_id:
           type: string
       x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Metadata
+
+    Settings:
+      type: object
+      nullable: true
+      properties:
+        theme:
+          type: string
+      x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Settings
+
+    Environments:
+      type: array
+      nullable: true
+      items:
+        $ref: "#/components/schemas/Environment"
+
+    Environment:
+      type: object
+      required:
+      - name
+      - value
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+      x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Environment
 `

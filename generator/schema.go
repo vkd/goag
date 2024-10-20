@@ -83,7 +83,7 @@ func (s Schema) CopyBase() Schema {
 		Description: s.Description,
 		Ref:         s.Ref,
 		Type:        s.Type,
-		Nullable:    s.Nullable,
+		Nullable:    "",
 		CustomType:  "",
 	}
 }
@@ -145,9 +145,9 @@ func (s Schema) Kind() SchemaKind {
 func (s Schema) RenderGoType() (string, error) {
 	if s.Ref != nil {
 		tp := s.Ref.Name
-		if s.Base().Nullable != "" {
-			tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
-		}
+		// if s.Base().Nullable != "" {
+		// 	tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
+		// }
 		return tp, nil
 	}
 	tp := InternalSchemaType(s.Type)
@@ -163,9 +163,9 @@ func (s Schema) RenderGoType() (string, error) {
 func (s Schema) RenderBaseGoType() (string, error) {
 	if s.Ref != nil {
 		tp := s.Ref.Name
-		if s.Base().Nullable != "" {
-			tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
-		}
+		// if s.Base().Nullable != "" {
+		// 	tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
+		// }
 		return tp, nil
 	}
 	tp := InternalSchemaType(s.Type)
@@ -400,7 +400,7 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		}
 		return r, ims, nil
 	case "array":
-		itemType, is, err := NewSchema(spec.Value().Items, components, cfg)
+		itemType, is, err := NewSchema(spec.Value().Items, NamedComponenter{Componenter: components, Name: "Items"}, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("items schema: %w", err)
 		}

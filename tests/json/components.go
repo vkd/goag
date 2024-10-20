@@ -118,7 +118,6 @@ func (c *Metadata) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		return fmt.Errorf("'owner' key is missing")
 	}
 	if raw, ok := m["tags"]; ok {
-
 		var vs []Tag
 		err = json.Unmarshal(raw, &vs)
 		if err != nil {

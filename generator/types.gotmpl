@@ -22,13 +22,13 @@ for i := range {{.From}} {
 }
 {{- end }}
 
-{{ define "SliceType_RenderUnmarshalJSON" }}
+{{ define "SliceType_RenderUnmarshalJSON" -}}
 var vs {{ .Self.RenderGoType }}
 err = json.Unmarshal({{ .From }}, &vs)
 if err != nil {
 	return {{ .MkErr.Wrap "unmarshal slice" "err" }}
 }
-{{ .To }} = vs
+{{ .To }} {{ if .IsNew }}:{{ end }}= vs
 {{- end }}
 
 

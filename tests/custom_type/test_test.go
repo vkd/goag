@@ -29,8 +29,8 @@ func TestGetMultiParams(t *testing.T) {
 			}
 
 			assert.Equal(t, testShop, req.Path.Shop)
-			assert.Equal(t, Just(testPageSchemaRefQuery), req.Query.PageSchemaRefQuery)
-			assert.Equal(t, Just(testPageCustomTypeQuery), req.Query.PageCustomTypeQuery)
+			assert.Equal(t, pkg.Just(testPageSchemaRefQuery), req.Query.PageSchemaRefQuery)
+			assert.Equal(t, pkg.Just(testPageCustomTypeQuery), req.Query.PageCustomTypeQuery)
 			assert.Equal(t, testMetadata, req.Body.Metadata)
 
 			return NewGetShopsShopResponse200JSON(Shop(testShopName))
@@ -45,8 +45,8 @@ func TestGetMultiParams(t *testing.T) {
 
 	var params GetShopsShopParams
 	params.Path.Shop = testShop
-	params.Query.PageSchemaRefQuery = Just(testPageSchemaRefQuery)
-	params.Query.PageCustomTypeQuery = Just(testPageCustomTypeQuery)
+	params.Query.PageSchemaRefQuery = pkg.Just(testPageSchemaRefQuery)
+	params.Query.PageCustomTypeQuery = pkg.Just(testPageCustomTypeQuery)
 	params.Body = GetShop{
 		Metadata: testMetadata,
 	}

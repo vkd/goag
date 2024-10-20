@@ -229,12 +229,12 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 		Description: schema.Description,
 		BaseType:    schemaType.BaseSchemaType(),
 
-		GoTypeFn:     schema.RenderBaseGoType,
+		GoTypeFn:     schema.RenderGoType,
 		FuncTypeName: schema.FuncTypeName(),
 	}
 
 	if schema.IsCustom() {
-		sc.GoTypeFn = StringRender(schema.CustomType).Render
+		// sc.GoTypeFn = StringRender(schema.CustomType).Render
 
 		cs.AddSchema(name+"Schema", schema.CopyBase(), cfg)
 	}
@@ -281,7 +281,7 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 }
 
 func (s SchemaComponent) Render() (string, error) {
-	if s.Schema.IsCustom() {
+	if s.Schema.IsCustom() || s.Schema.Nullable != "" {
 		return ExecuteTemplate("SchemaComponent_Alias", s)
 	}
 	return ExecuteTemplate("SchemaComponent", s)

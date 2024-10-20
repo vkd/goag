@@ -1,7 +1,6 @@
 package test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -51,9 +50,9 @@ type GetShopsShopParams struct {
 }
 
 type GetShopsShopParamsQuery struct {
-	PageSchemaRefQuery Maybe[PageCustom]
+	PageSchemaRefQuery pkg.Maybe[PageCustom]
 
-	PageCustomTypeQuery Maybe[pkg.PageCustomTypeQuery]
+	PageCustomTypeQuery pkg.Maybe[pkg.PageCustomTypeQuery]
 }
 
 type GetShopsShopParamsPath struct {
@@ -193,86 +192,6 @@ func writeJSON(w io.Writer, v interface{}, name string) {
 	if err != nil {
 		LogError(fmt.Errorf("write json response %q: %w", name, err))
 	}
-}
-
-type Maybe[T any] struct {
-	IsSet bool
-	Value T
-}
-
-func Nothing[T any]() Maybe[T] {
-	return Maybe[T]{}
-}
-
-func Just[T any](v T) Maybe[T] {
-	return Maybe[T]{
-		IsSet: true,
-		Value: v,
-	}
-}
-
-func (m Maybe[T]) Get() (zero T, _ bool) {
-	if m.IsSet {
-		return m.Value, true
-	}
-	return zero, false
-}
-
-func (m *Maybe[T]) Set(v T) {
-	m.IsSet = true
-	m.Value = v
-}
-
-type Nullable[T any] struct {
-	IsSet bool
-	Value T
-}
-
-func Null[T any]() Nullable[T] {
-	return Nullable[T]{}
-}
-
-func Pointer[T any](v T) Nullable[T] {
-	return Nullable[T]{
-		IsSet: true,
-		Value: v,
-	}
-}
-
-func (m Nullable[T]) Get() (zero T, _ bool) {
-	if m.IsSet {
-		return m.Value, true
-	}
-	return zero, false
-}
-
-func (m *Nullable[T]) Set(v T) {
-	m.IsSet = true
-	m.Value = v
-}
-
-var _ json.Marshaler = (*Nullable[any])(nil)
-
-func (m Nullable[T]) MarshalJSON() ([]byte, error) {
-	if m.IsSet {
-		return json.Marshal(&m.Value)
-	}
-	return []byte(nullValue), nil
-}
-
-var _ json.Unmarshaler = (*Nullable[any])(nil)
-
-const nullValue = "null"
-
-var nullValueBs = []byte(nullValue)
-
-func (m *Nullable[T]) UnmarshalJSON(bs []byte) error {
-	if bytes.Equal(bs, nullValueBs) {
-		m.IsSet = false
-		return nil
-	}
-	m.IsSet = true
-	return json.Unmarshal(bs, &m.Value)
 }
 
 type ErrParseParam struct {
