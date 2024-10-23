@@ -1,3 +1,5 @@
 package specification
 
-const ExtTagGoType = "x-goag-go-type"
+const ExtGoagPrefix = "x-goag-"
+const ExtTagGoType = ExtGoagPrefix + "go-type"
+const ExtTagGoTimeFormat = ExtGoagPrefix + "go-time-format"

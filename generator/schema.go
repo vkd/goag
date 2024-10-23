@@ -422,7 +422,11 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		case "binary": // any sequence of octets
 		case "date": // full-date = 4DIGIT "-" 01-12 "-" 01-31
 		case "date-time": // full-date "T" 00-23 ":" 00-59 ":" 00-60 "Z" / ("+" / "-") 00-23 ":" 00-60
-			dt, ims := NewDateTime("time.RFC3339")
+			format := "time.RFC3339Nano"
+			if v, ok := spec.Extentions[specification.ExtTagGoTimeFormat]; ok {
+				format = v
+			}
+			dt, ims := NewDateTime(format)
 			return NewPrimitive(dt), ims, nil
 		case "password":
 		default:

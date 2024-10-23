@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 )
@@ -97,7 +98,8 @@ type Schema struct {
 
 	AdditionalProperties Maybe[Ref[Schema]]
 
-	Custom Maybe[string]
+	Custom     Maybe[string]
+	Extentions map[string]string
 }
 
 func NewSchemaRef(schema *openapi3.SchemaRef, components Sourcer[Schema], opts SchemaOptions) (Ref[Schema], error) {
@@ -177,13 +179,21 @@ func NewSchema(schema *openapi3.Schema, components Sourcer[Schema], opts SchemaO
 		})
 	}
 
-	if !opts.IgnoreCustomType {
-		if v, ok := schema.ExtensionProps.Extensions[ExtTagGoType]; ok {
+	extentions := make(map[string]string)
+	for k, v := range schema.ExtensionProps.Extensions {
+		if strings.HasPrefix(k, ExtGoagPrefix) {
 			if raw, ok := v.(json.RawMessage); ok {
 				var s string
 				_ = json.Unmarshal(raw, &s)
-				out.Custom = Just(s)
+				extentions[k] = s
 			}
+		}
+	}
+	out.Extentions = extentions
+
+	if !opts.IgnoreCustomType {
+		if v, ok := extentions[ExtTagGoType]; ok {
+			out.Custom = Just(v)
 		}
 	}
 
