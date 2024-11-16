@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
+	"runtime/debug"
 
 	"github.com/vkd/goag"
 )
@@ -19,11 +21,25 @@ var (
 	doNotEdit    = flag.Bool("donotedit", true, "Add 'DO NOT EDIT' headers")
 	specHandler  = flag.String("spec-handler-name", "openapi.yaml", "Handler spec filename")
 	isApiHandler = flag.Bool("api-handler", true, "Generate api handler")
+	isVersion    = flag.Bool("version", false, "Print version")
 )
 
 func main() {
 	log.SetFlags(0)
 	flag.Parse()
+
+	if *isVersion || (len(os.Args) == 2 && os.Args[1] == "version") {
+		version := "unknown"
+
+		info, ok := debug.ReadBuildInfo()
+		if ok {
+			if info.Main.Version != "" {
+				version = info.Main.Version
+			}
+		}
+		log.Printf("%s", version)
+		return
+	}
 
 	var g goag.Generator
 	g.GenClient = *genClient
