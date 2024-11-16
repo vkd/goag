@@ -1,6 +1,11 @@
 package test
 
-const SpecFile string = `paths:
+const SpecFile string = `openapi: "3.0.3"
+info:
+  version: 0.0.1
+  title: nullable
+
+paths:
   /pets:
     post:
       requestBody:
@@ -34,6 +39,7 @@ components:
         - id
         - name
         - tag
+        - parents
       properties:
         id:
           type: integer
@@ -46,6 +52,10 @@ components:
         tago:
           nullable: true
           type: string
+        parents:
+          nullable: true
+          type: object
+          additionalProperties: true
 
   responses:
     Pet:

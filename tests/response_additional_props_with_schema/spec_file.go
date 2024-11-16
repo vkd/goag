@@ -5,6 +5,7 @@ const SpecFile string = `paths:
     get:
       responses:
         '200':
+          description: OK response
           content:
             application/json:
               schema:
@@ -36,7 +37,6 @@ components:
           $ref: '#/components/schemas/PetCustom'
     PetCustom:
       type: object
-      x-goag-go-type: json.RawMessage
       additionalProperties:
         type: object
       properties:

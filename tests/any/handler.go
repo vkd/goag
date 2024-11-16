@@ -11,70 +11,77 @@ import (
 )
 
 // ---------------------------------------------
-// GetPet -
+// PostPets -
 // ---------------------------------------------
 
-type GetPetHandlerFunc func(ctx context.Context, r GetPetRequest) GetPetResponse
+type PostPetsHandlerFunc func(ctx context.Context, r PostPetsRequest) PostPetsResponse
 
-func (f GetPetHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f(r.Context(), GetPetHTTPRequest(r)).writeGetPet(w)
+func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(r.Context(), PostPetsHTTPRequest(r)).writePostPets(w)
 }
 
-type GetPetRequest interface {
+type PostPetsRequest interface {
 	HTTP() *http.Request
-	Parse() GetPetParams
+	Parse() (PostPetsParams, error)
 }
 
-func GetPetHTTPRequest(r *http.Request) GetPetRequest {
-	return getPetHTTPRequest{r}
+func PostPetsHTTPRequest(r *http.Request) PostPetsRequest {
+	return postPetsHTTPRequest{r}
 }
 
-type getPetHTTPRequest struct {
+type postPetsHTTPRequest struct {
 	Request *http.Request
 }
 
-func (r getPetHTTPRequest) HTTP() *http.Request { return r.Request }
+func (r postPetsHTTPRequest) HTTP() *http.Request { return r.Request }
 
-func (r getPetHTTPRequest) Parse() GetPetParams {
-	return newGetPetParams(r.Request)
+func (r postPetsHTTPRequest) Parse() (PostPetsParams, error) {
+	return newPostPetsParams(r.Request)
 }
 
-type GetPetParams struct {
+type PostPetsParams struct {
+	Body CreatePetJSON
 }
 
-func newGetPetParams(r *http.Request) (zero GetPetParams) {
-	var params GetPetParams
+func newPostPetsParams(r *http.Request) (zero PostPetsParams, _ error) {
+	var params PostPetsParams
 
-	return params
+	defer r.Body.Close()
+	err := json.NewDecoder(r.Body).Decode(&params.Body)
+	if err != nil {
+		return zero, fmt.Errorf("decode request body: %w", err)
+	}
+
+	return params, nil
 }
 
-func (r GetPetParams) HTTP() *http.Request { return nil }
+func (r PostPetsParams) HTTP() *http.Request { return nil }
 
-func (r GetPetParams) Parse() GetPetParams { return r }
+func (r PostPetsParams) Parse() (PostPetsParams, error) { return r, nil }
 
-type GetPetResponse interface {
-	writeGetPet(http.ResponseWriter)
+type PostPetsResponse interface {
+	writePostPets(http.ResponseWriter)
 }
 
-func NewGetPetResponse200JSON(body RawResponse) GetPetResponse {
-	var out GetPetResponse200JSON
+func NewPostPetsResponse200JSON(body Pets) PostPetsResponse {
+	var out PostPetsResponse200JSON
 	out.Body = body
 	return out
 }
 
-// GetPetResponse200JSON - OK response
-type GetPetResponse200JSON struct {
-	Body RawResponse
+// PostPetsResponse200JSON - Pets response
+type PostPetsResponse200JSON struct {
+	Body Pets
 }
 
-func (r GetPetResponse200JSON) writeGetPet(w http.ResponseWriter) {
+func (r PostPetsResponse200JSON) writePostPets(w http.ResponseWriter) {
 	r.Write(w)
 }
 
-func (r GetPetResponse200JSON) Write(w http.ResponseWriter) {
+func (r PostPetsResponse200JSON) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-	writeJSON(w, r.Body, "GetPetResponse200JSON")
+	writeJSON(w, r.Body, "PostPetsResponse200JSON")
 }
 
 var LogError = func(err error) {

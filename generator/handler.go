@@ -109,7 +109,7 @@ func NewHandlerParameters(p OperationParams, cfg Config) (zero HandlerParameters
 
 type HandlerParameter struct {
 	FieldName    string
-	GoTypeFn     GoTypeRenderFunc
+	TypeFn       RenderFunc
 	FieldComment string
 }
 
@@ -131,7 +131,7 @@ func NewHandlerQueryParameter(p *QueryParameter, cfg Config) (zero HandlerQueryP
 	out := HandlerQueryParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
-			GoTypeFn:     p.Type.RenderGoType,
+			TypeFn:       p.Type.RenderFieldType,
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
@@ -193,7 +193,7 @@ func NewHandlerPathParameter(p *PathParameter) (zero HandlerPathParameter, _ Imp
 	out := HandlerPathParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
-			GoTypeFn:     p.Type.RenderGoType,
+			TypeFn:       p.Type.RenderGoType,
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
@@ -222,7 +222,7 @@ func NewHandlerHeaderParameter(p *HeaderParameter, cfg Config) (zero HandlerHead
 	out := HandlerHeaderParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    fieldName,
-			GoTypeFn:     tp.RenderGoType,
+			TypeFn:       tp.RenderGoType,
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 
@@ -277,8 +277,9 @@ func NewHandlerResponse(r *Response, name OperationName, status string, componen
 
 	if out.IsDefault {
 		out.Struct.Fields = append(out.Struct.Fields, StructureField{
-			Name:     "Code",
-			GoTypeFn: StringRender(IntType{}.GoType()).Render,
+			Name:        "Code",
+			GoTypeFn:    StringRender(IntType{}.GoType()).Render,
+			FieldTypeFn: StringRender(IntType{}.GoType()).Render,
 		})
 		out.Args = append(out.Args, ResponseArg{
 			FieldName: "Code",
@@ -309,8 +310,9 @@ func NewHandlerResponse(r *Response, name OperationName, status string, componen
 		}
 
 		out.Struct.Fields = append(out.Struct.Fields, StructureField{
-			Name:     "Body",
-			GoTypeFn: out.GoTypeFn,
+			Name:        "Body",
+			GoTypeFn:    out.GoTypeFn,
+			FieldTypeFn: RenderFunc(out.GoTypeFn),
 		})
 		out.Args = append(out.Args, ResponseArg{
 			FieldName: "Body",
@@ -322,8 +324,9 @@ func NewHandlerResponse(r *Response, name OperationName, status string, componen
 	var headersStruct StructureType
 	for _, h := range r.Headers {
 		headersStruct.Fields = append(headersStruct.Fields, StructureField{
-			Name:     h.FieldName,
-			GoTypeFn: h.Schema.RenderGoType,
+			Name:        h.FieldName,
+			GoTypeFn:    h.Schema.RenderGoType,
+			FieldTypeFn: h.Schema.RenderGoType,
 		})
 		out.Args = append(out.Args, ResponseArg{
 			FieldName: h.FieldName,
@@ -334,8 +337,9 @@ func NewHandlerResponse(r *Response, name OperationName, status string, componen
 	}
 	if len(headersStruct.Fields) > 0 {
 		out.Struct.Fields = append(out.Struct.Fields, StructureField{
-			Name:     "Headers",
-			GoTypeFn: headersStruct.RenderGoType,
+			Name:        "Headers",
+			GoTypeFn:    headersStruct.RenderGoType,
+			FieldTypeFn: headersStruct.RenderGoType,
 		})
 	}
 

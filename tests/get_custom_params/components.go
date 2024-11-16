@@ -1,21 +1,25 @@
 package test
 
-import (
-	"github.com/vkd/goag/tests/get_custom_params/pkg"
-)
-
 // ------------------------
 //         Schemas
 // ------------------------
 
-type PageCustom = pkg.Page
+type PageCustom string
 
-type PageCustomSchema string
-
-func NewPageCustomSchema(v string) PageCustomSchema {
-	return PageCustomSchema(v)
+func NewPageCustom(v string) PageCustom {
+	return PageCustom(v)
 }
 
-func (c PageCustomSchema) String() string {
+func (c PageCustom) String() string {
+	return string(c)
+}
+
+type PageCustom_Schema string
+
+func NewPageCustom_Schema(v string) PageCustom_Schema {
+	return PageCustom_Schema(v)
+}
+
+func (c PageCustom_Schema) String() string {
 	return string(c)
 }

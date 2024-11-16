@@ -152,3 +152,7 @@ if err != nil {
 	return {{ .MkErr.Wrap "parse time" "err" }}
 }
 {{- end }}
+
+{{ define "DateTime_RenderMarshalJSON" -}}
+{{ .To }} {{ if .IsNew }}:{{ end }}= {{ .From }}.Format({{ .Layout }})
+{{- end }}

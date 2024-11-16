@@ -161,14 +161,14 @@ func NewHandlerParameterHeaderTemplates(ps []HandlerHeaderParameter) []HandlerPa
 type HandlerParameterTemplate struct {
 	FieldName    string
 	FieldComment string
-	GoTypeFn     GoTypeRenderFunc
+	TypeFn       RenderFunc
 }
 
 func NewHandlerParameterTemplate(h HandlerParameter) HandlerParameterTemplate {
 	return HandlerParameterTemplate{
 		FieldName:    h.FieldName,
 		FieldComment: h.FieldComment,
-		GoTypeFn:     h.GoTypeFn,
+		TypeFn:       h.TypeFn,
 	}
 }
 

@@ -21,6 +21,11 @@ type PetTag struct {
 	V string
 }
 
+func (p *PetTag) SetFromSchemaString(s string) error {
+	p.V = s
+	return nil
+}
+
 func (p PetTag) String() string { return p.V }
 
 func (p PetTag) MarshalJSON() ([]byte, error) {

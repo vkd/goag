@@ -65,6 +65,12 @@ components:
           $ref: "#/components/schemas/Settings"
         environments:
           $ref: "#/components/schemas/Environments"
+        additionals:
+          type: object
+          nullable: true
+          additionalProperties: true
+          x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Settings
+
 
     Metadata:
       type: object

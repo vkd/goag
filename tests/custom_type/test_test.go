@@ -14,11 +14,12 @@ import (
 func TestGetMultiParams(t *testing.T) {
 	ctx := context.Background()
 	testShop := pkg.Shop("paw")
-	testPageSchemaRefQuery := PageCustom("testPage")
+	testPageSchemaRefQuery := pkg.Page("testPage")
 	testPageCustomTypeQuery := pkg.PageCustomTypeQuery("testPage2")
-	testShopName := Shop(ShopName(pkg.Page("testPage3")))
+	testShopName := Shop(ShopName(3))
 	testMetadata := pkg.Metadata{
 		InternalID: "body_metadata_internal_id",
+		OK:         true,
 	}
 
 	api := API{
@@ -49,6 +50,12 @@ func TestGetMultiParams(t *testing.T) {
 	params.Query.PageCustomTypeQuery = pkg.Just(testPageCustomTypeQuery)
 	params.Body = GetShop{
 		Metadata: testMetadata,
+		Environments: pkg.Just(pkg.Pointer(Environments{
+			pkg.Environment{
+				Name:  "HELLO",
+				Value: "world",
+			},
+		})),
 	}
 	resp, err := client.GetShopsShop(ctx, params)
 	require.NoError(t, err)

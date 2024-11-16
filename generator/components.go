@@ -189,12 +189,14 @@ type SchemaComponent struct {
 	Name   string
 	Schema Schema
 
-	Description       string
-	IgnoreParseFormat bool
-	// IsAlias       bool
-	WriteJSONFunc bool
+	Description        string
+	IgnoreParseFormat  bool
+	IsAlias            bool
+	WriteJSONFunc      bool
+	WriteJSONFuncArray bool
 
 	StructureType StructureType
+	SliceType     SliceType
 
 	// Ref Maybe[*SchemaComponent]
 
@@ -236,18 +238,22 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 	if schema.IsCustom() {
 		// sc.GoTypeFn = StringRender(schema.CustomType).Render
 
-		cs.AddSchema(name+"Schema", schema.CopyBase(), cfg)
+		cs.AddSchema(sc.Name+"_Schema", schema.CopyBase(), cfg)
 	}
 
 	switch schema := schemaType.Type.(type) {
+	case AnyType:
+		sc.IgnoreParseFormat = true
+		sc.IsAlias = true
+		// sc.WriteJSONFunc = true
 	case StructureType:
 		sc.IgnoreParseFormat = true
 		sc.StructureType = schema
-		if cfg.Experimental.CustomJSONImplementation || schema.AdditionalProperties != nil {
-			sc.WriteJSONFunc = true
-		}
+		sc.WriteJSONFunc = true
 	case SliceType:
 		sc.BaseType = schema.Items
+		sc.WriteJSONFuncArray = true
+		sc.SliceType = schema
 
 		switch schema.Items.BaseSchemaType().(type) {
 		// case RefSchemaType:
@@ -281,7 +287,7 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 }
 
 func (s SchemaComponent) Render() (string, error) {
-	if s.Schema.IsCustom() || s.Schema.Nullable != "" {
+	if s.IsAlias {
 		return ExecuteTemplate("SchemaComponent_Alias", s)
 	}
 	return ExecuteTemplate("SchemaComponent", s)

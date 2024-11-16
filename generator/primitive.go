@@ -16,6 +16,7 @@ type PrimitiveIface interface {
 	RenderStringParser(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 
 	RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error)
+	RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
 
 func NewPrimitive(v PrimitiveIface) Primitive {
@@ -65,6 +66,10 @@ func (t Primitive) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorR
 	return t.PrimitiveIface.RenderUnmarshalJSON(to, from, isNew, mkErr)
 }
 
+func (t Primitive) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return t.PrimitiveIface.RenderMarshalJSON(to, from, isNew, mkErr)
+}
+
 type BoolType struct{}
 
 var _ PrimitiveIface = BoolType{}
@@ -97,6 +102,10 @@ func (_ BoolType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRe
 		"IsNew": isNew,
 		"MkErr": mkErr,
 	})
+}
+
+func (_ BoolType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return "", nil
 }
 
 type IntType struct {
@@ -178,6 +187,10 @@ func (i IntType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRen
 	}
 }
 
+func (i IntType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return "", nil
+}
+
 type FloatType struct {
 	BitSize int
 }
@@ -257,6 +270,10 @@ func (i FloatType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorR
 	}
 }
 
+func (i FloatType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return "", nil
+}
+
 type StringType struct{}
 
 var _ PrimitiveIface = StringType{}
@@ -285,6 +302,10 @@ func (_ StringType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr Error
 		"IsNew": isNew,
 		"MkErr": mkErr,
 	})
+}
+
+func (_ StringType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return "", nil
 }
 
 type DateTime struct {
@@ -346,6 +367,24 @@ func (d DateTime) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRe
 		layout = `"` + d.TextLayout + `"`
 	}
 	return ExecuteTemplate("DateTime_RenderUnmarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"Layout": layout,
+	})
+}
+
+func (d DateTime) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	layout := "time.RFC3339"
+	if d.GoLayout != "" {
+		layout = d.GoLayout
+	}
+	if d.TextLayout != "" {
+		layout = `"` + d.TextLayout + `"`
+	}
+	return ExecuteTemplate("DateTime_RenderMarshalJSON", TData{
 		"To":    to,
 		"From":  from,
 		"IsNew": isNew,

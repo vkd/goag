@@ -14,8 +14,8 @@ import (
 // ------------------------
 
 type Metadata struct {
-	Owner string      `json:"owner"`
-	Tags  Maybe[Tags] `json:"tags"`
+	Owner string
+	Tags  Maybe[Tags]
 }
 
 var _ json.Marshaler = (*Metadata)(nil)
@@ -118,12 +118,10 @@ func (c *Metadata) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		return fmt.Errorf("'owner' key is missing")
 	}
 	if raw, ok := m["tags"]; ok {
-		var vs []Tag
-		err = json.Unmarshal(raw, &vs)
+		err = c.Tags.Value.UnmarshalJSON(raw)
 		if err != nil {
-			return fmt.Errorf("'tags' field: unmarshal slice: %w", err)
+			return fmt.Errorf("'tags' field: unmarshal ref type 'Tags': %w", err)
 		}
-		c.Tags.Value = vs
 		c.Tags.IsSet = true
 		delete(m, "tags")
 	}
@@ -131,11 +129,11 @@ func (c *Metadata) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 }
 
 type NewPet struct {
-	Birthday time.Time               `json:"birthday"`
-	Metadata Maybe[Metadata]         `json:"metadata"`
-	Name     string                  `json:"name"`
-	Tag      Nullable[string]        `json:"tag"`
-	Tago     Maybe[Nullable[string]] `json:"tago"`
+	Birthday time.Time
+	Metadata Maybe[Metadata]
+	Name     string
+	Tag      Nullable[string]
+	Tago     Maybe[Nullable[string]]
 }
 
 var _ json.Marshaler = (*NewPet)(nil)
@@ -202,7 +200,7 @@ func (c NewPet) marshalJSONInnerBody(out io.Writer) error {
 	_ = writeProperty
 	{
 		var v any
-		v = c.Birthday.Format(time.RFC3339)
+		v = c.Birthday.Format(time.RFC3339Nano)
 		writeProperty("birthday", v)
 	}
 	if vOpt, ok := c.Metadata.Get(); ok {
@@ -253,7 +251,7 @@ func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		if err != nil {
 			return fmt.Errorf("'birthday' field: unmarshal string: %w", err)
 		}
-		c.Birthday, err = time.Parse(time.RFC3339, s)
+		c.Birthday, err = time.Parse(time.RFC3339Nano, s)
 		if err != nil {
 			return fmt.Errorf("'birthday' field: parse time: %w", err)
 		}
@@ -264,7 +262,7 @@ func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	if raw, ok := m["metadata"]; ok {
 		err = c.Metadata.Value.UnmarshalJSON(raw)
 		if err != nil {
-			return fmt.Errorf("'metadata' field: unmarshal object: %w", err)
+			return fmt.Errorf("'metadata' field: unmarshal ref type 'Metadata': %w", err)
 		}
 		c.Metadata.IsSet = true
 		delete(m, "metadata")
@@ -279,31 +277,31 @@ func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		return fmt.Errorf("'name' key is missing")
 	}
 	if raw, ok := m["tag"]; ok {
-		if string(raw) != "null" {
+		var vn Nullable[string]
+		if len(raw) != 4 || string(raw) != "null" {
 			var v string
 			err = json.Unmarshal(raw, &v)
 			if err != nil {
 				return fmt.Errorf("'tag' field: unmarshal string: %w", err)
 			}
-			var vPtr Nullable[string]
-			vPtr.Set(v)
-			c.Tag = vPtr
+			vn.Set(v)
 		}
+		c.Tag = vn
 		delete(m, "tag")
 	} else {
 		return fmt.Errorf("'tag' key is missing")
 	}
 	if raw, ok := m["tago"]; ok {
-		if string(raw) != "null" {
+		var vn Nullable[string]
+		if len(raw) != 4 || string(raw) != "null" {
 			var v string
 			err = json.Unmarshal(raw, &v)
 			if err != nil {
 				return fmt.Errorf("'tago' field: unmarshal string: %w", err)
 			}
-			var vPtr Nullable[string]
-			vPtr.Set(v)
-			c.Tago.Value = vPtr
+			vn.Set(v)
 		}
+		c.Tago.Value = vn
 		c.Tago.IsSet = true
 		delete(m, "tago")
 	}
@@ -312,7 +310,7 @@ func (c *NewPet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 
 type Pet struct {
 	NewPet
-	ID int64 `json:"id"`
+	ID int64
 }
 
 var _ json.Marshaler = (*Pet)(nil)
@@ -424,8 +422,8 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 }
 
 type Tag struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name  string
+	Value string
 }
 
 var _ json.Marshaler = (*Tag)(nil)
@@ -540,6 +538,109 @@ func (c *Tag) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 }
 
 type Tags []Tag
+
+var _ json.Marshaler = (*Tags)(nil)
+
+func (c Tags) MarshalJSON() ([]byte, error) {
+	var out bytes.Buffer
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+
+	write([]byte(`[`))
+	mErr := c.marshalJSONInnerBody(&out)
+	if mErr != nil {
+		err = mErr
+	}
+	write([]byte(`]`))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Bytes(), nil
+}
+
+func (c Tags) marshalJSONInnerBody(out io.Writer) error {
+	encoder := json.NewEncoder(out)
+	var err error
+	var comma string
+	write := func(s string) {
+		if err != nil || len(s) == 0 {
+			return
+		}
+		n, werr := out.Write([]byte(s))
+		if werr != nil {
+			err = werr
+		} else if len(s) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+	writeItem := func(v any) {
+		if err != nil {
+			return
+		}
+		if v == nil {
+			write(`null`)
+		} else {
+			werr := encoder.Encode(v)
+			if werr != nil {
+				err = werr
+			}
+		}
+	}
+	_ = writeItem
+
+	for i, cv := range c {
+		_ = i
+		if err != nil {
+			return err
+		}
+
+		write(comma)
+		comma = ","
+
+		writeItem(cv)
+	}
+
+	return err
+}
+
+var _ json.Unmarshaler = (*Tags)(nil)
+
+func (c *Tags) UnmarshalJSON(bs []byte) error {
+	var m []json.RawMessage
+	err := json.Unmarshal(bs, &m)
+	if err != nil {
+		return fmt.Errorf("raw key/value map: %w", err)
+	}
+	return c.unmarshalJSONInnerBody(m)
+}
+
+func (c *Tags) unmarshalJSONInnerBody(m []json.RawMessage) error {
+	out := make(Tags, 0, len(m))
+	var err error
+	_ = err
+	for _, vm := range m {
+		var vItem Tag
+		err = vItem.UnmarshalJSON(vm)
+		if err != nil {
+			return fmt.Errorf("unmarshal ref type 'Tag': %w", err)
+		}
+		out = append(out, vItem)
+	}
+	*c = out
+	return nil
+}
 
 // ------------------------------
 //         Responses

@@ -175,7 +175,7 @@ func NewSchema(schema *openapi3.Schema, components Sourcer[Schema], opts SchemaO
 	} else if schema.AdditionalPropertiesAllowed != nil && *schema.AdditionalPropertiesAllowed {
 		out.AdditionalProperties = Just[Ref[Schema]](&Schema{
 			Type:   "object",
-			Custom: Just("json.RawMessage"),
+			Custom: Just("any"),
 		})
 	}
 

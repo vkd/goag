@@ -59,7 +59,7 @@ type GetShopsShopParamsQuery struct {
 
 	PagesArray Maybe[Pages]
 
-	PageCustom Maybe[PageCustom]
+	PageCustom Maybe[pkg.Page]
 }
 
 type GetShopsShopParamsPath struct {

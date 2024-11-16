@@ -13,7 +13,7 @@ type Schema struct {
 	Type InternalSchemaType
 
 	Nullable   string
-	CustomType string
+	CustomType Maybe[CustomType]
 }
 
 type Componenter interface {
@@ -45,10 +45,10 @@ func NewSchema(s specification.Ref[specification.Schema], components Componenter
 		return zero, nil, err
 	}
 
-	var customType string
+	var customType Maybe[CustomType]
 	if specCustom, ok := schema.Value().Custom.Get(); ok {
 		ct, is := NewCustomType(specCustom, st)
-		customType = ct.Value
+		customType = Just(ct)
 		ims = append(ims, is...)
 	}
 
@@ -61,7 +61,7 @@ func NewSchema(s specification.Ref[specification.Schema], components Componenter
 		}
 	}
 
-	return Schema{
+	out := Schema{
 		Description: s.Value().Description,
 
 		Type: st,
@@ -69,7 +69,8 @@ func NewSchema(s specification.Ref[specification.Schema], components Componenter
 
 		Nullable:   nullable,
 		CustomType: customType,
-	}, ims, nil
+	}
+	return out, ims, nil
 }
 
 func NewSchemaWithType(s InternalSchemaType) Schema {
@@ -78,13 +79,20 @@ func NewSchemaWithType(s InternalSchemaType) Schema {
 	}
 }
 
+func (s Schema) IsNullable() bool {
+	// if s.Ref != nil {
+	// 	return s.Ref.Schema.IsNullable()
+	// }
+	return s.Nullable != ""
+}
+
 func (s Schema) CopyBase() Schema {
 	return Schema{
 		Description: s.Description,
 		Ref:         s.Ref,
 		Type:        s.Type,
 		Nullable:    "",
-		CustomType:  "",
+		CustomType:  Nothing[CustomType](),
 	}
 }
 
@@ -100,7 +108,7 @@ func (s Schema) Base() Schema {
 }
 
 func (s Schema) RenderBaseFrom(prefix, from, suffix string) (string, error) {
-	if s.CustomType != "" {
+	if _, ok := s.CustomType.Get(); ok {
 		from = from + "." + s.FuncTypeName() + "()"
 	}
 	if s.Nullable != "" {
@@ -110,22 +118,35 @@ func (s Schema) RenderBaseFrom(prefix, from, suffix string) (string, error) {
 }
 
 func (s Schema) RenderToBaseType(to, from string) (string, error) {
-	if s.Ref != nil {
-		isStruct := s.Ref.Schema.Kind() == SchemaKindObject
-		isArray := s.Ref.Schema.Kind() == SchemaKindArray
-		if !s.Ref.Schema.IsCustom() && !isStruct && !isArray {
-			from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
-		}
-		return s.Ref.Schema.RenderToBaseType(to, from)
-	}
-	tp := s.Type
-	if s.CustomType != "" {
-		tp = CustomType{Value: s.CustomType, Type: s.Type}
-	}
-	if s.Nullable != "" {
-		tp = NullableType{V: tp, TypeName: s.Nullable}
-	}
-	return tp.RenderToBaseType(to, from)
+	// if s.Ref != nil {
+	// 	isStruct := s.Ref.Schema.Kind() == SchemaKindObject
+	// 	isArray := s.Ref.Schema.Kind() == SchemaKindArray
+	// 	if !s.Ref.Schema.IsCustom() && !isStruct && !isArray {
+	// 		from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
+	// 	}
+	// 	return s.Ref.Schema.RenderToBaseType(to, from)
+	// }
+	// ---
+	// tp := s.Type
+	// if s.Ref != nil {
+	// 	tp = s.Ref.Schema
+	// 	// from = from + ".ToSchema" + s.Ref.Name + "()"
+	// 	return s.Ref.Schema.RenderToBaseType(to, from)
+	// }
+	// if ct, ok := s.CustomType.Get(); ok {
+	// 	tp = ct
+	// }
+	// if s.IsNullable() {
+	// 	tp = NullableType{V: tp, TypeName: s.Nullable}
+	// }
+	// return tp.RenderToBaseType(to, from)
+	// ---
+	return ExecuteTemplate("Schema_RenderToBaseType", TData{
+		"To":   to,
+		"From": from,
+
+		"Schema": s,
+	})
 }
 
 func (s Schema) FuncTypeName() string {
@@ -142,17 +163,48 @@ func (s Schema) Kind() SchemaKind {
 	return s.Type.Kind()
 }
 
-func (s Schema) RenderGoType() (string, error) {
+func (s Schema) RenderTypeDefinition() (string, error) {
+	if s.Ref != nil {
+		return s.Ref.Name, nil
+	}
+	return s.Type.RenderGoType()
+}
+
+func (s Schema) RenderFieldType() (string, error) {
 	if s.Ref != nil {
 		tp := s.Ref.Name
-		// if s.Base().Nullable != "" {
-		// 	tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
-		// }
+		if ct, ok := s.Ref.Schema.CustomType.Get(); ok {
+			tp = ct.Value
+		}
+		if s.Base().Nullable != "" {
+			tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
+		}
 		return tp, nil
 	}
+	if ct, ok := s.CustomType.Get(); ok {
+		if s.IsNullable() {
+			return NullableType{TypeName: s.Nullable}.GoType(ct.Value), nil
+		}
+		return ct.Value, nil
+	}
+	tp := s.Type
+	if s.Nullable != "" {
+		tp = NullableType{V: tp, TypeName: s.Nullable}
+	}
+	return tp.RenderGoType()
+}
+
+func (s Schema) RenderGoType() (string, error) {
 	tp := InternalSchemaType(s.Type)
-	if s.CustomType != "" {
-		tp = CustomType{Value: s.CustomType, Type: s.Type}
+	if s.Ref != nil {
+		tp := s.Ref.Name
+		if s.Base().Nullable != "" {
+			tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
+		}
+		return tp, nil
+	}
+	if ct, ok := s.CustomType.Get(); ok {
+		tp = ct
 	}
 	if s.Nullable != "" {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
@@ -177,7 +229,7 @@ func (s Schema) RenderBaseGoType() (string, error) {
 
 // TODO: refactor to remove the method
 func (s Schema) IsCustom() bool {
-	return s.CustomType != ""
+	return s.CustomType.IsSet
 }
 
 func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -197,8 +249,8 @@ func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (str
 		})
 	}
 	tp := InternalSchemaType(s.Type)
-	if s.CustomType != "" {
-		tp = CustomType{Value: s.CustomType, Type: s.Type}
+	if ct, ok := s.CustomType.Get(); ok {
+		tp = ct
 	}
 	if s.Nullable != "" {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
@@ -239,8 +291,8 @@ func (s Schema) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (st
 		}
 	}
 	tp := s.Type
-	if s.CustomType != "" {
-		tp = CustomType{Value: s.CustomType, Type: s.Type}
+	if ct, ok := s.CustomType.Get(); ok {
+		tp = ct
 	}
 	if s.Nullable != "" {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
@@ -258,8 +310,8 @@ func (s Schema) RenderFormat(from string) (string, error) {
 		return s.Ref.Schema.RenderFormat(from)
 	}
 	tp := s.Type
-	if s.CustomType != "" {
-		tp = CustomType{Value: s.CustomType, Type: s.Type}
+	if ct, ok := s.CustomType.Get(); ok {
+		tp = ct
 	}
 	if s.Nullable != "" {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
@@ -275,7 +327,7 @@ func (s Schema) RenderConvertToBaseSchema(from string) (string, error) {
 		return s.Ref.Schema.RenderConvertToBaseSchema(from)
 	}
 
-	if s.CustomType != "" {
+	if _, ok := s.CustomType.Get(); ok {
 		from = from + "." + s.Type.FuncTypeName() + "()"
 	}
 	return from, nil
@@ -306,8 +358,8 @@ func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error)
 		}
 	}
 	tp := InternalSchemaType(s.Type)
-	if s.CustomType != "" {
-		tp = CustomType{Value: s.CustomType, Type: s.Type}
+	if ct, ok := s.CustomType.Get(); ok {
+		tp = ct
 	}
 	if s.Nullable != "" {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
@@ -317,21 +369,68 @@ func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error)
 
 func (s Schema) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	if s.Ref != nil {
-		// if !s.Ref.Schema.IsCustom() {
-		// 	from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
-		// }
-		return s.Ref.Schema.RenderUnmarshalJSON(to, from, isNew, mkErr)
+		return ExecuteTemplate("Schema_Ref_RenderUnmarshalJSON", TData{
+			"To":    to,
+			"From":  from,
+			"IsNew": isNew,
+			"MkErr": mkErr,
+
+			"Ref":                   s.Ref,
+			"Name":                  s.Ref.Name,
+			"Schema":                s.Ref.Schema,
+			"IsCustomUnmarshalJSON": s.Ref.Schema.Kind() == SchemaKindObject || s.Ref.Schema.Kind() == SchemaKindArray,
+			"RenderFieldTypeFn":     s.RenderFieldType,
+			"RenderGoTypeFn":        s.RenderBaseGoType,
+		})
+	}
+
+	if custom, ok := s.CustomType.Get(); ok {
+		return ExecuteTemplate("Schema_Custom_RenderUnmarshalJSON", TData{
+			"To":    to,
+			"From":  from,
+			"IsNew": isNew,
+			"MkErr": mkErr,
+
+			"Schema":            s,
+			"CustomType":        custom,
+			"RenderFieldTypeFn": s.RenderFieldType,
+			"RenderGoTypeFn":    s.RenderBaseGoType,
+		})
+	}
+
+	return ExecuteTemplate("Schema_RenderUnmarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"Schema":            s,
+		"RenderFieldTypeFn": s.RenderFieldType,
+		"RenderGoTypeFn":    s.RenderBaseGoType,
+	})
+}
+
+func (s Schema) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	if s.Ref != nil {
+		return ExecuteTemplate("Schema_Ref_RenderMarshalJSON", TData{
+			"To":    to,
+			"From":  from,
+			"IsNew": isNew,
+			"MkErr": mkErr,
+
+			"Ref": s.Ref,
+		})
 	}
 
 	var tp InternalSchemaType = s.Type
-	if s.CustomType != "" {
+	if ct, ok := s.CustomType.Get(); ok {
 		// from = from + "." + s.Type.FuncTypeName() + "()"
-		tp = CustomType{Value: s.CustomType, Type: tp}
+		tp = ct
 	}
 	if s.Nullable != "" {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
 	}
-	return tp.RenderUnmarshalJSON(to, from, isNew, mkErr)
+	return tp.RenderMarshalJSON(to, from, isNew, mkErr)
 }
 
 type InternalSchemaType interface {
@@ -345,6 +444,7 @@ type InternalSchemaType interface {
 	Kind() SchemaKind
 
 	RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error)
+	RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
 
 type SchemaType interface {
@@ -354,11 +454,13 @@ type SchemaType interface {
 
 	RenderBaseFrom(prefix, from, suffix string) (string, error)
 	RenderToBaseType(to, from string) (string, error)
+	RenderFieldType() (string, error)
 
 	FuncTypeName() string
 	Kind() SchemaKind
 
 	RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error)
+	RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
 
 type SchemaKind string
@@ -367,6 +469,7 @@ const (
 	SchemaKindPrimitive SchemaKind = "primitive"
 	SchemaKindArray     SchemaKind = "array"
 	SchemaKindObject    SchemaKind = "object"
+	SchemaKindAny       SchemaKind = "any"
 	SchemaKindRef       SchemaKind = "ref"
 )
 
@@ -376,7 +479,12 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		var imports Imports
 		for i, a := range spec.AllOf {
 			if ref := a.Ref(); ref != nil {
-				s.Fields = append(s.Fields, StructureField{GoTypeFn: StringRender(ref.Name).Render, Name: ref.Name, Embedded: true})
+				s.Fields = append(s.Fields, StructureField{
+					Name:        ref.Name,
+					GoTypeFn:    StringRender(ref.Name).Render,
+					FieldTypeFn: StringRender(ref.Name).Render,
+					Embedded:    true,
+				})
 			} else {
 				st, ims, err := NewStructureType(a.Value(), components, cfg)
 				if err != nil {
@@ -399,10 +507,16 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 			return nil, nil, fmt.Errorf("'object' type: %w", err)
 		}
 		return r, ims, nil
+	case "": // any
+		return AnyType{}, nil, nil
 	case "array":
 		itemType, is, err := NewSchema(spec.Value().Items, NamedComponenter{Componenter: components, Name: "Items"}, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("items schema: %w", err)
+		}
+		if itemType.Ref == nil && itemType.Kind() == SchemaKindObject {
+			sc := components.AddSchema("Item", itemType, cfg)
+			itemType.Ref = sc
 		}
 		return SliceType{Items: itemType}, is, nil
 	case "number":

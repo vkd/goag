@@ -63,8 +63,8 @@ func NewGetPetResponse200JSON(body GetPetResponse200JSONBody) GetPetResponse {
 }
 
 type GetPetResponse200JSONBody struct {
-	Length               int             `json:"length"`
-	AdditionalProperties map[string]Pets `json:"-"`
+	Length               int
+	AdditionalProperties map[string]Pets
 }
 
 var _ json.Marshaler = (*GetPetResponse200JSONBody)(nil)
@@ -166,6 +166,9 @@ func (c *GetPetResponse200JSONBody) unmarshalJSONInnerBody(m map[string]json.Raw
 	} else {
 		return fmt.Errorf("'length' key is missing")
 	}
+	if len(m) > 0 {
+		c.AdditionalProperties = make(map[string]Pets)
+	}
 	for k, bs := range m {
 		var v Pets
 		err = json.Unmarshal(bs, &v)
@@ -177,6 +180,7 @@ func (c *GetPetResponse200JSONBody) unmarshalJSONInnerBody(m map[string]json.Raw
 	return nil
 }
 
+// GetPetResponse200JSON - OK response
 type GetPetResponse200JSON struct {
 	Body GetPetResponse200JSONBody
 }

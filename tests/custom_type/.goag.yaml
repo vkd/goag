@@ -4,6 +4,3 @@ maybe:
 nullable:
   import: github.com/vkd/goag/tests/custom_type/pkg
   type: pkg.Nullable
-
-experimental:
-  customJsonImplementation: true

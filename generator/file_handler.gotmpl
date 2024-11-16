@@ -296,7 +296,7 @@ type {{ $responseWriter }} interface {
 {{ define "HandlerParameter" }}
 {{- if .FieldComment }}// {{ .FieldName }} - {{ comment .FieldComment }}
 {{end}}
-{{- .FieldName }} {{ call .GoTypeFn }}
+{{- .FieldName }} {{ call .TypeFn }}
 {{- end }}
 
 

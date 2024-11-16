@@ -1,10 +1,6 @@
 package pkg
 
-import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-)
+import "fmt"
 
 type Page string
 
@@ -37,36 +33,74 @@ func (s Shop) String() string {
 
 type Metadata struct {
 	InternalID string
+	OK         bool
 }
 
-var _ json.Unmarshaler = (*Metadata)(nil)
+type MetadataSchema struct {
+	InnerID Maybe[string]
+}
 
-func (m *Metadata) UnmarshalJSON(bs []byte) error {
-	type tp Metadata
-	var v tp
-	err := json.Unmarshal(bs, &v)
-	if err != nil {
-		return fmt.Errorf("unmarshal metadata: %w", err)
+func (m *Metadata) SetFromSchemaMetadata(v MetadataSchema) error {
+	*m = Metadata{
+		InternalID: v.InnerID.Value,
+		OK:         v.InnerID.IsSet,
 	}
-	*m = Metadata(v)
 	return nil
+}
+
+func (m Metadata) ToSchemaMetadata() MetadataSchema {
+	return MetadataSchema{
+		InnerID: Just(m.InternalID),
+	}
 }
 
 type Settings struct {
 	Theme Maybe[string] `json:"theme"`
 }
 
-var _ json.Unmarshaler = (*Settings)(nil)
+type SettingsSchema struct {
+	Theme Maybe[string]
+}
 
-func (m *Settings) UnmarshalJSON(bs []byte) error {
-	type tp Settings
-	var v tp
-	err := json.Unmarshal(bs, &v)
-	if err != nil {
-		return fmt.Errorf("unmarshal settings: %w", err)
+type GetShopAdditionals struct {
+	AdditionalProperties map[string]any
+}
+
+func (s *Settings) SetFromSchemaSettings(v SettingsSchema) error {
+	*s = Settings{
+		Theme: v.Theme,
 	}
-	*m = Settings(v)
 	return nil
+}
+
+func (s *Settings) SetFromSchemaGetShopAdditionals(v GetShopAdditionals) error {
+	s.Theme.IsSet = false
+	if theme, ok := v.AdditionalProperties["theme"]; ok {
+		switch theme := theme.(type) {
+		case string:
+			s.Theme.Set(theme)
+		default:
+			return fmt.Errorf("unknown type: %T", theme)
+		}
+	}
+	return nil
+}
+
+func (s Settings) ToSchemaSettings() SettingsSchema {
+	return SettingsSchema{
+		Theme: s.Theme,
+	}
+}
+
+func (s Settings) ToSchemaGetShopAdditionals() GetShopAdditionals {
+	if t, ok := s.Theme.Get(); ok {
+		return GetShopAdditionals{
+			AdditionalProperties: map[string]any{
+				"theme": t,
+			},
+		}
+	}
+	return GetShopAdditionals{}
 }
 
 type Environments []Environment
@@ -76,17 +110,24 @@ type Environment struct {
 	Value string `json:"value"`
 }
 
-var _ json.Unmarshaler = (*Environment)(nil)
+type EnvironmentSchema struct {
+	Name  string
+	Value string
+}
 
-func (m *Environment) UnmarshalJSON(bs []byte) error {
-	type tp Environment
-	var v tp
-	err := json.Unmarshal(bs, &v)
-	if err != nil {
-		return fmt.Errorf("unmarshal environment: %w", err)
+func (e *Environment) SetFromSchemaEnvironment(v EnvironmentSchema) error {
+	*e = Environment{
+		Name:  v.Name,
+		Value: v.Value,
 	}
-	*m = Environment(v)
 	return nil
+}
+
+func (e Environment) ToSchemaEnvironment() EnvironmentSchema {
+	return EnvironmentSchema{
+		Name:  e.Name,
+		Value: e.Value,
+	}
 }
 
 type Maybe[T any] struct {
@@ -143,28 +184,4 @@ func (m Nullable[T]) Get() (zero T, _ bool) {
 func (m *Nullable[T]) Set(v T) {
 	m.IsSet = true
 	m.Value = v
-}
-
-var _ json.Marshaler = (*Nullable[any])(nil)
-
-func (m Nullable[T]) MarshalJSON() ([]byte, error) {
-	if m.IsSet {
-		return json.Marshal(&m.Value)
-	}
-	return []byte(nullValue), nil
-}
-
-var _ json.Unmarshaler = (*Nullable[any])(nil)
-
-const nullValue = "null"
-
-var nullValueBs = []byte(nullValue)
-
-func (m *Nullable[T]) UnmarshalJSON(bs []byte) error {
-	if bytes.Equal(bs, nullValueBs) {
-		m.IsSet = false
-		return nil
-	}
-	m.IsSet = true
-	return json.Unmarshal(bs, &m.Value)
 }

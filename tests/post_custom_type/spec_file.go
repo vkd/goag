@@ -1,6 +1,11 @@
 package test
 
-const SpecFile string = `paths:
+const SpecFile string = `openapi: "3.0.3"
+info:
+  version: 0.0.1
+  title: post_custom_type
+
+paths:
   /shops/{shop}/pets:
     post:
       parameters:
@@ -21,8 +26,10 @@ const SpecFile string = `paths:
             schema:
               $ref: '#/components/schemas/NewPet'
       responses:
-        '201': {}
-        default: {}
+        '201':
+          description: OK response
+        default:
+          description: Default response
 components:
   schemas:
     NewPet:

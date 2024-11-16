@@ -31,6 +31,15 @@ if err != nil {
 {{ .To }} {{ if .IsNew }}:{{ end }}= vs
 {{- end }}
 
+{{ define "SliceType_RenderMarshalJSON" -}}
+var vs {{ .Self.RenderGoType }}
+err = json.Marshal({{ .From }}, &vs)
+if err != nil {
+	return {{ .MkErr.Wrap "marshal slice" "err" }}
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= vs
+{{- end }}
+
 
 {{/* ----------------------------- StructureType ------------------------------------- */}}
 
@@ -40,7 +49,7 @@ if err != nil {
 	{{ $f.Render }}
 	{{- end }}
 	{{- if .AdditionalProperties }}
-	AdditionalProperties map[string]{{ .AdditionalProperties.RenderGoType }} `json:"-"`
+	AdditionalProperties map[string]{{ .AdditionalProperties.RenderGoType }}
 	{{- end }}
 }
 {{- else }}struct{}
@@ -54,19 +63,20 @@ if err != nil {
 }
 {{- end }}
 
+{{ define "StructureType_RenderMarshalJSON" -}}
+err = {{ .To }}.MarshalJSON({{ .From }})
+if err != nil {
+	return {{ .MkErr.Wrap "marshal object" "err" }}
+}
+{{- end }}
+
 
 {{/* ----------------------------- StructureField ------------------------------------- */}}
 
 {{ define "StructureField" }}
 {{- if .Comment }}// {{ .Comment }}
 {{ end -}}
-{{ if not .Embedded }}{{ .Name }} {{end }}{{ call .GoTypeFn }} {{ if .Tags -}}
-`
-{{- range $ti, $t := .Tags }}{{ $t.Key }}:"
-{{- range $vi, $v := $t.Values }}{{ $v }}{{ if $vi }},{{ end }}{{ end -}}
-"{{ if $ti }} {{ end }}{{ end -}}
-`
-{{- end }}{{ end }}
+{{ if not .Embedded }}{{ .Name }} {{end }}{{ call .FieldTypeFn }}{{ end }}
 
 
 {{/* ----------------------------- CustomType ------------------------------------- */}}
@@ -102,11 +112,13 @@ cv := {{ .From }}.{{ .Base.FuncTypeName }}()
 {{- end }}
 
 {{ define "CustomType_RenderUnmarshalJSON_Object" -}}
-var cv {{ .CustomType }}
-{{ .Base.RenderUnmarshalJSON "cv" .From false .MkErr }}
+var a1 {{ .Base.RenderGoType }}
+{{ .Base.RenderUnmarshalJSON "a1" .From true .MkErr }}
+var ccc {{ .Base.RenderGoType }}
+{{ .Base.RenderUnmarshalJSON "aaa" .From false .MkErr }}
+cv := New{{ .CustomType }}(v)
 {{ .To }} {{ if .IsNew }}:{{ end }}= cv
 {{- end }}
-
 
 {{ define "CustomType_RenderUnmarshalJSON" -}}
 var baseV {{ .Base.RenderGoType }}
@@ -117,6 +129,26 @@ if err != nil {
 	return {{ .MkErr.Wrap "parse" "err" }}
 }
 {{ .To }} {{ if .IsNew }}:{{ end }}= cv
+{{- end }}
+
+
+{{ define "CustomType_RenderMarshalJSON_Object" -}}
+// ---> CustomType MarshalJSON Object
+{{ .To }} {{ if .IsNew }}:{{ end }}= NewEnvironmentFromSchema({{ .From }}.ToSchemaEnvironment())
+// <--- CustomType MarshalJSON Object
+{{- end }}
+
+{{ define "CustomType_RenderMarshalJSON" -}}
+// ---> CustomType MarshalJSON
+var baseV {{ .Base.RenderGoType }}
+{{ .Base.RenderMarshalJSON "baseV" .From false .MkErr }}
+var cv {{ .CustomType }}
+err = cv.Set(baseV)
+if err != nil {
+	return {{ .MkErr.Wrap "parse" "err" }}
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= cv
+// <--- CustomType MarshalJSON
 {{- end }}
 
 
@@ -159,6 +191,11 @@ if vOpt, ok := {{ .From }}.Get(); ok {
 {{ .To }}.IsSet = true
 {{- end }}
 
+{{ define "OptionalType_RenderMarshalJSON" -}}
+{{ .V.RenderMarshalJSON (print .To ".Value") .From false .MkErr }}
+{{ .To }}.IsSet = true
+{{- end }}
+
 
 {{/* ----------------------------- NullableType ------------------------------------- */}}
 
@@ -187,14 +224,23 @@ var {{ .To }} {{ .Self.RenderGoType }}
 {{- end }}
 
 {{ define "NullableType_RenderToBaseType" -}}
-if vPtr, ok := {{ .From }}.Get(); ok {
+if vPtr, ok := {{ .From }}.Get(); ok { // NullableType_RenderToBaseType
 	{{ .To }} = vPtr
 }
 {{- end }}
 
 {{ define "NullableType_RenderUnmarshalJSON" -}}
-if string({{ .From }}) != "null" {
+var vPtr {{ .Self.RenderFieldType }}
+if len({{ .From }}) != 4 || string({{ .From }}) != "null" {
 	{{ .V.RenderUnmarshalJSON "v" .From true .MkErr }}
+	vPtr.Set(v)
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= vPtr
+{{- end }}
+
+{{ define "NullableType_RenderMarshalJSON" -}}
+if string({{ .From }}) != "null" {
+	{{ .V.RenderMarshalJSON "v" .From true .MkErr }}
 	var vPtr {{ .Self.RenderGoType }}
 	vPtr.Set(v)
 	{{ .To }} {{ if .IsNew }}:{{ end }}= vPtr

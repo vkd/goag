@@ -19,7 +19,7 @@ func (s SliceType) FuncTypeName() string {
 
 func (s SliceType) RenderGoType() (string, error) {
 	return ExecuteTemplate("SliceType_GoType", TData{
-		"GoTypeFn": s.Items.RenderGoType,
+		"GoTypeFn": s.Items.RenderFieldType,
 	})
 }
 
@@ -67,6 +67,19 @@ func (s SliceType) ParseStrings(to string, from string, isNew bool, mkErr ErrorR
 
 func (s SliceType) RenderUnmarshalJSON(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("SliceType_RenderUnmarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"Self":             s,
+		"GoTypeFn":         s.Items.RenderGoType,
+		"ItemsParseString": s.Items.ParseString,
+	})
+}
+
+func (s SliceType) RenderMarshalJSON(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("SliceType_RenderMarshalJSON", TData{
 		"To":    to,
 		"From":  from,
 		"IsNew": isNew,
@@ -148,16 +161,27 @@ func (s StructureType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr Er
 	})
 }
 
+func (s StructureType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("StructureType_RenderMarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"Self": s,
+	})
+}
+
 type StructureField struct {
-	Comment  string
-	Name     string
-	GoTypeFn GoTypeRenderFunc
-	Type     SchemaType
-	Schema   Schema
-	Tags     []StructureFieldTag
-	JSONTag  string
-	Embedded bool
-	Required bool
+	Comment     string
+	Name        string
+	GoTypeFn    GoTypeRenderFunc
+	FieldTypeFn RenderFunc
+	Type        SchemaType
+	Schema      Schema
+	JSONTag     string
+	Embedded    bool
+	Required    bool
 
 	RenderToBaseTypeFn func(to, from string) (string, error)
 }
@@ -168,27 +192,30 @@ func NewStructureField(p specification.SchemaProperty, components Componenter, c
 		return zero, nil, fmt.Errorf("new schema: %w", err)
 	}
 
-	if schema.Ref == nil && !schema.IsCustom() && schema.Kind() == SchemaKindObject {
+	if schema.Ref == nil && schema.Kind() == SchemaKindObject {
 		sc := components.AddSchema(PublicFieldName(p.Name), schema, cfg)
 		schema.Ref = sc
 	}
 
 	var st SchemaType = schema
+	// if schema.IsNullable() {
+	// 	st = NewNullableType(st, cfg)
+	// }
 	if !p.Required {
-		st = NewOptionalType(schema, cfg)
+		st = NewOptionalType(st, cfg)
 	}
 
 	name := p.Name
 
 	return StructureField{
-		Comment:  p.Schema.Value().Description,
-		Name:     PublicFieldName(name),
-		Type:     st,
-		Schema:   schema,
-		Tags:     []StructureFieldTag{{Key: "json", Values: []string{name}}},
-		JSONTag:  name,
-		GoTypeFn: st.RenderGoType,
-		Required: p.Required,
+		Comment:     p.Schema.Value().Description,
+		Name:        PublicFieldName(name),
+		Type:        st,
+		Schema:      schema,
+		JSONTag:     name,
+		GoTypeFn:    st.RenderGoType,
+		FieldTypeFn: st.RenderFieldType,
+		Required:    p.Required,
 
 		// RenderBaseFromFn:   schema.RenderBaseFrom,
 		RenderToBaseTypeFn: schema.RenderToBaseType,
@@ -197,27 +224,15 @@ func NewStructureField(p specification.SchemaProperty, components Componenter, c
 
 func (s StructureField) Render() (string, error) { return ExecuteTemplate("StructureField", s) }
 
-func (sf StructureField) GetTag(k string) (zero StructureFieldTag, _ bool) {
-	for _, t := range sf.Tags {
-		if t.Key == k {
-			return t, true
-		}
-	}
-	return zero, false
-}
-
-type StructureFieldTag struct {
-	Key    string
-	Values []string
-}
-
 type CustomType struct {
 	Value string
 	Type  InternalSchemaType
+	Pkg   string
 }
 
 func NewCustomType(specCustom string, st InternalSchemaType) (CustomType, Imports) {
 	var customImport, customType string = "", specCustom
+	var customPkg string
 	slIdx := strings.LastIndex(specCustom, "/")
 	if slIdx >= 0 {
 		customImport = specCustom[:slIdx]
@@ -226,12 +241,14 @@ func NewCustomType(specCustom string, st InternalSchemaType) (CustomType, Import
 		dotIdx := strings.LastIndex(specCustom, ".")
 		if dotIdx >= 0 {
 			customImport = specCustom[:dotIdx]
+			customPkg = specCustom[slIdx+1 : dotIdx]
 		}
 	}
 
 	return CustomType{
 		Value: customType,
 		Type:  st,
+		Pkg:   customPkg,
 	}, NewImportsS(customImport)
 }
 
@@ -281,7 +298,7 @@ func (c CustomType) RenderFormat(from string) (string, error) {
 
 func (c CustomType) RenderToBaseType(to, from string) (string, error) {
 	switch c.Type.Kind() {
-	case SchemaKindObject:
+	// case SchemaKindObject:
 	default:
 		from = from + "." + c.Type.FuncTypeName() + "()"
 	}
@@ -327,6 +344,33 @@ func (c CustomType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr Error
 	})
 }
 
+func (c CustomType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	// from = from + "." + c.Type.FuncTypeName() + "()"
+
+	if c.Type.Kind() == SchemaKindObject {
+		return ExecuteTemplate("CustomType_RenderMarshalJSON_Object", TData{
+			"Base":       c.Type,
+			"CustomType": c.Value,
+			"Pkg":        c.Pkg,
+
+			"To":    to,
+			"From":  from,
+			"IsNew": isNew,
+			"MkErr": mkErr,
+		})
+	}
+	return ExecuteTemplate("CustomType_RenderMarshalJSON", TData{
+		"Base":       c.Type,
+		"CustomType": c.Value,
+		"Pkg":        c.Pkg,
+
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
+}
+
 type OptionalType struct {
 	V         SchemaType
 	MaybeType string
@@ -350,6 +394,11 @@ var _ GoTypeRender = OptionalType{}
 
 func (p OptionalType) RenderGoType() (string, error) {
 	out, err := p.V.RenderGoType()
+	return p.MaybeType + "[" + out + "]", err
+}
+
+func (p OptionalType) RenderFieldType() (string, error) {
+	out, err := p.V.RenderFieldType()
 	return p.MaybeType + "[" + out + "]", err
 }
 
@@ -433,17 +482,30 @@ func (p OptionalType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr Err
 	})
 }
 
-type NullableType struct {
-	V        InternalSchemaType
-	TypeName string
+func (p OptionalType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("OptionalType_RenderMarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"V":    p.V,
+		"Self": p,
+	})
 }
 
-func NewNullableType(v InternalSchemaType, cfg Config) NullableType {
+type NullableType struct {
+	V          InternalSchemaType
+	SchemaType SchemaType
+	TypeName   string
+}
+
+func NewNullableType(v SchemaType, cfg Config) NullableType {
 	typename := cfg.Nullable.Type
 	if typename == "" {
 		typename = "Nullable"
 	}
-	return NullableType{V: v, TypeName: typename}
+	return NullableType{V: v, SchemaType: v, TypeName: typename}
 }
 
 func (n NullableType) FuncTypeName() string {
@@ -456,6 +518,11 @@ var _ GoTypeRender = NullableType{}
 
 func (n NullableType) GoType(from string) string {
 	return n.TypeName + "[" + from + "]"
+}
+
+func (n NullableType) RenderFieldType() (string, error) {
+	out, err := n.SchemaType.RenderFieldType()
+	return n.GoType(out), err
 }
 
 func (n NullableType) RenderGoType() (string, error) {
@@ -525,4 +592,54 @@ func (n NullableType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr Err
 		"V":    n.V,
 		"Self": n,
 	})
+}
+
+func (n NullableType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return ExecuteTemplate("NullableType_RenderMarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+
+		"V":    n.V,
+		"Self": n,
+	})
+}
+
+type AnyType struct{}
+
+var _ InternalSchemaType = AnyType{}
+
+func (AnyType) RenderGoType() (string, error) {
+	return "json.RawMessage", nil
+}
+func (AnyType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	panic("not implemented")
+}
+func (AnyType) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	panic("not implemented")
+}
+func (AnyType) RenderFormat(from string) (string, error) {
+	panic("not implemented")
+}
+func (AnyType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	panic("not implemented")
+}
+
+func (AnyType) RenderToBaseType(to, from string) (string, error) {
+	return to + " = " + from, nil
+}
+
+func (AnyType) FuncTypeName() string {
+	return "RawMessage"
+}
+func (AnyType) Kind() SchemaKind {
+	return SchemaKindAny
+}
+
+func (AnyType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return to + " = " + from, nil
+}
+func (AnyType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	panic("not implemented")
 }

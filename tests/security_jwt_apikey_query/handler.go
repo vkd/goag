@@ -63,7 +63,104 @@ func NewPostLoginResponse200JSON(body PostLoginResponse200JSONBody) PostLoginRes
 }
 
 type PostLoginResponse200JSONBody struct {
-	Output string `json:"output"`
+	Output string
+}
+
+var _ json.Marshaler = (*PostLoginResponse200JSONBody)(nil)
+
+func (c PostLoginResponse200JSONBody) MarshalJSON() ([]byte, error) {
+	var out bytes.Buffer
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+
+	write([]byte(`{`))
+	mErr := c.marshalJSONInnerBody(&out)
+	if mErr != nil {
+		err = mErr
+	}
+	write([]byte(`}`))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Bytes(), nil
+}
+
+func (c PostLoginResponse200JSONBody) marshalJSONInnerBody(out io.Writer) error {
+	encoder := json.NewEncoder(out)
+	var err error
+	var comma string
+	write := func(s string) {
+		if err != nil || len(s) == 0 {
+			return
+		}
+		n, werr := out.Write([]byte(s))
+		if werr != nil {
+			err = werr
+		} else if len(s) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+	writeProperty := func(name string, v any) {
+		if err != nil {
+			return
+		}
+		if v == nil {
+			write(comma + `"` + name + `":null`)
+		} else {
+			write(comma + `"` + name + `":`)
+			werr := encoder.Encode(v)
+			if werr != nil {
+				err = werr
+			}
+		}
+		comma = ","
+	}
+	_ = writeProperty
+	{
+		var v any
+		v = c.Output
+		writeProperty("output", v)
+	}
+
+	return err
+}
+
+var _ json.Unmarshaler = (*PostLoginResponse200JSONBody)(nil)
+
+func (c *PostLoginResponse200JSONBody) UnmarshalJSON(bs []byte) error {
+	m := make(map[string]json.RawMessage)
+	err := json.Unmarshal(bs, &m)
+	if err != nil {
+		return fmt.Errorf("raw key/value map: %w", err)
+	}
+	return c.unmarshalJSONInnerBody(m)
+}
+
+func (c *PostLoginResponse200JSONBody) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
+	var err error
+	_ = err
+	if raw, ok := m["output"]; ok {
+		err = json.Unmarshal(raw, &c.Output)
+		if err != nil {
+			return fmt.Errorf("'output' field: unmarshal string: %w", err)
+		}
+		delete(m, "output")
+	} else {
+		return fmt.Errorf("'output' key is missing")
+	}
+	return nil
 }
 
 // PostLoginResponse200JSON - OK
@@ -178,7 +275,104 @@ func NewPostShopsResponse200JSON(body PostShopsResponse200JSONBody) PostShopsRes
 }
 
 type PostShopsResponse200JSONBody struct {
-	Output string `json:"output"`
+	Output string
+}
+
+var _ json.Marshaler = (*PostShopsResponse200JSONBody)(nil)
+
+func (c PostShopsResponse200JSONBody) MarshalJSON() ([]byte, error) {
+	var out bytes.Buffer
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+
+	write([]byte(`{`))
+	mErr := c.marshalJSONInnerBody(&out)
+	if mErr != nil {
+		err = mErr
+	}
+	write([]byte(`}`))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Bytes(), nil
+}
+
+func (c PostShopsResponse200JSONBody) marshalJSONInnerBody(out io.Writer) error {
+	encoder := json.NewEncoder(out)
+	var err error
+	var comma string
+	write := func(s string) {
+		if err != nil || len(s) == 0 {
+			return
+		}
+		n, werr := out.Write([]byte(s))
+		if werr != nil {
+			err = werr
+		} else if len(s) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+	writeProperty := func(name string, v any) {
+		if err != nil {
+			return
+		}
+		if v == nil {
+			write(comma + `"` + name + `":null`)
+		} else {
+			write(comma + `"` + name + `":`)
+			werr := encoder.Encode(v)
+			if werr != nil {
+				err = werr
+			}
+		}
+		comma = ","
+	}
+	_ = writeProperty
+	{
+		var v any
+		v = c.Output
+		writeProperty("output", v)
+	}
+
+	return err
+}
+
+var _ json.Unmarshaler = (*PostShopsResponse200JSONBody)(nil)
+
+func (c *PostShopsResponse200JSONBody) UnmarshalJSON(bs []byte) error {
+	m := make(map[string]json.RawMessage)
+	err := json.Unmarshal(bs, &m)
+	if err != nil {
+		return fmt.Errorf("raw key/value map: %w", err)
+	}
+	return c.unmarshalJSONInnerBody(m)
+}
+
+func (c *PostShopsResponse200JSONBody) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
+	var err error
+	_ = err
+	if raw, ok := m["output"]; ok {
+		err = json.Unmarshal(raw, &c.Output)
+		if err != nil {
+			return fmt.Errorf("'output' field: unmarshal string: %w", err)
+		}
+		delete(m, "output")
+	} else {
+		return fmt.Errorf("'output' key is missing")
+	}
+	return nil
 }
 
 // PostShopsResponse200JSON - OK

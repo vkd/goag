@@ -27,6 +27,7 @@ func init() {
 				"title":      titleFunc,
 
 				"prefixError": prefixErrorFunc,
+				"wrapError":   wrapErrorFunc,
 			}).
 			ParseFS(templatesFS, "*.gotmpl"),
 	)
@@ -80,4 +81,8 @@ func titleFunc(s string) (string, error) {
 
 func prefixErrorFunc(prefix string) (ErrorRender, error) {
 	return prefixError{prefix: prefix}, nil
+}
+
+func wrapErrorFunc(prefix string, mkErr ErrorRender) ErrorRender {
+	return wrappedError{Orig: mkErr, Inner: prefixError{prefix}}
 }

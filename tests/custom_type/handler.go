@@ -50,7 +50,7 @@ type GetShopsShopParams struct {
 }
 
 type GetShopsShopParamsQuery struct {
-	PageSchemaRefQuery pkg.Maybe[PageCustom]
+	PageSchemaRefQuery pkg.Maybe[pkg.Page]
 
 	PageCustomTypeQuery pkg.Maybe[pkg.PageCustomTypeQuery]
 }

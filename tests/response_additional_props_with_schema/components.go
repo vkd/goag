@@ -12,9 +12,9 @@ import (
 // ------------------------
 
 type Pet struct {
-	Custom               PetCustom                  `json:"custom"`
-	Name                 string                     `json:"name"`
-	AdditionalProperties map[string]json.RawMessage `json:"-"`
+	Custom               PetCustom
+	Name                 string
+	AdditionalProperties map[string]any
 }
 
 var _ json.Marshaler = (*Pet)(nil)
@@ -111,12 +111,10 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
 	_ = err
 	if raw, ok := m["custom"]; ok {
-		var cv json.RawMessage
-		err = cv.UnmarshalJSON(raw)
+		err = c.Custom.UnmarshalJSON(raw)
 		if err != nil {
-			return fmt.Errorf("'custom' field: unmarshal object: %w", err)
+			return fmt.Errorf("'custom' field: unmarshal ref type 'PetCustom': %w", err)
 		}
-		c.Custom = cv
 		delete(m, "custom")
 	} else {
 		return fmt.Errorf("'custom' key is missing")
@@ -130,8 +128,11 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	} else {
 		return fmt.Errorf("'name' key is missing")
 	}
+	if len(m) > 0 {
+		c.AdditionalProperties = make(map[string]any)
+	}
 	for k, bs := range m {
-		var v json.RawMessage
+		var v any
 		err = json.Unmarshal(bs, &v)
 		if err != nil {
 			return fmt.Errorf("additional property %q: %w", k, err)
@@ -141,18 +142,14 @@ func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	return nil
 }
 
-type PetCustom = json.RawMessage
-
-type Pets []Pet
-
-type PetCustomSchema struct {
-	Field1               Maybe[string]       `json:"field1"`
-	AdditionalProperties map[string]struct{} `json:"-"`
+type PetCustom struct {
+	Field1               Maybe[string]
+	AdditionalProperties map[string]struct{}
 }
 
-var _ json.Marshaler = (*PetCustomSchema)(nil)
+var _ json.Marshaler = (*PetCustom)(nil)
 
-func (c PetCustomSchema) MarshalJSON() ([]byte, error) {
+func (c PetCustom) MarshalJSON() ([]byte, error) {
 	var out bytes.Buffer
 	var err error
 	write := func(bs []byte) {
@@ -181,7 +178,7 @@ func (c PetCustomSchema) MarshalJSON() ([]byte, error) {
 	return out.Bytes(), nil
 }
 
-func (c PetCustomSchema) marshalJSONInnerBody(out io.Writer) error {
+func (c PetCustom) marshalJSONInnerBody(out io.Writer) error {
 	encoder := json.NewEncoder(out)
 	var err error
 	var comma string
@@ -224,9 +221,9 @@ func (c PetCustomSchema) marshalJSONInnerBody(out io.Writer) error {
 	return err
 }
 
-var _ json.Unmarshaler = (*PetCustomSchema)(nil)
+var _ json.Unmarshaler = (*PetCustom)(nil)
 
-func (c *PetCustomSchema) UnmarshalJSON(bs []byte) error {
+func (c *PetCustom) UnmarshalJSON(bs []byte) error {
 	m := make(map[string]json.RawMessage)
 	err := json.Unmarshal(bs, &m)
 	if err != nil {
@@ -235,7 +232,7 @@ func (c *PetCustomSchema) UnmarshalJSON(bs []byte) error {
 	return c.unmarshalJSONInnerBody(m)
 }
 
-func (c *PetCustomSchema) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
+func (c *PetCustom) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
 	_ = err
 	if raw, ok := m["field1"]; ok {
@@ -246,6 +243,9 @@ func (c *PetCustomSchema) unmarshalJSONInnerBody(m map[string]json.RawMessage) e
 		c.Field1.IsSet = true
 		delete(m, "field1")
 	}
+	if len(m) > 0 {
+		c.AdditionalProperties = make(map[string]struct{})
+	}
 	for k, bs := range m {
 		var v struct{}
 		err = json.Unmarshal(bs, &v)
@@ -254,5 +254,110 @@ func (c *PetCustomSchema) unmarshalJSONInnerBody(m map[string]json.RawMessage) e
 		}
 		c.AdditionalProperties[k] = v
 	}
+	return nil
+}
+
+type Pets []Pet
+
+var _ json.Marshaler = (*Pets)(nil)
+
+func (c Pets) MarshalJSON() ([]byte, error) {
+	var out bytes.Buffer
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+
+	write([]byte(`[`))
+	mErr := c.marshalJSONInnerBody(&out)
+	if mErr != nil {
+		err = mErr
+	}
+	write([]byte(`]`))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Bytes(), nil
+}
+
+func (c Pets) marshalJSONInnerBody(out io.Writer) error {
+	encoder := json.NewEncoder(out)
+	var err error
+	var comma string
+	write := func(s string) {
+		if err != nil || len(s) == 0 {
+			return
+		}
+		n, werr := out.Write([]byte(s))
+		if werr != nil {
+			err = werr
+		} else if len(s) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+	writeItem := func(v any) {
+		if err != nil {
+			return
+		}
+		if v == nil {
+			write(`null`)
+		} else {
+			werr := encoder.Encode(v)
+			if werr != nil {
+				err = werr
+			}
+		}
+	}
+	_ = writeItem
+
+	for i, cv := range c {
+		_ = i
+		if err != nil {
+			return err
+		}
+
+		write(comma)
+		comma = ","
+
+		writeItem(cv)
+	}
+
+	return err
+}
+
+var _ json.Unmarshaler = (*Pets)(nil)
+
+func (c *Pets) UnmarshalJSON(bs []byte) error {
+	var m []json.RawMessage
+	err := json.Unmarshal(bs, &m)
+	if err != nil {
+		return fmt.Errorf("raw key/value map: %w", err)
+	}
+	return c.unmarshalJSONInnerBody(m)
+}
+
+func (c *Pets) unmarshalJSONInnerBody(m []json.RawMessage) error {
+	out := make(Pets, 0, len(m))
+	var err error
+	_ = err
+	for _, vm := range m {
+		var vItem Pet
+		err = vItem.UnmarshalJSON(vm)
+		if err != nil {
+			return fmt.Errorf("unmarshal ref type 'Pet': %w", err)
+		}
+		out = append(out, vItem)
+	}
+	*c = out
 	return nil
 }

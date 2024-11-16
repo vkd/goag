@@ -137,6 +137,7 @@ func NewPostShopsShopPetsResponse201() PostShopsShopPetsResponse {
 	return out
 }
 
+// PostShopsShopPetsResponse201 - OK response
 type PostShopsShopPetsResponse201 struct{}
 
 func (r PostShopsShopPetsResponse201) writePostShopsShopPets(w http.ResponseWriter) {
@@ -153,6 +154,7 @@ func NewPostShopsShopPetsResponseDefault(code int) PostShopsShopPetsResponse {
 	return out
 }
 
+// PostShopsShopPetsResponseDefault - Default response
 type PostShopsShopPetsResponseDefault struct {
 	Code int
 }

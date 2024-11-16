@@ -18,10 +18,12 @@ func TestResponseSchema(t *testing.T) {
 				"cats": {
 					Pet{
 						Name: "mike",
-						AdditionalProperties: map[string]json.RawMessage{
-							"status": json.RawMessage(`"ok"`),
+						AdditionalProperties: map[string]any{
+							"status": "ok",
 						},
-						Custom: PetCustom(`{"field1": "pet_custom_field"}`),
+						Custom: PetCustom{
+							Field1: Just("pet_custom_field"),
+						},
 					},
 				},
 			},
