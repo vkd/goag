@@ -105,7 +105,12 @@ func (_ BoolType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRe
 }
 
 func (_ BoolType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return "", nil
+	return ExecuteTemplate("Primitive_RenderMarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
 }
 
 type IntType struct {
@@ -188,7 +193,12 @@ func (i IntType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRen
 }
 
 func (i IntType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return "", nil
+	return ExecuteTemplate("Primitive_RenderMarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
 }
 
 type FloatType struct {
@@ -271,7 +281,12 @@ func (i FloatType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorR
 }
 
 func (i FloatType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return "", nil
+	return ExecuteTemplate("Primitive_RenderMarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
 }
 
 type StringType struct{}
@@ -305,7 +320,12 @@ func (_ StringType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr Error
 }
 
 func (_ StringType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return "", nil
+	return ExecuteTemplate("Primitive_RenderMarshalJSON", TData{
+		"To":    to,
+		"From":  from,
+		"IsNew": isNew,
+		"MkErr": mkErr,
+	})
 }
 
 type DateTime struct {

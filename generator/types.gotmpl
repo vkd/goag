@@ -64,7 +64,7 @@ if err != nil {
 {{- end }}
 
 {{ define "StructureType_RenderMarshalJSON" -}}
-err = {{ .To }}.MarshalJSON({{ .From }})
+{{ .To }}, err {{ if .IsNew }}:{{ end }}= {{ .From }}.MarshalJSON()
 if err != nil {
 	return {{ .MkErr.Wrap "marshal object" "err" }}
 }
@@ -134,7 +134,19 @@ if err != nil {
 
 {{ define "CustomType_RenderMarshalJSON_Object" -}}
 // ---> CustomType MarshalJSON Object
-{{ .To }} {{ if .IsNew }}:{{ end }}= NewEnvironmentFromSchema({{ .From }}.ToSchemaEnvironment())
+cv := {{ .From }}.{{ .Base.FuncTypeName }}()
+{{ .To }} {{ if .IsNew }}:{{ end }}= New{{ .CustomType }}FromSchema({{ .From }}.ToSchema{{ .CustomType }}())
+
+// ---> CustomType MarshalJSON
+var baseV {{ .Base.RenderGoType }}
+{{ .Base.RenderMarshalJSON "baseV" .From false .MkErr }}
+var cv {{ .CustomType }}
+err = cv.Set(baseV)
+if err != nil {
+	return {{ .MkErr.Wrap "parse" "err" }}
+}
+{{ .To }} {{ if .IsNew }}:{{ end }}= cv
+// <--- CustomType MarshalJSON
 // <--- CustomType MarshalJSON Object
 {{- end }}
 

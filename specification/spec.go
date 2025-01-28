@@ -88,13 +88,15 @@ func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
 type Schema struct {
 	NoRef[Schema]
 
-	Type        string
-	Format      string
-	Items       Ref[Schema]
-	Properties  []SchemaProperty
-	AllOf       []Ref[Schema]
-	Description string
-	Nullable    bool
+	Type          string
+	Format        string
+	Items         Ref[Schema]
+	Properties    []SchemaProperty
+	AllOf         []Ref[Schema]
+	OneOf         []Ref[Schema]
+	Discriminator Discriminator
+	Description   string
+	Nullable      bool
 
 	AdditionalProperties Maybe[Ref[Schema]]
 
@@ -165,6 +167,50 @@ func NewSchema(schema *openapi3.Schema, components Sourcer[Schema], opts SchemaO
 		}
 		out.AllOf = append(out.AllOf, s)
 	}
+	if len(schema.OneOf) > 0 {
+		refMapping := map[string]string{}
+		for _, a := range schema.OneOf {
+			s, err := NewSchemaRef(a, components, opts)
+			if err != nil {
+				return nil, fmt.Errorf("new schema ref for oneOf: %w", err)
+			}
+			out.OneOf = append(out.OneOf, s)
+			if a.Ref != "" {
+				refMapping[a.Ref] = s.Ref().Name
+			}
+		}
+		if schema.Discriminator != nil {
+			out.Discriminator.PropertyKey = Just(schema.Discriminator.PropertyName)
+			out.Discriminator.Mapping = make([]DiscriminatorMapping, 0, len(out.OneOf))
+			mapMapping := map[string]*DiscriminatorMapping{}
+
+			for _, o := range out.OneOf {
+				ref := o.Ref()
+				if ref == nil {
+					continue
+				}
+				out.Discriminator.Mapping = append(out.Discriminator.Mapping, DiscriminatorMapping{
+					Key:    ref.Name,
+					Values: []string{ref.Name},
+				})
+				mapMapping[ref.Name] = &out.Discriminator.Mapping[len(out.Discriminator.Mapping)-1]
+			}
+			for k, v := range schema.Discriminator.Mapping {
+				if m, ok := refMapping[v]; ok {
+					mapMapping[m].Values = append(mapMapping[m].Values, k)
+				} else {
+					if _, ok := mapMapping[v]; !ok {
+						out.Discriminator.Mapping = append(out.Discriminator.Mapping, DiscriminatorMapping{
+							Key:    v,
+							Values: nil,
+						})
+						mapMapping[v] = &out.Discriminator.Mapping[len(out.Discriminator.Mapping)-1]
+					}
+					mapMapping[v].Values = append(mapMapping[v].Values, k)
+				}
+			}
+		}
+	}
 
 	if schema.AdditionalProperties != nil {
 		s, err := NewSchemaRef(schema.AdditionalProperties, components, opts)
@@ -208,6 +254,16 @@ type SchemaProperty struct {
 	Name     string
 	Schema   Ref[Schema]
 	Required bool
+}
+
+type Discriminator struct {
+	PropertyKey Maybe[string]
+	Mapping     []DiscriminatorMapping
+}
+
+type DiscriminatorMapping struct {
+	Key    string
+	Values []string
 }
 
 func sortedKeys[T any](m map[string]T) (out []string) {

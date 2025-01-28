@@ -155,8 +155,12 @@ if len({{ .From }}) != 4 || string({{ .From }}) != "null" {
 {{- end }}
 {{- end }}
 
+{{ define "Schema_Ref_CustomType_RenderMarshalJSON" -}}
+var v {{ .Ref.Name }}
+{{ .Schema.RenderToBaseType .To .From }}
+{{ .Ref.Schema.RenderMarshalJSON .To "v" true .MkErr }}
+{{- end }}
+
 {{ define "Schema_Ref_RenderMarshalJSON" -}}
-// ---> Schema Ref MarshalJSON
 {{ .Ref.Schema.RenderMarshalJSON .To .From .IsNew .MkErr }}
-// <--- Schema Ref MarshalJSON
 {{- end }}

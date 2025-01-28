@@ -182,7 +182,7 @@ type NamedComponenter struct {
 }
 
 func (n NamedComponenter) AddSchema(name string, s Schema, cfg Config) *SchemaComponent {
-	return n.Componenter.AddSchema(n.Name+name, s, cfg)
+	return n.Componenter.AddSchema(n.Name+PublicFieldName(name), s, cfg)
 }
 
 type SchemaComponent struct {
@@ -194,9 +194,11 @@ type SchemaComponent struct {
 	IsAlias            bool
 	WriteJSONFunc      bool
 	WriteJSONFuncArray bool
+	WriteJSONFuncOneOf bool
 
-	StructureType StructureType
-	SliceType     SliceType
+	StructureType  StructureType
+	SliceType      SliceType
+	OneOfStructure OneOfStructure
 
 	// Ref Maybe[*SchemaComponent]
 
@@ -281,6 +283,11 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 		// case RefSchemaType:
 		// 	sc.BaseType = schema.Ref
 		// 	sc.IsRef = true
+	case OneOfStructure:
+		sc.IgnoreParseFormat = true
+		sc.WriteJSONFuncOneOf = true
+		sc.StructureType = schema.Struct
+		sc.OneOfStructure = schema
 	}
 
 	return sc

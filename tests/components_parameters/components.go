@@ -111,7 +111,9 @@ func (c Pages) marshalJSONInnerBody(out io.Writer) error {
 		write(comma)
 		comma = ","
 
-		writeItem(cv)
+		var v int32
+		v = cv
+		writeItem(v)
 	}
 
 	return err
@@ -265,7 +267,9 @@ func (c Shops) marshalJSONInnerBody(out io.Writer) error {
 		write(comma)
 		comma = ","
 
-		writeItem(cv)
+		var v string
+		v = cv
+		writeItem(v)
 	}
 
 	return err

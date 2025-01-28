@@ -294,8 +294,9 @@ func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
 		writeItem(cv)
 		{{- end }}
     {{- else }}
-        {{ .SliceType.Items.RenderMarshalJSON "v" "cv" true newError }}
-        writeItem(cv)
+        var v {{ .SliceType.Items.RenderTypeDefinition }}
+        {{ .SliceType.Items.RenderToBaseType "v" "cv" }}
+        writeItem(v)
     {{- end }}
     }
 
@@ -324,6 +325,75 @@ func (c *{{ .Name }}) unmarshalJSONInnerBody(m []json.RawMessage) error {
     *c = out
 	return nil
 }
+{{- else if .WriteJSONFuncOneOf }}
+{{- $name := .Name }}
+{{- range $i, $f := .StructureType.Fields }}
+
+func New{{ $name }}{{ .Name }}(v {{ .Type.RenderFieldType }}) {{ $name }} {
+	var out {{ $name }}
+	out.{{ .Name }}.Set(v)
+	return out
+}
+{{- end }}
+
+var _ json.Marshaler = (*{{ .Name }})(nil)
+
+func (c {{ .Name }}) MarshalJSON() ([]byte, error) {
+	{{- range $i, $f := .StructureType.Fields }}
+		if oneOfValue, ok := c.{{ $f.Name }}.Get(); ok {
+			{{ $f.Type.RenderMarshalJSON "bs" "oneOfValue" true (returns "nil" (prefixError (print "oneOf [" $i "] field"))) }}
+			return bs, nil
+		}
+	{{- end }}
+
+	return nil, fmt.Errorf("cannot marshal oneOf object: all field are empty")
+}
+
+var _ json.Unmarshaler = (*{{ .Name }})(nil)
+
+func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
+	{{- if .OneOfStructure.DiscriminatorPropertyKey.IsSet }}
+		type tp struct{
+			Key string `json:"{{ .OneOfStructure.DiscriminatorPropertyKey.Value }}"`
+		}
+		var v tp
+		err := json.Unmarshal(bs, &v)
+		if err != nil {
+			return fmt.Errorf("cannot unmarshal discriminator: %w", err)
+		}
+		switch v.Key {
+		{{- range $_, $d := .OneOfStructure.DiscriminatorMapping }}
+		case {{ range $vi, $k := $d.Values }}{{ if $vi }},{{ end }}"{{ $k }}"{{ end }}:
+			return c.unmarshalJSON_{{ $d.Key }}(bs)
+		{{- end }}
+		default:
+			return fmt.Errorf("unknown discriminator: %q", v.Key)
+		}
+	{{- else }}
+		var err error
+		{{- range $i, $f := .StructureType.Fields }}
+
+			err = c.unmarshalJSON_{{ $f.Name }}(bs)
+			if err == nil {
+				return nil
+			}
+
+		{{- end }}
+		return fmt.Errorf("cannot unmarshal oneOf object: %w", err)
+	{{- end }}
+}
+
+{{- range $i, $f := .StructureType.Fields }}
+
+func (c *{{ $name }}) unmarshalJSON_{{ $f.Name }}(bs []byte) error {
+	var err error
+	{{ $f.Type.RenderUnmarshalJSON (print "oneOf" $i) "bs" true (prefixError (print "oneOf [" $i "] field")) }}
+
+	c.{{ $f.Name }}.Set(oneOf{{ $i }})
+	return nil
+}
+{{- end }}
+
 {{- end }}
 {{- end }}
 

@@ -4,6 +4,13 @@
 {{- .To }} {{ if .IsNew }}:{{ end }}= []string{ {{ call .RenderFormat .From }} }
 {{- end }}
 
+{{ define "Primitive_RenderMarshalJSON" -}}
+{{- .To }}, err {{ if .IsNew }}:{{ end }}= json.Marshal(&{{ .From }})
+if err != nil {
+	return {{ .MkErr.Wrap "marshal json for primitive type" "err" }}
+}
+{{- end }}
+
 {{/* ----------------------------- String ------------------------------------- */}}
 
 {{ define "String_RenderUnmarshalJSON" -}}

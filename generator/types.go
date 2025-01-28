@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/vkd/goag/specification"
@@ -642,4 +643,113 @@ func (AnyType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRende
 }
 func (AnyType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	panic("not implemented")
+}
+
+type OneOfStructure struct {
+	Elements []OneOfElement
+	Struct   StructureType
+
+	DiscriminatorPropertyKey Maybe[string]
+	DiscriminatorMapping     []DiscriminatorMapping
+}
+
+type DiscriminatorMapping struct {
+	Key    string
+	Values []string
+}
+
+var _ SchemaType = (*OneOfStructure)(nil)
+
+func NewOneOfStructure(elems []specification.Ref[specification.Schema], d specification.Discriminator, c Componenter, cfg Config) (zero OneOfStructure, _ Imports, _ error) {
+	var s OneOfStructure
+	var imports Imports
+	for i, e := range elems {
+		name := "OneOf" + strconv.Itoa(i)
+		schema, ims, err := NewSchema(e, NamedComponenter{c, name}, cfg)
+		if err != nil {
+			return zero, nil, fmt.Errorf("new oneOf schema for %d-th element: %w", i, err)
+		}
+		imports = append(imports, ims...)
+		s.Elements = append(s.Elements, OneOfElement{
+			Index:  i,
+			Schema: schema,
+		})
+		var schemaType SchemaType = schema
+
+		if schema.Ref != nil {
+			name = schema.Ref.Name
+		} else if schema.Type.Kind() == SchemaKindObject {
+			sc := c.AddSchema("OneOf"+strconv.Itoa(i), schema, cfg)
+			schemaType = NewSchemaRef(sc)
+		}
+		s.Struct.Fields = append(s.Struct.Fields, StructureField{
+			Name:        name,
+			Type:        schemaType,
+			FieldTypeFn: NewOptionalType(schemaType, cfg).RenderFieldType,
+		})
+	}
+	if v, ok := d.PropertyKey.Get(); ok {
+		s.DiscriminatorPropertyKey = Just(v)
+		for _, v := range d.Mapping {
+			s.DiscriminatorMapping = append(s.DiscriminatorMapping, DiscriminatorMapping{
+				Key:    v.Key,
+				Values: v.Values,
+			})
+		}
+	}
+	return s, imports, nil
+}
+
+var _ GoTypeRender = (*OneOfStructure)(nil)
+
+func (o OneOfStructure) RenderGoType() (string, error) {
+	return o.Struct.RenderGoType()
+}
+
+var _ Parser = (*OneOfStructure)(nil)
+
+func (o OneOfStructure) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	panic("ParseString: not implemented")
+}
+func (o OneOfStructure) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	panic("ParseStrings: not implemented")
+}
+
+var _ Formatter = (*OneOfStructure)(nil)
+
+func (o OneOfStructure) RenderFormat(from string) (string, error) {
+	panic("RenderFormat: not implemented")
+}
+func (o OneOfStructure) RenderFormatStrings(to, from string, isNew bool) (string, error) {
+	panic("RenderFormatStrings: not implemented")
+}
+
+func (o OneOfStructure) RenderBaseFrom(prefix, from, suffix string) (string, error) {
+	panic("RenderBaseFrom: not implemented")
+}
+func (o OneOfStructure) RenderToBaseType(to, from string) (string, error) {
+	panic("RenderToBaseType: not implemented")
+}
+func (o OneOfStructure) RenderFieldType() (string, error) {
+	panic("RenderFieldType: not implemented")
+}
+
+func (o OneOfStructure) FuncTypeName() string {
+	return "OneOfStructure"
+}
+func (o OneOfStructure) Kind() SchemaKind {
+	return SchemaKindObject
+}
+
+func (o OneOfStructure) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	return o.Struct.RenderUnmarshalJSON(to, from, isNew, mkErr)
+}
+
+func (o OneOfStructure) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+	panic("RenderMarshalJSON: not implemented")
+}
+
+type OneOfElement struct {
+	Index  int
+	Schema Schema
 }

@@ -1,0 +1,6 @@
+maybe:
+  import: github.com/vkd/goag/tests/schema_one_of/pkg
+  type: pkg.Maybe
+nullable:
+  import: github.com/vkd/goag/tests/schema_one_of/pkg
+  type: pkg.Nullable

@@ -412,6 +412,18 @@ func (s Schema) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRend
 
 func (s Schema) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	if s.Ref != nil {
+		if ct, ok := s.Ref.Schema.CustomType.Get(); ok {
+			return ExecuteTemplate("Schema_Ref_CustomType_RenderMarshalJSON", TData{
+				"To":    to,
+				"From":  from,
+				"IsNew": isNew,
+				"MkErr": mkErr,
+
+				"Ref":    s.Ref,
+				"Type":   ct,
+				"Schema": s,
+			})
+		}
 		return ExecuteTemplate("Schema_Ref_RenderMarshalJSON", TData{
 			"To":    to,
 			"From":  from,
@@ -423,10 +435,6 @@ func (s Schema) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender
 	}
 
 	var tp InternalSchemaType = s.Type
-	if ct, ok := s.CustomType.Get(); ok {
-		// from = from + "." + s.Type.FuncTypeName() + "()"
-		tp = ct
-	}
 	if s.Nullable != "" {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
 	}
@@ -495,6 +503,10 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 			}
 		}
 		return s, imports, nil
+	}
+	if len(spec.OneOf) > 0 {
+		out, imports, err := NewOneOfStructure(spec.OneOf, spec.Discriminator, components, cfg)
+		return out, imports, err
 	}
 
 	// https://datatracker.ietf.org/doc/html/draft-wright-json-schema-00#section-4
