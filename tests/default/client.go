@@ -47,12 +47,12 @@ func (c *Client) Get(ctx context.Context, request GetParams) (GetResponse, error
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetResponseDefault
 		response.Code = resp.StatusCode
 
@@ -75,12 +75,12 @@ func (c *Client) GetShops(ctx context.Context, request GetShopsParams) (GetShops
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsResponseDefault
 		response.Code = resp.StatusCode
 
@@ -103,12 +103,12 @@ func (c *Client) GetShopsRT(ctx context.Context, request GetShopsRTParams) (GetS
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsRTResponseDefault
 		response.Code = resp.StatusCode
 
@@ -131,12 +131,12 @@ func (c *Client) GetShopsActivate(ctx context.Context, request GetShopsActivateP
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsActivateResponseDefault
 		response.Code = resp.StatusCode
 
@@ -159,12 +159,12 @@ func (c *Client) GetShopsActivateRT(ctx context.Context, request GetShopsActivat
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsActivateRTResponseDefault
 		response.Code = resp.StatusCode
 
@@ -187,12 +187,12 @@ func (c *Client) GetShopsActivateTag(ctx context.Context, request GetShopsActiva
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsActivateTagResponseDefault
 		response.Code = resp.StatusCode
 
@@ -215,12 +215,12 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopResponseDefault
 		response.Code = resp.StatusCode
 
@@ -243,12 +243,12 @@ func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParam
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopRTResponseDefault
 		response.Code = resp.StatusCode
 
@@ -278,12 +278,12 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopPetsResponse200JSON
 		var hs []string
 		hs = resp.Header.Values("x-next")
@@ -298,6 +298,10 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 		}
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopPetsResponseDefaultJSON
 		response.Code = resp.StatusCode
 
@@ -351,12 +355,12 @@ func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (Revi
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response ReviewShopResponse200JSON
 		var hs []string
 		hs = resp.Header.Values("x-next")
@@ -371,6 +375,10 @@ func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (Revi
 		}
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response ReviewShopResponseDefaultJSON
 		response.Code = resp.StatusCode
 

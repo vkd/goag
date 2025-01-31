@@ -53,12 +53,12 @@ func (c *Client) ListPets(ctx context.Context, request ListPetsParams) (ListPets
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response ListPetsResponse200JSON
 		var hs []string
 		hs = resp.Header.Values("x-next")
@@ -73,6 +73,10 @@ func (c *Client) ListPets(ctx context.Context, request ListPetsParams) (ListPets
 		}
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response ListPetsResponseDefaultJSON
 		response.Code = resp.StatusCode
 
@@ -99,15 +103,19 @@ func (c *Client) CreatePets(ctx context.Context, request CreatePetsParams) (Crea
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 201:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response CreatePetsResponse201
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response CreatePetsResponseDefaultJSON
 		response.Code = resp.StatusCode
 
@@ -134,12 +142,12 @@ func (c *Client) ShowPetByID(ctx context.Context, request ShowPetByIDParams) (Sh
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response ShowPetByIDResponse200JSON
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -147,6 +155,10 @@ func (c *Client) ShowPetByID(ctx context.Context, request ShowPetByIDParams) (Sh
 		}
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response ShowPetByIDResponseDefaultJSON
 		response.Code = resp.StatusCode
 

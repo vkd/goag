@@ -44,12 +44,12 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetPetsResponse200JSON
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -58,6 +58,9 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 		return response, nil
 
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
 	}
 }
@@ -77,12 +80,12 @@ func (c *Client) GetPetsNames(ctx context.Context, request GetPetsNamesParams) (
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetPetsNamesResponse200JSON
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -91,6 +94,9 @@ func (c *Client) GetPetsNames(ctx context.Context, request GetPetsNamesParams) (
 		return response, nil
 
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
 	}
 }

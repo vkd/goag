@@ -44,12 +44,12 @@ func (c *Client) GetPet(ctx context.Context, request GetPetParams) (GetPetRespon
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PetResponse
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -58,6 +58,9 @@ func (c *Client) GetPet(ctx context.Context, request GetPetParams) (GetPetRespon
 		return response, nil
 
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
 	}
 }
@@ -77,12 +80,12 @@ func (c *Client) GetV2Pet(ctx context.Context, request GetV2PetParams) (GetV2Pet
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 201:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response Pet2Response
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -90,6 +93,10 @@ func (c *Client) GetV2Pet(ctx context.Context, request GetV2PetParams) (GetV2Pet
 		}
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response ErrorResponse
 		response.Code = resp.StatusCode
 
@@ -116,12 +123,12 @@ func (c *Client) GetV3Pet(ctx context.Context, request GetV3PetParams) (GetV3Pet
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 202:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response Pet3Response
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -130,6 +137,9 @@ func (c *Client) GetV3Pet(ctx context.Context, request GetV3PetParams) (GetV3Pet
 		return response, nil
 
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
 	}
 }

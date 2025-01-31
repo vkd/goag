@@ -58,15 +58,19 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetPetsResponse200
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetPetsResponseDefault
 		response.Code = resp.StatusCode
 

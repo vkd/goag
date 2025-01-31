@@ -51,15 +51,19 @@ func (c *Client) PostShopsNew(ctx context.Context, request PostShopsNewParams) (
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostShopsNewResponse200
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostShopsNewResponseDefault
 		response.Code = resp.StatusCode
 
@@ -88,15 +92,19 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopResponse200
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopResponseDefault
 		response.Code = resp.StatusCode
 
@@ -125,15 +133,19 @@ func (c *Client) GetShopsShopReviews(ctx context.Context, request GetShopsShopRe
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopReviewsResponse200
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopReviewsResponseDefault
 		response.Code = resp.StatusCode
 

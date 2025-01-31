@@ -95,10 +95,6 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	{{- range $_, $response := .Responses }}
 	case {{ $response.StatusCode }}:
@@ -109,6 +105,9 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 		{{ .DefaultResponse.Render }}
 	{{- else }}
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
 	{{- end }}
 	}
@@ -117,6 +116,10 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 
 {{/* ----------------------------- ClientResponse ------------------------------------- */}}
 {{ define "ClientResponse" -}}
+if resp.Body != nil {
+	defer resp.Body.Close()
+}
+
 var response {{ .ComponentRefName }}
 
 {{- if eq .StatusCode "default" }}

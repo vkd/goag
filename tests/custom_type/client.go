@@ -62,12 +62,12 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopResponse200JSON
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -75,6 +75,10 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 		}
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopResponseDefault
 		response.Code = resp.StatusCode
 

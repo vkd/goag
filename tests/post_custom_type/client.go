@@ -58,15 +58,19 @@ func (c *Client) PostShopsShopPets(ctx context.Context, request PostShopsShopPet
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 201:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostShopsShopPetsResponse201
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostShopsShopPetsResponseDefault
 		response.Code = resp.StatusCode
 

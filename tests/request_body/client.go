@@ -50,15 +50,19 @@ func (c *Client) PostPets(ctx context.Context, request PostPetsParams) (PostPets
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 201:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostPetsResponse201
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostPetsResponseDefault
 		response.Code = resp.StatusCode
 
@@ -86,15 +90,19 @@ func (c *Client) PostPets2(ctx context.Context, request PostPets2Params) (PostPe
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 201:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostPets2Response201
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostPets2ResponseDefault
 		response.Code = resp.StatusCode
 

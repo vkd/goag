@@ -44,12 +44,12 @@ func (c *Client) PostLogin(ctx context.Context, request PostLoginParams) (PostLo
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostLoginResponse200JSON
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -57,10 +57,17 @@ func (c *Client) PostLogin(ctx context.Context, request PostLoginParams) (PostLo
 		}
 		return response, nil
 	case 401:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostLoginResponse401
 		return response, nil
 
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
 	}
 }
@@ -86,12 +93,12 @@ func (c *Client) PostShops(ctx context.Context, request PostShopsParams) (PostSh
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostShopsResponse200JSON
 		err := json.NewDecoder(resp.Body).Decode(&response.Body)
 		if err != nil {
@@ -99,10 +106,17 @@ func (c *Client) PostShops(ctx context.Context, request PostShopsParams) (PostSh
 		}
 		return response, nil
 	case 401:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response PostShopsResponse401
 		return response, nil
 
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
 		return nil, fmt.Errorf("status code %d: not implemented", resp.StatusCode)
 	}
 }

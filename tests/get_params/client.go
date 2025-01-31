@@ -54,15 +54,19 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	case 200:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopResponse200
 		return response, nil
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetShopsShopResponseDefault
 		response.Code = resp.StatusCode
 

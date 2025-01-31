@@ -86,12 +86,12 @@ func (c *Client) GetReviews(ctx context.Context, request GetReviewsParams) (GetR
 		return nil, fmt.Errorf("http client Do(): %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
 	switch resp.StatusCode {
 	default:
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
 		var response GetReviewsResponseDefault
 		response.Code = resp.StatusCode
 
