@@ -34,6 +34,7 @@ type Operation struct {
 		GoTypeFn GoTypeRenderFunc
 		Type     Maybe[SchemaComponent]
 	}
+	BodyReader Maybe[string]
 
 	DefaultResponse *ResponseCode
 	Responses       []*ResponseCode
@@ -102,13 +103,16 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 
 	if rBody, ok := s.RequestBody.Get(); ok {
 		if ref := rBody.Ref(); ref != nil && ref.Name != "" {
-			if _, ok := ref.V.Value().Content.Get("application/json"); ok {
+			content := ref.V.Value().Content
+			if _, ok := content.Get("application/json"); ok {
 				o.Body.GoTypeFn = StringRender(ref.Name + "JSON").Render
+			} else if len(content.List) > 0 {
+				o.BodyReader = Just(content.List[0].Name)
 			}
 		} else {
 			requestBody := rBody.Value()
-			jsonContent, ok := requestBody.Content.Get("application/json")
-			if ok {
+			content := requestBody.Content
+			if jsonContent, ok := content.Get("application/json"); ok {
 				body, ims, err := NewSchema(jsonContent.V.Schema, components, cfg)
 				if err != nil {
 					return nil, nil, fmt.Errorf("request body: %w", err)
@@ -126,6 +130,8 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 						o.Body.GoTypeFn = body.RenderGoType
 					}
 				}
+			} else if len(content.List) > 0 {
+				o.BodyReader = Just(content.List[0].Name)
 			}
 		}
 	}

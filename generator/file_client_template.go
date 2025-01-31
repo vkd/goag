@@ -38,6 +38,7 @@ type ClientOperationTemplate struct {
 	Headers []ClientOperationHeaderTemplate
 
 	IsRequestBody bool
+	IsBodyReader  bool
 
 	Responses       []ClientResponseTemplate
 	DefaultResponse *ClientResponseTemplate
@@ -58,7 +59,11 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 	}
 
 	if requestBody, ok := o.Operation.RequestBody.Get(); ok {
-		c.IsRequestBody = requestBody.Value().Content.Has("application/json")
+		if requestBody.Value().Content.Has("application/json") {
+			c.IsRequestBody = true
+		} else if len(requestBody.Value().Content.List) > 0 {
+			c.IsBodyReader = true
+		}
 	}
 
 	for _, e := range o.Params.Query.List {
@@ -86,6 +91,7 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 			Name:             e.Name,
 			StatusCode:       e.StatusCode,
 			ContentJSON:      e.ContentJSON.IsSet,
+			ContentReader:    e.ContentBody.IsSet,
 			ComponentRefName: e.Name,
 		}
 		if e.ComponentRef != nil {
@@ -108,6 +114,7 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 			Name:             e.Name,
 			StatusCode:       e.StatusCode,
 			ContentJSON:      e.ContentJSON.IsSet,
+			ContentReader:    e.ContentBody.IsSet,
 			ComponentRefName: e.Name,
 		}
 		if e.ComponentRef != nil {
@@ -153,6 +160,7 @@ type ClientResponseTemplate struct {
 	ComponentRefName string
 	Headers          []ClientResponseHeaderTemplate
 	ContentJSON      bool
+	ContentReader    bool
 }
 
 func (c ClientResponseTemplate) Render() (string, error) {

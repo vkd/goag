@@ -42,8 +42,9 @@ type HandlerTemplate struct {
 	ParametersPath   []HandlerParameterPathTemplate
 	ParametersHeader []HandlerParameterHeaderTemplate
 
-	GoTypeFn GoTypeRenderFunc
-	BodyType *SchemaComponent
+	GoTypeFn   GoTypeRenderFunc
+	BodyType   *SchemaComponent
+	BodyReader *string
 
 	PathParsers []Parser
 
@@ -60,6 +61,10 @@ func NewHandlerTemplate(h *Handler) HandlerTemplate {
 	if h.Body.Type.IsSet {
 		bodyType = &h.Body.Type.Value
 	}
+	var bodyReader *string
+	if v, ok := h.BodyReader.Get(); ok {
+		bodyReader = &v
+	}
 	return HandlerTemplate{
 		Name:        h.Name,
 		Description: h.Description,
@@ -74,8 +79,9 @@ func NewHandlerTemplate(h *Handler) HandlerTemplate {
 		ParametersPath:   NewHandlerParameterPathTemplates(h.Parameters.Path),
 		ParametersHeader: NewHandlerParameterHeaderTemplates(h.Parameters.Header),
 
-		GoTypeFn: h.Body.GoTypeFn,
-		BodyType: bodyType,
+		GoTypeFn:   h.Body.GoTypeFn,
+		BodyType:   bodyType,
+		BodyReader: bodyReader,
 
 		PathParsers: h.PathParsers,
 
@@ -186,11 +192,12 @@ type HandlerResponseTemplate struct {
 
 	UsedIn []ResponseUsedIn
 
-	IsBody      bool
-	GoTypeFn    GoTypeRenderFunc
-	Body        *SchemaComponent
-	BodyRenders Renders
-	ContentType string
+	IsBody       bool
+	IsBodyReader bool
+	GoTypeFn     GoTypeRenderFunc
+	Body         *SchemaComponent
+	BodyRenders  Renders
+	ContentType  string
 
 	Struct         StructureType
 	StructGoTypeFn GoTypeRenderFunc
@@ -212,11 +219,12 @@ func NewHandlerResponseTemplate(r HandlerResponse) HandlerResponseTemplate {
 
 		UsedIn: r.UsedIn,
 
-		IsBody:      r.IsBody,
-		GoTypeFn:    r.GoTypeFn,
-		Body:        r.Body,
-		BodyRenders: r.BodyRenders,
-		ContentType: r.ContentType,
+		IsBody:       r.IsBody,
+		IsBodyReader: r.IsBodyReader,
+		GoTypeFn:     r.GoTypeFn,
+		Body:         r.Body,
+		BodyRenders:  r.BodyRenders,
+		ContentType:  r.ContentType,
 
 		Struct:         r.Struct,
 		StructGoTypeFn: r.StructGoTypeFn,

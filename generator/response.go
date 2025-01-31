@@ -16,6 +16,7 @@ type Response struct {
 
 	// Content specification.Map[specification.Ref[SchemaType]]
 	ContentJSON Maybe[ResponseContentSchema]
+	ContentBody Maybe[string]
 }
 
 func NewResponse(handlerName OperationName, status string, response *specification.Response, components Componenter, cfg Config) (*Response, Imports, error) {
@@ -41,6 +42,7 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 				Type: s,
 			})
 		default:
+			r.ContentBody = Just(c.Name)
 		}
 	}
 

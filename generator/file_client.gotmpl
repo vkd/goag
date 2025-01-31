@@ -75,7 +75,7 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 	}
 	{{- end }}
 
-	req, err := http.NewRequestWithContext(ctx, http.Method{{ .Method }}, requestURL, {{ if .IsRequestBody }}bytes.NewReader(bs){{ else }}nil{{ end }})
+	req, err := http.NewRequestWithContext(ctx, http.Method{{ .Method }}, requestURL, {{ if .IsRequestBody }}bytes.NewReader(bs){{ else if .IsBodyReader }}request.Body{{ else }}nil{{ end }})
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
@@ -115,10 +115,13 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 {{ end }}
 
 {{/* ----------------------------- ClientResponse ------------------------------------- */}}
-{{ define "ClientResponse" -}}
+{{ define "ClientResponse" }}
+{{- if not .ContentReader -}}
 if resp.Body != nil {
 	defer resp.Body.Close()
 }
+
+{{ end -}}
 
 var response {{ .ComponentRefName }}
 
@@ -149,6 +152,8 @@ err := json.NewDecoder(resp.Body).Decode(&response.Body)
 if err != nil {
 	return nil, fmt.Errorf("decode '{{ .ComponentRefName }}' response body: %w", err)
 }
+{{- else if .ContentReader }}
+response.Body = resp.Body
 {{- end }}
 return response, nil
 {{- end }}

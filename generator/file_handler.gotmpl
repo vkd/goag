@@ -169,6 +169,8 @@ type {{$request}} struct {
 	Body {{ call $h.GoTypeFn }}
 	{{- else if $h.BodyType }}
 	Body {{$request}}Body
+	{{- else if $h.BodyReader }}
+	Body io.Reader
 	{{- end }}
 }
 
@@ -277,6 +279,8 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 	if err != nil {
 		return zero, fmt.Errorf("decode request body: %w", err)
 	}
+	{{- else if $h.BodyReader }}
+	params.Body = r.Body
 	{{- end }}
 
 	return params{{ if $h.CanParseError }}, nil{{ end }}

@@ -246,11 +246,12 @@ type HandlerResponse struct {
 
 	UsedIn []ResponseUsedIn
 
-	IsBody      bool
-	GoTypeFn    GoTypeRenderFunc
-	Body        *SchemaComponent
-	BodyRenders Renders
-	ContentType string
+	IsBody       bool
+	IsBodyReader bool
+	GoTypeFn     GoTypeRenderFunc
+	Body         *SchemaComponent
+	BodyRenders  Renders
+	ContentType  string
 	// Headers     []ResponseHeader
 
 	Struct         StructureType
@@ -273,6 +274,8 @@ func NewHandlerResponse(r *Response, name OperationName, status string, componen
 	if r.ContentJSON.IsSet {
 		out.Name += "JSON"
 		out.ContentType = "application/json"
+	} else if contentType, ok := r.ContentBody.Get(); ok {
+		out.ContentType = contentType
 	}
 
 	if out.IsDefault {
@@ -308,6 +311,20 @@ func NewHandlerResponse(r *Response, name OperationName, status string, componen
 				out.Body = &sc
 			}
 		}
+
+		out.Struct.Fields = append(out.Struct.Fields, StructureField{
+			Name:        "Body",
+			GoTypeFn:    out.GoTypeFn,
+			FieldTypeFn: RenderFunc(out.GoTypeFn),
+		})
+		out.Args = append(out.Args, ResponseArg{
+			FieldName: "Body",
+			ArgName:   "body",
+			GoTypeFn:  out.GoTypeFn,
+		})
+	} else if _, ok := r.ContentBody.Get(); ok {
+		out.IsBodyReader = true
+		out.GoTypeFn = StringRender("io.ReadCloser").Render
 
 		out.Struct.Fields = append(out.Struct.Fields, StructureField{
 			Name:        "Body",
