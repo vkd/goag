@@ -358,6 +358,13 @@ var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
 }
 
+func write(w io.Writer, r io.Reader, name string) {
+	_, err := io.Copy(w, r)
+	if err != nil {
+		LogError(fmt.Errorf("write response %q: %w", name, err))
+	}
+}
+
 func writeJSON(w io.Writer, v interface{}, name string) {
 	err := json.NewEncoder(w).Encode(v)
 	if err != nil {
