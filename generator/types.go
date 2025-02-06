@@ -25,7 +25,12 @@ func (s SliceType) RenderGoType() (string, error) {
 }
 
 func (s SliceType) RenderToBaseType(to, from string) (string, error) {
-	return to + " = " + from, nil
+	return ExecuteTemplate("Slice_RenderToBaseType", TData{
+		"To":   to,
+		"From": from,
+
+		"RenderGoTypeFn": s.RenderGoType,
+	})
 }
 
 func (s SliceType) RenderFormat(from string) (string, error) {

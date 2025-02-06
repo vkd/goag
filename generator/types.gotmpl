@@ -2,6 +2,13 @@
 
 {{ define "SliceType_GoType" }}[]{{ call .GoTypeFn }}{{ end }}
 
+{{ define "Slice_RenderToBaseType" -}}
+if {{ .From }} == nil {
+	{{ .From }} = {{ call .RenderGoTypeFn }}{}
+}
+{{ .To }} = {{ .From }}
+{{- end }}
+
 {{ define "Slice_RenderFormatStrings" -}}
 qv := make([]string, 0, len({{ .From }}))
 for _, v := range {{ .From }} {
