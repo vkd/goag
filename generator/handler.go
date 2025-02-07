@@ -193,7 +193,7 @@ func NewHandlerPathParameter(p *PathParameter) (zero HandlerPathParameter, _ Imp
 	out := HandlerPathParameter{
 		HandlerParameter: HandlerParameter{
 			FieldName:    PublicFieldName(p.Name),
-			TypeFn:       p.Type.RenderGoType,
+			TypeFn:       p.Type.RenderFieldType,
 			FieldComment: strings.ReplaceAll(strings.TrimRight(p.Description, "\n "), "\n", "\n// "),
 		},
 

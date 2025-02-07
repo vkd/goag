@@ -60,12 +60,28 @@ func (rt *API) route(path, method string) (http.Handler, string, bool) {
 func (rt *API) routeShops(path, method string) (http.Handler, string, bool) {
 	_, path = splitPath(path)
 
+	return rt.routeShopsShop(path, method)
+}
+
+func (rt *API) routeShopsShop(path, method string) (http.Handler, string, bool) {
+	prefix, path := splitPath(path)
+
+	switch prefix {
+	case "/pages":
+		return rt.routeShopsShopPages(path, method)
+	}
+	return nil, "", false
+}
+
+func (rt *API) routeShopsShopPages(path, method string) (http.Handler, string, bool) {
+	_, path = splitPath(path)
+
 	if path == "" {
 
 		switch method {
 		case http.MethodGet:
 			h := http.Handler(rt.GetShopsShopHandler)
-			return h, "/shops/{shop}", true
+			return h, "/shops/{shop}/pages/{page}", true
 		}
 		return nil, "", false
 	}

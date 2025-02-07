@@ -1,8 +1,14 @@
 package test
 
-const SpecFile string = `paths:
-  /shops/{shop}:
+const SpecFile string = `openapi: 3.1.0
+info:
+  version: 0.0.1
+  title: any
+
+paths:
+  /shops/{shop}/pages/{page}:
     get:
+      operationId: getShopsShop
       parameters:
         - name: shop
           in: path
@@ -10,6 +16,11 @@ const SpecFile string = `paths:
           schema:
             type: string
             x-goag-go-type: Shop
+        - name: page
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/PageCustom'
         - name: page
           in: query
           schema:
@@ -49,8 +60,10 @@ const SpecFile string = `paths:
             type: string
             x-goag-go-type: RequestID
       responses:
-        '200': {}
-        default: {}
+        200:
+          description: "OK"
+        default:
+          description: "Default"
 
 components:
   schemas:

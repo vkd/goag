@@ -65,6 +65,8 @@ type GetShopsShopParamsQuery struct {
 
 type GetShopsShopParamsPath struct {
 	Shop Shop
+
+	Page pkg.Page
 }
 
 type GetShopsShopParamsHeaders struct {
@@ -195,7 +197,7 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		p := r.URL.Path
 
 		if !strings.HasPrefix(p, "/shops/") {
-			return zero, fmt.Errorf("wrong path: expected '/shops/{shop}'")
+			return zero, fmt.Errorf("wrong path: expected '/shops/{shop}/pages/{page}'")
 		}
 		p = p[7:] // "/shops/"
 
@@ -219,6 +221,32 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 				}
 			}
 		}
+
+		if !strings.HasPrefix(p, "/pages/") {
+			return zero, fmt.Errorf("wrong path: expected '/shops/{shop}/pages/{page}'")
+		}
+		p = p[7:] // "/pages/"
+
+		{
+			idx := strings.Index(p, "/")
+			if idx == -1 {
+				idx = len(p)
+			}
+			vPath := p[:idx]
+			p = p[idx:]
+
+			if len(vPath) == 0 {
+				return zero, ErrParseParam{In: "path", Parameter: "page", Reason: "required"}
+			}
+
+			vCustom := vPath
+			{
+				err := params.Path.Page.ParseString(vCustom)
+				if err != nil {
+					return zero, ErrParseParam{In: "path", Parameter: "page", Reason: "parse custom type", Err: err}
+				}
+			}
+		}
 	}
 
 	return params, nil
@@ -237,6 +265,7 @@ func NewGetShopsShopResponse200() GetShopsShopResponse {
 	return out
 }
 
+// GetShopsShopResponse200 - OK
 type GetShopsShopResponse200 struct{}
 
 func (r GetShopsShopResponse200) writeGetShopsShop(w http.ResponseWriter) {
@@ -253,6 +282,7 @@ func NewGetShopsShopResponseDefault(code int) GetShopsShopResponse {
 	return out
 }
 
+// GetShopsShopResponseDefault - Default
 type GetShopsShopResponseDefault struct {
 	Code int
 }
