@@ -2,29 +2,29 @@ package generator
 
 import "strings"
 
-func (g *Generator) ClientFile() GoFile {
+func (g *Generator) ClientFile(cfg Config) GoFile {
 	return GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,
-		Imports:       g.Imports,
+		Imports:       append(cfg.Imports(), g.Imports...),
 		Body:          g.Client,
 	}
 }
 
-func (g *Generator) ComponentsFile() GoFile {
+func (g *Generator) ComponentsFile(cfg Config) GoFile {
 	return GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,
-		Imports:       g.Imports,
+		Imports:       append(cfg.Imports(), g.Imports...),
 		Body:          g.Components,
 	}
 }
 
-func (g *Generator) HandlerFile() GoFile {
+func (g *Generator) HandlerFile(cfg Config) GoFile {
 	return GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,
-		Imports:       g.Imports,
+		Imports:       append(cfg.Imports(), g.Imports...),
 		Body:          g.HandlersFile,
 	}
 }

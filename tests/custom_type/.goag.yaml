@@ -1,6 +1,7 @@
 maybe:
-  import: github.com/vkd/goag/tests/custom_type/pkg
   type: pkg.Maybe
 nullable:
-  import: github.com/vkd/goag/tests/custom_type/pkg
   type: pkg.Nullable
+
+imports:
+  - value: github.com/vkd/goag/tests/custom_type/pkg

@@ -115,7 +115,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 	}
 
 	if gen.Components.LenToRender() > 0 {
-		err := RenderToFile(path.Join(outDir, "components.go"), gen.ComponentsFile())
+		err := RenderToFile(path.Join(outDir, "components.go"), gen.ComponentsFile(cfg))
 		if err != nil {
 			return fmt.Errorf("generate components: %w", err)
 		}
@@ -130,7 +130,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 	}
 
 	if g.GenAPIHandler {
-		err = RenderToFile(path.Join(outDir, "handler.go"), gen.HandlerFile())
+		err = RenderToFile(path.Join(outDir, "handler.go"), gen.HandlerFile(cfg))
 		if err != nil {
 			return fmt.Errorf("generate handler.go: %w", err)
 		}
@@ -173,7 +173,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		}
 	}
 	if g.GenClient {
-		clientFile := gen.ClientFile()
+		clientFile := gen.ClientFile(cfg)
 
 		err = RenderToFile(path.Join(outDir, "client.go"), clientFile)
 		if err != nil {

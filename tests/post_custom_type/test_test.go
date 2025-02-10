@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vkd/goag/tests/post_custom_type/pkg"
+	pkg "github.com/vkd/goag/tests/post_custom_type/pkg1"
 )
 
 func TestPostBody(t *testing.T) {

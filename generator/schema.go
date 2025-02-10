@@ -57,7 +57,9 @@ func NewSchema(s specification.Ref[specification.Schema], components Componenter
 		nullable = "Nullable"
 		if cfg.Nullable.Type != "" {
 			nullable = cfg.Nullable.Type
-			ims = append(ims, Import(cfg.Nullable.Import))
+			if cfg.Nullable.Import != "" {
+				ims = append(ims, NewImport(cfg.Nullable.Import, ""))
+			}
 		}
 	}
 

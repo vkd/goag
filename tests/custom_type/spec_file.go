@@ -14,7 +14,7 @@ paths:
           required: true
           schema:
             type: string
-            x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Shop
+            x-goag-go-type: pkg.Shop
         - name: page_schema_ref_query
           in: query
           schema:
@@ -23,7 +23,7 @@ paths:
           in: query
           schema:
             type: string
-            x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.PageCustomTypeQuery
+            x-goag-go-type: pkg.PageCustomTypeQuery
       requestBody:
         content:
           application/json:
@@ -44,7 +44,7 @@ components:
   schemas:
     PageCustom:
       type: string
-      x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Page
+      x-goag-go-type: pkg.Page
 
     Shop:
       $ref: "#/components/schemas/ShopName"
@@ -52,7 +52,7 @@ components:
     ShopName:
       type: integer
       format: int64
-      x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Page
+      x-goag-go-type: pkg.Page
 
     GetShop:
       type: object
@@ -69,7 +69,7 @@ components:
           type: object
           nullable: true
           additionalProperties: true
-          x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Settings
+          x-goag-go-type: pkg.Settings
 
 
     Metadata:
@@ -77,7 +77,7 @@ components:
       properties:
         inner_id:
           type: string
-      x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Metadata
+      x-goag-go-type: pkg.Metadata
 
     Settings:
       type: object
@@ -85,7 +85,7 @@ components:
       properties:
         theme:
           type: string
-      x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Settings
+      x-goag-go-type: pkg.Settings
 
     Environments:
       type: array
@@ -103,5 +103,5 @@ components:
           type: string
         value:
           type: string
-      x-goag-go-type: github.com/vkd/goag/tests/custom_type/pkg.Environment
+      x-goag-go-type: pkg.Environment
 `

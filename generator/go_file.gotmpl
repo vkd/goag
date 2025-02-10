@@ -14,7 +14,7 @@ package {{ .PackageName }}
 {{ define "Imports" -}}
 import (
 	{{ range $_, $i := . }}
-	"{{ $i }}"
+	{{ $i.Alias }} "{{ $i.Value }}"
 	{{- end }}
 )
 {{- end }}

@@ -334,7 +334,7 @@ type DateTime struct {
 }
 
 func NewDateTime(layout string) (DateTime, Imports) {
-	return DateTime{GoLayout: layout}, Imports{Import("time")}
+	return DateTime{GoLayout: layout}, Imports{NewImport("time", "")}
 }
 
 var _ PrimitiveIface = DateTime{}

@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vkd/goag/tests/post_custom_type/pkg"
+	pkg "github.com/vkd/goag/tests/post_custom_type/pkg1"
 )
 
 // ---------------------------------------------

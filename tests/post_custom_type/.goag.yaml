@@ -1,3 +1,6 @@
 maybe:
-  import: github.com/vkd/goag/tests/post_custom_type/pkg
   type: pkg.Maybe
+
+imports:
+  - value: github.com/vkd/goag/tests/post_custom_type/pkg1
+    alias: pkg

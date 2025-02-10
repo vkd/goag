@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ghodss/yaml"
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -24,6 +24,11 @@ type Config struct {
 	CustomTypes struct {
 		Ignore bool `yaml:"ignore"`
 	} `yaml:"customTypes"`
+
+	CustomImports []struct {
+		Value string `yaml:"value"`
+		Alias string `yaml:"alias"`
+	} `yaml:"imports"`
 }
 
 func LoadConfig(filepath string) (zero Config, _ error) {
@@ -42,4 +47,12 @@ func LoadConfig(filepath string) (zero Config, _ error) {
 	}
 
 	return c, nil
+}
+
+func (c Config) Imports() Imports {
+	out := make(Imports, 0, len(c.CustomImports))
+	for _, ci := range c.CustomImports {
+		out = append(out, NewImport(ci.Value, ci.Alias))
+	}
+	return out
 }

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/vkd/goag/tests/post_custom_type/pkg"
+	pkg "github.com/vkd/goag/tests/post_custom_type/pkg1"
 )
 
 // ------------------------

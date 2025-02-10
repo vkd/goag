@@ -239,16 +239,19 @@ type CustomType struct {
 func NewCustomType(specCustom string, st InternalSchemaType) (CustomType, Imports) {
 	var customImport, customType string = "", specCustom
 	var customPkg string
+	var hasCustomImport bool
 	slIdx := strings.LastIndex(specCustom, "/")
 	if slIdx >= 0 {
-		customImport = specCustom[:slIdx]
+		hasCustomImport = true
 		customType = specCustom[slIdx+1:]
+	}
 
-		dotIdx := strings.LastIndex(specCustom, ".")
-		if dotIdx >= 0 {
+	dotIdx := strings.LastIndex(specCustom, ".")
+	if dotIdx >= 0 {
+		if hasCustomImport {
 			customImport = specCustom[:dotIdx]
-			customPkg = specCustom[slIdx+1 : dotIdx]
 		}
+		customPkg = specCustom[slIdx+1 : dotIdx]
 	}
 
 	return CustomType{
