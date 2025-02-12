@@ -1,10 +1,16 @@
 package test
 
-const SpecFile string = `paths:
+const SpecFile string = `openapi: "3.0.3"
+info:
+  version: 0.0.1
+  title: schema_all_of
+
+paths:
   /pet:
     get:
       responses:
-        '200':
+        200:
+          description: "Ok"
           content:
             application/json:
               schema:

@@ -64,6 +64,7 @@ func NewGetResponseDefault(code int) GetResponse {
 	return out
 }
 
+// GetResponseDefault - Default
 type GetResponseDefault struct {
 	Code int
 }
@@ -128,6 +129,7 @@ func NewGetShopsResponseDefault(code int) GetShopsResponse {
 	return out
 }
 
+// GetShopsResponseDefault - Default
 type GetShopsResponseDefault struct {
 	Code int
 }
@@ -192,6 +194,7 @@ func NewGetShopsRTResponseDefault(code int) GetShopsRTResponse {
 	return out
 }
 
+// GetShopsRTResponseDefault - Default
 type GetShopsRTResponseDefault struct {
 	Code int
 }
@@ -256,6 +259,7 @@ func NewGetShopsActivateResponseDefault(code int) GetShopsActivateResponse {
 	return out
 }
 
+// GetShopsActivateResponseDefault - Default
 type GetShopsActivateResponseDefault struct {
 	Code int
 }
@@ -320,6 +324,7 @@ func NewGetShopsActivateRTResponseDefault(code int) GetShopsActivateRTResponse {
 	return out
 }
 
+// GetShopsActivateRTResponseDefault - Default
 type GetShopsActivateRTResponseDefault struct {
 	Code int
 }
@@ -384,6 +389,7 @@ func NewGetShopsActivateTagResponseDefault(code int) GetShopsActivateTagResponse
 	return out
 }
 
+// GetShopsActivateTagResponseDefault - Default
 type GetShopsActivateTagResponseDefault struct {
 	Code int
 }
@@ -482,6 +488,7 @@ func NewGetShopsShopResponseDefault(code int) GetShopsShopResponse {
 	return out
 }
 
+// GetShopsShopResponseDefault - Default
 type GetShopsShopResponseDefault struct {
 	Code int
 }
@@ -585,6 +592,7 @@ func NewGetShopsShopRTResponseDefault(code int) GetShopsShopRTResponse {
 	return out
 }
 
+// GetShopsShopRTResponseDefault - Default
 type GetShopsShopRTResponseDefault struct {
 	Code int
 }
@@ -858,6 +866,7 @@ func NewGetShopsShopPetsResponseDefaultJSON(code int, body Error) GetShopsShopPe
 	return out
 }
 
+// GetShopsShopPetsResponseDefaultJSON - Default
 type GetShopsShopPetsResponseDefaultJSON struct {
 	Code int
 	Body Error
@@ -1065,6 +1074,7 @@ func NewReviewShopResponse200JSON(body Pet, xNext Maybe[string]) ReviewShopRespo
 	return out
 }
 
+// ReviewShopResponse200JSON - OK
 type ReviewShopResponse200JSON struct {
 	Body    Pet
 	Headers struct {
@@ -1095,6 +1105,7 @@ func NewReviewShopResponseDefaultJSON(code int, body Error) ReviewShopResponse {
 	return out
 }
 
+// ReviewShopResponseDefaultJSON - Default
 type ReviewShopResponseDefaultJSON struct {
 	Code int
 	Body Error

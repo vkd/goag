@@ -126,10 +126,14 @@ func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
 
     {{- range $i, $f := .StructureType.Fields }}
         {{- if .Embedded }}
-    mErr := c.{{ call .GoTypeFn }}.marshalJSONInnerBody(out)
-    if mErr != nil {
-        err = mErr
-    }
+		{
+			var v {{ $f.Name }}
+			{{ call $f.RenderToBaseTypeFn "v" (print "c." $f.Name) }}
+			mErr := v.marshalJSONInnerBody(out)
+			if mErr != nil {
+				err = mErr
+			}
+		}
         comma = ","
         {{- else }}
             {{- if .Required }}
@@ -173,10 +177,21 @@ func (c *{{ .Name }}) unmarshalJSONInnerBody(m map[string]json.RawMessage) error
     _ = err
     {{- range $_, $f := .StructureType.Fields }}
         {{- if .Embedded }}
-    err = c.{{ .Name }}.unmarshalJSONInnerBody(m)
-    if err != nil {
-        return fmt.Errorf("embedded '{{ .Name }}' field: %w", err)
-    }
+	{
+		var v {{ $f.Type.RenderBaseGoType }}
+		err := v.unmarshalJSONInnerBody(m)
+		if err != nil {
+			return fmt.Errorf("embedded '{{ .Name }}' field: unmarshal schema: %w", err)
+		}
+			{{- if or $f.Schema.CustomType.IsSet (and $f.Schema.Ref $f.Schema.Ref.Schema.CustomType.IsSet ) }}
+		err = c.{{ .Name }}.SetFromSchemaEnvironmentCreate(v)
+		if err != nil {
+			return fmt.Errorf("embedded '{{ .Name }}' field: set custom type from schema: %w", err)
+		}
+			{{- else }}
+			c.{{ .Name }} = v
+			{{- end }}
+	}
         {{- else }}
     if raw, ok := m["{{ .JSONTag }}"]; ok {
 		    {{- if .Required }}

@@ -59,8 +59,8 @@ if vPtr, ok := {{ .From }}.Get(); ok {
     {{- if .IsNew }}var {{ .To }} {{ .Ref.Schema.CustomType.Value.RenderGoType }}
     {{ end -}}
     {{- if .Ref.Schema.IsNullable -}}
-var vNull {{ .Ref.Schema.RenderGoType }}
-if len({{ .From }}) != 4 || string({{ .From }}) != "null" {
+        var vNull {{ .Ref.Schema.RenderGoType }}
+        if len({{ .From }}) != 4 || string({{ .From }}) != "null" {
     {{- end }}
     {{- $from := .From }}
     {{- $to := .To }}
@@ -89,30 +89,30 @@ if len({{ .From }}) != 4 || string({{ .From }}) != "null" {
     {{- if .Ref.Schema.IsNullable }}
     vNull.Set(cv)
 }
-    {{ .To }} = vNull
+        {{ .To }} = vNull
     {{- else }}
-    {{ .To }} = cv
+        {{ .To }} = cv
     {{- end }}
 {{- else if .Ref.Schema.IsNullable -}}
-{{- if .IsNew }}var {{ .To }} {{ .Ref.Name }}
-{{ end -}}
-var vn {{ call .RenderFieldTypeFn }}
-if len({{ .From }}) != 4 || string({{ .From }}) != "null" {
-    var v {{ .Name }}
-    err = v.UnmarshalJSON({{ .From }})
-    if err != nil {
-        return {{ .MkErr.Wrap (print "unmarshal nullable ref type '" .Name "'") "err" }}
+    {{- if .IsNew }}var {{ .To }} {{ .Ref.Name }}
+    {{ end -}}
+    var vn {{ call .RenderFieldTypeFn }}
+    if len({{ .From }}) != 4 || string({{ .From }}) != "null" {
+        var v {{ .Name }}
+        err = v.UnmarshalJSON({{ .From }})
+        if err != nil {
+            return {{ .MkErr.Wrap (print "unmarshal nullable ref type '" .Name "'") "err" }}
+        }
+        vn.Set(v)
     }
-    vn.Set(v)
-}
-{{ .To }} = vn
+    {{ .To }} = vn
 {{- else -}}
-{{- if .IsNew }}var {{ .To }} {{ .Ref.Name }}
-{{ end -}}
-err = {{ .To }}.UnmarshalJSON({{ .From }})
-if err != nil {
-    return {{ .MkErr.Wrap (print "unmarshal ref type '" .Ref.Name "'") "err" }}
-}
+    {{- if .IsNew }}var {{ .To }} {{ .Ref.Name }}
+    {{ end -}}
+    err = {{ .To }}.UnmarshalJSON({{ .From }})
+    if err != nil {
+        return {{ .MkErr.Wrap (print "unmarshal ref type '" .Ref.Name "'") "err" }}
+    }
 {{- end }}
 {{- end }}
 

@@ -1,42 +1,55 @@
 package test
 
-const SpecFile string = `paths:
+const SpecFile string = `openapi: "3.0.3"
+info:
+  version: 0.0.1
+  title: default
+
+paths:
   /:
     get:
       responses:
-        default: {}
+        default:
+          description: "Default"
   /shops:
     get:
       responses:
-        default: {}
+        default:
+          description: "Default"
   /shops/:
     get:
       responses:
-        default: {}
+        default:
+          description: "Default"
   /shops/{shop}:
     get:
       parameters:
         - $ref: '#/components/parameters/ShopPathRequired'
       responses:
-        default: {}
+        default:
+          description: "Default"
   /shops/{shop}/:
     get:
       parameters:
         - $ref: '#/components/parameters/ShopPathRequired'
       responses:
-        default: {}
+        default:
+          description: "Default"
   /shops/activate:
     get:
       responses:
-        default: {}
+        default:
+          description: "Default"
   /shops/activate/:
     get:
       responses:
-        default: {}
+        default:
+          description: "Default"
   /shops/activate/tag:
     get:
       responses:
-        default: {}
+        default:
+          description: "Default"
 
   /shops/{shop}/pets:
     get:
@@ -63,6 +76,7 @@ const SpecFile string = `paths:
                     additionalProperties:
                       $ref: '#/components/schemas/Pets'
         default:
+          description: "Default"
           content:
             application/json:
               schema:
@@ -105,7 +119,8 @@ const SpecFile string = `paths:
             schema:
               $ref: '#/components/schemas/NewPet'
       responses:
-        '200':
+        200:
+          description: "OK"
           headers:
             x-next:
               schema:
@@ -115,6 +130,7 @@ const SpecFile string = `paths:
               schema:
                 $ref: "#/components/schemas/Pet"
         default:
+          description: "Default"
           content:
             application/json:
               schema:

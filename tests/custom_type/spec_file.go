@@ -93,15 +93,23 @@ components:
       items:
         $ref: "#/components/schemas/Environment"
 
-    Environment:
+    EnvironmentCreate:
       type: object
       required:
       - name
-      - value
       properties:
         name:
           type: string
-        value:
-          type: string
+      x-goag-go-type: pkg.EnvironmentCreate
+
+    Environment:
+      allOf:
+        - $ref: "#/components/schemas/EnvironmentCreate"
+        - type: object
+          required:
+          - value
+          properties:
+            value:
+              type: string
       x-goag-go-type: pkg.Environment
 `

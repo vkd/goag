@@ -62,6 +62,7 @@ func NewGetPetResponse200JSON(body Pet) GetPetResponse {
 	return out
 }
 
+// GetPetResponse200JSON - Ok
 type GetPetResponse200JSON struct {
 	Body Pet
 }

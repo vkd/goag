@@ -111,13 +111,13 @@ type Environment struct {
 }
 
 type EnvironmentSchema struct {
-	Name  string
+	EnvironmentCreate
 	Value string
 }
 
 func (e *Environment) SetFromSchemaEnvironment(v EnvironmentSchema) error {
 	*e = Environment{
-		Name:  v.Name,
+		Name:  v.EnvironmentCreate.Name,
 		Value: v.Value,
 	}
 	return nil
@@ -125,8 +125,29 @@ func (e *Environment) SetFromSchemaEnvironment(v EnvironmentSchema) error {
 
 func (e Environment) ToSchemaEnvironment() EnvironmentSchema {
 	return EnvironmentSchema{
-		Name:  e.Name,
+		EnvironmentCreate: EnvironmentCreate{
+			Name: e.Name,
+		},
 		Value: e.Value,
+	}
+}
+
+type EnvironmentCreate struct {
+	Name string
+}
+
+func (e *EnvironmentCreate) SetFromSchemaEnvironmentCreate(v struct {
+	Name string
+}) error {
+	*e = EnvironmentCreate{
+		Name: v.Name,
+	}
+	return nil
+}
+
+func (e EnvironmentCreate) ToSchemaEnvironmentCreate() EnvironmentCreate {
+	return EnvironmentCreate{
+		Name: e.Name,
 	}
 }
 

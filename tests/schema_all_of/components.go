@@ -193,9 +193,13 @@ func (c Pet) marshalJSONInnerBody(out io.Writer) error {
 		comma = ","
 	}
 	_ = writeProperty
-	mErr := c.NewPet.marshalJSONInnerBody(out)
-	if mErr != nil {
-		err = mErr
+	{
+		var v NewPet
+		v = c.NewPet
+		mErr := v.marshalJSONInnerBody(out)
+		if mErr != nil {
+			err = mErr
+		}
 	}
 	comma = ","
 	{
@@ -221,9 +225,13 @@ func (c *Pet) UnmarshalJSON(bs []byte) error {
 func (c *Pet) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
 	_ = err
-	err = c.NewPet.unmarshalJSONInnerBody(m)
-	if err != nil {
-		return fmt.Errorf("embedded 'NewPet' field: %w", err)
+	{
+		var v NewPet
+		err := v.unmarshalJSONInnerBody(m)
+		if err != nil {
+			return fmt.Errorf("embedded 'NewPet' field: unmarshal schema: %w", err)
+		}
+		c.NewPet = v
 	}
 	if raw, ok := m["id"]; ok {
 		var v int64

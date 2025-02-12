@@ -14,7 +14,7 @@ import (
 // ------------------------
 
 type Environment struct {
-	Name  string
+	pkg.EnvironmentCreate
 	Value string
 }
 
@@ -81,10 +81,16 @@ func (c Environment) marshalJSONInnerBody(out io.Writer) error {
 	}
 	_ = writeProperty
 	{
-		var v any
-		v = c.Name
-		writeProperty("name", v)
+		var v EnvironmentCreate
+		var vc pkg.EnvironmentCreate
+		vc = c.EnvironmentCreate
+		v = EnvironmentCreate(vc.ToSchemaEnvironmentCreate())
+		mErr := v.marshalJSONInnerBody(out)
+		if mErr != nil {
+			err = mErr
+		}
 	}
+	comma = ","
 	{
 		var v any
 		v = c.Value
@@ -108,14 +114,16 @@ func (c *Environment) UnmarshalJSON(bs []byte) error {
 func (c *Environment) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
 	_ = err
-	if raw, ok := m["name"]; ok {
-		err = json.Unmarshal(raw, &c.Name)
+	{
+		var v EnvironmentCreate
+		err := v.unmarshalJSONInnerBody(m)
 		if err != nil {
-			return fmt.Errorf("'name' field: unmarshal string: %w", err)
+			return fmt.Errorf("embedded 'EnvironmentCreate' field: unmarshal schema: %w", err)
 		}
-		delete(m, "name")
-	} else {
-		return fmt.Errorf("'name' key is missing")
+		err = c.EnvironmentCreate.SetFromSchemaEnvironmentCreate(v)
+		if err != nil {
+			return fmt.Errorf("embedded 'EnvironmentCreate' field: set custom type from schema: %w", err)
+		}
 	}
 	if raw, ok := m["value"]; ok {
 		err = json.Unmarshal(raw, &c.Value)
@@ -125,6 +133,107 @@ func (c *Environment) unmarshalJSONInnerBody(m map[string]json.RawMessage) error
 		delete(m, "value")
 	} else {
 		return fmt.Errorf("'value' key is missing")
+	}
+	return nil
+}
+
+type EnvironmentCreate struct {
+	Name string
+}
+
+var _ json.Marshaler = (*EnvironmentCreate)(nil)
+
+func (c EnvironmentCreate) MarshalJSON() ([]byte, error) {
+	var out bytes.Buffer
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+
+	write([]byte(`{`))
+	mErr := c.marshalJSONInnerBody(&out)
+	if mErr != nil {
+		err = mErr
+	}
+	write([]byte(`}`))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Bytes(), nil
+}
+
+func (c EnvironmentCreate) marshalJSONInnerBody(out io.Writer) error {
+	encoder := json.NewEncoder(out)
+	var err error
+	var comma string
+	write := func(s string) {
+		if err != nil || len(s) == 0 {
+			return
+		}
+		n, werr := out.Write([]byte(s))
+		if werr != nil {
+			err = werr
+		} else if len(s) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+	writeProperty := func(name string, v any) {
+		if err != nil {
+			return
+		}
+		if v == nil {
+			write(comma + `"` + name + `":null`)
+		} else {
+			write(comma + `"` + name + `":`)
+			werr := encoder.Encode(v)
+			if werr != nil {
+				err = werr
+			}
+		}
+		comma = ","
+	}
+	_ = writeProperty
+	{
+		var v any
+		v = c.Name
+		writeProperty("name", v)
+	}
+
+	return err
+}
+
+var _ json.Unmarshaler = (*EnvironmentCreate)(nil)
+
+func (c *EnvironmentCreate) UnmarshalJSON(bs []byte) error {
+	m := make(map[string]json.RawMessage)
+	err := json.Unmarshal(bs, &m)
+	if err != nil {
+		return fmt.Errorf("raw key/value map: %w", err)
+	}
+	return c.unmarshalJSONInnerBody(m)
+}
+
+func (c *EnvironmentCreate) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
+	var err error
+	_ = err
+	if raw, ok := m["name"]; ok {
+		err = json.Unmarshal(raw, &c.Name)
+		if err != nil {
+			return fmt.Errorf("'name' field: unmarshal string: %w", err)
+		}
+		delete(m, "name")
+	} else {
+		return fmt.Errorf("'name' key is missing")
 	}
 	return nil
 }
@@ -202,7 +311,7 @@ func (c Environments) marshalJSONInnerBody(out io.Writer) error {
 		comma = ","
 
 		var v struct {
-			Name  string
+			pkg.EnvironmentCreate
 			Value string
 		}
 		v = cv.ToSchemaEnvironment()
@@ -242,7 +351,7 @@ func (c *Environments) unmarshalJSONInnerBody(m []json.RawMessage) error {
 
 		var cv pkg.Environment
 		err = cv.SetFromSchemaEnvironment(struct {
-			Name  string
+			pkg.EnvironmentCreate
 			Value string
 		}(vRef))
 		if err != nil {
@@ -686,7 +795,7 @@ func (c ShopName) Int64() int64 {
 }
 
 type Environment_Schema struct {
-	Name  string
+	pkg.EnvironmentCreate
 	Value string
 }
 
@@ -753,10 +862,16 @@ func (c Environment_Schema) marshalJSONInnerBody(out io.Writer) error {
 	}
 	_ = writeProperty
 	{
-		var v any
-		v = c.Name
-		writeProperty("name", v)
+		var v EnvironmentCreate
+		var vc pkg.EnvironmentCreate
+		vc = c.EnvironmentCreate
+		v = EnvironmentCreate(vc.ToSchemaEnvironmentCreate())
+		mErr := v.marshalJSONInnerBody(out)
+		if mErr != nil {
+			err = mErr
+		}
 	}
+	comma = ","
 	{
 		var v any
 		v = c.Value
@@ -780,14 +895,16 @@ func (c *Environment_Schema) UnmarshalJSON(bs []byte) error {
 func (c *Environment_Schema) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 	var err error
 	_ = err
-	if raw, ok := m["name"]; ok {
-		err = json.Unmarshal(raw, &c.Name)
+	{
+		var v EnvironmentCreate
+		err := v.unmarshalJSONInnerBody(m)
 		if err != nil {
-			return fmt.Errorf("'name' field: unmarshal string: %w", err)
+			return fmt.Errorf("embedded 'EnvironmentCreate' field: unmarshal schema: %w", err)
 		}
-		delete(m, "name")
-	} else {
-		return fmt.Errorf("'name' key is missing")
+		err = c.EnvironmentCreate.SetFromSchemaEnvironmentCreate(v)
+		if err != nil {
+			return fmt.Errorf("embedded 'EnvironmentCreate' field: set custom type from schema: %w", err)
+		}
 	}
 	if raw, ok := m["value"]; ok {
 		err = json.Unmarshal(raw, &c.Value)
@@ -797,6 +914,107 @@ func (c *Environment_Schema) unmarshalJSONInnerBody(m map[string]json.RawMessage
 		delete(m, "value")
 	} else {
 		return fmt.Errorf("'value' key is missing")
+	}
+	return nil
+}
+
+type EnvironmentCreate_Schema struct {
+	Name string
+}
+
+var _ json.Marshaler = (*EnvironmentCreate_Schema)(nil)
+
+func (c EnvironmentCreate_Schema) MarshalJSON() ([]byte, error) {
+	var out bytes.Buffer
+	var err error
+	write := func(bs []byte) {
+		if err != nil {
+			return
+		}
+		n, werr := out.Write(bs)
+		if werr != nil {
+			err = werr
+		} else if len(bs) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+
+	write([]byte(`{`))
+	mErr := c.marshalJSONInnerBody(&out)
+	if mErr != nil {
+		err = mErr
+	}
+	write([]byte(`}`))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Bytes(), nil
+}
+
+func (c EnvironmentCreate_Schema) marshalJSONInnerBody(out io.Writer) error {
+	encoder := json.NewEncoder(out)
+	var err error
+	var comma string
+	write := func(s string) {
+		if err != nil || len(s) == 0 {
+			return
+		}
+		n, werr := out.Write([]byte(s))
+		if werr != nil {
+			err = werr
+		} else if len(s) != n {
+			err = fmt.Errorf("wrong len of written body")
+		}
+	}
+	writeProperty := func(name string, v any) {
+		if err != nil {
+			return
+		}
+		if v == nil {
+			write(comma + `"` + name + `":null`)
+		} else {
+			write(comma + `"` + name + `":`)
+			werr := encoder.Encode(v)
+			if werr != nil {
+				err = werr
+			}
+		}
+		comma = ","
+	}
+	_ = writeProperty
+	{
+		var v any
+		v = c.Name
+		writeProperty("name", v)
+	}
+
+	return err
+}
+
+var _ json.Unmarshaler = (*EnvironmentCreate_Schema)(nil)
+
+func (c *EnvironmentCreate_Schema) UnmarshalJSON(bs []byte) error {
+	m := make(map[string]json.RawMessage)
+	err := json.Unmarshal(bs, &m)
+	if err != nil {
+		return fmt.Errorf("raw key/value map: %w", err)
+	}
+	return c.unmarshalJSONInnerBody(m)
+}
+
+func (c *EnvironmentCreate_Schema) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
+	var err error
+	_ = err
+	if raw, ok := m["name"]; ok {
+		err = json.Unmarshal(raw, &c.Name)
+		if err != nil {
+			return fmt.Errorf("'name' field: unmarshal string: %w", err)
+		}
+		delete(m, "name")
+	} else {
+		return fmt.Errorf("'name' key is missing")
 	}
 	return nil
 }

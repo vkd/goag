@@ -488,20 +488,31 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		var s StructureType
 		var imports Imports
 		for i, a := range spec.AllOf {
-			if ref := a.Ref(); ref != nil {
+			schema, ims, err := NewSchema(a, components, cfg)
+			if err != nil {
+				return nil, nil, fmt.Errorf("allOf: %d-th element: new schema: %w", i, err)
+			}
+			imports = append(imports, ims...)
+
+			if schema.Ref != nil {
 				s.Fields = append(s.Fields, StructureField{
-					Name:        ref.Name,
-					GoTypeFn:    StringRender(ref.Name).Render,
-					FieldTypeFn: StringRender(ref.Name).Render,
-					Embedded:    true,
+					Name:               schema.Ref.Name,
+					Type:               schema,
+					Schema:             schema,
+					GoTypeFn:           schema.RenderGoType,
+					FieldTypeFn:        schema.RenderFieldType,
+					Embedded:           true,
+					RenderToBaseTypeFn: schema.RenderToBaseType,
 				})
-			} else {
+			} else if schema.Kind() == SchemaKindObject {
 				st, ims, err := NewStructureType(a.Value(), components, cfg)
 				if err != nil {
 					return nil, nil, fmt.Errorf("allOf: %d-th element: new structure type: %w", i, err)
 				}
 				imports = append(imports, ims...)
 				s.Fields = append(s.Fields, st.Fields...)
+			} else {
+				return nil, nil, fmt.Errorf("allOf: %d-th element: wrong schema type: only type 'object' is supported: object type: %q", i, schema.Kind())
 			}
 		}
 		return s, imports, nil
