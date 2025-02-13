@@ -105,6 +105,13 @@ func (s Settings) ToSchemaGetShopAdditionals() GetShopAdditionals {
 
 type Environments []Environment
 
+func (e Environments) ToSchemaEnvironments() Environments { return e }
+
+func (e *Environments) SetFromSchemaEnvironments(s Environments) error {
+	*e = s
+	return nil
+}
+
 type Environment struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`

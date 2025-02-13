@@ -92,6 +92,7 @@ components:
       nullable: true
       items:
         $ref: "#/components/schemas/Environment"
+      x-goag-go-type: pkg.Environments
 
     EnvironmentCreate:
       type: object

@@ -50,7 +50,7 @@ func TestGetMultiParams(t *testing.T) {
 	params.Query.PageCustomTypeQuery = pkg.Just(testPageCustomTypeQuery)
 	params.Body = GetShop{
 		Metadata: testMetadata,
-		Environments: pkg.Just(pkg.Pointer(Environments{
+		Environments: pkg.Just(pkg.Pointer(pkg.Environments{
 			pkg.Environment{
 				Name:  "HELLO",
 				Value: "world",

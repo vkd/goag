@@ -366,7 +366,7 @@ func (c *Environments) unmarshalJSONInnerBody(m []json.RawMessage) error {
 
 type GetShop struct {
 	Additionals  pkg.Maybe[pkg.Nullable[pkg.Settings]]
-	Environments pkg.Maybe[pkg.Nullable[Environments]]
+	Environments pkg.Maybe[pkg.Nullable[pkg.Environments]]
 	Metadata     pkg.Metadata
 	Settings     pkg.Maybe[pkg.Nullable[pkg.Settings]]
 }
@@ -445,7 +445,9 @@ func (c GetShop) marshalJSONInnerBody(out io.Writer) error {
 	if vOpt, ok := c.Environments.Get(); ok {
 		var v any = nil
 		if vPtr, ok := vOpt.Get(); ok {
-			v = vPtr
+			var vc pkg.Environments
+			vc = vPtr
+			v = Environments(vc.ToSchemaEnvironments())
 		}
 		writeProperty("environments", v)
 	}
@@ -506,16 +508,22 @@ func (c *GetShop) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 		delete(m, "additionals")
 	}
 	if raw, ok := m["environments"]; ok {
-		var vn pkg.Nullable[Environments]
+		var vNull pkg.Nullable[pkg.Environments]
 		if len(raw) != 4 || string(raw) != "null" {
-			var v Environments
-			err = v.UnmarshalJSON(raw)
+			var vRef Environments
+			err = vRef.UnmarshalJSON(raw)
 			if err != nil {
-				return fmt.Errorf("'environments' field: unmarshal nullable ref type 'Environments': %w", err)
+				return fmt.Errorf("'environments' field: unmarshal ref type 'Environments': %w", err)
 			}
-			vn.Set(v)
+
+			var cv pkg.Environments
+			err = cv.SetFromSchemaEnvironments([]pkg.Environment(vRef))
+			if err != nil {
+				return fmt.Errorf("'environments' field: set from schema: %w", err)
+			}
+			vNull.Set(cv)
 		}
-		c.Environments.Value = vn
+		c.Environments.Value = vNull
 		c.Environments.IsSet = true
 		delete(m, "environments")
 	}
