@@ -33,7 +33,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 // PostShopsShopStringSepShopSchemaPets
 // POST /shops/{shop_string}/sep/{shop_schema}/pets
 func (c *Client) PostShopsShopStringSepShopSchemaPets(ctx context.Context, request PostShopsShopStringSepShopSchemaPetsParams) (PostShopsShopStringSepShopSchemaPetsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.ShopString + "/sep/" + request.Path.ShopSchema.Shopa().Shopb().Shopc().String() + "/pets"
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.ShopString) + "/sep/" + url.PathEscape(request.Path.ShopSchema.Shopa().Shopb().Shopc().String()) + "/pets"
 
 	query := make(url.Values, 5)
 	if request.Query.PageInt.IsSet {

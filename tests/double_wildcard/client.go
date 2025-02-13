@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 )
 
 type Client struct {
@@ -31,7 +32,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 // GetPetsPetIDNames
 // GET /pets/{pet_id}/names
 func (c *Client) GetPetsPetIDNames(ctx context.Context, request GetPetsPetIDNamesParams) (GetPetsPetIDNamesResponse, error) {
-	var requestURL = c.BaseURL + "/pets/" + request.Path.PetID + "/names"
+	var requestURL = c.BaseURL + "/pets/" + url.PathEscape(request.Path.PetID) + "/names"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -63,7 +64,7 @@ func (c *Client) GetPetsPetIDNames(ctx context.Context, request GetPetsPetIDName
 // GetPetsPetIDShops
 // GET /pets/{pet_id}/shops
 func (c *Client) GetPetsPetIDShops(ctx context.Context, request GetPetsPetIDShopsParams) (GetPetsPetIDShopsResponse, error) {
-	var requestURL = c.BaseURL + "/pets/" + request.Path.PetID + "/shops"
+	var requestURL = c.BaseURL + "/pets/" + url.PathEscape(request.Path.PetID) + "/shops"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {

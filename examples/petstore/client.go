@@ -130,7 +130,7 @@ func (c *Client) CreatePets(ctx context.Context, request CreatePetsParams) (Crea
 // ShowPetByID
 // GET /pets/{petId}
 func (c *Client) ShowPetByID(ctx context.Context, request ShowPetByIDParams) (ShowPetByIDResponse, error) {
-	var requestURL = c.BaseURL + "/pets/" + request.Path.PetID
+	var requestURL = c.BaseURL + "/pets/" + url.PathEscape(request.Path.PetID)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {

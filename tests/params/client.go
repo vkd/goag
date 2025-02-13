@@ -33,7 +33,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 // GetReviews
 // GET /shops/{shop}/reviews
 func (c *Client) GetReviews(ctx context.Context, request GetReviewsParams) (GetReviewsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/reviews"
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10)) + "/reviews"
 
 	query := make(url.Values, 14)
 	query["int_req"] = []string{strconv.FormatInt(int64(request.Query.IntReq), 10)}

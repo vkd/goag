@@ -203,7 +203,7 @@ func (c *Client) GetShopsActivateTag(ctx context.Context, request GetShopsActiva
 // GetShopsShop
 // GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10)
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -231,7 +231,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 // GetShopsShopRT
 // GET /shops/{shop}/
 func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParams) (GetShopsShopRTResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/"
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10)) + "/"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -259,7 +259,7 @@ func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParam
 // GetShopsShopPets
 // GET /shops/{shop}/pets
 func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsParams) (GetShopsShopPetsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/pets"
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10)) + "/pets"
 
 	query := make(url.Values, 2)
 	if request.Query.Page.IsSet {
@@ -317,7 +317,7 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 // Returns a current pet.
 // POST /shops/{shop}/review
 func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (ReviewShopResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + strconv.FormatInt(int64(request.Path.Shop), 10) + "/review"
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10)) + "/review"
 
 	query := make(url.Values, 4)
 	if request.Query.Page.IsSet {

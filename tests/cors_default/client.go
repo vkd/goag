@@ -77,7 +77,7 @@ func (c *Client) GetShops(ctx context.Context, request GetShopsParams) (GetShops
 // GetShopsShop
 // GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop)
 
 	query := make(url.Values, 1)
 	if request.Query.Page.IsSet {
@@ -121,7 +121,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 // PostShopsShop
 // POST /shops/{shop}
 func (c *Client) PostShopsShop(ctx context.Context, request PostShopsShopParams) (PostShopsShopResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop)
 
 	query := make(url.Values, 1)
 	if request.Query.Page.IsSet {

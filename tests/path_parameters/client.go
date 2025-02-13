@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 )
 
 type Client struct {
@@ -31,7 +32,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 // PostShopsShopStringShopSchemaPets
 // POST /shops/{shop_string}/{shop_schema}/pets
 func (c *Client) PostShopsShopStringShopSchemaPets(ctx context.Context, request PostShopsShopStringShopSchemaPetsParams) (PostShopsShopStringShopSchemaPetsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.ShopString + "/" + request.Path.ShopSchema.String() + "/pets"
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.ShopString) + "/" + url.PathEscape(request.Path.ShopSchema.String()) + "/pets"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, nil)
 	if err != nil {

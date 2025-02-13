@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 )
 
 type Client struct {
@@ -171,7 +172,7 @@ func (c *Client) GetShopsMinePetsMikeTails(ctx context.Context, request GetShops
 // GetShopsShop
 // GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -199,7 +200,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 // GetShopsShopRT
 // GET /shops/{shop}/
 func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParams) (GetShopsShopRTResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/"
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop) + "/"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -227,7 +228,7 @@ func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParam
 // GetShopsShopPets
 // GET /shops/{shop}/pets
 func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsParams) (GetShopsShopPetsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/pets"
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop) + "/pets"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -255,7 +256,7 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 // GetShopsShopPetsMikePaws
 // GET /shops/{shop}/pets/mike/paws
 func (c *Client) GetShopsShopPetsMikePaws(ctx context.Context, request GetShopsShopPetsMikePawsParams) (GetShopsShopPetsMikePawsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop + "/pets/mike/paws"
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop) + "/pets/mike/paws"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {

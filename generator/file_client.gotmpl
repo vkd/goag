@@ -46,8 +46,8 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 			{{- if .Param}} + {{ end }}
 		{{- end }}
 
-		{{- if .Param }}
-			{{- .Param.Type.RenderFormat (print "request.Path." .Param.FieldName) }}
+		{{- if .Param -}}
+			url.PathEscape({{ .Param.Type.RenderFormat (print "request.Path." .Param.FieldName) }})
 		{{- end }}
 	{{- end }}
 

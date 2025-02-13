@@ -33,7 +33,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 // GetShopsShop
 // GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop)
 
 	query := make(url.Values, 1)
 	if request.Query.Page.IsSet {

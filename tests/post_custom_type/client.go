@@ -34,7 +34,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 // PostShopsShopPets
 // POST /shops/{shop}/pets
 func (c *Client) PostShopsShopPets(ctx context.Context, request PostShopsShopPetsParams) (PostShopsShopPetsResponse, error) {
-	var requestURL = c.BaseURL + "/shops/" + request.Path.Shop.String() + "/pets"
+	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop.String()) + "/pets"
 
 	query := make(url.Values, 1)
 	if request.Query.Filter.IsSet {
