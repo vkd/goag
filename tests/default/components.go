@@ -296,9 +296,7 @@ func (c Pet) marshalJSONInnerBody(out io.Writer) error {
 	}
 	_ = writeProperty
 	{
-		var v NewPet
-		v = c.NewPet
-		mErr := v.marshalJSONInnerBody(out)
+		mErr := c.NewPet.marshalJSONInnerBody(out)
 		if mErr != nil {
 			err = mErr
 		}

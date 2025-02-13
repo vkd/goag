@@ -206,7 +206,7 @@ func (s Schema) RenderBaseGoType() (string, error) {
 
 // TODO: refactor to remove the method
 func (s Schema) IsCustom() bool {
-	return s.CustomType.IsSet
+	return s.CustomType.IsSet || (s.Ref != nil && s.Ref.Schema.IsCustom())
 }
 
 func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {

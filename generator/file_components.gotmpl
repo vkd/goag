@@ -126,15 +126,20 @@ func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
 
     {{- range $i, $f := .StructureType.Fields }}
         {{- if .Embedded }}
-		{
-			var v {{ $f.Name }}
-			{{ call $f.RenderToBaseTypeFn "v" (print "c." $f.Name) }}
-			mErr := v.marshalJSONInnerBody(out)
-			if mErr != nil {
-				err = mErr
+			{
+			{{- $from := (print "c." $f.Name) }}
+			{{- if .Schema.IsCustom }}
+				var v {{ $f.Name }}
+				{{ call $f.RenderToBaseTypeFn "v" $from }}
+				{{- $from = "v" }}
+			{{- else }}
+			{{- end }}
+				mErr := {{ $from }}.marshalJSONInnerBody(out)
+				if mErr != nil {
+					err = mErr
+				}
 			}
-		}
-        comma = ","
+			comma = ","
         {{- else }}
             {{- if .Required }}
     {
