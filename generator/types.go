@@ -509,8 +509,8 @@ type NullableType struct {
 	TypeName   string
 }
 
-func NewNullableType(v SchemaType, cfg Config) NullableType {
-	typename := cfg.Nullable.Type
+func NewNullableType(v SchemaType, nullableType string) NullableType {
+	typename := nullableType
 	if typename == "" {
 		typename = "Nullable"
 	}

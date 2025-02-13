@@ -88,16 +88,6 @@ func (s Schema) IsNullable() bool {
 	return s.Nullable != ""
 }
 
-func (s Schema) CopyBase() Schema {
-	return Schema{
-		Description: s.Description,
-		Ref:         s.Ref,
-		Type:        s.Type,
-		Nullable:    "",
-		CustomType:  Nothing[CustomType](),
-	}
-}
-
 func (s Schema) BaseSchemaType() InternalSchemaType {
 	return s.Base().Type
 }
@@ -120,29 +110,14 @@ func (s Schema) RenderBaseFrom(prefix, from, suffix string) (string, error) {
 }
 
 func (s Schema) RenderToBaseType(to, from string) (string, error) {
-	// if s.Ref != nil {
-	// 	isStruct := s.Ref.Schema.Kind() == SchemaKindObject
-	// 	isArray := s.Ref.Schema.Kind() == SchemaKindArray
-	// 	if !s.Ref.Schema.IsCustom() && !isStruct && !isArray {
-	// 		from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
-	// 	}
-	// 	return s.Ref.Schema.RenderToBaseType(to, from)
-	// }
-	// ---
-	// tp := s.Type
-	// if s.Ref != nil {
-	// 	tp = s.Ref.Schema
-	// 	// from = from + ".ToSchema" + s.Ref.Name + "()"
-	// 	return s.Ref.Schema.RenderToBaseType(to, from)
-	// }
-	// if ct, ok := s.CustomType.Get(); ok {
-	// 	tp = ct
-	// }
-	// if s.IsNullable() {
-	// 	tp = NullableType{V: tp, TypeName: s.Nullable}
-	// }
-	// return tp.RenderToBaseType(to, from)
-	// ---
+	if s.Ref != nil {
+		return ExecuteTemplate("Schema_RenderToBaseType_Ref", TData{
+			"To":   to,
+			"From": from,
+
+			"Schema": s,
+		})
+	}
 	return ExecuteTemplate("Schema_RenderToBaseType", TData{
 		"To":   to,
 		"From": from,

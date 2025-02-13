@@ -200,89 +200,37 @@ type SchemaComponent struct {
 	SliceType      SliceType
 	OneOfStructure OneOfStructure
 
-	// Ref Maybe[*SchemaComponent]
-
-	BaseType GoTypeRender
-	// IsRef    bool
-
 	GoTypeFn     GoTypeRenderFunc
 	FuncTypeName string
 }
 
 func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) SchemaComponent {
-	// if ref := rs.Ref(); ref != nil {
-	// 	_, ok := cs.Schemas.Get(ref.V)
-	// 	if !ok {
-	// 		return zero, nil, fmt.Errorf("cannot find %q ref schema in schemas", ref.Name)
-	// 	}
-	// 	return SchemaComponent{
-	// 		Name:   name,
-	// 		Schema: schema,
-
-	// 		// Ref:      Just(cmp),
-	// 		BaseType: StringRender(ref.Name),
-	// 	}, imports, nil
-	// }
-
-	schemaType := schema
-
 	sc := SchemaComponent{
 		Name:   name,
 		Schema: schema,
 
 		Description: schema.Description,
-		BaseType:    schemaType.BaseSchemaType(),
 
 		GoTypeFn:     schema.RenderGoType,
 		FuncTypeName: schema.FuncTypeName(),
 	}
 
-	if schema.IsCustom() {
-		// sc.GoTypeFn = StringRender(schema.CustomType).Render
-
-		cs.AddSchema(sc.Name+"_Schema", schema.CopyBase(), cfg)
-	}
-
-	switch schema := schemaType.Type.(type) {
+	switch schema := schema.Type.(type) {
 	case AnyType:
 		sc.IgnoreParseFormat = true
 		sc.IsAlias = true
-		// sc.WriteJSONFunc = true
 	case StructureType:
 		sc.IgnoreParseFormat = true
 		sc.StructureType = schema
 		sc.WriteJSONFunc = true
 	case SliceType:
-		sc.BaseType = schema.Items
 		sc.WriteJSONFuncArray = true
 		sc.SliceType = schema
 
 		switch schema.Items.BaseSchemaType().(type) {
-		// case RefSchemaType:
-		// 	switch items.Base().(type) {
-		// 	case StructureType:
-		// 		sc.IgnoreParseFormat = true
-		// 	case MapType:
-		// 		sc.IgnoreParseFormat = true
-		// 		// if len(tp) > 0 {
-		// 		// }
-		// 	}
 		case StructureType:
 			sc.IgnoreParseFormat = true
 		}
-		// case CustomType:
-		// 	sc.BaseType = schema
-		// 	sc.IgnoreParseFormat = true
-
-		// 	switch schema.Type {
-		// 	case "any":
-		// 		sc.IgnoreParseFormat = true
-		// 	default:
-		// 		sc.IsAlias = true
-		// 	}
-		// case RefSchemaType:
-		// 	sc.BaseType = schema.Ref
-		// 	sc.IsRef = true
 	case OneOfStructure:
 		sc.IgnoreParseFormat = true
 		sc.WriteJSONFuncOneOf = true

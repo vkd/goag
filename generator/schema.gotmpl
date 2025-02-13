@@ -18,37 +18,47 @@
 {{ .To }} {{ if .IsNew }}:{{ end }}= New{{ .Name }}({{ $varName }})
 {{- end }}
 
-{{ define "Schema_RenderToBaseType" -}}
-    {{- $isCustom := .Schema.IsCustom }}
-    {{- $isNullable := .Schema.IsNullable }}
+{{ define "Schema_RenderToBaseType_Ref" -}}
+    {{- $isCustom := .Schema.Ref.Schema.IsCustom }}
+    {{- $isNullable := .Schema.Ref.Schema.IsNullable }}
     {{- $from := .From }}
     {{- $to := .To }}
-    {{- if .Schema.Ref }}
-        {{- $isCustom = .Schema.Ref.Schema.IsCustom }}
-        {{- $isNullable = .Schema.Ref.Schema.IsNullable }}
-    {{- end -}}
 
     {{- if $isNullable -}}
         {{- $from = "vPtr" -}}
 if vPtr, ok := {{ .From }}.Get(); ok {
     {{ end -}}
 
-    {{- if .Schema.Ref -}}
-        {{- if $isCustom -}}
-            var vc {{ .Schema.Ref.Schema.CustomType.Value.RenderGoType }}
-            {{ $to = "vc" }}
-        {{- end -}}
-        {{ $to }} = {{ $from }}
-        {{- if $isCustom }}
-            v = {{ .Schema.Ref.Name }}(vc.ToSchema{{ .Schema.Ref.Name }}())
-        {{- end -}}
-    {{- else -}}
-        {{- if $isCustom -}}
-            {{ $to }} = {{ $from }}
-        {{- else -}}
-            {{ .Schema.Type.RenderToBaseType $to $from }}
-        {{- end -}}
+    {{- if $isCustom -}}
+        var vc {{ .Schema.Ref.Schema.CustomType.Value.RenderGoType }}
+        {{ $to = "vc" }}
     {{- end -}}
+    {{ $to }} = {{ $from }}
+    {{- if $isCustom }}
+        v = {{ .Schema.Ref.Name }}(vc.ToSchema{{ .Schema.Ref.Name }}())
+    {{- end -}}
+    {{- if $isNullable }}
+}
+    {{- end -}}
+{{- end }}
+
+{{ define "Schema_RenderToBaseType" -}}
+    {{- $isCustom := .Schema.IsCustom }}
+    {{- $isNullable := .Schema.IsNullable }}
+    {{- $from := .From }}
+    {{- $to := .To }}
+
+    {{- if $isNullable -}}
+        {{- $from = "vPtr" -}}
+if vPtr, ok := {{ .From }}.Get(); ok {
+    {{ end -}}
+
+    {{- if $isCustom -}}
+        {{ $to }} = {{ $from }}
+    {{- else -}}
+        {{ .Schema.Type.RenderToBaseType $to $from }}
+    {{- end -}}
+
     {{- if $isNullable }}
 }
     {{- end -}}
