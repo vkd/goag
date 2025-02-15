@@ -132,7 +132,6 @@ func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
 				var v {{ $f.Name }}
 				{{ call $f.RenderToBaseTypeFn "v" $from }}
 				{{- $from = "v" }}
-			{{- else }}
 			{{- end }}
 				mErr := {{ $from }}.marshalJSONInnerBody(out)
 				if mErr != nil {
@@ -142,25 +141,25 @@ func (c {{ .Name }}) marshalJSONInnerBody(out io.Writer) error {
 			comma = ","
         {{- else }}
             {{- if .Required }}
-    {
-        var v any
-        {{ call .RenderToBaseTypeFn "v" (print "c." .Name) }}
-        writeProperty("{{ .JSONTag }}", v)
-    }
+				{
+					var v any
+					{{ call .RenderToBaseTypeFn "v" (print "c." .Name) }}
+					writeProperty("{{ .JSONTag }}", v)
+				}
             {{- else }}
-    if vOpt, ok := {{ (print "c." .Name) }}.Get(); ok {
-        var v any = nil
-        {{ call .RenderToBaseTypeFn "v" "vOpt" }}
-        writeProperty("{{ .JSONTag }}", v)
-    }
+				if vOpt, ok := {{ (print "c." .Name) }}.Get(); ok {
+					var v any = nil
+					{{ call .RenderToBaseTypeFn "v" "vOpt" }}
+					writeProperty("{{ .JSONTag }}", v)
+				}
             {{- end }}
         {{- end }}
     {{- end }}
 
     {{- if .StructureType.AdditionalProperties }}
-	for k, v := range c.AdditionalProperties {
-        writeProperty(k, v)
-	}
+		for k, v := range c.AdditionalProperties {
+			writeProperty(k, v)
+		}
     {{ end }}
 
 	return err
@@ -182,49 +181,50 @@ func (c *{{ .Name }}) unmarshalJSONInnerBody(m map[string]json.RawMessage) error
     _ = err
     {{- range $_, $f := .StructureType.Fields }}
         {{- if .Embedded }}
-	{
-		var v {{ $f.Type.RenderBaseGoType }}
-		err := v.unmarshalJSONInnerBody(m)
-		if err != nil {
-			return fmt.Errorf("embedded '{{ .Name }}' field: unmarshal schema: %w", err)
-		}
+			{
+				var v {{ $f.Type.RenderBaseGoType }}
+				err := v.unmarshalJSONInnerBody(m)
+				if err != nil {
+					return fmt.Errorf("embedded '{{ .Name }}' field: unmarshal schema: %w", err)
+				}
 			{{- if or $f.Schema.CustomType.IsSet (and $f.Schema.Ref $f.Schema.Ref.Schema.CustomType.IsSet ) }}
-		err = c.{{ .Name }}.SetFromSchemaEnvironmentCreate(v)
-		if err != nil {
-			return fmt.Errorf("embedded '{{ .Name }}' field: set custom type from schema: %w", err)
-		}
+				err = c.{{ .Name }}.SetFromSchemaEnvironmentCreate(v)
+				if err != nil {
+					return fmt.Errorf("embedded '{{ .Name }}' field: set custom type from schema: %w", err)
+				}
 			{{- else }}
-			c.{{ .Name }} = v
+				c.{{ .Name }} = v
 			{{- end }}
-	}
+			}
         {{- else }}
-    if raw, ok := m["{{ .JSONTag }}"]; ok {
-		    {{- if .Required }}
-        {{ .Schema.RenderUnmarshalJSON (print "c." .Name) "raw" false (prefixError (print "'" .JSONTag "' field")) }}
+			if raw, ok := m["{{ .JSONTag }}"]; ok {
+			{{- if .Required }}
+				{{ .Schema.RenderUnmarshalJSON (print "c." .Name) "raw" false (prefixError (print "'" .JSONTag "' field")) }}
 			{{- else }}
-        {{ .Schema.RenderUnmarshalJSON (print "c." .Name ".Value") "raw" false (prefixError (print "'" .JSONTag "' field")) }}
-		c.{{ .Name }}.IsSet = true
+				{{ .Schema.RenderUnmarshalJSON (print "c." .Name ".Value") "raw" false (prefixError (print "'" .JSONTag "' field")) }}
+				c.{{ .Name }}.IsSet = true
 			{{- end }}
-        delete(m, "{{ .JSONTag }}")
-    {{- if .Required }}
-    } else {
-        return fmt.Errorf("'{{ .JSONTag }}' key is missing")
-    {{- end }}
-    }
+				delete(m, "{{ .JSONTag }}")
+			{{- if .Required }}
+				} else {
+					return fmt.Errorf("'{{ .JSONTag }}' key is missing")
+			{{- end }}
+			}
         {{- end }}
     {{- end }}
+
     {{- if .StructureType.AdditionalProperties }}
-	if len(m) > 0 {
-		c.AdditionalProperties = make(map[string]{{ .StructureType.AdditionalProperties.RenderGoType }})
-	}
-	for k, bs := range m {
-        var v {{ .StructureType.AdditionalProperties.RenderGoType }}
-        err = json.Unmarshal(bs, &v)
-        if err != nil {
-            return fmt.Errorf("additional property %q: %w", k, err)
-        }
-		c.AdditionalProperties[k] = v
-	}
+		if len(m) > 0 {
+			c.AdditionalProperties = make(map[string]{{ .StructureType.AdditionalProperties.RenderGoType }})
+		}
+		for k, bs := range m {
+			var v {{ .StructureType.AdditionalProperties.RenderGoType }}
+			err = json.Unmarshal(bs, &v)
+			if err != nil {
+				return fmt.Errorf("additional property %q: %w", k, err)
+			}
+			c.AdditionalProperties[k] = v
+		}
     {{- end }}
 	return nil
 }
