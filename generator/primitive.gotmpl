@@ -35,7 +35,7 @@ if err != nil {
 }
 {{- end }}
 
-{{ define "Bool_RenderToString" }}strconv.FormatBool({{ .From }}){{ end }}
+{{ define "Bool_RenderToStringInline" }}strconv.FormatBool({{ .From }}){{ end }}
 
 {{ define "Bool_RenderUnmarshalJSON" -}}
 var v bool
@@ -58,7 +58,7 @@ if err != nil {
 }
 {{- end }}
 
-{{ define "Int64_RenderToString" }}strconv.FormatInt({{ .From }}, 10){{ end }}
+{{ define "Int64_RenderToStringInline" }}strconv.FormatInt({{ .From }}, 10){{ end }}
 
 {{ define "Int64_RenderUnmarshalJSON" -}}
 var v int64
@@ -79,7 +79,7 @@ if err != nil {
 {{ .To }} {{ if .IsNew }}:{{ end }}= {{ .GoType }}(vInt64)
 {{- end }}
 
-{{ define "IntX_RenderToString" }}strconv.FormatInt(int64({{ .From }}), 10){{ end }}
+{{ define "IntX_RenderToStringInline" }}strconv.FormatInt(int64({{ .From }}), 10){{ end }}
 
 {{ define "IntX_RenderUnmarshalJSON" -}}
 var v {{ .GoType }}
@@ -100,7 +100,7 @@ if err != nil {
 {{ .To }} {{ if .IsNew }}:{{ end }}= {{ .GoType }}(vFloat)
 {{- end }}
 
-{{ define "FloatX_RenderToString" }}strconv.FormatFloat(float64({{ .From }}), 'e', -1, {{ .BitSize }}){{ end }}
+{{ define "FloatX_RenderToStringInline" }}strconv.FormatFloat(float64({{ .From }}), 'e', -1, {{ .BitSize }}){{ end }}
 
 {{ define "FloatX_RenderUnmarshalJSON" -}}
 var v float64
@@ -123,7 +123,7 @@ if err != nil {
 }
 {{- end }}
 
-{{ define "Float64_RenderToString" }}strconv.FormatFloat({{ .From }}, 'e', -1, 64){{ end }}
+{{ define "Float64_RenderToStringInline" }}strconv.FormatFloat({{ .From }}, 'e', -1, 64){{ end }}
 
 {{ define "Float64_RenderUnmarshalJSON" -}}
 var v float64
@@ -146,7 +146,7 @@ if err != nil {
 }
 {{- end }}
 
-{{ define "DateTime_RenderToString" }}{{ .From }}.Format({{ .Layout }}){{ end }}
+{{ define "DateTime_RenderToStringInline" }}{{ .From }}.Format({{ .Layout }}){{ end }}
 
 {{ define "DateTime_RenderUnmarshalJSON" -}}
 var s string
