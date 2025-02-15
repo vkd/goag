@@ -200,8 +200,7 @@ type SchemaComponent struct {
 	SliceType      SliceType
 	OneOfStructure OneOfStructure
 
-	GoTypeFn     GoTypeRenderFunc
-	FuncTypeName string
+	GoTypeFn GoTypeRenderFunc
 }
 
 func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) SchemaComponent {
@@ -211,8 +210,7 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 
 		Description: schema.Description,
 
-		GoTypeFn:     schema.RenderGoType,
-		FuncTypeName: schema.FuncTypeName(),
+		GoTypeFn: schema.RenderGoType,
 	}
 
 	switch schema := schema.Type.(type) {

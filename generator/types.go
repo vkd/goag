@@ -504,9 +504,8 @@ func (p OptionalType) RenderMarshalJSON(to, from string, isNew bool, mkErr Error
 }
 
 type NullableType struct {
-	V          InternalSchemaType
-	SchemaType SchemaType
-	TypeName   string
+	V        InternalSchemaType
+	TypeName string
 }
 
 func NewNullableType(v SchemaType, nullableType string) NullableType {
@@ -514,7 +513,7 @@ func NewNullableType(v SchemaType, nullableType string) NullableType {
 	if typename == "" {
 		typename = "Nullable"
 	}
-	return NullableType{V: v, SchemaType: v, TypeName: typename}
+	return NullableType{V: v, TypeName: typename}
 }
 
 func (n NullableType) FuncTypeName() string {
@@ -527,11 +526,6 @@ var _ GoTypeRender = NullableType{}
 
 func (n NullableType) GoType(from string) string {
 	return n.TypeName + "[" + from + "]"
-}
-
-func (n NullableType) RenderFieldType() (string, error) {
-	out, err := n.SchemaType.RenderFieldType()
-	return n.GoType(out), err
 }
 
 func (n NullableType) RenderGoType() (string, error) {

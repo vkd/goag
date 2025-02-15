@@ -54,7 +54,7 @@ func New{{ .Name }}(v {{ .Schema.RenderBaseGoType }}) {{ .Name }} {
     return {{ .Name }}(v)
 }
 
-func (c {{ .Name }}) {{ title .FuncTypeName }}() {{ .Schema.RenderBaseGoType }} {
+func (c {{ .Name }}) {{ title .Schema.FuncTypeName }}() {{ .Schema.RenderBaseGoType }} {
     return {{ .Schema.RenderBaseGoType }}(c)
 }
 {{- end }}
