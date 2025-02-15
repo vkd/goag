@@ -62,11 +62,16 @@ func newListPetsParams(r *http.Request) (zero ListPetsParams, _ error) {
 		{
 			q, ok := query["limit"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "limit", Reason: "parse int32", Err: err}
+				var vOpt int32
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "limit", Reason: "parse int32", Err: err}
+					}
+					vOpt = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "limit", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int32(vInt64)
 				params.Query.Limit.Set(vOpt)
 			}
 		}

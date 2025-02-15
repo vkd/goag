@@ -86,22 +86,32 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 		{
 			q, ok := query["page_int"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 0)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_int", Reason: "parse int", Err: err}
+				var vOpt int
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 0)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page_int", Reason: "parse int", Err: err}
+					}
+					vOpt = int(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page_int", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int(vInt64)
 				params.Query.PageInt.Set(vOpt)
 			}
 		}
 		{
 			q, ok := query["page_schema"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_schema", Reason: "parse int32", Err: err}
+				var vInt32 int32
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page_schema", Reason: "parse int32", Err: err}
+					}
+					vInt32 = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page_schema", Reason: "multiple values found: single value expected"}
 				}
-				vInt32 := int32(vInt64)
 				vOpt := NewPage(vInt32)
 				params.Query.PageSchema.Set(vOpt)
 			}
@@ -127,11 +137,15 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				return zero, fmt.Errorf("query parameter 'page_int_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 0)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_int_req", Reason: "parse int", Err: err}
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 0)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page_int_req", Reason: "parse int", Err: err}
+					}
+					params.Query.PageIntReq = int(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page_int_req", Reason: "multiple values found: single value expected"}
 				}
-				params.Query.PageIntReq = int(vInt64)
 			}
 		}
 		{
@@ -140,11 +154,16 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				return zero, fmt.Errorf("query parameter 'page_schema_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_schema_req", Reason: "parse int32", Err: err}
+				var vInt32 int32
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page_schema_req", Reason: "parse int32", Err: err}
+					}
+					vInt32 = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page_schema_req", Reason: "multiple values found: single value expected"}
 				}
-				vInt32 := int32(vInt64)
 				params.Query.PageSchemaReq = NewPage(vInt32)
 			}
 		}
@@ -156,22 +175,32 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 		{
 			hs := header.Values("X-Organization-Int")
 			if len(hs) > 0 {
-				vInt64, err := strconv.ParseInt(hs[0], 10, 0)
-				if err != nil {
-					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Int", Reason: "parse int", Err: err}
+				var vOpt int
+				if len(hs) == 1 {
+					vInt64, err := strconv.ParseInt(hs[0], 10, 0)
+					if err != nil {
+						return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Int", Reason: "parse int", Err: err}
+					}
+					vOpt = int(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Int", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int(vInt64)
 				params.Headers.XOrganizationInt.Set(vOpt)
 			}
 		}
 		{
 			hs := header.Values("X-Organization-Schema")
 			if len(hs) > 0 {
-				vInt64, err := strconv.ParseInt(hs[0], 10, 0)
-				if err != nil {
-					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema", Reason: "parse int", Err: err}
+				var vInt int
+				if len(hs) == 1 {
+					vInt64, err := strconv.ParseInt(hs[0], 10, 0)
+					if err != nil {
+						return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema", Reason: "parse int", Err: err}
+					}
+					vInt = int(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema", Reason: "multiple values found: single value expected"}
 				}
-				vInt := int(vInt64)
 				vOpt := NewOrganization(vInt)
 				params.Headers.XOrganizationSchema.Set(vOpt)
 			}
@@ -182,11 +211,15 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				return zero, fmt.Errorf("header parameter 'X-Organization-Int-Required': is required")
 			}
 			if len(hs) > 0 {
-				vInt64, err := strconv.ParseInt(hs[0], 10, 0)
-				if err != nil {
-					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Int-Required", Reason: "parse int", Err: err}
+				if len(hs) == 1 {
+					vInt64, err := strconv.ParseInt(hs[0], 10, 0)
+					if err != nil {
+						return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Int-Required", Reason: "parse int", Err: err}
+					}
+					params.Headers.XOrganizationIntRequired = int(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Int-Required", Reason: "multiple values found: single value expected"}
 				}
-				params.Headers.XOrganizationIntRequired = int(vInt64)
 			}
 		}
 		{
@@ -195,11 +228,16 @@ func newPostShopsShopStringSepShopSchemaPetsParams(r *http.Request) (zero PostSh
 				return zero, fmt.Errorf("header parameter 'X-Organization-Schema-Required': is required")
 			}
 			if len(hs) > 0 {
-				vInt64, err := strconv.ParseInt(hs[0], 10, 0)
-				if err != nil {
-					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema-Required", Reason: "parse int", Err: err}
+				var vInt int
+				if len(hs) == 1 {
+					vInt64, err := strconv.ParseInt(hs[0], 10, 0)
+					if err != nil {
+						return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema-Required", Reason: "parse int", Err: err}
+					}
+					vInt = int(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "X-Organization-Schema-Required", Reason: "multiple values found: single value expected"}
 				}
-				vInt := int(vInt64)
 				params.Headers.XOrganizationSchemaRequired = NewOrganization(vInt)
 			}
 		}

@@ -72,11 +72,16 @@ func (c *Client) PostPets(ctx context.Context, request PostPetsParams) (PostPets
 		var hs []string
 		hs = resp.Header.Values("X-Error-Code")
 		if len(hs) > 0 {
-			vInt64, err := strconv.ParseInt(hs[0], 10, 0)
-			if err != nil {
-				return nil, ErrParseParam{In: "header", Parameter: "X-Error-Code", Reason: "parse int", Err: err}
+			var vOpt int
+			if len(hs) == 1 {
+				vInt64, err := strconv.ParseInt(hs[0], 10, 0)
+				if err != nil {
+					return nil, ErrParseParam{In: "header", Parameter: "X-Error-Code", Reason: "parse int", Err: err}
+				}
+				vOpt = int(vInt64)
+			} else {
+				return nil, ErrParseParam{In: "header", Parameter: "X-Error-Code", Reason: "multiple values found: single value expected"}
 			}
-			vOpt := int(vInt64)
 			response.Headers.XErrorCode.Set(vOpt)
 		}
 
@@ -135,11 +140,16 @@ func (c *Client) PostShops(ctx context.Context, request PostShopsParams) (PostSh
 		var hs []string
 		hs = resp.Header.Values("X-Error-Code")
 		if len(hs) > 0 {
-			vInt64, err := strconv.ParseInt(hs[0], 10, 0)
-			if err != nil {
-				return nil, ErrParseParam{In: "header", Parameter: "X-Error-Code", Reason: "parse int", Err: err}
+			var vOpt int
+			if len(hs) == 1 {
+				vInt64, err := strconv.ParseInt(hs[0], 10, 0)
+				if err != nil {
+					return nil, ErrParseParam{In: "header", Parameter: "X-Error-Code", Reason: "parse int", Err: err}
+				}
+				vOpt = int(vInt64)
+			} else {
+				return nil, ErrParseParam{In: "header", Parameter: "X-Error-Code", Reason: "multiple values found: single value expected"}
 			}
-			vOpt := int(vInt64)
 			response.Headers.XErrorCode.Set(vOpt)
 		}
 

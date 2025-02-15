@@ -67,7 +67,12 @@ func newPostShopsShopPetsParams(r *http.Request) (zero PostShopsShopPetsParams, 
 		{
 			q, ok := query["filter"]
 			if ok && len(q) > 0 {
-				vCustom := q[0]
+				var vCustom string
+				if len(q) == 1 {
+					vCustom = q[0]
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "filter", Reason: "multiple values found: single value expected"}
+				}
 				var vOpt pkg.ShopType
 				{
 					err := vOpt.ParseString(vCustom)

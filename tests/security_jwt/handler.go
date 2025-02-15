@@ -137,7 +137,11 @@ func newPostShopsParams(r *http.Request) (zero PostShopsParams, _ error) {
 				return zero, fmt.Errorf("header parameter 'Authorization': is required")
 			}
 			if len(hs) > 0 {
-				params.Headers.Authorization = hs[0]
+				if len(hs) == 1 {
+					params.Headers.Authorization = hs[0]
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "Authorization", Reason: "multiple values found: single value expected"}
+				}
 			}
 		}
 	}

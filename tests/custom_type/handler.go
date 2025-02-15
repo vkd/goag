@@ -68,7 +68,12 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["page_schema_ref_query"]
 			if ok && len(q) > 0 {
-				vCustom := q[0]
+				var vCustom string
+				if len(q) == 1 {
+					vCustom = q[0]
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page_schema_ref_query", Reason: "multiple values found: single value expected"}
+				}
 				var vOpt pkg.Page
 				{
 					err := vOpt.ParseString(vCustom)
@@ -82,7 +87,12 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["page_custom_type_query"]
 			if ok && len(q) > 0 {
-				vCustom := q[0]
+				var vCustom string
+				if len(q) == 1 {
+					vCustom = q[0]
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page_custom_type_query", Reason: "multiple values found: single value expected"}
+				}
 				var vOpt pkg.PageCustomTypeQuery
 				{
 					err := vOpt.ParseString(vCustom)

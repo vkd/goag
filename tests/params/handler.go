@@ -101,21 +101,30 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'int_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 0)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int_req", Reason: "parse int", Err: err}
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 0)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "int_req", Reason: "parse int", Err: err}
+					}
+					params.Query.IntReq = int(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "int_req", Reason: "multiple values found: single value expected"}
 				}
-				params.Query.IntReq = int(vInt64)
 			}
 		}
 		{
 			q, ok := query["int"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 0)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int", Reason: "parse int", Err: err}
+				var vOpt int
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 0)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "int", Reason: "parse int", Err: err}
+					}
+					vOpt = int(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "int", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int(vInt64)
 				params.Query.Int.Set(vOpt)
 			}
 		}
@@ -125,21 +134,30 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'int32_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int32_req", Reason: "parse int32", Err: err}
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "int32_req", Reason: "parse int32", Err: err}
+					}
+					params.Query.Int32Req = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "int32_req", Reason: "multiple values found: single value expected"}
 				}
-				params.Query.Int32Req = int32(vInt64)
 			}
 		}
 		{
 			q, ok := query["int32"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int32", Reason: "parse int32", Err: err}
+				var vOpt int32
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "int32", Reason: "parse int32", Err: err}
+					}
+					vOpt = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "int32", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int32(vInt64)
 				params.Query.Int32.Set(vOpt)
 			}
 		}
@@ -149,19 +167,29 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'int64_req': is required")
 			}
 			if ok && len(q) > 0 {
-				var err error
-				params.Query.Int64Req, err = strconv.ParseInt(q[0], 10, 64)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int64_req", Reason: "parse int64", Err: err}
+				if len(q) == 1 {
+					var err error
+					params.Query.Int64Req, err = strconv.ParseInt(q[0], 10, 64)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "int64_req", Reason: "parse int64", Err: err}
+					}
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "int64_req", Reason: "multiple values found: single value expected"}
 				}
 			}
 		}
 		{
 			q, ok := query["int64"]
 			if ok && len(q) > 0 {
-				vOpt, err := strconv.ParseInt(q[0], 10, 64)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "int64", Reason: "parse int64", Err: err}
+				var vOpt int64
+				if len(q) == 1 {
+					var err error
+					vOpt, err = strconv.ParseInt(q[0], 10, 64)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "int64", Reason: "parse int64", Err: err}
+					}
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "int64", Reason: "multiple values found: single value expected"}
 				}
 				params.Query.Int64.Set(vOpt)
 			}
@@ -172,21 +200,30 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'float32_req': is required")
 			}
 			if ok && len(q) > 0 {
-				vFloat, err := strconv.ParseFloat(q[0], 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "float32_req", Reason: "parse float32", Err: err}
+				if len(q) == 1 {
+					vFloat, err := strconv.ParseFloat(q[0], 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "float32_req", Reason: "parse float32", Err: err}
+					}
+					params.Query.Float32Req = float32(vFloat)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "float32_req", Reason: "multiple values found: single value expected"}
 				}
-				params.Query.Float32Req = float32(vFloat)
 			}
 		}
 		{
 			q, ok := query["float32"]
 			if ok && len(q) > 0 {
-				vFloat, err := strconv.ParseFloat(q[0], 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "float32", Reason: "parse float32", Err: err}
+				var vOpt float32
+				if len(q) == 1 {
+					vFloat, err := strconv.ParseFloat(q[0], 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "float32", Reason: "parse float32", Err: err}
+					}
+					vOpt = float32(vFloat)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "float32", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := float32(vFloat)
 				params.Query.Float32.Set(vOpt)
 			}
 		}
@@ -196,19 +233,29 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'float64_req': is required")
 			}
 			if ok && len(q) > 0 {
-				var err error
-				params.Query.Float64Req, err = strconv.ParseFloat(q[0], 64)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "float64_req", Reason: "parse float64", Err: err}
+				if len(q) == 1 {
+					var err error
+					params.Query.Float64Req, err = strconv.ParseFloat(q[0], 64)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "float64_req", Reason: "parse float64", Err: err}
+					}
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "float64_req", Reason: "multiple values found: single value expected"}
 				}
 			}
 		}
 		{
 			q, ok := query["float64"]
 			if ok && len(q) > 0 {
-				vOpt, err := strconv.ParseFloat(q[0], 64)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "float64", Reason: "parse float64", Err: err}
+				var vOpt float64
+				if len(q) == 1 {
+					var err error
+					vOpt, err = strconv.ParseFloat(q[0], 64)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "float64", Reason: "parse float64", Err: err}
+					}
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "float64", Reason: "multiple values found: single value expected"}
 				}
 				params.Query.Float64.Set(vOpt)
 			}
@@ -219,13 +266,22 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'string_req': is required")
 			}
 			if ok && len(q) > 0 {
-				params.Query.StringReq = q[0]
+				if len(q) == 1 {
+					params.Query.StringReq = q[0]
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "string_req", Reason: "multiple values found: single value expected"}
+				}
 			}
 		}
 		{
 			q, ok := query["string"]
 			if ok && len(q) > 0 {
-				vOpt := q[0]
+				var vOpt string
+				if len(q) == 1 {
+					vOpt = q[0]
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "string", Reason: "multiple values found: single value expected"}
+				}
 				params.Query.String.Set(vOpt)
 			}
 		}
@@ -258,7 +314,12 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 		{
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
-				vOpt := hs[0]
+				var vOpt string
+				if len(hs) == 1 {
+					vOpt = hs[0]
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "request-id", Reason: "multiple values found: single value expected"}
+				}
 				params.Headers.RequestID.Set(vOpt)
 			}
 		}
@@ -268,7 +329,11 @@ func newGetReviewsParams(r *http.Request) (zero GetReviewsParams, _ error) {
 				return zero, fmt.Errorf("header parameter 'user-id': is required")
 			}
 			if len(hs) > 0 {
-				params.Headers.UserID = hs[0]
+				if len(hs) == 1 {
+					params.Headers.UserID = hs[0]
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "user-id", Reason: "multiple values found: single value expected"}
+				}
 			}
 		}
 	}

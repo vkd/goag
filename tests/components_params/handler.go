@@ -58,11 +58,16 @@ func newPostShopsNewParams(r *http.Request) (zero PostShopsNewParams, _ error) {
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+				var vOpt int32
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+					}
+					vOpt = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int32(vInt64)
 				params.Query.Page.Set(vOpt)
 			}
 		}
@@ -164,11 +169,16 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+				var vOpt int32
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+					}
+					vOpt = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int32(vInt64)
 				params.Query.Page.Set(vOpt)
 			}
 		}
@@ -295,11 +305,16 @@ func newGetShopsShopReviewsParams(r *http.Request) (zero GetShopsShopReviewsPara
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+				var vOpt int32
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+					}
+					vOpt = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int32(vInt64)
 				params.Query.Page.Set(vOpt)
 			}
 		}

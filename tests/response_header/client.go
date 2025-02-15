@@ -54,7 +54,12 @@ func (c *Client) GetPets(ctx context.Context, request GetPetsParams) (GetPetsRes
 		var hs []string
 		hs = resp.Header.Values("x-next")
 		if len(hs) > 0 {
-			vOpt := hs[0]
+			var vOpt string
+			if len(hs) == 1 {
+				vOpt = hs[0]
+			} else {
+				return nil, ErrParseParam{In: "header", Parameter: "x-next", Reason: "multiple values found: single value expected"}
+			}
 			response.Headers.XNext.Set(vOpt)
 		}
 

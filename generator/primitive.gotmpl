@@ -4,6 +4,17 @@
 {{- .To }} {{ if .IsNew }}:{{ end }}= []string{ {{ call .RenderFormat .From }} }
 {{- end }}
 
+{{ define "Primitive_ParseStrings" -}}
+{{- if .IsNew -}}
+var {{ .To }} {{ .GoType }}
+{{ end -}}
+if len({{ .From }}) == 1 {
+	{{ call .RenderStringParser .To (print .From "[0]") false .MkErr }}
+} else {
+	return {{ .MkErr.New "multiple values found: single value expected" }}
+}
+{{- end }}
+
 {{ define "Primitive_RenderMarshalJSON" -}}
 {{- .To }}, err {{ if .IsNew }}:{{ end }}= json.Marshal(&{{ .From }})
 if err != nil {

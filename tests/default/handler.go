@@ -659,11 +659,16 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+				var vOpt int32
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+					}
+					vOpt = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int32(vInt64)
 				params.Query.Page.Set(vOpt)
 			}
 		}
@@ -673,11 +678,15 @@ func newGetShopsShopPetsParams(r *http.Request) (zero GetShopsShopPetsParams, _ 
 				return zero, fmt.Errorf("query parameter 'page_size': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_size", Reason: "parse int32", Err: err}
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page_size", Reason: "parse int32", Err: err}
+					}
+					params.Query.PageSize = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page_size", Reason: "multiple values found: single value expected"}
 				}
-				params.Query.PageSize = int32(vInt64)
 			}
 		}
 	}
@@ -951,11 +960,16 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+				var vOpt int32
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+					}
+					vOpt = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int32(vInt64)
 				params.Query.Page.Set(vOpt)
 			}
 		}
@@ -965,11 +979,15 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 				return zero, fmt.Errorf("query parameter 'page_size': is required")
 			}
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page_size", Reason: "parse int32", Err: err}
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page_size", Reason: "parse int32", Err: err}
+					}
+					params.Query.PageSize = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page_size", Reason: "multiple values found: single value expected"}
 				}
-				params.Query.PageSize = int32(vInt64)
 			}
 		}
 		{
@@ -1001,7 +1019,12 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 		{
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
-				vOpt := hs[0]
+				var vOpt string
+				if len(hs) == 1 {
+					vOpt = hs[0]
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "request-id", Reason: "multiple values found: single value expected"}
+				}
 				params.Headers.RequestID.Set(vOpt)
 			}
 		}
@@ -1011,7 +1034,11 @@ func newReviewShopParams(r *http.Request) (zero ReviewShopParams, _ error) {
 				return zero, fmt.Errorf("header parameter 'user-id': is required")
 			}
 			if len(hs) > 0 {
-				params.Headers.UserID = hs[0]
+				if len(hs) == 1 {
+					params.Headers.UserID = hs[0]
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "user-id", Reason: "multiple values found: single value expected"}
+				}
 			}
 		}
 	}

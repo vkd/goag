@@ -244,14 +244,24 @@ func newPostShopsParams(r *http.Request) (zero PostShopsParams, _ error) {
 		{
 			hs := header.Values("Authorization")
 			if len(hs) > 0 {
-				vOpt := hs[0]
+				var vOpt string
+				if len(hs) == 1 {
+					vOpt = hs[0]
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "Authorization", Reason: "multiple values found: single value expected"}
+				}
 				params.Headers.Authorization.Set(vOpt)
 			}
 		}
 		{
 			hs := header.Values("Access-Token")
 			if len(hs) > 0 {
-				vOpt := hs[0]
+				var vOpt string
+				if len(hs) == 1 {
+					vOpt = hs[0]
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "Access-Token", Reason: "multiple values found: single value expected"}
+				}
 				params.Headers.AccessToken.Set(vOpt)
 			}
 		}

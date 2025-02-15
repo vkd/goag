@@ -70,11 +70,16 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			q, ok := query["page"]
 			if ok && len(q) > 0 {
-				vInt64, err := strconv.ParseInt(q[0], 10, 32)
-				if err != nil {
-					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+				var vOpt int32
+				if len(q) == 1 {
+					vInt64, err := strconv.ParseInt(q[0], 10, 32)
+					if err != nil {
+						return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "parse int32", Err: err}
+					}
+					vOpt = int32(vInt64)
+				} else {
+					return zero, ErrParseParam{In: "query", Parameter: "page", Reason: "multiple values found: single value expected"}
 				}
-				vOpt := int32(vInt64)
 				params.Query.Page.Set(vOpt)
 			}
 		}
@@ -86,7 +91,12 @@ func newGetShopsShopParams(r *http.Request) (zero GetShopsShopParams, _ error) {
 		{
 			hs := header.Values("request-id")
 			if len(hs) > 0 {
-				vOpt := hs[0]
+				var vOpt string
+				if len(hs) == 1 {
+					vOpt = hs[0]
+				} else {
+					return zero, ErrParseParam{In: "header", Parameter: "request-id", Reason: "multiple values found: single value expected"}
+				}
 				params.Headers.RequestID.Set(vOpt)
 			}
 		}
