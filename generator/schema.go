@@ -96,16 +96,6 @@ func (s Schema) Base() Schema {
 	return s
 }
 
-func (s Schema) RenderBaseFrom(prefix, from, suffix string) (string, error) {
-	if _, ok := s.CustomType.Get(); ok {
-		from = from + "." + s.FuncTypeName() + "()"
-	}
-	if s.IsNullable() {
-		return s.NullableType().RenderBaseFrom(prefix, from, suffix)
-	}
-	return prefix + from + suffix, nil
-}
-
 func (s Schema) RenderToBaseType(to, from string) (string, error) {
 	if s.Ref != nil {
 		return ExecuteTemplate("Schema_RenderToBaseType_Ref", TData{
@@ -432,7 +422,6 @@ type SchemaType interface {
 	Parser
 	Formatter
 
-	RenderBaseFrom(prefix, from, suffix string) (string, error)
 	RenderToBaseType(to, from string) (string, error)
 	RenderFieldType() (string, error)
 

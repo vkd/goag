@@ -173,12 +173,6 @@ if err != nil {
 
 {{/* ----------------------------- OptionalType ------------------------------------- */}}
 
-{{ define "OptionalType_RenderBaseFrom" -}}
-if maybe, ok := {{ .From }}.Get(); ok {
-	{{ .Type.RenderBaseFrom .Prefix "maybe" .Suffix }}
-}
-{{- end }}
-
 {{ define "OptionalTypeParseString" -}}
 {{ .Type.ParseString "vOpt" .From true .MkErr }}
 {{- if .IsNew }}
@@ -217,14 +211,6 @@ if vOpt, ok := {{ .From }}.Get(); ok {
 
 
 {{/* ----------------------------- NullableType ------------------------------------- */}}
-
-{{ define "NullableType_RenderBaseFrom" -}}
-if ptr, ok := {{ .From }}.Get(); ok {
-	{{ .Prefix }}ptr{{ .Suffix }}
-} else {
-	{{ .Prefix }}nil{{ .Suffix }}
-}
-{{- end }}
 
 {{ define "NullableTypeParseString" -}}
 {{ .Type.ParseString "vPtr" .From true .MkErr }}

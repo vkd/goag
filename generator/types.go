@@ -223,7 +223,6 @@ func NewStructureField(p specification.SchemaProperty, components Componenter, c
 		FieldTypeFn: st.RenderFieldType,
 		Required:    p.Required,
 
-		// RenderBaseFromFn:   schema.RenderBaseFrom,
 		RenderToBaseTypeFn: schema.RenderToBaseType,
 	}, ims, nil
 }
@@ -413,16 +412,6 @@ func (p OptionalType) RenderFieldType() (string, error) {
 
 var _ SchemaType = OptionalType{}
 
-func (p OptionalType) RenderBaseFrom(prefix, from, suffix string) (string, error) {
-	return ExecuteTemplate("OptionalType_RenderBaseFrom", TData{
-		"From":   from,
-		"Prefix": prefix,
-		"Suffix": suffix,
-		"Self":   p,
-		"Type":   p.V,
-	})
-}
-
 var _ Parser = OptionalType{}
 
 func (p OptionalType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -531,16 +520,6 @@ func (n NullableType) GoType(from string) string {
 func (n NullableType) RenderGoType() (string, error) {
 	out, err := n.V.RenderGoType()
 	return n.GoType(out), err
-}
-
-func (n NullableType) RenderBaseFrom(prefix, from, suffix string) (string, error) {
-	return ExecuteTemplate("NullableType_RenderBaseFrom", TData{
-		"From":   from,
-		"Prefix": prefix,
-		"Suffix": suffix,
-		"Self":   n,
-		"Type":   n.V,
-	})
 }
 
 var _ Parser = NullableType{}
@@ -726,9 +705,6 @@ func (o OneOfStructure) RenderFormatStrings(to, from string, isNew bool) (string
 	panic("RenderFormatStrings: not implemented")
 }
 
-func (o OneOfStructure) RenderBaseFrom(prefix, from, suffix string) (string, error) {
-	panic("RenderBaseFrom: not implemented")
-}
 func (o OneOfStructure) RenderToBaseType(to, from string) (string, error) {
 	panic("RenderToBaseType: not implemented")
 }
