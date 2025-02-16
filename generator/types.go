@@ -232,17 +232,21 @@ func (s StructureField) Render() (string, error) { return ExecuteTemplate("Struc
 type CustomType struct {
 	Value string
 	Type  InternalSchemaType
-	Pkg   string
+
+	Pkg      string
+	TypeName string
 }
 
 func NewCustomType(specCustom string, st InternalSchemaType) (CustomType, Imports) {
 	var customImport, customType string = "", specCustom
 	var customPkg string
+	typeName := specCustom
 	var hasCustomImport bool
 	slIdx := strings.LastIndex(specCustom, "/")
 	if slIdx >= 0 {
 		hasCustomImport = true
 		customType = specCustom[slIdx+1:]
+		typeName = customType
 	}
 
 	dotIdx := strings.LastIndex(specCustom, ".")
@@ -251,12 +255,15 @@ func NewCustomType(specCustom string, st InternalSchemaType) (CustomType, Import
 			customImport = specCustom[:dotIdx]
 		}
 		customPkg = specCustom[slIdx+1 : dotIdx]
+		typeName = specCustom[dotIdx+1:]
 	}
 
 	return CustomType{
 		Value: customType,
 		Type:  st,
-		Pkg:   customPkg,
+
+		Pkg:      customPkg,
+		TypeName: typeName,
 	}, NewImportsS(customImport)
 }
 

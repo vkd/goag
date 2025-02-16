@@ -85,6 +85,13 @@ func (s Schema) IsNullable() bool {
 	return s.Base().Nullable != ""
 }
 
+func (s Schema) Custom() *CustomType {
+	if ct, ok := s.CustomType.Get(); ok {
+		return &ct
+	}
+	return nil
+}
+
 func (s Schema) NullableType() NullableType {
 	return NullableType{V: s.Type, TypeName: s.Nullable}
 }
