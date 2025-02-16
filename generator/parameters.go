@@ -16,12 +16,6 @@ type QueryParameter struct {
 
 func NewQueryParameter(refP specification.Ref[specification.QueryParameter], components Componenter, cfg Config) (zero *QueryParameter, _ Imports, _ error) {
 	s := refP.Value()
-	out := QueryParameter{
-		Description: s.Description,
-	}
-	out.Name = s.Name
-	out.FieldName = PublicFieldName(s.Name)
-	out.Required = s.Required
 	schema, ims, err := NewSchema(s.Schema, components, cfg)
 	if err != nil {
 		return zero, nil, fmt.Errorf("schema: %w", err)
@@ -30,8 +24,13 @@ func NewQueryParameter(refP specification.Ref[specification.QueryParameter], com
 	if !s.Required {
 		st = NewOptionalType(schema, cfg)
 	}
-	out.Type = st
-	return &out, ims, nil
+	return &QueryParameter{
+		Name:        s.Name,
+		Description: s.Description,
+		FieldName:   PublicFieldName(s.Name),
+		Required:    s.Required,
+		Type:        st,
+	}, ims, nil
 }
 
 type PathParameters []*PathParameter

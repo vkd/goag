@@ -225,7 +225,7 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 		sc.WriteJSONFuncArray = true
 		sc.SliceType = schema
 
-		switch schema.Items.BaseSchemaType().(type) {
+		switch schema.Items.Base().Type.(type) {
 		case StructureType:
 			sc.IgnoreParseFormat = true
 		}

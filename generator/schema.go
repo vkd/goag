@@ -82,14 +82,11 @@ func NewSchemaWithType(s InternalSchemaType) Schema {
 }
 
 func (s Schema) IsNullable() bool {
-	// if s.Ref != nil {
-	// 	return s.Ref.Schema.IsNullable()
-	// }
-	return s.Nullable != ""
+	return s.Base().Nullable != ""
 }
 
-func (s Schema) BaseSchemaType() InternalSchemaType {
-	return s.Base().Type
+func (s Schema) NullableType() NullableType {
+	return NullableType{V: s.Type, TypeName: s.Nullable}
 }
 
 func (s Schema) Base() Schema {
@@ -103,8 +100,8 @@ func (s Schema) RenderBaseFrom(prefix, from, suffix string) (string, error) {
 	if _, ok := s.CustomType.Get(); ok {
 		from = from + "." + s.FuncTypeName() + "()"
 	}
-	if s.Nullable != "" {
-		return NullableType{V: s.Type, TypeName: s.Nullable}.RenderBaseFrom(prefix, from, suffix)
+	if s.IsNullable() {
+		return s.NullableType().RenderBaseFrom(prefix, from, suffix)
 	}
 	return prefix + from + suffix, nil
 }
@@ -134,10 +131,7 @@ func (s Schema) FuncTypeName() string {
 }
 
 func (s Schema) Kind() SchemaKind {
-	if s.Ref != nil {
-		return s.Ref.Schema.Kind()
-	}
-	return s.Type.Kind()
+	return s.Base().Type.Kind()
 }
 
 func (s Schema) RenderTypeDefinition() (string, error) {
@@ -153,7 +147,7 @@ func (s Schema) RenderFieldType() (string, error) {
 		if ct, ok := s.Ref.Schema.CustomType.Get(); ok {
 			tp = ct.Value
 		}
-		if s.Base().Nullable != "" {
+		if s.IsNullable() {
 			tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
 		}
 		return tp, nil
@@ -165,25 +159,26 @@ func (s Schema) RenderFieldType() (string, error) {
 		return ct.Value, nil
 	}
 	tp := s.Type
-	if s.Nullable != "" {
-		tp = NullableType{V: tp, TypeName: s.Nullable}
+	if s.IsNullable() {
+		tp = s.NullableType()
 	}
 	return tp.RenderGoType()
 }
 
 func (s Schema) RenderGoType() (string, error) {
-	tp := InternalSchemaType(s.Type)
 	if s.Ref != nil {
 		tp := s.Ref.Name
-		if s.Base().Nullable != "" {
+		if s.IsNullable() {
 			tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
 		}
 		return tp, nil
 	}
+
+	tp := s.Type
 	if ct, ok := s.CustomType.Get(); ok {
 		tp = ct
 	}
-	if s.Nullable != "" {
+	if s.IsNullable() {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
 	}
 	return tp.RenderGoType()
@@ -192,14 +187,14 @@ func (s Schema) RenderGoType() (string, error) {
 func (s Schema) RenderBaseGoType() (string, error) {
 	if s.Ref != nil {
 		tp := s.Ref.Name
-		// if s.Base().Nullable != "" {
+		// if s.Base().IsNullable() {
 		// 	tp = NullableType{TypeName: s.Base().Nullable}.GoType(tp)
 		// }
 		return tp, nil
 	}
-	tp := InternalSchemaType(s.Type)
-	if s.Nullable != "" {
-		tp = NullableType{V: tp, TypeName: s.Nullable}
+	tp := s.Type
+	if s.IsNullable() {
+		tp = s.NullableType()
 	}
 	return tp.RenderGoType()
 }
@@ -225,11 +220,11 @@ func (s Schema) ParseString(to, from string, isNew bool, mkErr ErrorRender) (str
 			"MkErr": mkErr,
 		})
 	}
-	tp := InternalSchemaType(s.Type)
+	tp := s.Type
 	if ct, ok := s.CustomType.Get(); ok {
 		tp = ct
 	}
-	if s.Nullable != "" {
+	if s.IsNullable() {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
 	}
 	return tp.ParseString(to, from, isNew, mkErr)
@@ -271,7 +266,7 @@ func (s Schema) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (st
 	if ct, ok := s.CustomType.Get(); ok {
 		tp = ct
 	}
-	if s.Nullable != "" {
+	if s.IsNullable() {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
 	}
 	return tp.ParseStrings(to, from, isNew, mkErr)
@@ -290,7 +285,7 @@ func (s Schema) RenderFormat(from string) (string, error) {
 	if ct, ok := s.CustomType.Get(); ok {
 		tp = ct
 	}
-	if s.Nullable != "" {
+	if s.IsNullable() {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
 	}
 	return tp.RenderFormat(from)
@@ -338,7 +333,7 @@ func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error)
 	if ct, ok := s.CustomType.Get(); ok {
 		tp = ct
 	}
-	if s.Nullable != "" {
+	if s.IsNullable() {
 		tp = NullableType{V: tp, TypeName: s.Nullable}
 	}
 	return tp.RenderFormatStrings(to, from, isNew)
@@ -411,9 +406,9 @@ func (s Schema) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender
 		})
 	}
 
-	var tp InternalSchemaType = s.Type
-	if s.Nullable != "" {
-		tp = NullableType{V: tp, TypeName: s.Nullable}
+	tp := s.Type
+	if s.IsNullable() {
+		tp = s.NullableType()
 	}
 	return tp.RenderMarshalJSON(to, from, isNew, mkErr)
 }

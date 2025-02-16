@@ -216,10 +216,11 @@ func {{ $newParams }}(r *http.Request) (zero {{ $request }}{{ if $h.CanParseErro
 		{{- range $_, $q := .ParametersQuery }}
 		{
             q, ok := query["{{.ParameterName}}"]
-            {{if .Required}}if !ok {
+            {{- if .Required }}
+			if !ok {
                 return zero, fmt.Errorf("query parameter '{{.ParameterName}}': is required")
             }
-            {{end -}}
+            {{- end }}
             if ok && len(q) > 0 {
 				{{ (call .ParseStrings (print "params.Query." .HandlerParameter.FieldName) "q" false (returns "zero" (parseError "query" .ParameterName))) }}
             }
