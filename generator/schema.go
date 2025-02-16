@@ -135,7 +135,7 @@ func (s Schema) FuncTypeName() string {
 
 func (s Schema) Kind() SchemaKind {
 	if s.Ref != nil {
-		return SchemaKindRef
+		return s.Ref.Schema.Kind()
 	}
 	return s.Type.Kind()
 }
@@ -455,7 +455,6 @@ const (
 	SchemaKindArray     SchemaKind = "array"
 	SchemaKindObject    SchemaKind = "object"
 	SchemaKindAny       SchemaKind = "any"
-	SchemaKindRef       SchemaKind = "ref"
 )
 
 func newSchemaType(spec *specification.Schema, components Componenter, cfg Config) (InternalSchemaType, Imports, error) {
