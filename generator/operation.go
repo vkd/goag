@@ -166,7 +166,7 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 				switch sr.Scheme.Scheme {
 				case "bearer":
 					isRequired := len(o.Security) == 1
-					schema := NewSchemaWithType(NewPrimitive(StringType{}))
+					schema := NewSchemaWithType(NewStringType())
 					tp := SchemaType(schema)
 					if !isRequired {
 						tp = NewOptionalType(schema, cfg)
@@ -183,7 +183,7 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 				switch sr.Scheme.In {
 				case "header":
 					isRequired := len(o.Security) == 1
-					schema := NewSchemaWithType(NewPrimitive(StringType{}))
+					schema := NewSchemaWithType(NewStringType())
 					tp := SchemaType(schema)
 					if !isRequired {
 						tp = NewOptionalType(schema, cfg)

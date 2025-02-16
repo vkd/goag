@@ -500,7 +500,7 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 	// https://datatracker.ietf.org/doc/html/draft-wright-json-schema-00#section-4
 	switch spec.Type {
 	case "boolean":
-		return NewPrimitive(BoolType{}), nil, nil
+		return NewBoolType(), nil, nil
 	case "object":
 		r, ims, err := NewStructureType(spec, components, cfg)
 		if err != nil {
@@ -522,16 +522,16 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 	case "number":
 		switch spec.Format {
 		case "float":
-			return NewPrimitive(FloatType{BitSize: 32}), nil, nil
+			return NewFloatType(32), nil, nil
 		case "double", "":
-			return NewPrimitive(FloatType{BitSize: 64}), nil, nil
+			return NewFloatType(64), nil, nil
 		default:
 			return nil, nil, fmt.Errorf("unsupported 'number' format %q", spec.Format)
 		}
 	case "string":
 		switch spec.Format {
 		case "":
-			return NewPrimitive(StringType{}), nil, nil
+			return NewStringType(), nil, nil
 		case "byte": // base64 encoded characters
 		case "binary": // any sequence of octets
 		case "date": // full-date = 4DIGIT "-" 01-12 "-" 01-31
@@ -546,15 +546,15 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		default:
 			return nil, nil, fmt.Errorf("unsupported 'string' format %q", spec.Format)
 		}
-		return NewPrimitive(StringType{}), nil, nil
+		return NewStringType(), nil, nil
 	case "integer":
 		switch spec.Format {
 		case "int32":
-			return NewPrimitive(IntType{BitSize: 32}), nil, nil
+			return NewIntTypeXX(32), nil, nil
 		case "int64":
-			return NewPrimitive(IntType{BitSize: 64}), nil, nil
+			return NewIntTypeXX(64), nil, nil
 		default:
-			return NewPrimitive(IntType{}), nil, nil
+			return NewIntType(), nil, nil
 		}
 	}
 

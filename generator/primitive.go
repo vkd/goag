@@ -10,6 +10,7 @@ type Primitive struct {
 
 type PrimitiveIface interface {
 	GoType() string
+	RenderToBaseTypeInline(from string) (string, error)
 
 	RenderToStringInline(from string) (string, error)
 	RenderStringParser(to, from string, isNew bool, mkErr ErrorRender) (string, error)
@@ -35,13 +36,8 @@ func (t Primitive) FuncTypeName() string {
 }
 
 func (t Primitive) RenderToBaseType(to, from string) (string, error) {
-	if render, ok := t.PrimitiveIface.(interface {
-		RenderToBaseType(from string) (string, error)
-	}); ok {
-		out, err := render.RenderToBaseType(from)
-		return to + " = " + out, err
-	}
-	return to + " = " + from, nil
+	out, err := t.PrimitiveIface.RenderToBaseTypeInline(from)
+	return to + " = " + out, err
 }
 
 func (t Primitive) RenderFormat(from string) (string, error) {
@@ -88,7 +84,11 @@ func NewBoolType() Primitive { return NewPrimitive(BoolType{}) }
 
 var _ PrimitiveIface = BoolType{}
 
-func (b BoolType) GoType() string { return "bool" }
+func (BoolType) GoType() string { return "bool" }
+
+func (BoolType) RenderToBaseTypeInline(from string) (string, error) {
+	return from, nil
+}
 
 func (b BoolType) RenderStringParser(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return ExecuteTemplate("Bool_RenderStringParser", TData{
@@ -144,6 +144,10 @@ func (i IntType) GoType() string {
 	default:
 		return "int" + strconv.Itoa(i.BitSize)
 	}
+}
+
+func (IntType) RenderToBaseTypeInline(from string) (string, error) {
+	return from, nil
 }
 
 func (i IntType) RenderStringParser(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -230,6 +234,10 @@ func (f FloatType) GoType() string {
 	}
 }
 
+func (FloatType) RenderToBaseTypeInline(from string) (string, error) {
+	return from, nil
+}
+
 func (i FloatType) RenderStringParser(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	switch i.BitSize {
 	case 64:
@@ -303,7 +311,11 @@ func NewStringType() Primitive { return NewPrimitive(StringType{}) }
 
 var _ PrimitiveIface = StringType{}
 
-func (s StringType) GoType() string { return "string" }
+func (StringType) GoType() string { return "string" }
+
+func (StringType) RenderToBaseTypeInline(from string) (string, error) {
+	return from, nil
+}
 
 func (_ StringType) RenderToStringInline(from string) (string, error) {
 	return from, nil
@@ -347,7 +359,7 @@ var _ PrimitiveIface = DateTime{}
 
 func (DateTime) GoType() string { return "time.Time" }
 
-func (d DateTime) RenderToBaseType(from string) (string, error) {
+func (d DateTime) RenderToBaseTypeInline(from string) (string, error) {
 	return d.RenderToStringInline(from)
 }
 
