@@ -523,9 +523,7 @@ func (c Pet) MarshalJSON() ([]byte, error) {
 	}
 	if oneOfValue, ok := c.Dog.Get(); ok {
 		var v Dog
-		var vc pkg.Dog
-		vc = oneOfValue
-		v = Dog(vc.ToSchemaDog())
+		v = Dog(oneOfValue.ToSchemaDog())
 		bs, err := v.MarshalJSON()
 		if err != nil {
 			return nil, fmt.Errorf("oneOf [1] field: marshal object: %w", err)
@@ -691,9 +689,7 @@ func (c Pet2) MarshalJSON() ([]byte, error) {
 	}
 	if oneOfValue, ok := c.Dog2.Get(); ok {
 		var v Dog2
-		var vc pkg.Dog2
-		vc = oneOfValue
-		v = Dog2(vc.ToSchemaDog2())
+		v = Dog2(oneOfValue.ToSchemaDog2())
 		bs, err := v.MarshalJSON()
 		if err != nil {
 			return nil, fmt.Errorf("oneOf [1] field: marshal object: %w", err)

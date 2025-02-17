@@ -30,12 +30,9 @@ if vPtr, ok := {{ .From }}.Get(); ok {
     {{ end -}}
 
     {{- if $isCustom -}}
-        var vc {{ .Schema.Ref.Schema.CustomType.Value.RenderGoType }}
-        {{ $to = "vc" }}
-    {{- end -}}
-    {{ $to }} = {{ $from }}
-    {{- if $isCustom }}
-        v = {{ .Schema.Ref.Name }}(vc.ToSchema{{ .Schema.Ref.Name }}())
+        v = {{ .Schema.Ref.Name }}({{ $from }}.ToSchema{{ .Schema.Ref.Name }}())
+    {{- else -}}
+        {{ $to }} = {{ $from }}
     {{- end -}}
     {{- if $isNullable }}
 }
@@ -167,7 +164,7 @@ if len({{ .From }}) != 4 || string({{ .From }}) != "null" {
 
 {{ define "Schema_Ref_CustomType_RenderMarshalJSON" -}}
 var v {{ .Ref.Name }}
-{{ .Schema.RenderToBaseType .To .From }}
+{{ .Schema.RenderToBaseType "v" .From }}
 {{ .Ref.Schema.RenderMarshalJSON .To "v" true .MkErr }}
 {{- end }}
 

@@ -82,9 +82,7 @@ func (c Environment) marshalJSONInnerBody(out io.Writer) error {
 	_ = writeProperty
 	{
 		var v EnvironmentCreate
-		var vc pkg.EnvironmentCreate
-		vc = c.EnvironmentCreate
-		v = EnvironmentCreate(vc.ToSchemaEnvironmentCreate())
+		v = EnvironmentCreate(c.EnvironmentCreate.ToSchemaEnvironmentCreate())
 		mErr := v.marshalJSONInnerBody(out)
 		if mErr != nil {
 			err = mErr
@@ -436,34 +434,26 @@ func (c GetShop) marshalJSONInnerBody(out io.Writer) error {
 	if vOpt, ok := c.Additionals.Get(); ok {
 		var v any = nil
 		if vPtr, ok := vOpt.Get(); ok {
-			var vc pkg.Settings
-			vc = vPtr
-			v = GetShopAdditionals(vc.ToSchemaGetShopAdditionals())
+			v = GetShopAdditionals(vPtr.ToSchemaGetShopAdditionals())
 		}
 		writeProperty("additionals", v)
 	}
 	if vOpt, ok := c.Environments.Get(); ok {
 		var v any = nil
 		if vPtr, ok := vOpt.Get(); ok {
-			var vc pkg.Environments
-			vc = vPtr
-			v = Environments(vc.ToSchemaEnvironments())
+			v = Environments(vPtr.ToSchemaEnvironments())
 		}
 		writeProperty("environments", v)
 	}
 	{
 		var v any
-		var vc pkg.Metadata
-		vc = c.Metadata
-		v = Metadata(vc.ToSchemaMetadata())
+		v = Metadata(c.Metadata.ToSchemaMetadata())
 		writeProperty("metadata", v)
 	}
 	if vOpt, ok := c.Settings.Get(); ok {
 		var v any = nil
 		if vPtr, ok := vOpt.Get(); ok {
-			var vc pkg.Settings
-			vc = vPtr
-			v = Settings(vc.ToSchemaSettings())
+			v = Settings(vPtr.ToSchemaSettings())
 		}
 		writeProperty("settings", v)
 	}
