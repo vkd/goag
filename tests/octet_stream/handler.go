@@ -74,7 +74,10 @@ func (r GetPetsResponse200) writeGetPets(w http.ResponseWriter) {
 func (r GetPetsResponse200) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.WriteHeader(200)
-	write(w, r.Body, "GetPetsResponse200")
+	_, err := io.Copy(w, r.Body)
+	if err != nil {
+		LogError(fmt.Errorf("write response \"GetPetsResponse200\": %w", err))
+	}
 	LogError(r.Body.Close())
 }
 
@@ -145,13 +148,6 @@ func (r PostPetsResponse200) Write(w http.ResponseWriter) {
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
-}
-
-func write(w io.Writer, r io.Reader, name string) {
-	_, err := io.Copy(w, r)
-	if err != nil {
-		LogError(fmt.Errorf("write response %q: %w", name, err))
-	}
 }
 
 type Maybe[T any] struct {

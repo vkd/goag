@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 )
@@ -73,13 +72,6 @@ func (r GetPetsResponse200) Write(w http.ResponseWriter) {
 
 var LogError = func(err error) {
 	log.Println(fmt.Sprintf("Error: %v", err))
-}
-
-func write(w io.Writer, r io.Reader, name string) {
-	_, err := io.Copy(w, r)
-	if err != nil {
-		LogError(fmt.Errorf("write response %q: %w", name, err))
-	}
 }
 
 type Maybe[T any] struct {

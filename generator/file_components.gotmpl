@@ -497,7 +497,10 @@ func (r {{.Name}}) Write(w http.ResponseWriter{{ if and (not .IsDefault) .IsComp
 	writeJSON(w, r.Body, "{{.Name}}")
 	{{- end }}
 	{{- if .IsBodyReader}}
-	write(w, r.Body, "{{.Name}}")
+	_, err := io.Copy(w, r.Body)
+	if err != nil {
+		LogError(fmt.Errorf("write response \"{{.Name}}\": %w", err))
+	}
 	LogError(r.Body.Close())
 	{{- end }}
 }
