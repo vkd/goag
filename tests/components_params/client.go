@@ -30,8 +30,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// PostShopsNew
-// POST /shops/new
+// PostShopsNew - POST /shops/new
 func (c *Client) PostShopsNew(ctx context.Context, request PostShopsNewParams) (PostShopsNewResponse, error) {
 	var requestURL = c.BaseURL + "/shops/new"
 
@@ -71,8 +70,7 @@ func (c *Client) PostShopsNew(ctx context.Context, request PostShopsNewParams) (
 	}
 }
 
-// GetShopsShop
-// GET /shops/{shop}
+// GetShopsShop - GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop)
 
@@ -112,8 +110,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	}
 }
 
-// GetShopsShopReviews
-// GET /shops/{shop}/reviews
+// GetShopsShopReviews - GET /shops/{shop}/reviews
 func (c *Client) GetShopsShopReviews(ctx context.Context, request GetShopsShopReviewsParams) (GetShopsShopReviewsResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop) + "/reviews"
 

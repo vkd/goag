@@ -32,8 +32,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// ListPets
-// GET /pets
+// ListPets - GET /pets
 func (c *Client) ListPets(ctx context.Context, request ListPetsParams) (ListPetsResponse, error) {
 	var requestURL = c.BaseURL + "/pets"
 
@@ -93,8 +92,7 @@ func (c *Client) ListPets(ctx context.Context, request ListPetsParams) (ListPets
 	}
 }
 
-// CreatePets
-// POST /pets
+// CreatePets - POST /pets
 func (c *Client) CreatePets(ctx context.Context, request CreatePetsParams) (CreatePetsResponse, error) {
 	var requestURL = c.BaseURL + "/pets"
 
@@ -132,8 +130,7 @@ func (c *Client) CreatePets(ctx context.Context, request CreatePetsParams) (Crea
 	}
 }
 
-// ShowPetByID
-// GET /pets/{petId}
+// ShowPetByID - GET /pets/{petId}
 func (c *Client) ShowPetByID(ctx context.Context, request ShowPetByIDParams) (ShowPetByIDResponse, error) {
 	var requestURL = c.BaseURL + "/pets/" + url.PathEscape(request.Path.PetID)
 

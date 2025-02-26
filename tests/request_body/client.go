@@ -30,8 +30,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// PostPets
-// POST /pets
+// PostPets - POST /pets
 func (c *Client) PostPets(ctx context.Context, request PostPetsParams) (PostPetsResponse, error) {
 	var requestURL = c.BaseURL + "/pets"
 
@@ -70,8 +69,7 @@ func (c *Client) PostPets(ctx context.Context, request PostPetsParams) (PostPets
 	}
 }
 
-// PostPets2
-// POST /pets2
+// PostPets2 - POST /pets2
 func (c *Client) PostPets2(ctx context.Context, request PostPets2Params) (PostPets2Response, error) {
 	var requestURL = c.BaseURL + "/pets2"
 

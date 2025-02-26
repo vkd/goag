@@ -31,6 +31,16 @@ type Parser interface {
 	ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 }
 
+type NotImplementedParser struct{}
+
+func (NotImplementedParser) ParseString(_, _ string, _ bool, _ ErrorRender) (string, error) {
+	panic("ParseString: not implemented")
+}
+
+func (NotImplementedParser) ParseStrings(_, _ string, _ bool, _ ErrorRender) (string, error) {
+	panic("ParseStrings: not implemented")
+}
+
 type ParserFunc func(to, from string, isNew bool, mkErr ErrorRender) (string, error)
 
 func (p ParserFunc) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -41,6 +51,16 @@ func (p ParserFunc) ParseString(to, from string, isNew bool, mkErr ErrorRender) 
 type Formatter interface {
 	RenderFormat(from string) (string, error)
 	RenderFormatStrings(to, from string, isNew bool) (string, error)
+}
+
+type NotImplementedFormatter struct{}
+
+func (NotImplementedFormatter) RenderFormat(_ string) (string, error) {
+	panic("RenderFormat: not implemented")
+}
+
+func (NotImplementedFormatter) RenderFormatStrings(_, _ string, _ bool) (string, error) {
+	panic("RenderFormatStrings: not implemented")
 }
 
 type FormatterFunc func(from string) (string, error)

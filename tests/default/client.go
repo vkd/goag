@@ -32,8 +32,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// Get
-// GET /
+// Get - GET /
 func (c *Client) Get(ctx context.Context, request GetParams) (GetResponse, error) {
 	var requestURL = c.BaseURL + "/"
 
@@ -60,8 +59,7 @@ func (c *Client) Get(ctx context.Context, request GetParams) (GetResponse, error
 	}
 }
 
-// GetShops
-// GET /shops
+// GetShops - GET /shops
 func (c *Client) GetShops(ctx context.Context, request GetShopsParams) (GetShopsResponse, error) {
 	var requestURL = c.BaseURL + "/shops"
 
@@ -88,8 +86,7 @@ func (c *Client) GetShops(ctx context.Context, request GetShopsParams) (GetShops
 	}
 }
 
-// GetShopsRT
-// GET /shops/
+// GetShopsRT - GET /shops/
 func (c *Client) GetShopsRT(ctx context.Context, request GetShopsRTParams) (GetShopsRTResponse, error) {
 	var requestURL = c.BaseURL + "/shops/"
 
@@ -116,8 +113,7 @@ func (c *Client) GetShopsRT(ctx context.Context, request GetShopsRTParams) (GetS
 	}
 }
 
-// GetShopsActivate
-// GET /shops/activate
+// GetShopsActivate - GET /shops/activate
 func (c *Client) GetShopsActivate(ctx context.Context, request GetShopsActivateParams) (GetShopsActivateResponse, error) {
 	var requestURL = c.BaseURL + "/shops/activate"
 
@@ -144,8 +140,7 @@ func (c *Client) GetShopsActivate(ctx context.Context, request GetShopsActivateP
 	}
 }
 
-// GetShopsActivateRT
-// GET /shops/activate/
+// GetShopsActivateRT - GET /shops/activate/
 func (c *Client) GetShopsActivateRT(ctx context.Context, request GetShopsActivateRTParams) (GetShopsActivateRTResponse, error) {
 	var requestURL = c.BaseURL + "/shops/activate/"
 
@@ -172,8 +167,7 @@ func (c *Client) GetShopsActivateRT(ctx context.Context, request GetShopsActivat
 	}
 }
 
-// GetShopsActivateTag
-// GET /shops/activate/tag
+// GetShopsActivateTag - GET /shops/activate/tag
 func (c *Client) GetShopsActivateTag(ctx context.Context, request GetShopsActivateTagParams) (GetShopsActivateTagResponse, error) {
 	var requestURL = c.BaseURL + "/shops/activate/tag"
 
@@ -200,8 +194,7 @@ func (c *Client) GetShopsActivateTag(ctx context.Context, request GetShopsActiva
 	}
 }
 
-// GetShopsShop
-// GET /shops/{shop}
+// GetShopsShop - GET /shops/{shop}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10))
 
@@ -228,8 +221,7 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	}
 }
 
-// GetShopsShopRT
-// GET /shops/{shop}/
+// GetShopsShopRT - GET /shops/{shop}/
 func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParams) (GetShopsShopRTResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10)) + "/"
 
@@ -256,8 +248,7 @@ func (c *Client) GetShopsShopRT(ctx context.Context, request GetShopsShopRTParam
 	}
 }
 
-// GetShopsShopPets
-// GET /shops/{shop}/pets
+// GetShopsShopPets - GET /shops/{shop}/pets
 func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsParams) (GetShopsShopPetsResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10)) + "/pets"
 
@@ -318,9 +309,9 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 	}
 }
 
-// ReviewShop - Review shop.
+// ReviewShop - POST /shops/{shop}/review
+// Review shop.
 // Returns a current pet.
-// POST /shops/{shop}/review
 func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (ReviewShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10)) + "/review"
 

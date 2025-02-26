@@ -29,8 +29,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// GetPet
-// GET /pet
+// GetPet - GET /pet
 func (c *Client) GetPet(ctx context.Context, request GetPetParams) (GetPetResponse, error) {
 	var requestURL = c.BaseURL + "/pet"
 
@@ -65,8 +64,7 @@ func (c *Client) GetPet(ctx context.Context, request GetPetParams) (GetPetRespon
 	}
 }
 
-// GetV2Pet
-// GET /v2/pet
+// GetV2Pet - GET /v2/pet
 func (c *Client) GetV2Pet(ctx context.Context, request GetV2PetParams) (GetV2PetResponse, error) {
 	var requestURL = c.BaseURL + "/v2/pet"
 
@@ -108,8 +106,7 @@ func (c *Client) GetV2Pet(ctx context.Context, request GetV2PetParams) (GetV2Pet
 	}
 }
 
-// GetV3Pet
-// GET /v3/pet
+// GetV3Pet - GET /v3/pet
 func (c *Client) GetV3Pet(ctx context.Context, request GetV3PetParams) (GetV3PetResponse, error) {
 	var requestURL = c.BaseURL + "/v3/pet"
 

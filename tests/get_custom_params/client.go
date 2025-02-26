@@ -30,8 +30,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// GetShopsShop
-// GET /shops/{shop}/pages/{page}
+// GetShopsShop - GET /shops/{shop}/pages/{page}
 func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (GetShopsShopResponse, error) {
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop.String()) + "/pages/" + url.PathEscape(request.Path.Page.String())
 

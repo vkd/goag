@@ -31,8 +31,7 @@ func NewClient(baseURL string, httpClient HTTPClient) *Client {
 	return &Client{BaseURL: baseURL, HTTPClient: httpClient}
 }
 
-// GetPetsPetID
-// GET /pets/{pet_id}
+// GetPetsPetID - GET /pets/{pet_id}
 func (c *Client) GetPetsPetID(ctx context.Context, request GetPetsPetIDParams) (GetPetsPetIDResponse, error) {
 	var requestURL = c.BaseURL + "/pets/" + url.PathEscape(strconv.FormatInt(int64(request.Path.PetID), 10))
 

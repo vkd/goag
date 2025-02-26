@@ -98,6 +98,9 @@ func (s SliceType) RenderMarshalJSON(to string, from string, isNew bool, mkErr E
 }
 
 type StructureType struct {
+	NotImplementedParser
+	NotImplementedFormatter
+
 	Fields []StructureField
 
 	AdditionalProperties *GoTypeRender
@@ -138,22 +141,6 @@ func (s StructureType) RenderGoType() (string, error) { return ExecuteTemplate("
 
 func (s StructureType) RenderToBaseType(to, from string) (string, error) {
 	return to + " = " + from, nil
-}
-
-func (s StructureType) RenderFormat(from string) (string, error) {
-	return "", fmt.Errorf(".RenderFormat() function for StructureType is not supported")
-}
-
-func (s StructureType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	return "", fmt.Errorf(".RenderFormatStrings() function for StructureType is not supported")
-}
-
-func (s StructureType) ParseString(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return "", fmt.Errorf(".ParseString() function for StructureType is not supported")
-}
-
-func (s StructureType) ParseStrings(to string, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return "", fmt.Errorf(".ParseStrings() function for StructureType is not supported")
 }
 
 func (s StructureType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
@@ -595,24 +582,15 @@ func (n NullableType) RenderMarshalJSON(to, from string, isNew bool, mkErr Error
 	})
 }
 
-type AnyType struct{}
+type AnyType struct {
+	NotImplementedParser
+	NotImplementedFormatter
+}
 
 var _ InternalSchemaType = AnyType{}
 
 func (AnyType) RenderGoType() (string, error) {
 	return "json.RawMessage", nil
-}
-func (AnyType) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	panic("not implemented")
-}
-func (AnyType) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	panic("not implemented")
-}
-func (AnyType) RenderFormat(from string) (string, error) {
-	panic("not implemented")
-}
-func (AnyType) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	panic("not implemented")
 }
 
 func (AnyType) RenderToBaseType(to, from string) (string, error) {
@@ -622,6 +600,7 @@ func (AnyType) RenderToBaseType(to, from string) (string, error) {
 func (AnyType) FuncTypeName() string {
 	return "RawMessage"
 }
+
 func (AnyType) Kind() SchemaKind {
 	return SchemaKindAny
 }
@@ -634,6 +613,9 @@ func (AnyType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender)
 }
 
 type OneOfStructure struct {
+	NotImplementedParser
+	NotImplementedFormatter
+
 	Elements []OneOfElement
 	Struct   StructureType
 
@@ -692,24 +674,6 @@ var _ GoTypeRender = (*OneOfStructure)(nil)
 
 func (o OneOfStructure) RenderGoType() (string, error) {
 	return o.Struct.RenderGoType()
-}
-
-var _ Parser = (*OneOfStructure)(nil)
-
-func (o OneOfStructure) ParseString(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	panic("ParseString: not implemented")
-}
-func (o OneOfStructure) ParseStrings(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	panic("ParseStrings: not implemented")
-}
-
-var _ Formatter = (*OneOfStructure)(nil)
-
-func (o OneOfStructure) RenderFormat(from string) (string, error) {
-	panic("RenderFormat: not implemented")
-}
-func (o OneOfStructure) RenderFormatStrings(to, from string, isNew bool) (string, error) {
-	panic("RenderFormatStrings: not implemented")
 }
 
 func (o OneOfStructure) RenderToBaseType(to, from string) (string, error) {

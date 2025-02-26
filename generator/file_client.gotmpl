@@ -37,14 +37,12 @@ func (a API) TestClient() *Client {
 
 {{/* ----------------------------- ClientOperation ------------------------------------- */}}
 {{ define "ClientOperation" }}
-// {{ .Name }}{{if .Description }} - {{ comment .Description }}{{ end }}
-// {{ .HTTPMethod }} {{ .PathRaw }}
+// {{ .Name }} - {{ .HTTPMethod }} {{ .PathRaw }}{{ if .Description }}
+// {{ comment .Description }}{{ end }}
 func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}) ({{ .ResponseTypeName }}, error) {
 	var requestURL = c.BaseURL
 	{{- range $_, $pr := .PathParams }} +
-		{{- if .Prefix }} "{{ $pr.Prefix }}"
-			{{- if .Param}} + {{ end }}
-		{{- end }}
+		{{- if .Prefix }} "{{ $pr.Prefix }}"{{ if .Param}} + {{ end }}{{ end }}
 
 		{{- if .Param -}}
 			url.PathEscape({{ .Param.RenderToStringInline "request.Path" }})
