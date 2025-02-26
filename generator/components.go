@@ -246,9 +246,63 @@ func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) 
 
 func (s SchemaComponent) Render() (string, error) {
 	if s.IsAlias {
-		return ExecuteTemplate("SchemaComponent_Alias", s)
+		return ExecuteTemplate("SchemaComponent_Alias", struct {
+			Name        string
+			Description string
+
+			RenderTypeDefinitionFn RenderFunc
+		}{
+			Name:        s.Name,
+			Description: s.Description,
+
+			RenderTypeDefinitionFn: s.RenderTypeDefinitionFn,
+		})
 	}
-	return ExecuteTemplate("SchemaComponent", s)
+	return ExecuteTemplate("SchemaComponent", struct {
+		Schema Schema
+
+		Name        string
+		Description string
+
+		RenderTypeDefinitionFn RenderFunc
+		RenderBaseGoTypeFn     RenderFunc
+		FuncTypeName           string
+
+		IsRenderParseMethod  bool
+		IsRenderFormatMethod bool
+		IsAlias              bool
+
+		IsWriteJSONFunc bool
+		StructureType   StructureType
+
+		IsWriteJSONFuncArray bool
+		SliceType            SliceType
+
+		IsWriteJSONFuncOneOf bool
+		OneOfStructure       OneOfStructure
+	}{
+		Schema: s.Schema,
+
+		Name:        s.Name,
+		Description: s.Description,
+
+		RenderTypeDefinitionFn: s.RenderTypeDefinitionFn,
+		RenderBaseGoTypeFn:     s.RenderBaseGoTypeFn,
+		FuncTypeName:           s.FuncTypeName,
+
+		IsRenderParseMethod:  s.IsRenderParseMethod,
+		IsRenderFormatMethod: s.IsRenderFormatMethod,
+		IsAlias:              s.IsAlias,
+
+		IsWriteJSONFunc: s.IsWriteJSONFunc,
+		StructureType:   s.StructureType,
+
+		IsWriteJSONFuncArray: s.IsWriteJSONFuncArray,
+		SliceType:            s.SliceType,
+
+		IsWriteJSONFuncOneOf: s.IsWriteJSONFuncOneOf,
+		OneOfStructure:       s.OneOfStructure,
+	})
 }
 
 type HeaderComponent struct {
