@@ -186,53 +186,58 @@ func (n NamedComponenter) AddSchema(name string, s Schema, cfg Config) *SchemaCo
 }
 
 type SchemaComponent struct {
-	Name   string
 	Schema Schema
 
-	Description        string
-	IgnoreParseFormat  bool
-	IsAlias            bool
-	WriteJSONFunc      bool
-	WriteJSONFuncArray bool
-	WriteJSONFuncOneOf bool
+	Name        string
+	Description string
 
-	StructureType  StructureType
-	SliceType      SliceType
-	OneOfStructure OneOfStructure
+	RenderTypeDefinitionFn RenderFunc
+	RenderBaseGoTypeFn     RenderFunc
+	FuncTypeName           string
 
-	GoTypeFn GoTypeRenderFunc
+	IsRenderParseMethod  bool
+	IsRenderFormatMethod bool
+	IsAlias              bool
+
+	IsWriteJSONFunc bool
+	StructureType   StructureType
+
+	IsWriteJSONFuncArray bool
+	SliceType            SliceType
+
+	IsWriteJSONFuncOneOf bool
+	OneOfStructure       OneOfStructure
 }
 
 func NewSchemaComponent(name string, schema Schema, cs Componenter, cfg Config) SchemaComponent {
+	_, isParser := schema.GetParser()
+	_, isFormatter := schema.GetFormatter()
+
 	sc := SchemaComponent{
-		Name:   name,
 		Schema: schema,
 
+		Name:        name,
 		Description: schema.Description,
 
-		GoTypeFn: schema.RenderGoType,
+		RenderTypeDefinitionFn: schema.RenderTypeDefinition,
+		RenderBaseGoTypeFn:     schema.RenderBaseGoType,
+		FuncTypeName:           schema.FuncTypeName(),
+
+		IsRenderParseMethod:  isParser,
+		IsRenderFormatMethod: isFormatter,
 	}
 
 	switch schema := schema.Type.(type) {
-	case AnyType:
-		sc.IgnoreParseFormat = true
+	case RawBytesType:
 		sc.IsAlias = true
 	case StructureType:
-		sc.IgnoreParseFormat = true
+		sc.IsWriteJSONFunc = true
 		sc.StructureType = schema
-		sc.WriteJSONFunc = true
 	case SliceType:
-		sc.WriteJSONFuncArray = true
+		sc.IsWriteJSONFuncArray = true
 		sc.SliceType = schema
-
-		switch schema.Items.Base().Type.(type) {
-		case StructureType:
-			sc.IgnoreParseFormat = true
-		}
 	case OneOfStructure:
-		sc.IgnoreParseFormat = true
-		sc.WriteJSONFuncOneOf = true
-		sc.StructureType = schema.Struct
+		sc.IsWriteJSONFuncOneOf = true
 		sc.OneOfStructure = schema
 	}
 

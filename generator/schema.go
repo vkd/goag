@@ -96,6 +96,44 @@ func (s Schema) NullableType() NullableType {
 	return NullableType{V: s.Type, TypeName: s.Nullable}
 }
 
+func (s Schema) GetParser() (Parser, bool) {
+	switch schema := s.Type.(type) {
+	case RawBytesType:
+		return nil, false
+	case StructureType:
+		return nil, false
+	case SliceType:
+		switch schema.Items.Base().Type.(type) {
+		case StructureType:
+		default:
+			return s, true
+		}
+		return nil, false
+	case OneOfStructure:
+		return nil, false
+	}
+	return s, true
+}
+
+func (s Schema) GetFormatter() (Formatter, bool) {
+	switch schema := s.Type.(type) {
+	case RawBytesType:
+		return nil, false
+	case StructureType:
+		return nil, false
+	case SliceType:
+		switch schema.Items.Base().Type.(type) {
+		case StructureType:
+		default:
+			return s, true
+		}
+		return nil, false
+	case OneOfStructure:
+		return nil, false
+	}
+	return s, true
+}
+
 func (s Schema) Base() Schema {
 	if s.Ref != nil {
 		return s.Ref.Schema.Base()
@@ -445,7 +483,7 @@ const (
 	SchemaKindPrimitive SchemaKind = "primitive"
 	SchemaKindArray     SchemaKind = "array"
 	SchemaKindObject    SchemaKind = "object"
-	SchemaKindAny       SchemaKind = "any"
+	SchemaKindRawBytes  SchemaKind = "raw_bytes"
 )
 
 func newSchemaType(spec *specification.Schema, components Componenter, cfg Config) (InternalSchemaType, Imports, error) {
@@ -498,7 +536,7 @@ func newSchemaType(spec *specification.Schema, components Componenter, cfg Confi
 		}
 		return r, ims, nil
 	case "": // any
-		return AnyType{}, nil, nil
+		return RawBytesType{}, nil, nil
 	case "array":
 		itemType, is, err := NewSchema(spec.Value().Items, NamedComponenter{Componenter: components, Name: "Items"}, cfg)
 		if err != nil {

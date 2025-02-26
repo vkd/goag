@@ -46,20 +46,22 @@
 {{ define "SchemaComponent" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} {{ .Schema.RenderTypeDefinition }}
+type {{ .Name }} {{ call .RenderTypeDefinitionFn }}
 
-{{- if not .IgnoreParseFormat }}
+{{- if .IsRenderParseMethod }}
 
-func New{{ .Name }}(v {{ .Schema.RenderBaseGoType }}) {{ .Name }} {
+func New{{ .Name }}(v {{ call .RenderBaseGoTypeFn }}) {{ .Name }} {
     return {{ .Name }}(v)
 }
+{{- end }}
+{{- if .IsRenderFormatMethod }}
 
-func (c {{ .Name }}) {{ title .Schema.FuncTypeName }}() {{ .Schema.RenderBaseGoType }} {
-    return {{ .Schema.RenderBaseGoType }}(c)
+func (c {{ .Name }}) {{ title .FuncTypeName }}() {{ call .RenderBaseGoTypeFn }} {
+    return {{ call .RenderBaseGoTypeFn }}(c)
 }
 {{- end }}
 
-{{- if .WriteJSONFunc }}
+{{- if .IsWriteJSONFunc }}
 
 var _ json.Marshaler = (*{{ .Name }})(nil)
 
@@ -229,7 +231,7 @@ func (c *{{ .Name }}) unmarshalJSONInnerBody(m map[string]json.RawMessage) error
 	return nil
 }
 
-{{- else if .WriteJSONFuncArray }}
+{{- else if .IsWriteJSONFuncArray }}
 
 var _ json.Marshaler = (*{{ .Name }})(nil)
 
@@ -345,9 +347,9 @@ func (c *{{ .Name }}) unmarshalJSONInnerBody(m []json.RawMessage) error {
     *c = out
 	return nil
 }
-{{- else if .WriteJSONFuncOneOf }}
+{{- else if .IsWriteJSONFuncOneOf }}
 {{- $name := .Name }}
-{{- range $i, $f := .StructureType.Fields }}
+{{- range $i, $f := .OneOfStructure.Fields }}
 
 func New{{ $name }}{{ .Name }}(v {{ .Type.RenderFieldType }}) {{ $name }} {
 	var out {{ $name }}
@@ -359,7 +361,7 @@ func New{{ $name }}{{ .Name }}(v {{ .Type.RenderFieldType }}) {{ $name }} {
 var _ json.Marshaler = (*{{ .Name }})(nil)
 
 func (c {{ .Name }}) MarshalJSON() ([]byte, error) {
-	{{- range $i, $f := .StructureType.Fields }}
+	{{- range $i, $f := .OneOfStructure.Fields }}
 		if oneOfValue, ok := c.{{ $f.Name }}.Get(); ok {
 			{{ $f.Type.RenderMarshalJSON "bs" "oneOfValue" true (returns "nil" (prefixError (print "oneOf [" $i "] field"))) }}
 			return bs, nil
@@ -391,7 +393,7 @@ func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
 		}
 	{{- else }}
 		var err error
-		{{- range $i, $f := .StructureType.Fields }}
+		{{- range $i, $f := .OneOfStructure.Fields }}
 
 			err = c.unmarshalJSON_{{ $f.Name }}(bs)
 			if err == nil {
@@ -403,7 +405,7 @@ func (c *{{ .Name }}) UnmarshalJSON(bs []byte) error {
 	{{- end }}
 }
 
-{{- range $i, $f := .StructureType.Fields }}
+{{- range $i, $f := .OneOfStructure.Fields }}
 
 func (c *{{ $name }}) unmarshalJSON_{{ $f.Name }}(bs []byte) error {
 	var err error
@@ -421,7 +423,7 @@ func (c *{{ $name }}) unmarshalJSON_{{ $f.Name }}(bs []byte) error {
 {{ define "SchemaComponent_Alias" -}}
 {{- if .Description }}// {{ .Name }} - {{ comment .Description }}
 {{ end -}}
-type {{ .Name }} = {{ .Schema.RenderTypeDefinition }}
+type {{ .Name }} = {{ call .RenderTypeDefinitionFn }}
 {{- end }}
 
 {{/* ----------------------------- HeaderComponent ------------------------------------- */}}

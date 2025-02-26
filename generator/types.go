@@ -582,33 +582,33 @@ func (n NullableType) RenderMarshalJSON(to, from string, isNew bool, mkErr Error
 	})
 }
 
-type AnyType struct {
+type RawBytesType struct {
 	NotImplementedParser
 	NotImplementedFormatter
 }
 
-var _ InternalSchemaType = AnyType{}
+var _ InternalSchemaType = RawBytesType{}
 
-func (AnyType) RenderGoType() (string, error) {
+func (RawBytesType) RenderGoType() (string, error) {
 	return "json.RawMessage", nil
 }
 
-func (AnyType) RenderToBaseType(to, from string) (string, error) {
+func (RawBytesType) RenderToBaseType(to, from string) (string, error) {
 	return to + " = " + from, nil
 }
 
-func (AnyType) FuncTypeName() string {
+func (RawBytesType) FuncTypeName() string {
 	return "RawMessage"
 }
 
-func (AnyType) Kind() SchemaKind {
-	return SchemaKindAny
+func (RawBytesType) Kind() SchemaKind {
+	return SchemaKindRawBytes
 }
 
-func (AnyType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+func (RawBytesType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	return to + " = " + from, nil
 }
-func (AnyType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
+func (RawBytesType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	panic("not implemented")
 }
 
@@ -617,7 +617,7 @@ type OneOfStructure struct {
 	NotImplementedFormatter
 
 	Elements []OneOfElement
-	Struct   StructureType
+	Fields   []StructureField
 
 	DiscriminatorPropertyKey Maybe[string]
 	DiscriminatorMapping     []DiscriminatorMapping
@@ -652,7 +652,7 @@ func NewOneOfStructure(elems []specification.Ref[specification.Schema], d specif
 			sc := c.AddSchema("OneOf"+strconv.Itoa(i), schema, cfg)
 			schemaType = NewSchemaRef(sc)
 		}
-		s.Struct.Fields = append(s.Struct.Fields, StructureField{
+		s.Fields = append(s.Fields, StructureField{
 			Name:        name,
 			Type:        schemaType,
 			FieldTypeFn: NewOptionalType(schemaType, cfg).RenderFieldType,
@@ -673,7 +673,7 @@ func NewOneOfStructure(elems []specification.Ref[specification.Schema], d specif
 var _ GoTypeRender = (*OneOfStructure)(nil)
 
 func (o OneOfStructure) RenderGoType() (string, error) {
-	return o.Struct.RenderGoType()
+	return StructureType{Fields: o.Fields}.RenderGoType()
 }
 
 func (o OneOfStructure) RenderToBaseType(to, from string) (string, error) {
@@ -691,7 +691,7 @@ func (o OneOfStructure) Kind() SchemaKind {
 }
 
 func (o OneOfStructure) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	return o.Struct.RenderUnmarshalJSON(to, from, isNew, mkErr)
+	return StructureType{Fields: o.Fields}.RenderUnmarshalJSON(to, from, isNew, mkErr)
 }
 
 func (o OneOfStructure) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
