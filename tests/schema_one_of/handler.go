@@ -11,6 +11,7 @@ import (
 
 // ---------------------------------------------
 // GetPet -
+// GET /pet
 // ---------------------------------------------
 
 type GetPetHandlerFunc func(ctx context.Context, r GetPetRequest) GetPetResponse
@@ -18,6 +19,10 @@ type GetPetHandlerFunc func(ctx context.Context, r GetPetRequest) GetPetResponse
 func (f GetPetHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetPetHTTPRequest(r)).writeGetPet(w)
 }
+
+func (GetPetHandlerFunc) Path() string { return "/pet" }
+
+func (GetPetHandlerFunc) Method() string { return http.MethodGet }
 
 type GetPetRequest interface {
 	HTTP() *http.Request
@@ -85,6 +90,7 @@ func (r GetPetResponse200JSON) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetPet2 -
+// GET /pet2
 // ---------------------------------------------
 
 type GetPet2HandlerFunc func(ctx context.Context, r GetPet2Request) GetPet2Response
@@ -92,6 +98,10 @@ type GetPet2HandlerFunc func(ctx context.Context, r GetPet2Request) GetPet2Respo
 func (f GetPet2HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetPet2HTTPRequest(r)).writeGetPet2(w)
 }
+
+func (GetPet2HandlerFunc) Path() string { return "/pet2" }
+
+func (GetPet2HandlerFunc) Method() string { return http.MethodGet }
 
 type GetPet2Request interface {
 	HTTP() *http.Request

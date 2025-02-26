@@ -11,6 +11,7 @@ import (
 
 // ---------------------------------------------
 // PostLogin -
+// POST /login
 // ---------------------------------------------
 
 type PostLoginHandlerFunc func(ctx context.Context, r PostLoginRequest) PostLoginResponse
@@ -18,6 +19,10 @@ type PostLoginHandlerFunc func(ctx context.Context, r PostLoginRequest) PostLogi
 func (f PostLoginHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), PostLoginHTTPRequest(r)).writePostLogin(w)
 }
+
+func (PostLoginHandlerFunc) Path() string { return "/login" }
+
+func (PostLoginHandlerFunc) Method() string { return http.MethodPost }
 
 type PostLoginRequest interface {
 	HTTP() *http.Request
@@ -89,6 +94,7 @@ func (r PostLoginResponse401) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // PostShops -
+// POST /shops
 // ---------------------------------------------
 
 type PostShopsHandlerFunc func(ctx context.Context, r PostShopsRequest) PostShopsResponse
@@ -96,6 +102,10 @@ type PostShopsHandlerFunc func(ctx context.Context, r PostShopsRequest) PostShop
 func (f PostShopsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), PostShopsHTTPRequest(r)).writePostShops(w)
 }
+
+func (PostShopsHandlerFunc) Path() string { return "/shops" }
+
+func (PostShopsHandlerFunc) Method() string { return http.MethodPost }
 
 type PostShopsRequest interface {
 	HTTP() *http.Request

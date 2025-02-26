@@ -48,8 +48,8 @@ func NewClientOperation(o *Operation) ClientOperationTemplate {
 	c := ClientOperationTemplate{
 		Name:        o.Name,
 		Description: o.Description,
-		HTTPMethod:  o.HTTPMethod,
-		Method:      o.Method,
+		HTTPMethod:  o.Method.HTTP,
+		Method:      o.Method.Title,
 		PathRaw:     o.Path.Raw,
 
 		PathParams: o.Path.StringBuilder(),

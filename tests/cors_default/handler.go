@@ -13,6 +13,7 @@ import (
 
 // ---------------------------------------------
 // GetShops -
+// GET /shops
 // ---------------------------------------------
 
 type GetShopsHandlerFunc func(ctx context.Context, r GetShopsRequest) GetShopsResponse
@@ -20,6 +21,10 @@ type GetShopsHandlerFunc func(ctx context.Context, r GetShopsRequest) GetShopsRe
 func (f GetShopsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsHTTPRequest(r)).writeGetShops(w)
 }
+
+func (GetShopsHandlerFunc) Path() string { return "/shops" }
+
+func (GetShopsHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsRequest interface {
 	HTTP() *http.Request
@@ -141,6 +146,7 @@ func (r GetShopsResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetShopsShop -
+// GET /shops/{shop}
 // ---------------------------------------------
 
 type GetShopsShopHandlerFunc func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse
@@ -148,6 +154,10 @@ type GetShopsShopHandlerFunc func(ctx context.Context, r GetShopsShopRequest) Ge
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsShopHTTPRequest(r)).writeGetShopsShop(w)
 }
+
+func (GetShopsShopHandlerFunc) Path() string { return "/shops/{shop}" }
+
+func (GetShopsShopHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsShopRequest interface {
 	HTTP() *http.Request
@@ -300,6 +310,7 @@ func (r GetShopsShopResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // PostShopsShop -
+// POST /shops/{shop}
 // ---------------------------------------------
 
 type PostShopsShopHandlerFunc func(ctx context.Context, r PostShopsShopRequest) PostShopsShopResponse
@@ -307,6 +318,10 @@ type PostShopsShopHandlerFunc func(ctx context.Context, r PostShopsShopRequest) 
 func (f PostShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), PostShopsShopHTTPRequest(r)).writePostShopsShop(w)
 }
+
+func (PostShopsShopHandlerFunc) Path() string { return "/shops/{shop}" }
+
+func (PostShopsShopHandlerFunc) Method() string { return http.MethodPost }
 
 type PostShopsShopRequest interface {
 	HTTP() *http.Request

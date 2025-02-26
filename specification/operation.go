@@ -20,15 +20,14 @@ type Operation struct {
 
 	RequestBody Maybe[Ref[RequestBody]]
 
-	HTTPMethod HTTPMethod
-	Method     HTTPMethodTitle
+	Method Method
 
 	Security SecurityRequirements
 
 	Responses Map[Ref[Response]]
 }
 
-func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *openapi3.Operation, specSecurityReqs SecurityRequirements, legacyComponents openapi3.Components, securitySchemes SecuritySchemes, components Components, pathItemParameters openapi3.Parameters, opts SchemaOptions) (*Operation, error) {
+func NewOperation(pi *PathItem, rawPath string, method Method, operation *openapi3.Operation, specSecurityReqs SecurityRequirements, legacyComponents openapi3.Components, securitySchemes SecuritySchemes, components Components, pathItemParameters openapi3.Parameters, opts SchemaOptions) (*Operation, error) {
 	o := &Operation{
 		PathItem: pi,
 
@@ -39,8 +38,7 @@ func NewOperation(pi *PathItem, rawPath string, method httpMethod, operation *op
 		Description: operation.Description,
 		OperationID: operation.OperationID,
 
-		HTTPMethod: method.HTTP,
-		Method:     method.Title,
+		Method: method,
 
 		Security: specSecurityReqs,
 	}

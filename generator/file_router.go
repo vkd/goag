@@ -55,7 +55,7 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 		if opt.IsCors {
 			headersMap := map[string]struct{}{}
 			for _, o := range pi.PathItem.Operations {
-				methods = append(methods, string(o.HTTPMethod))
+				methods = append(methods, string(o.Method.HTTP))
 
 				for _, h := range o.Parameters.Headers.List {
 					key := http.CanonicalHeaderKey(h.Name)
@@ -90,7 +90,7 @@ func NewRouter(s *specification.Spec, ps []*PathItem, os []*Operation, opt Gener
 		for _, o := range pi.Operations {
 			op := RouterPathItemOperation{
 				Name:     o.Name,
-				Method:   o.Method,
+				Method:   o.Operation.Method.Title,
 				PathSpec: o.PathItem.RawPath,
 				Handler:  string(o.Name) + "Handler",
 			}

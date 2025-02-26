@@ -12,6 +12,7 @@ import (
 
 // ---------------------------------------------
 // Get -
+// GET /
 // ---------------------------------------------
 
 type GetHandlerFunc func(ctx context.Context, r GetRequest) GetResponse
@@ -19,6 +20,10 @@ type GetHandlerFunc func(ctx context.Context, r GetRequest) GetResponse
 func (f GetHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetHTTPRequest(r)).writeGet(w)
 }
+
+func (GetHandlerFunc) Path() string { return "/" }
+
+func (GetHandlerFunc) Method() string { return http.MethodGet }
 
 type GetRequest interface {
 	HTTP() *http.Request
@@ -76,6 +81,7 @@ func (r GetResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetShops -
+// GET /shops
 // ---------------------------------------------
 
 type GetShopsHandlerFunc func(ctx context.Context, r GetShopsRequest) GetShopsResponse
@@ -83,6 +89,10 @@ type GetShopsHandlerFunc func(ctx context.Context, r GetShopsRequest) GetShopsRe
 func (f GetShopsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsHTTPRequest(r)).writeGetShops(w)
 }
+
+func (GetShopsHandlerFunc) Path() string { return "/shops" }
+
+func (GetShopsHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsRequest interface {
 	HTTP() *http.Request
@@ -140,6 +150,7 @@ func (r GetShopsResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetShopsRT -
+// GET /shops/
 // ---------------------------------------------
 
 type GetShopsRTHandlerFunc func(ctx context.Context, r GetShopsRTRequest) GetShopsRTResponse
@@ -147,6 +158,10 @@ type GetShopsRTHandlerFunc func(ctx context.Context, r GetShopsRTRequest) GetSho
 func (f GetShopsRTHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsRTHTTPRequest(r)).writeGetShopsRT(w)
 }
+
+func (GetShopsRTHandlerFunc) Path() string { return "/shops/" }
+
+func (GetShopsRTHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsRTRequest interface {
 	HTTP() *http.Request
@@ -204,6 +219,7 @@ func (r GetShopsRTResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetShopsActivate -
+// GET /shops/activate
 // ---------------------------------------------
 
 type GetShopsActivateHandlerFunc func(ctx context.Context, r GetShopsActivateRequest) GetShopsActivateResponse
@@ -211,6 +227,10 @@ type GetShopsActivateHandlerFunc func(ctx context.Context, r GetShopsActivateReq
 func (f GetShopsActivateHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsActivateHTTPRequest(r)).writeGetShopsActivate(w)
 }
+
+func (GetShopsActivateHandlerFunc) Path() string { return "/shops/activate" }
+
+func (GetShopsActivateHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsActivateRequest interface {
 	HTTP() *http.Request
@@ -268,6 +288,7 @@ func (r GetShopsActivateResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetShopsMinePetsMikeTails -
+// GET /shops/mine/pets/mike/tails
 // ---------------------------------------------
 
 type GetShopsMinePetsMikeTailsHandlerFunc func(ctx context.Context, r GetShopsMinePetsMikeTailsRequest) GetShopsMinePetsMikeTailsResponse
@@ -275,6 +296,10 @@ type GetShopsMinePetsMikeTailsHandlerFunc func(ctx context.Context, r GetShopsMi
 func (f GetShopsMinePetsMikeTailsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsMinePetsMikeTailsHTTPRequest(r)).writeGetShopsMinePetsMikeTails(w)
 }
+
+func (GetShopsMinePetsMikeTailsHandlerFunc) Path() string { return "/shops/mine/pets/mike/tails" }
+
+func (GetShopsMinePetsMikeTailsHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsMinePetsMikeTailsRequest interface {
 	HTTP() *http.Request
@@ -332,6 +357,7 @@ func (r GetShopsMinePetsMikeTailsResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetShopsShop -
+// GET /shops/{shop}
 // ---------------------------------------------
 
 type GetShopsShopHandlerFunc func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse
@@ -339,6 +365,10 @@ type GetShopsShopHandlerFunc func(ctx context.Context, r GetShopsShopRequest) Ge
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsShopHTTPRequest(r)).writeGetShopsShop(w)
 }
+
+func (GetShopsShopHandlerFunc) Path() string { return "/shops/{shop}" }
+
+func (GetShopsShopHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsShopRequest interface {
 	HTTP() *http.Request
@@ -434,6 +464,7 @@ func (r GetShopsShopResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetShopsShopRT -
+// GET /shops/{shop}/
 // ---------------------------------------------
 
 type GetShopsShopRTHandlerFunc func(ctx context.Context, r GetShopsShopRTRequest) GetShopsShopRTResponse
@@ -441,6 +472,10 @@ type GetShopsShopRTHandlerFunc func(ctx context.Context, r GetShopsShopRTRequest
 func (f GetShopsShopRTHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsShopRTHTTPRequest(r)).writeGetShopsShopRT(w)
 }
+
+func (GetShopsShopRTHandlerFunc) Path() string { return "/shops/{shop}/" }
+
+func (GetShopsShopRTHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsShopRTRequest interface {
 	HTTP() *http.Request
@@ -541,6 +576,7 @@ func (r GetShopsShopRTResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetShopsShopPets -
+// GET /shops/{shop}/pets
 // ---------------------------------------------
 
 type GetShopsShopPetsHandlerFunc func(ctx context.Context, r GetShopsShopPetsRequest) GetShopsShopPetsResponse
@@ -548,6 +584,10 @@ type GetShopsShopPetsHandlerFunc func(ctx context.Context, r GetShopsShopPetsReq
 func (f GetShopsShopPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsShopPetsHTTPRequest(r)).writeGetShopsShopPets(w)
 }
+
+func (GetShopsShopPetsHandlerFunc) Path() string { return "/shops/{shop}/pets" }
+
+func (GetShopsShopPetsHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsShopPetsRequest interface {
 	HTTP() *http.Request
@@ -648,6 +688,7 @@ func (r GetShopsShopPetsResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetShopsShopPetsMikePaws -
+// GET /shops/{shop}/pets/mike/paws
 // ---------------------------------------------
 
 type GetShopsShopPetsMikePawsHandlerFunc func(ctx context.Context, r GetShopsShopPetsMikePawsRequest) GetShopsShopPetsMikePawsResponse
@@ -655,6 +696,10 @@ type GetShopsShopPetsMikePawsHandlerFunc func(ctx context.Context, r GetShopsSho
 func (f GetShopsShopPetsMikePawsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsShopPetsMikePawsHTTPRequest(r)).writeGetShopsShopPetsMikePaws(w)
 }
+
+func (GetShopsShopPetsMikePawsHandlerFunc) Path() string { return "/shops/{shop}/pets/mike/paws" }
+
+func (GetShopsShopPetsMikePawsHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsShopPetsMikePawsRequest interface {
 	HTTP() *http.Request

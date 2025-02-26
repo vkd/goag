@@ -15,6 +15,7 @@ import (
 
 // ---------------------------------------------
 // ListPets -
+// GET /pets
 // ---------------------------------------------
 
 // ListPetsHandlerFunc - List all pets
@@ -23,6 +24,10 @@ type ListPetsHandlerFunc func(ctx context.Context, r ListPetsRequest) ListPetsRe
 func (f ListPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), ListPetsHTTPRequest(r)).writeListPets(w)
 }
+
+func (ListPetsHandlerFunc) Path() string { return "/pets" }
+
+func (ListPetsHandlerFunc) Method() string { return http.MethodGet }
 
 type ListPetsRequest interface {
 	HTTP() *http.Request
@@ -144,6 +149,7 @@ func (r ListPetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // CreatePets -
+// POST /pets
 // ---------------------------------------------
 
 // CreatePetsHandlerFunc - Create a pet
@@ -152,6 +158,10 @@ type CreatePetsHandlerFunc func(ctx context.Context, r CreatePetsRequest) Create
 func (f CreatePetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), CreatePetsHTTPRequest(r)).writeCreatePets(w)
 }
+
+func (CreatePetsHandlerFunc) Path() string { return "/pets" }
+
+func (CreatePetsHandlerFunc) Method() string { return http.MethodPost }
 
 type CreatePetsRequest interface {
 	HTTP() *http.Request
@@ -230,6 +240,7 @@ func (r CreatePetsResponseDefaultJSON) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // ShowPetByID -
+// GET /pets/{petId}
 // ---------------------------------------------
 
 // ShowPetByIDHandlerFunc - Info for a specific pet
@@ -238,6 +249,10 @@ type ShowPetByIDHandlerFunc func(ctx context.Context, r ShowPetByIDRequest) Show
 func (f ShowPetByIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), ShowPetByIDHTTPRequest(r)).writeShowPetByID(w)
 }
+
+func (ShowPetByIDHandlerFunc) Path() string { return "/pets/{petId}" }
+
+func (ShowPetByIDHandlerFunc) Method() string { return http.MethodGet }
 
 type ShowPetByIDRequest interface {
 	HTTP() *http.Request

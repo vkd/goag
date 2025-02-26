@@ -109,7 +109,7 @@ func NewComponents(spec specification.Components, cfg Config) (zero Components, 
 		for _, usedIn := range resp.UsedIn {
 			oName := PublicFieldName(usedIn.Operation.OperationID)
 			if oName == "" {
-				oName = string(usedIn.Operation.Method)
+				oName = string(usedIn.Operation.Method.Title)
 				raw := usedIn.Operation.PathRaw
 				for _, ss := range strings.Split(raw, "/")[1:] {
 					if strings.HasPrefix(ss, "{") && strings.HasSuffix(ss, "}") {

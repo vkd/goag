@@ -12,6 +12,7 @@ import (
 
 // ---------------------------------------------
 // GetPet -
+// GET /pet
 // ---------------------------------------------
 
 type GetPetHandlerFunc func(ctx context.Context, r GetPetRequest) GetPetResponse
@@ -19,6 +20,10 @@ type GetPetHandlerFunc func(ctx context.Context, r GetPetRequest) GetPetResponse
 func (f GetPetHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetPetHTTPRequest(r)).writeGetPet(w)
 }
+
+func (GetPetHandlerFunc) Path() string { return "/pet" }
+
+func (GetPetHandlerFunc) Method() string { return http.MethodGet }
 
 type GetPetRequest interface {
 	HTTP() *http.Request
@@ -58,6 +63,7 @@ type GetPetResponse interface {
 
 // ---------------------------------------------
 // GetV2Pet -
+// GET /v2/pet
 // ---------------------------------------------
 
 type GetV2PetHandlerFunc func(ctx context.Context, r GetV2PetRequest) GetV2PetResponse
@@ -65,6 +71,10 @@ type GetV2PetHandlerFunc func(ctx context.Context, r GetV2PetRequest) GetV2PetRe
 func (f GetV2PetHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetV2PetHTTPRequest(r)).writeGetV2Pet(w)
 }
+
+func (GetV2PetHandlerFunc) Path() string { return "/v2/pet" }
+
+func (GetV2PetHandlerFunc) Method() string { return http.MethodGet }
 
 type GetV2PetRequest interface {
 	HTTP() *http.Request
@@ -104,6 +114,7 @@ type GetV2PetResponse interface {
 
 // ---------------------------------------------
 // GetV3Pet -
+// GET /v3/pet
 // ---------------------------------------------
 
 type GetV3PetHandlerFunc func(ctx context.Context, r GetV3PetRequest) GetV3PetResponse
@@ -111,6 +122,10 @@ type GetV3PetHandlerFunc func(ctx context.Context, r GetV3PetRequest) GetV3PetRe
 func (f GetV3PetHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetV3PetHTTPRequest(r)).writeGetV3Pet(w)
 }
+
+func (GetV3PetHandlerFunc) Path() string { return "/v3/pet" }
+
+func (GetV3PetHandlerFunc) Method() string { return http.MethodGet }
 
 type GetV3PetRequest interface {
 	HTTP() *http.Request

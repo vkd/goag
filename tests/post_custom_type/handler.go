@@ -14,6 +14,7 @@ import (
 
 // ---------------------------------------------
 // PostShopsShopPets -
+// POST /shops/{shop}/pets
 // ---------------------------------------------
 
 type PostShopsShopPetsHandlerFunc func(ctx context.Context, r PostShopsShopPetsRequest) PostShopsShopPetsResponse
@@ -21,6 +22,10 @@ type PostShopsShopPetsHandlerFunc func(ctx context.Context, r PostShopsShopPetsR
 func (f PostShopsShopPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), PostShopsShopPetsHTTPRequest(r)).writePostShopsShopPets(w)
 }
+
+func (PostShopsShopPetsHandlerFunc) Path() string { return "/shops/{shop}/pets" }
+
+func (PostShopsShopPetsHandlerFunc) Method() string { return http.MethodPost }
 
 type PostShopsShopPetsRequest interface {
 	HTTP() *http.Request

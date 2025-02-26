@@ -12,6 +12,7 @@ import (
 
 // ---------------------------------------------
 // PostShopsShopStringShopSchemaPets -
+// POST /shops/{shop_string}/{shop_schema}/pets
 // ---------------------------------------------
 
 type PostShopsShopStringShopSchemaPetsHandlerFunc func(ctx context.Context, r PostShopsShopStringShopSchemaPetsRequest) PostShopsShopStringShopSchemaPetsResponse
@@ -19,6 +20,12 @@ type PostShopsShopStringShopSchemaPetsHandlerFunc func(ctx context.Context, r Po
 func (f PostShopsShopStringShopSchemaPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), PostShopsShopStringShopSchemaPetsHTTPRequest(r)).writePostShopsShopStringShopSchemaPets(w)
 }
+
+func (PostShopsShopStringShopSchemaPetsHandlerFunc) Path() string {
+	return "/shops/{shop_string}/{shop_schema}/pets"
+}
+
+func (PostShopsShopStringShopSchemaPetsHandlerFunc) Method() string { return http.MethodPost }
 
 type PostShopsShopStringShopSchemaPetsRequest interface {
 	HTTP() *http.Request

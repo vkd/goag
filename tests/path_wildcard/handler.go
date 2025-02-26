@@ -14,6 +14,7 @@ import (
 
 // ---------------------------------------------
 // GetPetsPetID -
+// GET /pets/{pet_id}
 // ---------------------------------------------
 
 type GetPetsPetIDHandlerFunc func(ctx context.Context, r GetPetsPetIDRequest) GetPetsPetIDResponse
@@ -21,6 +22,10 @@ type GetPetsPetIDHandlerFunc func(ctx context.Context, r GetPetsPetIDRequest) Ge
 func (f GetPetsPetIDHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetPetsPetIDHTTPRequest(r)).writeGetPetsPetID(w)
 }
+
+func (GetPetsPetIDHandlerFunc) Path() string { return "/pets/{pet_id}" }
+
+func (GetPetsPetIDHandlerFunc) Method() string { return http.MethodGet }
 
 type GetPetsPetIDRequest interface {
 	HTTP() *http.Request

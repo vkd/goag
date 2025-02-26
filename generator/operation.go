@@ -45,7 +45,7 @@ func NewOperation(s *specification.Operation, components Componenter, cfg Config
 	if err != nil {
 		return zero, nil, fmt.Errorf("parse raw path: %w", err)
 	}
-	name := NewOperationName(s.Method, s, path)
+	name := NewOperationName(s.Method.Title, s, path)
 
 	o := Operation{
 		Operation: s,

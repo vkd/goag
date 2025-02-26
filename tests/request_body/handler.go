@@ -11,6 +11,7 @@ import (
 
 // ---------------------------------------------
 // PostPets -
+// POST /pets
 // ---------------------------------------------
 
 type PostPetsHandlerFunc func(ctx context.Context, r PostPetsRequest) PostPetsResponse
@@ -18,6 +19,10 @@ type PostPetsHandlerFunc func(ctx context.Context, r PostPetsRequest) PostPetsRe
 func (f PostPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), PostPetsHTTPRequest(r)).writePostPets(w)
 }
+
+func (PostPetsHandlerFunc) Path() string { return "/pets" }
+
+func (PostPetsHandlerFunc) Method() string { return http.MethodPost }
 
 type PostPetsRequest interface {
 	HTTP() *http.Request
@@ -97,6 +102,7 @@ func (r PostPetsResponseDefault) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // PostPets2 -
+// POST /pets2
 // ---------------------------------------------
 
 type PostPets2HandlerFunc func(ctx context.Context, r PostPets2Request) PostPets2Response
@@ -104,6 +110,10 @@ type PostPets2HandlerFunc func(ctx context.Context, r PostPets2Request) PostPets
 func (f PostPets2HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), PostPets2HTTPRequest(r)).writePostPets2(w)
 }
+
+func (PostPets2HandlerFunc) Path() string { return "/pets2" }
+
+func (PostPets2HandlerFunc) Method() string { return http.MethodPost }
 
 type PostPets2Request interface {
 	HTTP() *http.Request

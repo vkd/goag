@@ -15,7 +15,7 @@ func NewPathItem(path string) *PathItem {
 
 func (p *PathItem) GetOperation(m HTTPMethod) (*Operation, bool) {
 	for _, o := range p.Operations {
-		if o.HTTPMethod == m {
+		if o.Method.HTTP == m {
 			return o, true
 		}
 	}

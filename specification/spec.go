@@ -70,12 +70,12 @@ func ParseSwagger(spec *openapi3.Swagger, opts SchemaOptions) (*Spec, error) {
 			switch usedIn.Status {
 			case "default":
 				if usedInPatterned, ok := usedInPatterned.Get(); ok {
-					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in patterned status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.PathRaw, usedIn.Status, usedInPatterned.Operation.HTTPMethod, usedInPatterned.Operation.PathRaw, usedInPatterned.Status)
+					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in patterned status code", resp.Name, usedIn.Operation.Method.HTTP, usedIn.Operation.PathRaw, usedIn.Status, usedInPatterned.Operation.Method.HTTP, usedInPatterned.Operation.PathRaw, usedInPatterned.Status)
 				}
 				usedInDefault = Just(usedIn)
 			default:
 				if usedInDefault, ok := usedInDefault.Get(); ok {
-					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in default status code", resp.Name, usedIn.Operation.HTTPMethod, usedIn.Operation.PathRaw, usedIn.Status, usedInDefault.Operation.HTTPMethod, usedInDefault.Operation.PathRaw, usedInDefault.Status)
+					return nil, fmt.Errorf("found multiple usages of %q response in operation [%s %s '%s'] and [%s %s '%s']: each response object could be used only on 'default' responses or 'non-default' responses: already used in default status code", resp.Name, usedIn.Operation.Method.HTTP, usedIn.Operation.PathRaw, usedIn.Status, usedInDefault.Operation.Method.HTTP, usedInDefault.Operation.PathRaw, usedInDefault.Status)
 				}
 				usedInPatterned = Just(usedIn)
 			}
@@ -274,23 +274,24 @@ func sortedKeys[T any](m map[string]T) (out []string) {
 	return out
 }
 
-func httpMethods() []httpMethod {
-	return []httpMethod{
-		{http.MethodGet, "Get"},
-		{http.MethodPost, "Post"},
-		{http.MethodPatch, "Patch"},
-		{http.MethodPut, "Put"},
-		{http.MethodDelete, "Delete"},
-		{http.MethodConnect, "Connect"},
-		{http.MethodHead, "Head"},
-		{http.MethodOptions, "Options"},
-		{http.MethodTrace, "Trace"},
+func httpMethods() []Method {
+	return []Method{
+		{http.MethodGet, "Get", "http.MethodGet"},
+		{http.MethodPost, "Post", "http.MethodPost"},
+		{http.MethodPatch, "Patch", "http.MethodPatch"},
+		{http.MethodPut, "Put", "http.MethodPut"},
+		{http.MethodDelete, "Delete", "http.MethodDelete"},
+		{http.MethodConnect, "Connect", "http.MethodConnect"},
+		{http.MethodHead, "Head", "http.MethodHead"},
+		{http.MethodOptions, "Options", "http.MethodOptions"},
+		{http.MethodTrace, "Trace", "http.MethodTrace"},
 	}
 }
 
-type httpMethod struct {
-	HTTP  HTTPMethod
-	Title HTTPMethodTitle
+type Method struct {
+	HTTP    HTTPMethod
+	Title   HTTPMethodTitle
+	GoValue string
 }
 
 // HTTPMethod - http.MethodGet, http.MethodPost, ...

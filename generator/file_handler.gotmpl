@@ -117,6 +117,7 @@ func (m *Nullable[T]) UnmarshalJSON(bs []byte) error {
 {{- $responseWriter := print $name "Response" }}
 // ---------------------------------------------
 // {{$name}} - {{ comment $h.Description }}
+// {{ .HTTPMethod }} {{ .PathRaw }}
 // ---------------------------------------------
 
 {{if $h.Summary}}// {{$handlerFunc}} - {{$h.Summary}}{{end}}
@@ -125,6 +126,11 @@ type {{ $handlerFunc }} func(ctx context.Context, r {{$requestParser}}) {{$respo
 func (f {{$handlerFunc}}) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), {{$httpRequestParser}}(r)).write{{ .Name }}(w)
 }
+
+func ({{$handlerFunc}}) Path() string { return "{{ .PathRaw }}" }
+
+func ({{$handlerFunc}}) Method() string { return {{ .HTTPMethodGoValue }} }
+
 
 type {{$requestParser}} interface {
 	HTTP() *http.Request

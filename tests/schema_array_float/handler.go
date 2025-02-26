@@ -12,6 +12,7 @@ import (
 
 // ---------------------------------------------
 // GetPetsIDs -
+// GET /pets/ids
 // ---------------------------------------------
 
 type GetPetsIDsHandlerFunc func(ctx context.Context, r GetPetsIDsRequest) GetPetsIDsResponse
@@ -19,6 +20,10 @@ type GetPetsIDsHandlerFunc func(ctx context.Context, r GetPetsIDsRequest) GetPet
 func (f GetPetsIDsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetPetsIDsHTTPRequest(r)).writeGetPetsIDs(w)
 }
+
+func (GetPetsIDsHandlerFunc) Path() string { return "/pets/ids" }
+
+func (GetPetsIDsHandlerFunc) Method() string { return http.MethodGet }
 
 type GetPetsIDsRequest interface {
 	HTTP() *http.Request

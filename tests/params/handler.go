@@ -13,6 +13,7 @@ import (
 
 // ---------------------------------------------
 // GetReviews -
+// GET /shops/{shop}/reviews
 // ---------------------------------------------
 
 type GetReviewsHandlerFunc func(ctx context.Context, r GetReviewsRequest) GetReviewsResponse
@@ -20,6 +21,10 @@ type GetReviewsHandlerFunc func(ctx context.Context, r GetReviewsRequest) GetRev
 func (f GetReviewsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetReviewsHTTPRequest(r)).writeGetReviews(w)
 }
+
+func (GetReviewsHandlerFunc) Path() string { return "/shops/{shop}/reviews" }
+
+func (GetReviewsHandlerFunc) Method() string { return http.MethodGet }
 
 type GetReviewsRequest interface {
 	HTTP() *http.Request

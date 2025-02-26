@@ -12,6 +12,7 @@ import (
 
 // ---------------------------------------------
 // GetPetsPetIDNames -
+// GET /pets/{pet_id}/names
 // ---------------------------------------------
 
 type GetPetsPetIDNamesHandlerFunc func(ctx context.Context, r GetPetsPetIDNamesRequest) GetPetsPetIDNamesResponse
@@ -19,6 +20,10 @@ type GetPetsPetIDNamesHandlerFunc func(ctx context.Context, r GetPetsPetIDNamesR
 func (f GetPetsPetIDNamesHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetPetsPetIDNamesHTTPRequest(r)).writeGetPetsPetIDNames(w)
 }
+
+func (GetPetsPetIDNamesHandlerFunc) Path() string { return "/pets/{pet_id}/names" }
+
+func (GetPetsPetIDNamesHandlerFunc) Method() string { return http.MethodGet }
 
 type GetPetsPetIDNamesRequest interface {
 	HTTP() *http.Request
@@ -108,6 +113,7 @@ func (r GetPetsPetIDNamesResponse200) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetPetsPetIDShops -
+// GET /pets/{pet_id}/shops
 // ---------------------------------------------
 
 type GetPetsPetIDShopsHandlerFunc func(ctx context.Context, r GetPetsPetIDShopsRequest) GetPetsPetIDShopsResponse
@@ -115,6 +121,10 @@ type GetPetsPetIDShopsHandlerFunc func(ctx context.Context, r GetPetsPetIDShopsR
 func (f GetPetsPetIDShopsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetPetsPetIDShopsHTTPRequest(r)).writeGetPetsPetIDShops(w)
 }
+
+func (GetPetsPetIDShopsHandlerFunc) Path() string { return "/pets/{pet_id}/shops" }
+
+func (GetPetsPetIDShopsHandlerFunc) Method() string { return http.MethodGet }
 
 type GetPetsPetIDShopsRequest interface {
 	HTTP() *http.Request

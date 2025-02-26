@@ -13,6 +13,7 @@ import (
 
 // ---------------------------------------------
 // GetShopsShop -
+// GET /shops/{shop}
 // ---------------------------------------------
 
 type GetShopsShopHandlerFunc func(ctx context.Context, r GetShopsShopRequest) GetShopsShopResponse
@@ -20,6 +21,10 @@ type GetShopsShopHandlerFunc func(ctx context.Context, r GetShopsShopRequest) Ge
 func (f GetShopsShopHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetShopsShopHTTPRequest(r)).writeGetShopsShop(w)
 }
+
+func (GetShopsShopHandlerFunc) Path() string { return "/shops/{shop}" }
+
+func (GetShopsShopHandlerFunc) Method() string { return http.MethodGet }
 
 type GetShopsShopRequest interface {
 	HTTP() *http.Request

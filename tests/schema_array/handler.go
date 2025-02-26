@@ -12,6 +12,7 @@ import (
 
 // ---------------------------------------------
 // GetPets -
+// GET /pets
 // ---------------------------------------------
 
 type GetPetsHandlerFunc func(ctx context.Context, r GetPetsRequest) GetPetsResponse
@@ -19,6 +20,10 @@ type GetPetsHandlerFunc func(ctx context.Context, r GetPetsRequest) GetPetsRespo
 func (f GetPetsHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetPetsHTTPRequest(r)).writeGetPets(w)
 }
+
+func (GetPetsHandlerFunc) Path() string { return "/pets" }
+
+func (GetPetsHandlerFunc) Method() string { return http.MethodGet }
 
 type GetPetsRequest interface {
 	HTTP() *http.Request
@@ -78,6 +83,7 @@ func (r GetPetsResponse200JSON) Write(w http.ResponseWriter) {
 
 // ---------------------------------------------
 // GetPetsNames -
+// GET /pets/names
 // ---------------------------------------------
 
 type GetPetsNamesHandlerFunc func(ctx context.Context, r GetPetsNamesRequest) GetPetsNamesResponse
@@ -85,6 +91,10 @@ type GetPetsNamesHandlerFunc func(ctx context.Context, r GetPetsNamesRequest) Ge
 func (f GetPetsNamesHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f(r.Context(), GetPetsNamesHTTPRequest(r)).writeGetPetsNames(w)
 }
+
+func (GetPetsNamesHandlerFunc) Path() string { return "/pets/names" }
+
+func (GetPetsNamesHandlerFunc) Method() string { return http.MethodGet }
 
 type GetPetsNamesRequest interface {
 	HTTP() *http.Request

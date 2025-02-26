@@ -1,5 +1,7 @@
 package generator
 
+import "github.com/vkd/goag/specification"
+
 type HandlersFileTemplate struct {
 	Handlers []HandlerTemplate
 
@@ -32,6 +34,10 @@ type HandlerTemplate struct {
 	Name        OperationName
 	Description string
 	Summary     string
+
+	HTTPMethod        specification.HTTPMethod
+	HTTPMethodGoValue string
+	PathRaw           string
 
 	HandlerFuncName string
 	BasePathPrefix  string
@@ -69,6 +75,10 @@ func NewHandlerTemplate(h *Handler) HandlerTemplate {
 		Name:        h.Name,
 		Description: h.Description,
 		Summary:     h.Summary,
+
+		HTTPMethod:        h.Operation.Operation.Method.HTTP,
+		HTTPMethodGoValue: h.Operation.Operation.Method.GoValue,
+		PathRaw:           h.Operation.Operation.PathRaw,
 
 		HandlerFuncName: h.HandlerFuncName,
 		BasePathPrefix:  h.BasePathPrefix,
