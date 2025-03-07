@@ -38,7 +38,6 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 			imports = append(imports, ims...)
 
 			r.ContentJSON = Just(ResponseContentSchema{
-				Spec: c.V.Schema,
 				Type: s,
 			})
 		default:
@@ -105,6 +104,5 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header],
 }
 
 type ResponseContentSchema struct {
-	Spec specification.Ref[specification.Schema]
 	Type Schema
 }

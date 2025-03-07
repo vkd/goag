@@ -649,7 +649,7 @@ func NewOneOfStructure(elems []specification.Ref[specification.Schema], d specif
 		if schema.Ref != nil {
 			name = schema.Ref.Name
 		} else if schema.Type.Kind() == SchemaKindObject {
-			sc := c.AddSchema("OneOf"+strconv.Itoa(i), schema, cfg)
+			sc := c.AddSchema(name, schema, cfg)
 			schemaType = NewSchemaRef(sc)
 		}
 		s.Fields = append(s.Fields, StructureField{

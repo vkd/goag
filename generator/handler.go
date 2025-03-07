@@ -271,7 +271,7 @@ func NewHandlerResponse(r *Response, name OperationName, status string, componen
 	}
 
 	out.Name = string(name) + "Response" + strings.Title(status)
-	if r.ContentJSON.IsSet {
+	if _, ok := r.ContentJSON.Get(); ok {
 		out.Name += "JSON"
 		out.ContentType = "application/json"
 	} else if contentType, ok := r.ContentBody.Get(); ok {

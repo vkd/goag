@@ -86,7 +86,7 @@ func NewGenerator(spec *specification.Spec, cfg Config, opts ...GenOption) (*Gen
 		g.Handlers = append(g.Handlers, h)
 
 		for _, r := range h.Responses {
-			if r.ContentJSON.IsSet {
+			if _, ok := r.ContentJSON.Get(); ok {
 				isWriteJSONFunc = true
 			}
 		}
