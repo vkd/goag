@@ -318,10 +318,6 @@ func (c CustomType) RenderFormatStrings(to, from string, isNew bool) (string, er
 	})
 }
 
-func (c CustomType) RenderConvertToBaseSchema(from string) (string, error) {
-	return from + "." + c.Type.FuncTypeName() + "()", nil
-}
-
 func (c CustomType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
 	// from = from + "." + c.Type.FuncTypeName() + "()"
 	if c.Type.Kind() == SchemaKindObject {
@@ -451,14 +447,6 @@ func (p OptionalType) RenderFormatStrings(to, from string, isNew bool) (string, 
 		"IsNew": isNew,
 		"Self":  p,
 		"Type":  p.V,
-	})
-}
-
-func (p OptionalType) RenderConvertToBaseSchema(from string) (string, error) {
-	return ExecuteTemplate("OptionalType_RenderConvertToBaseSchema", TData{
-		"From": from,
-		"Self": p,
-		"Type": p.V,
 	})
 }
 

@@ -326,20 +326,6 @@ func (s Schema) RenderFormat(from string) (string, error) {
 	return tp.RenderFormat(from)
 }
 
-func (s Schema) RenderConvertToBaseSchema(from string) (string, error) {
-	if s.Ref != nil {
-		if !s.Ref.Schema.IsCustom() {
-			from = from + "." + s.Ref.Schema.FuncTypeName() + "()"
-		}
-		return s.Ref.Schema.RenderConvertToBaseSchema(from)
-	}
-
-	if _, ok := s.CustomType.Get(); ok {
-		from = from + "." + s.Type.FuncTypeName() + "()"
-	}
-	return from, nil
-}
-
 func (s Schema) RenderFormatStrings(to, from string, isNew bool) (string, error) {
 	if s.Ref != nil {
 		if !s.Ref.Schema.IsCustom() {
