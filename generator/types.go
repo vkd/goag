@@ -319,7 +319,6 @@ func (c CustomType) RenderFormatStrings(to, from string, isNew bool) (string, er
 }
 
 func (c CustomType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	// from = from + "." + c.Type.FuncTypeName() + "()"
 	if c.Type.Kind() == SchemaKindObject {
 		return ExecuteTemplate("CustomType_RenderUnmarshalJSON_Object", TData{
 			"Base":       c.Type,
@@ -343,8 +342,6 @@ func (c CustomType) RenderUnmarshalJSON(to, from string, isNew bool, mkErr Error
 }
 
 func (c CustomType) RenderMarshalJSON(to, from string, isNew bool, mkErr ErrorRender) (string, error) {
-	// from = from + "." + c.Type.FuncTypeName() + "()"
-
 	if c.Type.Kind() == SchemaKindObject {
 		return ExecuteTemplate("CustomType_RenderMarshalJSON_Object", TData{
 			"Base":       c.Type,
