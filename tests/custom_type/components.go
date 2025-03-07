@@ -664,13 +664,9 @@ func (c *Metadata) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 
 type PageCustom string
 
-func NewPageCustom(v string) PageCustom {
-	return PageCustom(v)
-}
+func NewPageCustom(v string) PageCustom { return PageCustom(v) }
 
-func (c PageCustom) String() string {
-	return string(c)
-}
+func (c PageCustom) String() string { return string(c) }
 
 type Settings struct {
 	Theme pkg.Maybe[string]
@@ -774,23 +770,15 @@ func (c *Settings) unmarshalJSONInnerBody(m map[string]json.RawMessage) error {
 
 type Shop ShopName
 
-func NewShop(v ShopName) Shop {
-	return Shop(v)
-}
+func NewShop(v ShopName) Shop { return Shop(v) }
 
-func (c Shop) ShopName() ShopName {
-	return ShopName(c)
-}
+func (c Shop) ShopName() ShopName { return ShopName(c) }
 
 type ShopName int64
 
-func NewShopName(v int64) ShopName {
-	return ShopName(v)
-}
+func NewShopName(v int64) ShopName { return ShopName(v) }
 
-func (c ShopName) Int64() int64 {
-	return int64(c)
-}
+func (c ShopName) Int64() int64 { return int64(c) }
 
 type GetShopAdditionals struct {
 	AdditionalProperties map[string]any

@@ -13,33 +13,21 @@ import (
 
 type Organization int
 
-func NewOrganization(v int) Organization {
-	return Organization(v)
-}
+func NewOrganization(v int) Organization { return Organization(v) }
 
-func (c Organization) Int() int {
-	return int(c)
-}
+func (c Organization) Int() int { return int(c) }
 
 type Page int32
 
-func NewPage(v int32) Page {
-	return Page(v)
-}
+func NewPage(v int32) Page { return Page(v) }
 
-func (c Page) Int32() int32 {
-	return int32(c)
-}
+func (c Page) Int32() int32 { return int32(c) }
 
 type Pages []int32
 
-func NewPages(v []int32) Pages {
-	return Pages(v)
-}
+func NewPages(v []int32) Pages { return Pages(v) }
 
-func (c Pages) Int32s() []int32 {
-	return []int32(c)
-}
+func (c Pages) Int32s() []int32 { return []int32(c) }
 
 var _ json.Marshaler = (*Pages)(nil)
 
@@ -149,53 +137,33 @@ func (c *Pages) unmarshalJSONInnerBody(m []json.RawMessage) error {
 
 type Shop Shopa
 
-func NewShop(v Shopa) Shop {
-	return Shop(v)
-}
+func NewShop(v Shopa) Shop { return Shop(v) }
 
-func (c Shop) Shopa() Shopa {
-	return Shopa(c)
-}
+func (c Shop) Shopa() Shopa { return Shopa(c) }
 
 type Shopa Shopb
 
-func NewShopa(v Shopb) Shopa {
-	return Shopa(v)
-}
+func NewShopa(v Shopb) Shopa { return Shopa(v) }
 
-func (c Shopa) Shopb() Shopb {
-	return Shopb(c)
-}
+func (c Shopa) Shopb() Shopb { return Shopb(c) }
 
 type Shopb Shopc
 
-func NewShopb(v Shopc) Shopb {
-	return Shopb(v)
-}
+func NewShopb(v Shopc) Shopb { return Shopb(v) }
 
-func (c Shopb) Shopc() Shopc {
-	return Shopc(c)
-}
+func (c Shopb) Shopc() Shopc { return Shopc(c) }
 
 type Shopc string
 
-func NewShopc(v string) Shopc {
-	return Shopc(v)
-}
+func NewShopc(v string) Shopc { return Shopc(v) }
 
-func (c Shopc) String() string {
-	return string(c)
-}
+func (c Shopc) String() string { return string(c) }
 
 type Shops []string
 
-func NewShops(v []string) Shops {
-	return Shops(v)
-}
+func NewShops(v []string) Shops { return Shops(v) }
 
-func (c Shops) Strings() []string {
-	return []string(c)
-}
+func (c Shops) Strings() []string { return []string(c) }
 
 var _ json.Marshaler = (*Shops)(nil)
 

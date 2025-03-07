@@ -6,10 +6,6 @@ package test
 
 type Shop string
 
-func NewShop(v string) Shop {
-	return Shop(v)
-}
+func NewShop(v string) Shop { return Shop(v) }
 
-func (c Shop) String() string {
-	return string(c)
-}
+func (c Shop) String() string { return string(c) }

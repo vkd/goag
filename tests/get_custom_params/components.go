@@ -6,10 +6,6 @@ package test
 
 type PageCustom string
 
-func NewPageCustom(v string) PageCustom {
-	return PageCustom(v)
-}
+func NewPageCustom(v string) PageCustom { return PageCustom(v) }
 
-func (c PageCustom) String() string {
-	return string(c)
-}
+func (c PageCustom) String() string { return string(c) }

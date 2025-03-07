@@ -50,15 +50,11 @@ type {{ .Name }} {{ call .RenderTypeDefinitionFn }}
 
 {{- if .IsRenderParseMethod }}
 
-func New{{ .Name }}(v {{ call .RenderBaseGoTypeFn }}) {{ .Name }} {
-    return {{ .Name }}(v)
-}
+func New{{ .Name }}(v {{ call .RenderBaseGoTypeFn }}) {{ .Name }} { return {{ .Name }}(v) }
 {{- end }}
 {{- if .IsRenderFormatMethod }}
 
-func (c {{ .Name }}) {{ title .FuncTypeName }}() {{ call .RenderBaseGoTypeFn }} {
-    return {{ call .RenderBaseGoTypeFn }}(c)
-}
+func (c {{ .Name }}) {{ title .FuncTypeName }}() {{ call .RenderBaseGoTypeFn }} { return {{ call .RenderBaseGoTypeFn }}(c) }
 {{- end }}
 
 {{- if .IsWriteJSONFunc }}
