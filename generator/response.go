@@ -22,15 +22,14 @@ type Response struct {
 func NewResponse(handlerName OperationName, status string, response *specification.Response, components Componenter, cfg Config) (*Response, Imports, error) {
 	r := &Response{Response: response}
 	r.Name = string(handlerName) + "Response" + strings.Title(status)
-	if response.Content.Has("application/json") {
-		r.Name += "JSON"
-	}
 
 	var imports Imports
 
 	for _, c := range response.Content.List {
 		switch c.Name {
 		case "application/json":
+			r.Name += "JSON"
+
 			s, ims, err := NewSchema(c.V.Schema, NamedComponenter{Componenter: components, Name: string(handlerName) + "Response" + status + "JSONBody"}, cfg)
 			if err != nil {
 				return nil, nil, fmt.Errorf("schema for %q content response: %w", c.Name, err)
@@ -45,29 +44,21 @@ func NewResponse(handlerName OperationName, status string, response *specificati
 		}
 	}
 
-	headers := make([]ResponseHeader, len(response.Headers.List))
-	headersMap := make(map[*specification.Object[string, specification.Ref[specification.Header]]]*ResponseHeader, len(response.Headers.List))
-	for i, c := range response.Headers.List {
-		headersMap[c] = &headers[i]
-	}
+	r.Headers = make([]ResponseHeader, 0, len(response.Headers.List))
 
 	for _, header := range response.Headers.List {
 		h, ims, err := NewResponseHeader(header.Name, header.V, components, cfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("new response %q: %w", header.Name, err)
 		}
+		r.Headers = append(r.Headers, h)
 		imports = append(imports, ims...)
-		*headersMap[header] = h
 	}
-
-	r.Headers = headers
 
 	return r, imports, nil
 }
 
 type ResponseHeader struct {
-	Spec *specification.Header
-
 	FieldName string
 	Key       string
 	Required  bool
@@ -92,8 +83,6 @@ func NewResponseHeader(name string, ref specification.Ref[specification.Header],
 	}
 
 	h := ResponseHeader{
-		Spec: ref.Value(),
-
 		FieldName: PublicFieldName(name),
 		Key:       name,
 		Required:  ref.Value().Required,
