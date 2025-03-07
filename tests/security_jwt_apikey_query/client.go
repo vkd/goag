@@ -79,11 +79,11 @@ func (c *Client) PostShops(ctx context.Context, request PostShopsParams) (PostSh
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.Authorization.IsSet {
-		req.Header.Set("Authorization", request.Headers.Authorization.Value)
+	if hvOpt, ok := request.Headers.Authorization.Get(); ok {
+		req.Header.Set("Authorization", hvOpt)
 	}
-	if request.Headers.AccessToken.IsSet {
-		req.Header.Set("Access-Token", request.Headers.AccessToken.Value)
+	if hvOpt, ok := request.Headers.AccessToken.Get(); ok {
+		req.Header.Set("Access-Token", hvOpt)
 	}
 
 	resp, err := c.HTTPClient.Do(req)

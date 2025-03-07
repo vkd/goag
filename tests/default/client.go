@@ -253,8 +253,8 @@ func (c *Client) GetShopsShopPets(ctx context.Context, request GetShopsShopPetsP
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10)) + "/pets"
 
 	query := make(url.Values, 2)
-	if request.Query.Page.IsSet {
-		query["page"] = []string{strconv.FormatInt(int64(request.Query.Page.Value), 10)}
+	if qvOpt, ok := request.Query.Page.Get(); ok {
+		query["page"] = []string{strconv.FormatInt(int64(qvOpt), 10)}
 	}
 	query["page_size"] = []string{strconv.FormatInt(int64(request.Query.PageSize), 10)}
 	requestURL += "?" + query.Encode()
@@ -316,16 +316,16 @@ func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (Revi
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(strconv.FormatInt(int64(request.Path.Shop), 10)) + "/review"
 
 	query := make(url.Values, 4)
-	if request.Query.Page.IsSet {
-		query["page"] = []string{strconv.FormatInt(int64(request.Query.Page.Value), 10)}
+	if qvOpt, ok := request.Query.Page.Get(); ok {
+		query["page"] = []string{strconv.FormatInt(int64(qvOpt), 10)}
 	}
 	query["page_size"] = []string{strconv.FormatInt(int64(request.Query.PageSize), 10)}
-	if request.Query.Tag.IsSet {
-		query["tag"] = request.Query.Tag.Value
+	if qvOpt, ok := request.Query.Tag.Get(); ok {
+		query["tag"] = qvOpt
 	}
-	if request.Query.Filter.IsSet {
-		qv := make([]string, 0, len(request.Query.Filter.Value))
-		for _, v := range request.Query.Filter.Value {
+	if qvOpt, ok := request.Query.Filter.Get(); ok {
+		qv := make([]string, 0, len(qvOpt))
+		for _, v := range qvOpt {
 			qv = append(qv, strconv.FormatInt(int64(v), 10))
 		}
 		query["filter"] = qv
@@ -341,8 +341,8 @@ func (c *Client) ReviewShop(ctx context.Context, request ReviewShopParams) (Revi
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.RequestID.IsSet {
-		req.Header.Set("request-id", request.Headers.RequestID.Value)
+	if hvOpt, ok := request.Headers.RequestID.Get(); ok {
+		req.Header.Set("request-id", hvOpt)
 	}
 	req.Header.Set("user-id", request.Headers.UserID)
 

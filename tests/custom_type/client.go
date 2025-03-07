@@ -36,12 +36,12 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop.String())
 
 	query := make(url.Values, 2)
-	if request.Query.PageSchemaRefQuery.IsSet {
-		cv := request.Query.PageSchemaRefQuery.Value.String()
+	if qvOpt, ok := request.Query.PageSchemaRefQuery.Get(); ok {
+		cv := qvOpt.String()
 		query["page_schema_ref_query"] = []string{cv}
 	}
-	if request.Query.PageCustomTypeQuery.IsSet {
-		cv := request.Query.PageCustomTypeQuery.Value.String()
+	if qvOpt, ok := request.Query.PageCustomTypeQuery.Get(); ok {
+		cv := qvOpt.String()
 		query["page_custom_type_query"] = []string{cv}
 	}
 	requestURL += "?" + query.Encode()

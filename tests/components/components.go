@@ -394,8 +394,8 @@ func (r ErrorResponseResponse) writePostShops(w http.ResponseWriter) {
 }
 
 func (r ErrorResponseResponse) Write(w http.ResponseWriter, code int) {
-	if r.Headers.XErrorCode.IsSet {
-		hs := []string{strconv.FormatInt(int64(r.Headers.XErrorCode.Value), 10)}
+	if hvOpt, ok := r.Headers.XErrorCode.Get(); ok {
+		hs := []string{strconv.FormatInt(int64(hvOpt), 10)}
 		for _, h := range hs {
 			w.Header().Add("X-Error-Code", h)
 		}

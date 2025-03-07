@@ -36,8 +36,8 @@ func (c *Client) PostShopsShopPets(ctx context.Context, request PostShopsShopPet
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop.String()) + "/pets"
 
 	query := make(url.Values, 1)
-	if request.Query.Filter.IsSet {
-		cv := request.Query.Filter.Value.String()
+	if qvOpt, ok := request.Query.Filter.Get(); ok {
+		cv := qvOpt.String()
 		query["filter"] = []string{cv}
 	}
 	requestURL += "?" + query.Encode()

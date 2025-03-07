@@ -113,8 +113,8 @@ func (r ListPetsResponse200JSON) writeListPets(w http.ResponseWriter) {
 }
 
 func (r ListPetsResponse200JSON) Write(w http.ResponseWriter) {
-	if r.Headers.XNext.IsSet {
-		hs := []string{r.Headers.XNext.Value}
+	if hvOpt, ok := r.Headers.XNext.Get(); ok {
+		hs := []string{hvOpt}
 		for _, h := range hs {
 			w.Header().Add("x-next", h)
 		}

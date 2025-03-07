@@ -36,35 +36,35 @@ func (c *Client) GetReviews(ctx context.Context, request GetReviewsParams) (GetR
 
 	query := make(url.Values, 14)
 	query["int_req"] = []string{strconv.FormatInt(int64(request.Query.IntReq), 10)}
-	if request.Query.Int.IsSet {
-		query["int"] = []string{strconv.FormatInt(int64(request.Query.Int.Value), 10)}
+	if qvOpt, ok := request.Query.Int.Get(); ok {
+		query["int"] = []string{strconv.FormatInt(int64(qvOpt), 10)}
 	}
 	query["int32_req"] = []string{strconv.FormatInt(int64(request.Query.Int32Req), 10)}
-	if request.Query.Int32.IsSet {
-		query["int32"] = []string{strconv.FormatInt(int64(request.Query.Int32.Value), 10)}
+	if qvOpt, ok := request.Query.Int32.Get(); ok {
+		query["int32"] = []string{strconv.FormatInt(int64(qvOpt), 10)}
 	}
 	query["int64_req"] = []string{strconv.FormatInt(request.Query.Int64Req, 10)}
-	if request.Query.Int64.IsSet {
-		query["int64"] = []string{strconv.FormatInt(request.Query.Int64.Value, 10)}
+	if qvOpt, ok := request.Query.Int64.Get(); ok {
+		query["int64"] = []string{strconv.FormatInt(qvOpt, 10)}
 	}
 	query["float32_req"] = []string{strconv.FormatFloat(float64(request.Query.Float32Req), 'e', -1, 32)}
-	if request.Query.Float32.IsSet {
-		query["float32"] = []string{strconv.FormatFloat(float64(request.Query.Float32.Value), 'e', -1, 32)}
+	if qvOpt, ok := request.Query.Float32.Get(); ok {
+		query["float32"] = []string{strconv.FormatFloat(float64(qvOpt), 'e', -1, 32)}
 	}
 	query["float64_req"] = []string{strconv.FormatFloat(request.Query.Float64Req, 'e', -1, 64)}
-	if request.Query.Float64.IsSet {
-		query["float64"] = []string{strconv.FormatFloat(request.Query.Float64.Value, 'e', -1, 64)}
+	if qvOpt, ok := request.Query.Float64.Get(); ok {
+		query["float64"] = []string{strconv.FormatFloat(qvOpt, 'e', -1, 64)}
 	}
 	query["string_req"] = []string{request.Query.StringReq}
-	if request.Query.String.IsSet {
-		query["string"] = []string{request.Query.String.Value}
+	if qvOpt, ok := request.Query.String.Get(); ok {
+		query["string"] = []string{qvOpt}
 	}
-	if request.Query.Tag.IsSet {
-		query["tag"] = request.Query.Tag.Value
+	if qvOpt, ok := request.Query.Tag.Get(); ok {
+		query["tag"] = qvOpt
 	}
-	if request.Query.Filter.IsSet {
-		qv := make([]string, 0, len(request.Query.Filter.Value))
-		for _, v := range request.Query.Filter.Value {
+	if qvOpt, ok := request.Query.Filter.Get(); ok {
+		qv := make([]string, 0, len(qvOpt))
+		for _, v := range qvOpt {
 			qv = append(qv, strconv.FormatInt(int64(v), 10))
 		}
 		query["filter"] = qv
@@ -75,8 +75,8 @@ func (c *Client) GetReviews(ctx context.Context, request GetReviewsParams) (GetR
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.RequestID.IsSet {
-		req.Header.Set("request-id", request.Headers.RequestID.Value)
+	if hvOpt, ok := request.Headers.RequestID.Get(); ok {
+		req.Header.Set("request-id", hvOpt)
 	}
 	req.Header.Set("user-id", request.Headers.UserID)
 

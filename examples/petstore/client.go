@@ -37,8 +37,8 @@ func (c *Client) ListPets(ctx context.Context, request ListPetsParams) (ListPets
 	var requestURL = c.BaseURL + "/pets"
 
 	query := make(url.Values, 1)
-	if request.Query.Limit.IsSet {
-		query["limit"] = []string{strconv.FormatInt(int64(request.Query.Limit.Value), 10)}
+	if qvOpt, ok := request.Query.Limit.Get(); ok {
+		query["limit"] = []string{strconv.FormatInt(int64(qvOpt), 10)}
 	}
 	requestURL += "?" + query.Encode()
 

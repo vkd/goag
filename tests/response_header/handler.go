@@ -80,8 +80,8 @@ func (r GetPetsResponse200) writeGetPets(w http.ResponseWriter) {
 }
 
 func (r GetPetsResponse200) Write(w http.ResponseWriter) {
-	if r.Headers.XNext.IsSet {
-		hs := []string{r.Headers.XNext.Value}
+	if hvOpt, ok := r.Headers.XNext.Get(); ok {
+		hs := []string{hvOpt}
 		for _, h := range hs {
 			w.Header().Add("x-next", h)
 		}

@@ -55,8 +55,8 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 	{{- range $_, $q := .Queries }}
 		{{- $field := (print "request.Query." .FieldName) }}
 		{{- if not .Required }}
-	if request.Query.{{ .FieldName }}.IsSet {
-			{{- $field = (print "request.Query." .FieldName) }}
+	if qvOpt, ok := request.Query.{{ .FieldName }}.Get(); ok {
+			{{- $field = "qvOpt" }}
 		{{- end }}
 		{{ call .RenderFormatStrings (print "query[\"" $q.Name "\"]") $field false }}
 		{{- if not .Required }}
@@ -79,12 +79,14 @@ func (c *Client) {{ .Name }}(ctx context.Context, request {{ .RequestTypeName }}
 	}
 
 	{{- range $_, $h := .Headers }}
+		{{- $from := (print "request.Headers." $h.FieldName) }}
 		{{- if not $h.Required }}
-	if request.Headers.{{ $h.FieldName }}.IsSet {
-		req.Header.Set("{{ $h.Name }}", {{ $h.Type.RenderFormat (print "request.Headers." $h.FieldName) }})
+	if hvOpt, ok := {{ $from }}.Get(); ok {
+		{{- $from = "hvOpt" }}
+		req.Header.Set("{{ $h.Name }}", {{ $h.Type.RenderFormat $from }})
 	}
 		{{- else }}
-	req.Header.Set("{{ $h.Name }}", {{ $h.Type.RenderFormat (print "request.Headers." $h.FieldName) }})
+	req.Header.Set("{{ $h.Name }}", {{ $h.Type.RenderFormat $from }})
 		{{- end }}
 	{{- end }}
 

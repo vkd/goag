@@ -441,7 +441,7 @@ func (p OptionalType) RenderToBaseType(to, from string) (string, error) {
 }
 
 func (p OptionalType) RenderFormat(from string) (string, error) {
-	return p.V.RenderFormat(from + ".Value")
+	return p.V.RenderFormat(from)
 }
 
 func (p OptionalType) RenderFormatStrings(to, from string, isNew bool) (string, error) {

@@ -35,29 +35,29 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop.String()) + "/pages/" + url.PathEscape(request.Path.Page.String())
 
 	query := make(url.Values, 5)
-	if request.Query.Page.IsSet {
-		cv := request.Query.Page.Value.Int32()
+	if qvOpt, ok := request.Query.Page.Get(); ok {
+		cv := qvOpt.Int32()
 		query["page"] = []string{strconv.FormatInt(int64(cv), 10)}
 	}
 	cv := request.Query.PageReq.Int32()
 	query["page_req"] = []string{strconv.FormatInt(int64(cv), 10)}
-	if request.Query.Pages.IsSet {
-		qv := make([]string, 0, len(request.Query.Pages.Value))
-		for _, v := range request.Query.Pages.Value {
+	if qvOpt, ok := request.Query.Pages.Get(); ok {
+		qv := make([]string, 0, len(qvOpt))
+		for _, v := range qvOpt {
 			qv = append(qv, strconv.FormatInt(int64(v.Int32()), 10))
 		}
 		query["pages"] = qv
 	}
-	if request.Query.PagesArray.IsSet {
-		cv := request.Query.PagesArray.Value.Int32s()
+	if qvOpt, ok := request.Query.PagesArray.Get(); ok {
+		cv := qvOpt.Int32s()
 		qv := make([]string, 0, len(cv))
 		for _, v := range cv {
 			qv = append(qv, strconv.FormatInt(int64(v), 10))
 		}
 		query["pages_array"] = qv
 	}
-	if request.Query.PageCustom.IsSet {
-		cv := request.Query.PageCustom.Value.String()
+	if qvOpt, ok := request.Query.PageCustom.Get(); ok {
+		cv := qvOpt.String()
 		query["page_custom"] = []string{cv}
 	}
 	requestURL += "?" + query.Encode()
@@ -66,8 +66,8 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.RequestID.IsSet {
-		req.Header.Set("request-id", request.Headers.RequestID.Value.String())
+	if hvOpt, ok := request.Headers.RequestID.Get(); ok {
+		req.Header.Set("request-id", hvOpt.String())
 	}
 
 	resp, err := c.HTTPClient.Do(req)

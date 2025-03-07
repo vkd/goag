@@ -35,8 +35,8 @@ func (c *Client) GetShops(ctx context.Context, request GetShopsParams) (GetShops
 	var requestURL = c.BaseURL + "/shops"
 
 	query := make(url.Values, 1)
-	if request.Query.Page.IsSet {
-		query["page"] = []string{strconv.FormatInt(int64(request.Query.Page.Value), 10)}
+	if qvOpt, ok := request.Query.Page.Get(); ok {
+		query["page"] = []string{strconv.FormatInt(int64(qvOpt), 10)}
 	}
 	requestURL += "?" + query.Encode()
 
@@ -44,8 +44,8 @@ func (c *Client) GetShops(ctx context.Context, request GetShopsParams) (GetShops
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.AccessKey.IsSet {
-		req.Header.Set("access-key", request.Headers.AccessKey.Value)
+	if hvOpt, ok := request.Headers.AccessKey.Get(); ok {
+		req.Header.Set("access-key", hvOpt)
 	}
 
 	resp, err := c.HTTPClient.Do(req)
@@ -78,8 +78,8 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop)
 
 	query := make(url.Values, 1)
-	if request.Query.Page.IsSet {
-		query["page"] = []string{strconv.FormatInt(int64(request.Query.Page.Value), 10)}
+	if qvOpt, ok := request.Query.Page.Get(); ok {
+		query["page"] = []string{strconv.FormatInt(int64(qvOpt), 10)}
 	}
 	requestURL += "?" + query.Encode()
 
@@ -87,8 +87,8 @@ func (c *Client) GetShopsShop(ctx context.Context, request GetShopsShopParams) (
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.RequestID.IsSet {
-		req.Header.Set("request-id", request.Headers.RequestID.Value)
+	if hvOpt, ok := request.Headers.RequestID.Get(); ok {
+		req.Header.Set("request-id", hvOpt)
 	}
 
 	resp, err := c.HTTPClient.Do(req)
@@ -121,8 +121,8 @@ func (c *Client) PostShopsShop(ctx context.Context, request PostShopsShopParams)
 	var requestURL = c.BaseURL + "/shops/" + url.PathEscape(request.Path.Shop)
 
 	query := make(url.Values, 1)
-	if request.Query.Page.IsSet {
-		query["page"] = []string{strconv.FormatInt(int64(request.Query.Page.Value), 10)}
+	if qvOpt, ok := request.Query.Page.Get(); ok {
+		query["page"] = []string{strconv.FormatInt(int64(qvOpt), 10)}
 	}
 	requestURL += "?" + query.Encode()
 
@@ -130,8 +130,8 @@ func (c *Client) PostShopsShop(ctx context.Context, request PostShopsShopParams)
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	if request.Headers.QueryID.IsSet {
-		req.Header.Set("query-id", request.Headers.QueryID.Value)
+	if hvOpt, ok := request.Headers.QueryID.Get(); ok {
+		req.Header.Set("query-id", hvOpt)
 	}
 
 	resp, err := c.HTTPClient.Do(req)

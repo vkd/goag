@@ -902,8 +902,8 @@ func (r GetShopsShopPetsResponse200JSON) writeGetShopsShopPets(w http.ResponseWr
 }
 
 func (r GetShopsShopPetsResponse200JSON) Write(w http.ResponseWriter) {
-	if r.Headers.XNext.IsSet {
-		hs := []string{r.Headers.XNext.Value}
+	if hvOpt, ok := r.Headers.XNext.Get(); ok {
+		hs := []string{hvOpt}
 		for _, h := range hs {
 			w.Header().Add("x-next", h)
 		}
@@ -1164,8 +1164,8 @@ func (r ReviewShopResponse200JSON) writeReviewShop(w http.ResponseWriter) {
 }
 
 func (r ReviewShopResponse200JSON) Write(w http.ResponseWriter) {
-	if r.Headers.XNext.IsSet {
-		hs := []string{r.Headers.XNext.Value}
+	if hvOpt, ok := r.Headers.XNext.Get(); ok {
+		hs := []string{hvOpt}
 		for _, h := range hs {
 			w.Header().Add("x-next", h)
 		}
