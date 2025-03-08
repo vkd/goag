@@ -22,7 +22,7 @@ func TestAPI(t *testing.T) {
 			})
 		},
 	}
-	client := api.TestClient()
+	client := api.LocalClient()
 
 	for _, tt := range []struct {
 		Name   string

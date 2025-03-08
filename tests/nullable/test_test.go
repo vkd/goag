@@ -25,7 +25,7 @@ func TestPostRequest(t *testing.T) {
 			})
 		},
 	}
-	cli := api.TestClient()
+	cli := api.LocalClient()
 
 	for _, tt := range []struct {
 		Name string

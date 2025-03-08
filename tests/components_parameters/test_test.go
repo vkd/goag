@@ -2,8 +2,6 @@ package test
 
 import (
 	"context"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -44,11 +42,7 @@ func TestComponents(t *testing.T) {
 		},
 	}
 
-	client := NewClient("", HTTPClientFunc(func(r *http.Request) (*http.Response, error) {
-		w := httptest.NewRecorder()
-		api.ServeHTTP(w, r)
-		return w.Result(), nil
-	}))
+	client := api.LocalClient()
 
 	var params PostShopsShopStringSepShopSchemaPetsParams
 	params.Path.ShopString = testShopStringPath

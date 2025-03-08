@@ -28,7 +28,7 @@ func TestComponents(t *testing.T) {
 		},
 	}
 
-	client := api.TestClient()
+	client := api.LocalClient()
 
 	resp, err := client.PostPets(ctx, PostPetsParams{
 		Body: CreatePetJSON{

@@ -19,7 +19,7 @@ func TestSchemaArrayNull(t *testing.T) {
 		},
 	}
 
-	client := api.TestClient()
+	client := api.LocalClient()
 
 	// GetPets
 	resp, err := client.GetPets(ctx, GetPetsParams{})

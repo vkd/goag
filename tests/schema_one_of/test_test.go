@@ -22,7 +22,7 @@ func TestSchemaAllOf_Get(t *testing.T) {
 			})
 		},
 	}
-	client := api.TestClient()
+	client := api.LocalClient()
 
 	// oneOf0 - Cat
 	testCat := "test_cat"
@@ -109,7 +109,7 @@ func TestSchemaAllOf_Get2(t *testing.T) {
 			})
 		},
 	}
-	client := api.TestClient()
+	client := api.LocalClient()
 
 	// oneOf0 - Cat
 	testCat := "test_cat"

@@ -64,7 +64,7 @@ func (c *Client) GetPetsIDs(ctx context.Context, request GetPetsIDsParams) (GetP
 	}
 }
 
-func (a API) TestClient() *Client {
+func (a API) LocalClient() *Client {
 	return NewClient("", HTTPClientFunc(func(r *http.Request) (*http.Response, error) {
 		w := httptest.NewRecorder()
 		a.ServeHTTP(w, r)

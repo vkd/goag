@@ -59,7 +59,7 @@ func (c *Client) PostPets(ctx context.Context, request PostPetsParams) (PostPets
 	}
 }
 
-func (a API) TestClient() *Client {
+func (a API) LocalClient() *Client {
 	return NewClient("", HTTPClientFunc(func(r *http.Request) (*http.Response, error) {
 		w := httptest.NewRecorder()
 		a.ServeHTTP(w, r)
