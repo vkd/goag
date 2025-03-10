@@ -1,6 +1,11 @@
 package test
 
-const SpecFile string = `paths:
+const SpecFile string = `openapi: 3.1.0
+info:
+  title: cors_default
+  version: 0.0.1
+
+paths:
   /shops:
     get:
       parameters:

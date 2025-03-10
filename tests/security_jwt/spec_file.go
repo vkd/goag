@@ -1,6 +1,11 @@
 package test
 
-const SpecFile string = `security:
+const SpecFile string = `openapi: "3.0.3"
+info:
+  version: 0.0.1
+  title: default
+
+security:
   - bearerAuth: []
 
 paths:

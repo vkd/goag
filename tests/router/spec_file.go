@@ -1,6 +1,11 @@
 package test
 
-const SpecFile string = `servers:
+const SpecFile string = `openapi: "3.0.3"
+info:
+  version: 0.0.1
+  title: default
+
+servers:
 # - url: "https://demo.example.com:8443/api/v1"
 - url: https://{username}.example.com:{port}/{basePath}
   description: The production API server

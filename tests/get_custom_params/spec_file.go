@@ -3,7 +3,7 @@ package test
 const SpecFile string = `openapi: 3.1.0
 info:
   version: 0.0.1
-  title: any
+  title: get_custom_params
 
 paths:
   /shops/{shop}/pages/{page}:
