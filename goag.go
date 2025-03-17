@@ -148,19 +148,19 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		err = os.Remove(path.Join(outDir, "handler.go"))
 		if err != nil {
 			if !os.IsNotExist(err) {
-				return fmt.Errorf("remove components.go (%s): %w", path.Join(outDir, "handler.go"), err)
+				return fmt.Errorf("remove handler.go (%s): %w", path.Join(outDir, "handler.go"), err)
 			}
 		}
 		err = os.Remove(path.Join(outDir, "router.go"))
 		if err != nil {
 			if !os.IsNotExist(err) {
-				return fmt.Errorf("remove components.go (%s): %w", path.Join(outDir, "router.go"), err)
+				return fmt.Errorf("remove router.go (%s): %w", path.Join(outDir, "router.go"), err)
 			}
 		}
 		err = os.Remove(path.Join(outDir, "spec_file.go"))
 		if err != nil {
 			if !os.IsNotExist(err) {
-				return fmt.Errorf("remove components.go (%s): %w", path.Join(outDir, "router.go"), err)
+				return fmt.Errorf("remove spec_file.go (%s): %w", path.Join(outDir, "spec_file.go"), err)
 			}
 		}
 	}
@@ -173,9 +173,7 @@ func (g Generator) Generate(openapi3Spec *openapi3.Swagger, outDir string, packa
 		}
 	}
 	if g.GenClient {
-		clientFile := gen.ClientFile(cfg)
-
-		err = RenderToFile(path.Join(outDir, "client.go"), clientFile)
+		err = RenderToFile(path.Join(outDir, "client.go"), gen.ClientFile(cfg))
 		if err != nil {
 			return fmt.Errorf("generate client.go: %w", err)
 		}

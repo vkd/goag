@@ -42,6 +42,7 @@ func (g *Generator) SpecFile(fileContent []byte) GoFile {
 	return GoFile{
 		SkipDoNotEdit: !g.Options.DoNotEdit,
 		PackageName:   g.Options.PackageName,
+		Imports:       nil,
 		Body: RenderFunc(func() (string, error) {
 			return "const SpecFile string = " + encodeRawFileAsString(string(fileContent)), nil
 		}),

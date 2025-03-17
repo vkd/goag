@@ -225,12 +225,16 @@ type CustomType struct {
 }
 
 func NewCustomType(specCustom string, st InternalSchemaType) (CustomType, Imports) {
-	var customImport, customType string = "", specCustom
+	var customImport string
+	customType := specCustom
 	var customPkg string
+
 	typeName := specCustom
 	var hasCustomImport bool
 	slIdx := strings.LastIndex(specCustom, "/")
 	if slIdx >= 0 {
+		// github.com/username/name.MyType
+		//                    ^
 		hasCustomImport = true
 		customType = specCustom[slIdx+1:]
 		typeName = customType
@@ -238,10 +242,21 @@ func NewCustomType(specCustom string, st InternalSchemaType) (CustomType, Import
 
 	dotIdx := strings.LastIndex(specCustom, ".")
 	if dotIdx >= 0 {
+		// github.com/username/name.MyType
+		//                         ^
+		// OR
+		// name.MyType
+		//     ^
 		if hasCustomImport {
+			// github.com/username/name.MyType
+			// ^----------------------^
 			customImport = specCustom[:dotIdx]
 		}
+		// github.com/username/name.MyType
+		//                     ^--^
 		customPkg = specCustom[slIdx+1 : dotIdx]
+		// github.com/username/name.MyType
+		//                          ^----^
 		typeName = specCustom[dotIdx+1:]
 	}
 
